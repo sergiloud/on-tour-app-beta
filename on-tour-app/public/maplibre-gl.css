@@ -1,0 +1,17 @@
+/* Minimal MapLibre CSS for local bundling to ensure controls and popups render correctly */
+.maplibregl-map{position:relative;overflow:hidden}
+.maplibregl-canvas{position:absolute;left:0;top:0;outline:none}
+.maplibregl-ctrl-top-left,.maplibregl-ctrl-top-right,.maplibregl-ctrl-bottom-left,.maplibregl-ctrl-bottom-right{position:absolute;pointer-events:auto}
+.maplibregl-ctrl-top-left{top:0;left:0}
+.maplibregl-ctrl-top-right{top:0;right:0}
+.maplibregl-ctrl-bottom-left{bottom:0;left:0}
+.maplibregl-ctrl-bottom-right{bottom:0;right:0}
+.maplibregl-ctrl{margin:10px}
+.maplibregl-ctrl-group{background:rgba(0,0,0,.4);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.15)}
+.maplibregl-ctrl-group button{width:30px;height:30px;display:block;color:#eaf2f6}
+.maplibregl-popup{max-width:280px}
+.maplibregl-popup-content{background:rgba(8,12,16,.92);border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 30px -8px rgba(0,0,0,.7);color:#eaf2f6;border-radius:10px}
+.maplibregl-popup-close-button{color:#cfe7ff;font-size:16px}
+.maplibregl-popup .title{font-weight:700;color:#fff;margin-bottom:2px}
+.maplibregl-popup .meta{color:rgba(255,255,255,.85);font-size:12px}
+.maplibregl-popup .fee{color:#bfff00;font-weight:700;margin-top:4px}

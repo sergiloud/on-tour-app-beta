@@ -1,0 +1,28 @@
+# OS / Editor
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# Node / Vite
+**/node_modules/
+**/dist/
+.vite/
+**/.vite/
+
+# Netlify/Deploy
+.netlify/
+
+# Local artifacts
+on-tour-app.zip
+
+# Coverage/Tests
+coverage/
+**/.tsbuildinfo
+
+# Misc
+**/*.local
+**/*.tmp
+**/*.temp
+**/*.bak

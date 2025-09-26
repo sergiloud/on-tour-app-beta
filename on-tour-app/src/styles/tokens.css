@@ -1,0 +1,134 @@
+:root {
+  /* Color system */
+  --color-ink-950: #05070a;
+  --color-ink-900: #0b0f14;
+  --color-ink-800: #111823;
+  --color-ink-700: #1b2733;
+  --color-ink-600: #2b3947;
+  --color-accent-400: #bfff00;
+  --color-accent-500: #c4ff1a;
+  --color-accent-600: #d1ff4d;
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  /* Glass layers */
+  --glass-bg: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.18);
+  --glass-highlight: rgba(255,255,255,0.35);
+  --glass-shadow: 0 4px 16px -2px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.5);
+
+  /* Card tokens (unified) */
+  --card-border: var(--glass-border);
+  --card-shadow: var(--glass-shadow);
+
+  /* Elevations */
+  --elev-1: 0 6px 22px -8px rgba(0,0,0,0.6);
+  --elev-2: 0 10px 34px -12px rgba(0,0,0,0.65);
+  --elev-3: 0 16px 42px -16px rgba(0,0,0,0.7);
+
+  /* Motion */
+  --easing-emphasized: cubic-bezier(.4,0,.2,1);
+  --transition-fast: 120ms var(--easing-emphasized);
+  --transition-medium: 220ms var(--easing-emphasized);
+  --transition-slow: 480ms var(--easing-emphasized);
+  --transition-opacity: opacity var(--transition-fast);
+  --transition-transform: transform var(--transition-medium);
+
+  /* Z indices */
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-popover: 30;
+  --z-nav: 20;
+
+    /* Directionality (for future RTL support) */
+    --dir: ltr; /* ltr | rtl */
+    /* Logical spacing aliases; use where helpful instead of left/right */
+    --space-inline-start: 0.75rem; /* maps to margin-inline-start */
+    --space-inline-end: 0.75rem;   /* maps to margin-inline-end */
+    --radius-start: var(--radius-md);
+    --radius-end: var(--radius-md);
+
+  /* Map tokens (defaults tuned for dark) */
+  --map-land: #0a0f14;
+  --map-water: #07121d;
+  --map-border: rgba(255,255,255,0.95);
+  --map-border-province: rgba(255,255,255,0.9);
+  --map-border-halo: rgba(255,255,255,0.45);
+  --map-province-halo: rgba(255,255,255,0.35);
+}
+
+/* Theme switching via documentElement[data-theme] set by useTheme */
+  :root {
+    /* Amber badge tones - improved contrast on light theme */
+    --badge-amber-bg: rgba(245, 158, 11, 0.24); /* slightly deeper amber for contrast */
+    --badge-amber-text: #78350f; /* darker text for readability */
+  /* Base surfaces */
+  --surface-app: radial-gradient(circle at 20% 20%, #16202c 0%, #0b1118 55%, #05070a 100%);
+  --surface-glow: linear-gradient(135deg, rgba(191,255,0,0.12) 0%, rgba(196,255,26,0.05) 40%, rgba(0,0,0,0) 70%);
+  --text-primary: #eef3f5;
+  --text-secondary: #9fb0c0;
+  --border-color: rgba(255,255,255,0.14);
+  --focus-ring: 0 0 0 2px #0b1118, 0 0 0 4px var(--color-accent-500);
+}
+
+[data-theme='light'] {
+  --surface-app: radial-gradient(circle at 25% 20%, #ffffff 0%, #f5f8fa 55%, #e9eff3 100%);
+  --surface-glow: linear-gradient(135deg, rgba(191,255,0,0.25) 0%, rgba(196,255,26,0.15) 35%, rgba(0,0,0,0) 70%);
+  --text-primary: #1a2128;
+  --text-secondary: #4a5867;
+  --border-color: rgba(0,0,0,0.12);
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px var(--color-accent-500);
+  /* Adjust glass for light readability */
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-border: rgba(0,0,0,0.12);
+  --glass-highlight: rgba(255,255,255,0.9);
+  /* Cards in light theme: slightly stronger shadow and border distinction */
+  --card-border: var(--glass-border);
+  --card-shadow: 0 4px 18px -4px rgba(0,0,0,0.18);
+
+  /* Map tokens for light */
+  --map-land: #eaf2f8;
+  --map-water: #cfe9ff;
+  --map-border: rgba(255,255,255,0.9);
+  --map-border-province: rgba(255,255,255,0.85);
+}
+
+  /* Mirroring helper: when rtl is active, flip start/end radii if needed */
+  [dir='rtl'], [data-dir='rtl'] {
+    --dir: rtl;
+    /* Example flips; components can opt-in by using logical props */
+    --radius-start: var(--radius-md);
+    --radius-end: var(--radius-md);
+  }
+
+/* Provide defaults if variables not yet consumed */
+body {
+  background: var(--surface-app, #0b0f14);
+  color: var(--text-primary, #eef3f5);
+  -webkit-font-smoothing: antialiased;
+  color-scheme: light dark;
+}
+
+body::before { /* global decorative glow layer */
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--surface-glow, none);
+  mix-blend-mode: plus-lighter;
+  opacity: .7;
+  z-index: -1;
+  animation: surfacePulse 9s ease-in-out infinite alternate;
+}
+
+@keyframes surfacePulse {
+  0% { filter: hue-rotate(0deg) saturate(120%); opacity:.6; }
+  50% { filter: hue-rotate(20deg) saturate(140%); opacity:.8; }
+  100% { filter: hue-rotate(-15deg) saturate(120%); opacity:.65; }
+}

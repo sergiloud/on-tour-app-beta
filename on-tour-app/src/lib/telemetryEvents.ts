@@ -1,0 +1,45 @@
+// Centralized telemetry event names to avoid typos in tracking.
+// Usage: import { TE } from './telemetryEvents'; track(TE.SHOW_OPEN, {...})
+// Keep raw string values stable for downstream analytics.
+export const TE = {
+  SHOW_OPEN: 'shows.editor.open',
+  SHOW_CLOSE: 'shows.editor.close',
+  SHOW_ABANDON: 'shows.editor.abandon',
+  SHOW_SAVE: 'shows.editor.save',
+  SHOW_SAVE_FAIL: 'shows.editor.save.fail',
+  SHOW_SAVE_TTFS: 'shows.editor.save.ttfs',
+  VALIDATION_FAIL: 'shows.editor.validation.fail',
+  TAB_CHANGE: 'shows.editor.tab.change',
+  STATUS_PROMOTE: 'shows.editor.status.promote',
+  DELETE_CONFIRM: 'shows.editor.delete.confirm',
+  DELETE_FINAL: 'shows.editor.delete.final',
+  DELETE_CANCEL: 'shows.editor.delete.cancel',
+  DELETE_UNDO: 'shows.editor.delete.undo',
+  UNDO_CLICK: 'shows.editor.undo.click',
+  DISCARD_CONFIRM: 'shows.editor.discard.confirm',
+  DISCARD_CANCEL: 'shows.editor.discard.cancel',
+  COST_ADD: 'shows.editor.cost.add',
+  COST_ADD_QUICK_RECENT: 'shows.editor.cost.add.quickRecent',
+  COST_BULK_OPEN: 'shows.editor.cost.bulk.open',
+  COST_BULK_ADD: 'shows.editor.cost.bulk.add',
+  COST_SORT: 'shows.editor.cost.sort',
+  COST_UPDATE: 'shows.editor.cost.update',
+  COST_REMOVE: 'shows.editor.cost.remove',
+  COST_TEMPLATE_APPLY: 'shows.editor.cost.template.apply',
+  COST_TEMPLATE_DISMISS: 'shows.editor.cost.template.dismiss',
+  QUICK_PARSE_FAIL: 'shows.editor.quick.parse.fail',
+  QUICK_PARSE_SUCCESS: 'shows.editor.quick.parse.success',
+  QUICK_PARSE_APPLY: 'shows.editor.quick.parse.apply',
+  QUICK_APPLIED: 'shows.editor.quick.applied',
+  COUNTRY_SELECT: 'shows.editor.country.select',
+  COUNTRY_SEARCH: 'shows.editor.country.search',
+  COUNTRY_CLEAR: 'shows.editor.country.clear',
+  TRAVEL_CTA_CLICK: 'shows.editor.travel.cta.click',
+  WHT_SUGGEST_APPLY: 'shows.editor.wht.suggest.apply',
+  FX_UNAVAILABLE: 'shows.editor.fx.unavailable',
+  SHOW_VENUE_SET: 'shows.editor.venue.set',
+  SHOW_VENUE_CHANGED: 'shows.editor.venue.changed',
+  SHOW_VENUE_CLEARED: 'shows.editor.venue.cleared'
+} as const;
+
+export type TelemetryEvent = typeof TE[keyof typeof TE];

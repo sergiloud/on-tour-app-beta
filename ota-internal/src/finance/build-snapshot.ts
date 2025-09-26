@@ -1,0 +1,2 @@
+// Re-export buildSnapshot from finance-core (tsx) for script/test usage without JSX context.
+export { buildSnapshot } from '../features/finance/core/snapshot-builder';

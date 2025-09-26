@@ -1,0 +1,15 @@
+/* Manager (old dashboard) styles adapted to unified design */
+
+.artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 12px; }
+.artist-card { text-decoration: none; color: inherit; display: block; padding: 16px; transition: transform .15s ease, box-shadow .2s ease, border-color .15s ease; }
+.artist-card:hover { transform: translateY(-3px); border-color: var(--color-accent-border); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.card-header .badge-attention{ margin-left: auto; display: inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:4px 8px; border-radius:999px; border:1px solid var(--color-warning-border); background: var(--color-warning-subtle); color: var(--color-warning); }
+.artist-avatar { width: 44px; height: 44px; border-radius: 50%; background-color: var(--color-surface-secondary); display: grid; place-items: center; font-size: 20px; font-weight: 700; color: var(--color-accent); }
+.artist-name { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.card-body { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-top: 12px; border-top: 1px solid var(--color-border); }
+.kpi { text-align: center; }
+.kpi .value { display: block; font-size: 1.3rem; font-weight: 800; }
+.kpi .label { display: block; font-size: .75rem; color: var(--color-text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.empty-state { grid-column: 1 / -1; text-align: center; padding: 24px; color: var(--color-text-secondary); }
+.console-card { background: rgba(255,255,255,0.03); border: 1px solid var(--color-border); border-radius: 12px; box-shadow: 0 1px 0 rgba(255,255,255,.05) inset; }

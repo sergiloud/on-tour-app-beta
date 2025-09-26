@@ -209,6 +209,14 @@ export const DashboardOverview: React.FC = () => {
     return ()=>{ window.removeEventListener('keydown', onKey); window.removeEventListener('mousedown', onClick); };
   }, [viewsMenuOpen]);
   const onLoadDemo = () => {
+    // UI-only guard: ask for demo password before seeding. Tests call lib directly and are unaffected.
+    try {
+      if (typeof window !== 'undefined' && typeof window.prompt === 'function') {
+        const input = window.prompt(t('demo.password.prompt') || 'Enter demo password');
+        if (input == null) return; // user cancelled
+        if (input !== 'dannyavila') { toast.error(t('demo.password.invalid') || 'Incorrect password'); return; }
+      }
+    } catch { /* non-browser or blocked prompt: bypass */ }
     const res = loadDemoData();
     if (res.loaded) { toast.success(t('demo.loaded')); setDemoLoaded(true); }
     else toast.info(t('demo.loaded'));

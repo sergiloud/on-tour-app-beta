@@ -271,6 +271,8 @@ const DICT: Record<Lang, Record<string,string>> = {
   , 'demo.loaded': 'Demo data loaded'
   , 'demo.clear': 'Clear data'
   , 'demo.cleared': 'All data cleared'
+  , 'demo.password.prompt': 'Enter demo password'
+  , 'demo.password.invalid': 'Incorrect password'
   , 'shows.views.delete': 'Delete'
   , 'shows.views.namePlaceholder': 'View name'
   , 'shows.views.save': 'Save'
@@ -797,6 +799,13 @@ const DICT: Record<Lang, Record<string,string>> = {
   , 'finance.targets.net': 'Objetivo de neto'
   , 'finance.targets.hint': 'Los objetivos se guardan localmente en este dispositivo.'
   , 'finance.targets.noNegative': 'Los objetivos no pueden ser negativos',
+  'demo.banner': 'Datos de demo • Sin sincronización en vivo',
+  'demo.load': 'Cargar datos de demo',
+  'demo.loaded': 'Datos de demo cargados',
+  'demo.clear': 'Borrar datos',
+  'demo.cleared': 'Todos los datos borrados',
+  'demo.password.prompt': 'Introduce la contraseña de demo',
+  'demo.password.invalid': 'Contraseña incorrecta',
   'nav.shows': 'Shows',
   'nav.travel': 'Viajes',
   'nav.calendar': 'Calendario',

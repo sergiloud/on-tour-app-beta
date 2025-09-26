@@ -1,5 +1,6 @@
 # OS / Editor
 .DS_Store
+**/.DS_Store
 *.log
 .env
 .env.*
@@ -16,6 +17,9 @@
 
 # Local artifacts
 on-tour-app.zip
+on-tour-app/.devpid
+.claude/
+*.local.json
 
 # Coverage/Tests
 coverage/

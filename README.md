@@ -38,6 +38,25 @@ Repo: https://github.com/sergiloud/On-Tour-App-2.0
 
 Production: https://ontourapp.netlify.app/
 
+### Orden operativa: “deploy en github”
+
+Cuando indiques “deploy en github”, ejecutaré automáticamente lo siguiente:
+
+1) Preparación del repo
+  - Verificar que `main` está actualizado.
+  - Ejecutar build local rápido para asegurar que compila.
+  - Confirmar que no existen workflows de GitHub Pages activos (el deploy lo hace Netlify).
+
+2) Push y trigger de Netlify
+  - Subir a `main` cualquier cambio pendiente relacionado con el lanzamiento (si los hubiera).
+  - Netlify detecta el push a `main` y lanza el build con la configuración de `netlify.toml` (`base=on-tour-app`, `publish=dist`).
+
+3) Verificación
+  - Comprobar el estado del deploy en el panel de Netlify del sitio `ontourapp`.
+  - Validar que las rutas de SPA funcionan (Home, /dashboard, rutas profundas) gracias a `public/_redirects`.
+
+Resultado esperado: el sitio queda publicado en `https://ontourapp.netlify.app/` con la última versión de `main`.
+
 ## Alpha notes
 
 - Demo data is gated: from Dashboard, the “Load demo data” button prompts for password `dannyavila`. This only guards the UI; unit tests and SSR bypass it.

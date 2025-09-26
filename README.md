@@ -1,13 +1,10 @@
 # On Tour App 2.0 (alpha)
 
-Two Vite + TypeScript apps developed in parallel:
-
-- on-tour-app — React UI prototype with Tailwind. Focus: Shows, Calendar, Finance v2. LocalStorage for demo data.
-- ota-internal — Internal app with finance analytics and PWA plumbing. Supabase planned; Dexie/IndexedDB for offline.
+Single app (on-tour-app) built with Vite + React + TypeScript + Tailwind.
 
 This is an early alpha intended for internal testing only. Expect rough edges and fast iteration.
 
-## Monorepo structure
+## Project structure
 
 - on-tour-app/
   - src/features/* vertical slices (shows, calendar, finance)
@@ -15,44 +12,27 @@ This is an early alpha intended for internal testing only. Expect rough edges an
   - src/shared/showStore.ts local shows store (LocalStorage)
   - styles/ Tailwind tokens and utilities
   - tests: Vitest + Testing Library under `src/__tests__`
-- ota-internal/
-  - src/ features and modules (finance, dashboard, travel)
-  - public/sw.js + src/sw.ts for PWA
-  - Supabase integration planned via env vars
 
 ## Local development
 
-- on-tour-app
-  - dev: npm run dev
-  - build: npm run build
-  - preview: npm run preview
-  - test: npm test
-- ota-internal
-  - dev: npm run dev
-  - build: npm run build
-  - preview: npm run preview
-  - type-check: npm run type-check
-  - lint: npm run lint
-  - test: npm run test
+- dev: npm run dev
+- build: npm run build
+- preview: npm run preview
+- test: npm test
 
-## Deploys (GitHub → Netlify)
+Run those scripts from the `on-tour-app` folder or with `npm --prefix on-tour-app run <script>` from repo root.
 
-We deploy one Netlify site per app:
+## Deploy (GitHub → Netlify)
 
-- on-tour-app
-  - Branch: main
-  - Base directory: on-tour-app
-  - Build command: npm run build
-  - Publish directory: dist
-  - SPA routing: public/_redirects contains `/* /index.html 200`
-- ota-internal
-  - Branch: main
-  - Base directory: ota-internal
-  - Build command: npm run build
-  - Publish directory: dist
-  - Env vars (Site settings → Environment): VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+Netlify site configuration:
 
-Repo → Primary: https://github.com/sergiloud/On-Tour-App-2.0
+- Branch: main
+- Base directory: on-tour-app
+- Build command: npm run build
+- Publish directory: dist
+- SPA routing: `public/_redirects` contains `/* /index.html 200`
+
+Repo: https://github.com/sergiloud/On-Tour-App-2.0
 
 ## Alpha notes
 
@@ -63,8 +43,7 @@ Repo → Primary: https://github.com/sergiloud/On-Tour-App-2.0
 
 ## Testing
 
-- on-tour-app: npm test (Vitest + jsdom). Demo data tests use the lib API and are unaffected by the UI password prompt.
-- ota-internal: npm run type-check; npm run test.
+- `npm test` (Vitest + jsdom). Demo data tests use the lib API and are unaffected by the UI password prompt.
 
 ## Known gotchas
 

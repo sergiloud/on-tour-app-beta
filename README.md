@@ -1,5 +1,7 @@
 # On Tour App 2.0 (alpha)
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/a76ad973-a09f-4124-b400-d28eb6150ee3/deploy-status?branch=main)](https://app.netlify.com/sites/ontourapp/deploys)
+
 Single app (on-tour-app) built with Vite + React + TypeScript + Tailwind.
 
 This is an early alpha intended for internal testing only. Expect rough edges and fast iteration.
@@ -33,6 +35,8 @@ Netlify site configuration:
 - SPA routing: `public/_redirects` contains `/* /index.html 200`
 
 Repo: https://github.com/sergiloud/On-Tour-App-2.0
+
+Production: https://ontourapp.netlify.app/
 
 ## Alpha notes
 

@@ -37,8 +37,8 @@ const ForecastPanel: React.FC = () => {
         const mean = slice.length ? slice.reduce((a,b)=>a+b,0)/slice.length : 0;
         p50.push(Math.round(mean));
       }
-      p10.push(Math.round(p50[i] * 0.85));
-      p90.push(Math.round(p50[i] * 1.15));
+      p10.push(Math.round(p50[i]! * 0.85));
+      p90.push(Math.round(p50[i]! * 1.15));
     }
 
     // Normalize to chart coords (0..100 by 0..40)

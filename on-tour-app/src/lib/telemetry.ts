@@ -16,7 +16,7 @@ function emit(name: string, value: number, detail?: any) {
   listeners.forEach(l => l(metric));
   if (import.meta.env.DEV && !(globalThis as any).__TEST__) {
     // eslint-disable-next-line no-console
-    console.log('[telemetry]', name, value, detail || '');
+    // console.log('[telemetry]', name, value, detail || '');
   }
 }
 
@@ -113,7 +113,7 @@ export function trackEvent(name: string, props?: Record<string, any>) {
   } catch {}
   if (import.meta.env.DEV && !(globalThis as any).__TEST__) {
     // eslint-disable-next-line no-console
-    console.log('[event]', name, ev.props || {});
+    // console.log('[event]', name, ev.props || {});
   }
 }
 
@@ -127,7 +127,7 @@ export function startViewVitals(viewId: string, thresholds: Partial<VitalsThresh
     const report = (name: 'LCP'|'CLS'|'FID', value: number) => {
       const ok = name === 'CLS' ? value <= thr.CLS : value <= (thr as any)[name];
       // eslint-disable-next-line no-console
-      console.log(`[vitals][${viewId}] ${name}=${value.toFixed(name==='CLS'?3:0)} ${ok? 'OK' : 'SLOW'}`);
+      // console.log(`[vitals][${viewId}] ${name}=${value.toFixed(name==='CLS'?3:0)} ${ok? 'OK' : 'SLOW'}`);
       trackEvent('vitals', { view: viewId, metric: name, value, ok });
     };
     onMetric(m => {
@@ -146,5 +146,17 @@ export const Events = {
   alertsOpen(ctx: CommonCtx = {}) { trackEvent('alerts.open', ctx); },
   ahKindFilter(kind: string, ctx: CommonCtx = {}) { trackEvent('ah.kind.filter', { kind, ...ctx }); },
   ahComputeWorker(used: boolean, ctx: CommonCtx = {}) { trackEvent('ah.compute.worker', { used, ...ctx }); },
-  ahComputeComplete(ctx: Required<Pick<CommonCtx,'count'|'ms'>> & { worker: boolean } & CommonCtx) { trackEvent('ah.compute.complete', ctx as any); }
+  ahComputeComplete(ctx: Required<Pick<CommonCtx,'count'|'ms'>> & { worker: boolean } & CommonCtx) { trackEvent('ah.compute.complete', ctx as any); },
+  // Welcome hub interactions
+  welcomeView(ctx: CommonCtx = {}) { trackEvent('welcome.view', ctx); },
+  welcomeCta(action: 'dashboard'|'preferences'|'switchOrg'|'invite'|'link'|'branding'|'calendar'|'teams', ctx: CommonCtx = {}) { trackEvent('welcome.cta', { action, ...ctx }); },
+  welcomeOpenArtistDashboard(artist: string, ctx: CommonCtx = {}) { trackEvent('welcome.openArtistDashboard', { artist, ...ctx }); },
+  welcomeChecklistToggle(label: string, checked: boolean, ctx: CommonCtx = {}) { trackEvent('welcome.checklist.toggle', { label, checked, ...ctx }); },
+  welcomeChecklistCompleted(key: string, ctx: CommonCtx = {}) { trackEvent('welcome.checklist.completed', { key, ...ctx }); }
+  ,
+  // Login interactions
+  loginView(ctx: CommonCtx = {}) { trackEvent('login.view', ctx); },
+  loginSelect(userId: string, orgId: string, ctx: CommonCtx = {}) { trackEvent('login.select', { userId, orgId, ...ctx }); },
+  loginDeepLinkUsed(as: string, org?: string, ctx: CommonCtx = {}) { trackEvent('login.deepLink.used', { as, org, ...ctx }); },
+  loginRememberToggled(on: boolean, ctx: CommonCtx = {}) { trackEvent('login.remember.toggled', { on, ...ctx }); }
 };

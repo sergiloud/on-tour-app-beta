@@ -25,9 +25,9 @@ describe('SmartFlightSearch multicity builder', () => {
 
     const addButtons = () => screen.getAllByRole('button', { name: /add leg/i });
     // Add first leg (from hint area)
-    await userEvent.click(addButtons()[0]);
+    await userEvent.click(addButtons()[0]!);
     // Add second leg to meet condition
-    await userEvent.click(addButtons()[0]);
+    await userEvent.click(addButtons()[0]!);
 
     // Now there should be 2 segment rows (airport autocompletes labelled From / To)
     const fromLabels = screen.getAllByText(/from/i);
@@ -37,7 +37,7 @@ describe('SmartFlightSearch multicity builder', () => {
 
     // Remove first leg using its remove button
     const removeButtons = screen.getAllByRole('button', { name: /remove/i });
-    await userEvent.click(removeButtons[0]);
+    await userEvent.click(removeButtons[0]!);
 
     // One less "From" label now
     const fromLabelsAfter = screen.getAllByText(/from/i);
@@ -70,20 +70,20 @@ describe('SmartFlightSearch multicity builder', () => {
     const builderWithin = within(builder);
     const clickLastAdd = async () => {
       const btns = screen.getAllByRole('button', { name: /add leg/i });
-      await userEvent.click(btns[btns.length-1]);
+      await userEvent.click(btns[btns.length-1]!);
     };
     const getSegmentDateInputs = () => Array.from(builder.querySelectorAll('input[type="date"]')) as HTMLInputElement[];
     while (getSegmentDateInputs().length < 2) await clickLastAdd();
     while (getSegmentDateInputs().length > 2) {
       const removes = within(builder).getAllByRole('button', { name: /remove/i });
-      await userEvent.click(removes[removes.length-1]);
+      await userEvent.click(removes[removes.length-1]!);
     }
     const fromLabels = builderWithin.getAllByText(/from/i);
     const toLabels = builderWithin.getAllByText(/to\b/i);
-    const firstFromInput = fromLabels[0].closest('label')!.querySelector('input')!;
-    const firstToInput = toLabels[0].closest('label')!.querySelector('input')!;
-    const secondFromInput = fromLabels[1].closest('label')!.querySelector('input')!;
-    const secondToInput = toLabels[1].closest('label')!.querySelector('input')!;
+    const firstFromInput = fromLabels[0]!.closest('label')!.querySelector('input')! as HTMLInputElement;
+    const firstToInput = toLabels[0]!.closest('label')!.querySelector('input')! as HTMLInputElement;
+    const secondFromInput = fromLabels[1]!.closest('label')!.querySelector('input')! as HTMLInputElement;
+    const secondToInput = toLabels[1]!.closest('label')!.querySelector('input')! as HTMLInputElement;
     await userEvent.type(firstFromInput, 'MAD');
     await userEvent.type(firstToInput, 'JFK');
     await userEvent.type(secondFromInput, 'JFK');
@@ -91,8 +91,8 @@ describe('SmartFlightSearch multicity builder', () => {
     // Date inputs inside builder
   const dateInputs = getSegmentDateInputs();
   expect(dateInputs.length).toBe(2);
-    fireEvent.change(dateInputs[0], { target: { value: '2025-12-01' } });
-    fireEvent.change(dateInputs[1], { target: { value: '2025-12-05' } });
+    fireEvent.change(dateInputs[0]!, { target: { value: '2025-12-01' } });
+    fireEvent.change(dateInputs[1]!, { target: { value: '2025-12-05' } });
 
     await waitFor(()=> expect(openBtn()).toBeEnabled());
   });

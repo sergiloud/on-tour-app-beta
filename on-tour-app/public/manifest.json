@@ -1,0 +1,85 @@
+{
+    "name": "OnTour - Tour Management Platform",
+    "short_name": "OnTour",
+    "description": "Professional tour management platform for artists and agencies. Manage shows, finances, travel, and more.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0b0f14",
+    "theme_color": "#bfff00",
+    "orientation": "any",
+    "scope": "/",
+    "categories": [
+        "business",
+        "productivity",
+        "travel"
+    ],
+    "lang": "en-US",
+    "dir": "ltr",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon.ico",
+            "sizes": "48x48",
+            "type": "image/x-icon"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "View your tour dashboard",
+            "url": "/dashboard",
+            "icons": [
+                {
+                    "src": "/favicon.svg",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
+        },
+        {
+            "name": "Shows",
+            "short_name": "Shows",
+            "description": "Manage your shows",
+            "url": "/dashboard/shows",
+            "icons": [
+                {
+                    "src": "/favicon.svg",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
+        },
+        {
+            "name": "Calendar",
+            "short_name": "Calendar",
+            "description": "View show calendar",
+            "url": "/dashboard/calendar",
+            "icons": [
+                {
+                    "src": "/favicon.svg",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "share_target": {
+        "action": "/dashboard/shows",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    }
+}

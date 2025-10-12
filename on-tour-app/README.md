@@ -1,53 +1,258 @@
 # On Tour App
 
-Prototype React UI (Vite + TypeScript + Tailwind) for tour / show management. This document currently focuses on the recently added Venue field in the Show Editor and its telemetry semantics.
+**"De caos a control. De datos a decisiones."**
 
-## Show Editor – Venue Field
+El copiloto inteligente para tus giras musicales. Gestiona shows, finanzas, contratos y logística en una sola plataforma profesional con IA proactiva.
 
-### Purpose
-The `venue` field captures the performance location (club, festival stage, hall) for a show. It is optional, intentionally lightweight (single free‑text line), and designed for incremental enrichment without blocking rapid show entry.
+## 🎯 Value Proposition
 
-### UX & Behavior
-- Single text input in the Show Editor drawer (between core metadata fields – exact placement may evolve).
-- Trims leading/trailing whitespace on blur.
-- Empty or whitespace‐only input is treated as "no venue" (stored as `undefined`).
-- Value is preserved within the current draft session; undoing a deletion of the show also restores the venue.
-- i18n: Adds label & help/placeholder keys for both `en` and `es`. Always add both to avoid falling back to the raw key.
+On Tour App transforma la gestión de tours musicales de Excel caótico a una experiencia inteligente y proactiva:
 
-### Normalization Rules
-| Input Raw | Stored Value | Event Triggered |
-|-----------|--------------|-----------------|
-| "  " | `undefined` | (Clear if previously had value) |
-| "The Hall" | "The Hall" | Set / Changed depending on prior state |
-| "The Hall  " | "The Hall" | (Same value post-trim → no change event) |
-| "The  Hall" (double space) | Preserved (no aggressive collapsing) | Changed if previous normalized value differs |
+- ✅ **Cierra contratos más rápido** - E-signature integrada, templates legales
+- ✅ **Liquida pagos en 1 clic** - Settlement automático multiparte
+- ✅ **Evita imprevistos** - IA predice problemas antes de que ocurran
+- ✅ **Trabaja offline** - Sync robusto para tour managers en carretera
+- ✅ **Control total** - Finanzas, shows, team, todo en un dashboard
 
-Whitespace-only transitions count as a clear. Re‑entering the exact same normalized text does not fire another telemetry event.
+## 🎪 Target Users
 
-### Telemetry Events
-The editor emits three mutually exclusive venue lifecycle events during a single edit session (drawer open → close):
+- **Indie Artists** (0-50 shows/año): Primera herramienta profesional
+- **Tour Managers** (50-200 shows/año): Gestión completa + IA
+- **Small Agencies** (2-5 artistas): Multi-roster sin caos
+- **Mid-Market** (5-20 artistas): Escalabilidad + API
 
-| Event | When It Fires | Notes |
-|-------|---------------|-------|
-| `SHOW_VENUE_SET` | First time a venue goes from empty → non-empty | Only if there was no prior venue this session |
-| `SHOW_VENUE_CHANGED` | Venue changes from one non-empty normalized string to a different one | Debounced by state comparison; repeated identical input ignored |
-| `SHOW_VENUE_CLEARED` | Venue transitions from non-empty → empty/whitespace | Treats trimmed empty as clear |
+## 🚀 Key Features
 
-Guards ensure each qualifying state transition produces exactly one event; re-renders without state change do nothing.
+### ⚡ Intelligent Tour Management
+- **Quick Entry NLP**: "Madrid tomorrow 8pm €5000" → show completo
+- **ActionHub**: Prioriza tareas urgentes automáticamente
+- **Tour Health Score**: Detecta problemas logísticos/financieros
+- **Kanban Visual**: Arrastra shows por estados
+- **Offline-First**: Trabaja sin internet, sync automático
 
-### Analytics Guidance
-- Adoption funnel: `SET` counts new field adoption. High set rate indicates utility / discoverability.
-- Churn / instability: Elevated `CHANGED` immediately after `SET` may mean users are experimenting or unsure (consider inline examples or suggestions).
-- Data hygiene: Frequent `CLEARED` events after `CHANGED` could suggest accidental entry or mismatched mental model (maybe the value belongs elsewhere—e.g., city vs venue confusion).
-- Quality metric: (unique shows with venue) / (total shows edited) as a dashboard KPI if venue proves strategically valuable.
+### 💰 Financial Intelligence
+- **Real-time Calculations**: Fee neto, profit margins, breakeven
+- **Settlement 1-Click**: Distribuye pagos multiparte automáticamente
+- **Multi-currency**: Soporte EUR/USD/GBP con conversión real-time
+- **Tax Compliance**: Cálculos por país, exports contable
+- **Revenue Heatmap**: Visualiza ganancias geográficamente
 
-### Implementation Notes
-- Event constants are registered in `src/lib/telemetryEvents.ts`.
-- The Show Editor effect watches the normalized draft venue value and previous value reference to detect state transitions.
-- Tests verifying the event sequence live in `src/__tests__/shows.venue.telemetry.test.tsx`.
+### 📄 Contracts & Legal
+- **E-Signature**: Integración HelloSign para firmas legales
+- **Templates**: Riders, contratos, invoices por país
+- **Full-Text Search**: Encuentra cualquier cláusula en segundos
+- **Audit Trail**: Historial completo de cambios
+- **Auto-reminders**: Notificaciones pre-show
 
-### Adding Future Field Telemetry (Pattern Reuse)
-1. Define constants in `src/lib/telemetryEvents.ts`.
+### 📨 Centralized Inbox
+- **Email Threading**: Conversaciones contextuales por show
+- **Smart Parsing**: Attachments automáticos a shows
+- **Team Mentions**: @mention para colaboración
+- **Status Tracking**: pending/resolved workflows
+
+### 🗺️ Interactive Maps
+- **Show Locations**: Visualiza tu tour geográficamente
+- **Revenue Heatmap**: Calor = más dinero
+- **Route Optimization**: IA sugiere rutas eficientes
+- **Venue Database**: Capacidad, specs técnicos, contactos
+
+### 🎨 Premium UX
+- **Glassmorphism**: Diseño moderno profesional
+- **Dark Mode Adaptativo**: Auto/light/dark con transiciones suaves
+- **Mobile-First**: Touch targets 44px+, bottom nav, FAB
+- **Accessibility**: WCAG 2.1 AA, screen readers, keyboard nav
+- **PWA**: Instalable, push notifications, offline
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS with custom design system
+- **Animations**: Framer Motion
+- **State Management**: React Context + custom hooks
+- **Data Fetching**: TanStack Query (React Query)
+- **Maps**: MapLibre GL
+- **Virtualization**: TanStack Virtual
+- **Testing**: Vitest + React Testing Library
+- **Code Quality**: ESLint + Prettier
+
+## 📦 Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Run tests
+npm run test
+
+# Run linting
+npm run lint
+
+# Fix linting issues
+npm run lint:fix
+
+# Format code
+npm run format
+
+# Type checking
+npm run type-check
+```
+
+## 🏗️ Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── common/         # Generic components (Button, Card, etc.)
+│   ├── home/           # Landing page components
+│   ├── dashboard/      # Dashboard-specific components
+│   └── ...
+├── context/            # React Context providers
+├── features/           # Feature-specific modules
+│   ├── finance/        # Financial management
+│   ├── travel/         # Travel and logistics
+│   └── ...
+├── hooks/              # Custom React hooks
+├── lib/                # Utility libraries
+├── pages/              # Page components
+├── routes/             # Routing configuration
+├── services/           # API services
+├── shared/             # Shared state and utilities
+├── styles/             # Global styles and tokens
+├── types/              # TypeScript type definitions
+└── __tests__/          # Test files
+```
+
+## 🎨 Design System
+
+### Colors
+- **Primary**: Blue gradient (`from-blue-600 to-purple-600`)
+- **Accent**: Yellow-green (`#bfff00`)
+- **Background**: Dark theme (`ink-900`, `ink-800`, `ink-700`)
+
+### Typography
+- **Font Family**: System fonts with fallbacks
+- **Scale**: Responsive text sizing (4xl to 7xl for headings)
+
+### Spacing
+- **System**: 4px base unit (0.25rem increments)
+- **Consistent**: 4px, 8px, 12px, 16px, 20px, 24px, 32px, 40px, 48px, 64px, 80px, 96px
+
+## 🔧 Development
+
+### Code Quality
+- **ESLint**: Configured with TypeScript and React rules
+- **Prettier**: Consistent code formatting
+- **Husky**: Pre-commit hooks for quality checks (v9+)
+- **lint-staged**: Run linters on staged files
+- **EditorConfig**: Consistent editor settings
+
+### Testing
+- **Unit Tests**: Component and utility testing with Vitest
+- **Integration Tests**: Feature-level testing
+- **Coverage**: Minimum 70% coverage required (branches, functions, lines, statements)
+- **E2E**: Playwright for end-to-end testing (planned)
+
+### Scripts
+```bash
+npm run dev          # Start development server
+npm run build        # Type-check and build for production
+npm run preview      # Preview production build locally
+npm run test         # Run tests in watch mode
+npm run test:run     # Run tests once
+npm run test:coverage # Run tests with coverage report
+npm run lint         # Lint code
+npm run lint:fix     # Fix linting issues
+npm run format       # Format code with Prettier
+npm run format:check # Check code formatting
+npm run type-check   # Run TypeScript type checking
+npm run validate     # Run type-check, lint, and tests
+```
+
+### Performance
+- **Bundle Splitting**: Code splitting by route and feature
+- **Lazy Loading**: Components and routes loaded on demand
+- **Image Optimization**: Responsive images with lazy loading
+- **Caching**: React Query for efficient data caching
+
+## 🌐 Internationalization
+
+The app supports multiple languages with a key-based system:
+
+```typescript
+import { t } from '../lib/i18n';
+
+// Usage
+const title = t('dashboard.title');
+```
+
+Add new keys to both `en.ts` and `es.ts` files in `src/lib/i18n/locales/`.
+
+## ♿ Accessibility
+
+- **WCAG 2.1 AA**: Compliant with web accessibility standards
+- **Keyboard Navigation**: Full keyboard support
+- **Screen Readers**: Proper ARIA labels and roles
+- **Focus Management**: Visible focus indicators
+- **Reduced Motion**: Respects user preferences
+
+## 📊 Analytics & Telemetry
+
+Custom telemetry system for user behavior tracking:
+
+```typescript
+import { trackEvent } from '../lib/telemetry';
+
+trackEvent('user.action', { action: 'button_click', component: 'hero' });
+```
+
+## 🚀 Deployment
+
+### Netlify (Recommended)
+```bash
+# Build command
+npm run build
+
+# Publish directory
+dist
+```
+
+### Environment Variables
+```env
+VITE_API_URL=https://api.ontourapp.com
+VITE_ENVIRONMENT=production
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -m 'Add your feature'`
+4. Push to branch: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+### Commit Convention
+- `feat:` New features
+- `fix:` Bug fixes
+- `docs:` Documentation
+- `style:` Code style changes
+- `refactor:` Code refactoring
+- `test:` Testing
+- `chore:` Maintenance
+
+## 📄 License
+
+This project is proprietary software. All rights reserved.
+
+## 📞 Support
+
+For support, please contact the development team or create an issue in the repository.
 2. Add localized label/help keys to both `en` and `es` in `src/lib/i18n.ts` (group fields logically; keep alphabetical inside section when practical).
 3. Implement a `usePrevious` (or ref) comparison inside the editor component to guard transitions.
 4. Emit events via the central `trackEvent` helper. Never inline string literals.

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import { render as rtlRender, RenderOptions } from '@testing-library/react';
 import { SettingsProvider } from './context/SettingsContext';
 import { HighContrastProvider } from './context/HighContrastContext';
 import { KPIDataProvider } from './context/KPIDataContext';
@@ -9,6 +9,7 @@ import { ThemeProvider } from './hooks/useTheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MissionControlProvider } from './context/MissionControlContext';
 import { ToastProvider } from './ui/Toast';
+import { AuthProvider } from './context/AuthContext';
 
 type ProvidersProps = { children: React.ReactNode };
 const createProviders = (initialEntries?: string[]) => {
@@ -23,9 +24,11 @@ const createProviders = (initialEntries?: string[]) => {
                 <KPIDataProvider>
                   <MissionControlProvider>
                     <ToastProvider>
-                      <MemoryRouter initialEntries={initialEntries}>
-                        {children}
-                      </MemoryRouter>
+                      <AuthProvider>
+                        <MemoryRouter initialEntries={initialEntries || ['/']}>
+                          {children}
+                        </MemoryRouter>
+                      </AuthProvider>
                     </ToastProvider>
                   </MissionControlProvider>
                 </KPIDataProvider>
@@ -42,13 +45,17 @@ const createProviders = (initialEntries?: string[]) => {
 const Providers = createProviders();
 
 export function renderWithProviders(ui: React.ReactElement, options?: RenderOptions) {
-  return render(ui, { wrapper: Providers, ...options });
+  return rtlRender(ui, { wrapper: Providers, ...options });
 }
 
 // Helper to render at a specific route (avoids nested MemoryRouter in tests needing an initial path)
 export function renderWithProvidersAtRoute(ui: React.ReactElement, route: string, options?: RenderOptions) {
   const RoutedProviders = createProviders([route]);
-  return render(ui, { wrapper: RoutedProviders, ...options });
+  return rtlRender(ui, { wrapper: RoutedProviders, ...options });
 }
 
+// Re-export everything, but override default render to use our Providers by default
 export * from '@testing-library/react';
+export function render(ui: React.ReactElement, options?: RenderOptions) {
+  return rtlRender(ui, { wrapper: Providers, ...options });
+}

@@ -16,9 +16,11 @@ type Props = {
   filters: { kinds: { shows: boolean; travel: boolean }, status?: { confirmed: boolean; pending: boolean; offer: boolean } };
   setFilters: (f: any) => void;
   onImportIcs?: (file: File) => void;
+  heatmapMode: 'none'|'financial'|'activity';
+  setHeatmapMode: (mode: 'none'|'financial'|'activity') => void;
 };
 
-const CalendarToolbar: React.FC<Props> = ({ title, onPrev, onNext, onToday, onGoToDate, view, setView, tz, setTz, weekStartsOn = 1, setWeekStartsOn, filters, setFilters, onImportIcs }) => {
+const CalendarToolbar: React.FC<Props> = ({ title, onPrev, onNext, onToday, onGoToDate, view, setView, tz, setTz, weekStartsOn = 1, setWeekStartsOn, filters, setFilters, onImportIcs, heatmapMode, setHeatmapMode }) => {
   const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   const activeKinds: string[] = [];
   if (filters.kinds.shows) activeKinds.push(t('calendar.show.shows')||'Shows');
@@ -100,6 +102,15 @@ const CalendarToolbar: React.FC<Props> = ({ title, onPrev, onNext, onToday, onGo
           </select>
           <label className="inline-flex items-center gap-1 opacity-80"><input type="checkbox" checked={filters.kinds.shows} onChange={e=> setFilters((f: any)=> ({ ...f, kinds: { ...f.kinds, shows: e.target.checked } }))} /> {t('calendar.show.shows')||'Shows'}</label>
           <label className="inline-flex items-center gap-1 opacity-80"><input type="checkbox" checked={filters.kinds.travel} onChange={e=> setFilters((f: any)=> ({ ...f, kinds: { ...f.kinds, travel: e.target.checked } }))} /> {t('calendar.show.travel')||'Travel'}</label>
+          {/* Heatmap mode selector */}
+          <label className="inline-flex items-center gap-1">
+            <span className="opacity-75">{t('calendar.heatmap')||'Heatmap'}:</span>
+            <select className="bg-white/5 rounded px-2 py-1" value={heatmapMode} onChange={e=> setHeatmapMode(e.target.value as 'none'|'financial'|'activity')}>
+              <option value="none">{t('calendar.heatmap.none')||'None'}</option>
+              <option value="financial">{t('calendar.heatmap.financial')||'Financial'}</option>
+              <option value="activity">{t('calendar.heatmap.activity')||'Activity'}</option>
+            </select>
+          </label>
           {/* Status chips */}
           <div className="hidden md:inline-flex items-center gap-1 ml-2">
             <span className="opacity-75">{t('calendar.status')||'Status'}:</span>

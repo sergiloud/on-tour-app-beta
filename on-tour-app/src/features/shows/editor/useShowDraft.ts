@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { DemoShow } from '../../../lib/demoShows';
+import type { DemoShow } from '../lib/shows';
 import type { Cost } from '../../../types/shows';
 
-export type ShowDraft = Partial<DemoShow> & {
+export type ShowDraft = Partial<Show> & {
   whtPct?: number;
   venue?: string;
   mgmtAgency?: string;

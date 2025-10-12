@@ -14,7 +14,7 @@ const pctDelta = (current:number, prev:number) => prev === 0 ? (current === 0 ? 
 export const GlobalKPIBar: React.FC = () => {
   const { raw, display, targets } = useKpi();
   const { loading, thisMonth } = useFinance();
-  const { } = useSettings();
+  const { setKpiTickerHidden } = useSettings();
   const ratio = (a:number, b:number) => b === 0 ? 0 : (a / b);
 
   // Build 7-point tails via centralized hook
@@ -68,16 +68,8 @@ export const GlobalKPIBar: React.FC = () => {
           <button
             type="button"
             className="ml-2 text-[10px] opacity-70 hover:opacity-100 underline"
-            aria-label="Hide ticker"
-            onClick={()=>{
-              try {
-                const current = localStorage.getItem('dash:kpi:hidden') === '1';
-                const next = !current;
-                localStorage.setItem('dash:kpi:hidden', next ? '1' : '0');
-                const ev = new CustomEvent('kpi:hidden:toggle', { detail: { hidden: next } });
-                window.dispatchEvent(ev);
-              } catch {}
-            }}
+            aria-label={`${t('common.hide')} ticker`}
+            onClick={()=> setKpiTickerHidden(true)}
           >{t('common.hide') || 'Hide'}</button>
         </div>
       </Card>

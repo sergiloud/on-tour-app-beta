@@ -21,9 +21,9 @@ function inferSeverity(a: Alert): Severity {
 function inferCity(a: Alert): string | undefined {
   // naive: assume " • City" or trailing city word in title
   const parts = a.title.split('•');
-  if (parts.length > 1) return parts[1].trim().split(' ')[0];
+  if (parts.length > 1) return parts[1]?.trim().split(' ')[0];
   const words = a.title.split(',');
-  if (words.length > 1) return words[0].trim();
+  if (words.length > 1) return words[0]?.trim();
   return undefined;
 }
 
@@ -110,6 +110,7 @@ export const AlertCenter: React.FC<{ open: boolean; onClose: () => void; items: 
     } else if (!open && openerRef.current) {
       try { openerRef.current.focus(); } catch {}
     }
+    return undefined;
   }, [open]);
   if (!open) return null;
   return createPortal(

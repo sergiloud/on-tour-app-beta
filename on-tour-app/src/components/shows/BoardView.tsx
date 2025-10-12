@@ -1,124 +1,251 @@
-import React, { useMemo, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { DemoShow } from '../../lib/demoShows';
-import StatusBadge from '../../ui/StatusBadge';
-import { countryLabel } from '../../lib/countries';
-import { t } from '../../lib/i18n';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Show } from './SmartShowRow';
 
-type Props = {
-  rows: { s: DemoShow; net: number }[];
-  onOpen: (s: DemoShow) => void;
-  onPromote: (id: string) => void;
-  statusOn: Record<'confirmed'|'pending'|'offer', boolean>;
-  fmt: (n:number)=>string;
-  lang: 'en'|'es';
-};
+interface BoardColumn {
+  id: Show['status'];
+  title: string;
+  color: string;
+  shows: Show[];
+}
 
-const BoardView: React.FC<Props> = ({ rows, onOpen, onPromote, statusOn, fmt, lang }) => {
-  const byStatus: Record<'confirmed'|'pending'|'offer', { s: DemoShow; net: number }[]> = { confirmed: [], pending: [], offer: [] };
-  for (const r of rows) { (byStatus[r.s.status as 'confirmed'|'pending'|'offer']||byStatus.offer).push(r); }
-  const cols: Array<{ key: 'offer'|'pending'|'confirmed'; title: string; tone: string }> = [
-    { key: 'offer', title: t('shows.status.offer') || 'Offer', tone: 'bg-white/10' },
-    { key: 'pending', title: t('shows.status.pending') || 'Pending', tone: 'bg-yellow-500/25' },
-    { key: 'confirmed', title: t('shows.status.confirmed') || 'Confirmed', tone: 'bg-green-500/25' },
+interface BoardViewProps {
+  shows: Show[];
+  onShowMove: (showId: string, newStatus: Show['status']) => void;
+  onShowClick: (show: Show) => void;
+  onEdit: (show: Show) => void;
+  onViewTasks: (show: Show) => void;
+  onViewFinance: (show: Show) => void;
+}
+
+export const BoardView: React.FC<BoardViewProps> = ({
+  shows,
+  onShowMove,
+  onShowClick,
+  onEdit,
+  onViewTasks,
+  onViewFinance
+}) => {
+  const [draggedShow, setDraggedShow] = useState<Show | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<Show['status'] | null>(null);
+
+  const columns: BoardColumn[] = [
+    {
+      id: 'planned',
+      title: 'Planned',
+      color: 'border-slate-500 bg-slate-500/10',
+      shows: shows.filter(show => show.status === 'planned')
+    },
+    {
+      id: 'confirmed',
+      title: 'Confirmed',
+      color: 'border-blue-500 bg-blue-500/10',
+      shows: shows.filter(show => show.status === 'confirmed')
+    },
+    {
+      id: 'on_sale',
+      title: 'On Sale',
+      color: 'border-green-500 bg-green-500/10',
+      shows: shows.filter(show => show.status === 'on_sale')
+    },
+    {
+      id: 'upcoming',
+      title: 'Upcoming',
+      color: 'border-amber-500 bg-amber-500/10',
+      shows: shows.filter(show => show.status === 'upcoming')
+    },
+    {
+      id: 'completed',
+      title: 'Completed',
+      color: 'border-emerald-500 bg-emerald-500/10',
+      shows: shows.filter(show => show.status === 'completed')
+    }
   ];
-  const Column: React.FC<{ title: string; tone: string; items: { s: DemoShow; net: number }[]; enabled: boolean }>=({ title, tone, items, enabled })=>{
-    const shown = useMemo(()=> enabled ? items : [], [enabled, items]);
-    const sumFees = useMemo(()=> shown.reduce((acc, r) => acc + r.s.fee, 0), [shown]);
-    const sumNet = useMemo(()=> shown.reduce((acc, r) => acc + r.net, 0), [shown]);
-    const parentRef = useRef<HTMLDivElement|null>(null);
-    const useVirt = shown.length > 60; // window when many cards
-    const rowVirtualizer = useVirtualizer({
-      count: useVirt ? shown.length : 0,
-      getScrollElement: () => parentRef.current,
-      estimateSize: () => 96,
-      overscan: 10,
+
+  const handleDragStart = (show: Show) => {
+    setDraggedShow(show);
+  };
+
+  const handleDragEnd = () => {
+    if (draggedShow && dragOverColumn && draggedShow.status !== dragOverColumn) {
+      onShowMove(draggedShow.id, dragOverColumn);
+    }
+    setDraggedShow(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, columnId: Show['status']) => {
+    e.preventDefault();
+    setDragOverColumn(columnId);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
     });
-    return (
-      <div className="glass rounded-lg p-2 min-h-[200px] border border-white/10" role="region" aria-label={`${title} column`}>
-        <div className={`h-1 w-full rounded-t ${tone} mb-2`} />
-        <div className="flex items-center justify-between mb-1">
-          <div className="text-xs uppercase tracking-wide opacity-80">{title}</div>
-          <div className="text-[11px] opacity-70">{items.length}</div>
-        </div>
-        <div className="text-[11px] opacity-70 mb-2 flex items-center gap-3">
-          <div>{t('shows.totals.fees') || 'Fees'}: <span className="tabular-nums font-medium">{fmt(sumFees)}</span></div>
-          <div>{t('common.net') || 'Net'}: <span className="tabular-nums font-medium">{fmt(sumNet)}</span></div>
-          {useVirt && <div className="ml-auto italic opacity-60">{t('shows.virtualized.hint')||'Virtualized list active'}</div>}
-        </div>
-        {!useVirt && (
-          <div className="space-y-2 max-h-[70vh] overflow-auto" role="list" aria-label={`${title} list`} ref={parentRef}>
-            {shown.length === 0 && (
-              <div className="text-[12px] opacity-60 italic py-3 text-center">—</div>
-            )}
-            {shown.map(({ s, net }) => (
-              <div key={s.id} className="rounded-md border border-white/12 bg-white/5 p-2 motion-safe:transition focus:outline-none focus:ring-2 focus:ring-accent-500/60" role="listitem">
-                <div className="flex items-center justify-between">
-                  <div className="font-medium text-sm">{s.city}, {countryLabel(s.country, lang)}</div>
-                  <div className="text-xs opacity-70">{fmt(s.fee)}</div>
-                </div>
-                <div className="flex items-center justify-between text-xs opacity-80 mt-1">
-                  <div>{new Date(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
-                  <div>{t('common.net')||'Net'}: <span className="tabular-nums">{fmt(net)}</span></div>
-                </div>
-                {s.status!=='confirmed' && (
-                  <div className="mt-2 flex items-center gap-2 justify-end">
-                    <button type="button" className="text-[11px] underline opacity-80 hover:opacity-100" onClick={()=> onOpen(s)}>{t('shows.edit')||'Edit'}</button>
-                    <button type="button" className="text-[11px] underline opacity-80 hover:opacity-100" onClick={()=> onPromote(s.id)}>{t('shows.promote')||'Promote'}</button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-        {useVirt && (
-          <div className="max-h-[70vh] overflow-auto" role="list" aria-label={`${title} list`} ref={parentRef}>
-            {shown.length === 0 && (
-              <div className="text-[12px] opacity-60 italic py-3 text-center">—</div>
-            )}
-            <div className="relative" style={{ height: rowVirtualizer.getTotalSize() }}>
-              {rowVirtualizer.getVirtualItems().map(vItem => {
-                const { s, net } = shown[vItem.index]!;
-                return (
-                  <div
-                    key={s.id}
-                    role="listitem"
-                    className="absolute top-0 left-0 right-0 p-2"
-                    style={{ transform: `translateY(${vItem.start}px)` }}
-                  >
-                    <div className="rounded-md border border-white/12 bg-white/5 p-2 motion-safe:transition focus:outline-none focus:ring-2 focus:ring-accent-500/60">
-                      <div className="flex items-center justify-between">
-                        <div className="font-medium text-sm">{s.city}, {countryLabel(s.country, lang)}</div>
-                        <div className="text-xs opacity-70">{fmt(s.fee)}</div>
-                      </div>
-                      <div className="flex items-center justify-between text-xs opacity-80 mt-1">
-                        <div>{new Date(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
-                        <div>{t('common.net')||'Net'}: <span className="tabular-nums">{fmt(net)}</span></div>
-                      </div>
-                      {s.status!=='confirmed' && (
-                        <div className="mt-2 flex items-center gap-2 justify-end">
-                          <button type="button" className="text-[11px] underline opacity-80 hover:opacity-100" onClick={()=> onOpen(s)}>{t('shows.edit')||'Edit'}</button>
-                          <button type="button" className="text-[11px] underline opacity-80 hover:opacity-100" onClick={()=> onPromote(s.id)}>{t('shows.promote')||'Promote'}</button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    );
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      {cols.map(c => (
-        <Column key={c.key} title={c.title} tone={c.tone} items={(byStatus[c.key]||[])} enabled={statusOn[c.key]} />
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 h-full">
+      {columns.map((column, columnIndex) => (
+        <motion.div
+          key={column.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: columnIndex * 0.05 }}
+          className={`flex flex-col rounded-xl border-2 ${column.color} min-h-[600px]`}
+          onDragOver={(e) => handleDragOver(e, column.id)}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDragEnd}
+        >
+          {/* Column Header */}
+          <div className="p-4 border-b border-white/10">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">{column.title}</h3>
+              <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-medium text-white">
+                {column.shows.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Column Content */}
+          <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+            <AnimatePresence>
+              {column.shows.map((show, showIndex) => (
+                <motion.div
+                  key={show.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  draggable
+                  onDragStart={() => handleDragStart(show)}
+                  onClick={() => onShowClick(show)}
+                  className={`bg-white/5 hover:bg-white/10 rounded-lg p-4 border border-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer group relative ${
+                    draggedShow?.id === show.id ? 'opacity-50' : ''
+                  } ${
+                    dragOverColumn === column.id && draggedShow ? 'ring-2 ring-blue-500/50' : ''
+                  }`}
+                >
+                  {/* Health Indicator */}
+                  <div className={`w-2 h-8 rounded-full mb-3 ${
+                    show.priority === 'critical' ? 'bg-red-500' :
+                    show.priority === 'high' ? 'bg-amber-500' :
+                    show.ticketSalesPercentage < 50 ? 'bg-amber-500' :
+                    'bg-green-500'
+                  }`} />
+
+                  {/* Show Info */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-white text-sm leading-tight">
+                      {show.name}
+                    </h4>
+
+                    <div className="text-xs text-slate-400 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span>📅</span>
+                        <span>{formatDate(show.date)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span>📍</span>
+                        <span>{show.city}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span>🏟️</span>
+                        <span className="truncate">{show.venue}</span>
+                      </div>
+                    </div>
+
+                    {/* KPIs */}
+                    <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                      <div className="flex items-center gap-1 text-xs">
+                        <span>🎫</span>
+                        <span className="text-white font-medium">{show.ticketSalesPercentage}%</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <span>💰</span>
+                        <span className={`font-medium ${
+                          show.projectedMargin >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {show.projectedMargin >= 0 ? '+' : ''}{show.projectedMargin}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Task Progress */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs text-slate-400">
+                        <span>Tasks</span>
+                        <span>{show.tasksCompleted}/{show.totalTasks}</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-1">
+                        <div
+                          className={`h-1 rounded-full ${
+                            (show.tasksCompleted / show.totalTasks) === 1 ? 'bg-green-500' :
+                            (show.tasksCompleted / show.totalTasks) > 0.7 ? 'bg-blue-500' :
+                            (show.tasksCompleted / show.totalTasks) > 0.4 ? 'bg-amber-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${(show.tasksCompleted / show.totalTasks) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(show);
+                      }}
+                      className="p-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded text-xs"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewTasks(show);
+                      }}
+                      className="p-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded text-xs"
+                    >
+                      📋
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewFinance(show);
+                      }}
+                      className="p-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded text-xs"
+                    >
+                      💰
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Empty State */}
+            {column.shows.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-8 text-slate-400"
+              >
+                <div className="text-2xl mb-2">📭</div>
+                <div className="text-sm">No shows in {column.title.toLowerCase()}</div>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
       ))}
     </div>
   );
 };
-
-export default BoardView;

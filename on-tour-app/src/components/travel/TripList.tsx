@@ -3,6 +3,7 @@ import { listTrips, onTripsChanged, addSegment, createTrip } from '../../service
 import { t } from '../../lib/i18n';
 import QuickTripPicker from './QuickTripPicker';
 import type { FlightResult } from '../../features/travel/providers/types';
+import { can } from '../../lib/tenants';
 
 type Props = { onSelectTrip?: (id: string)=>void; activeTripId?: string|null };
 
@@ -30,14 +31,16 @@ export const TripList: React.FC<Props> = ({ onSelectTrip, activeTripId }) => {
 	const allowDrop = (e: React.DragEvent) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; };
 	const onDropOnTrip = (e: React.DragEvent, tripId: string) => {
 		e.preventDefault();
-		const r = parseDrag(e); setDropping(null);
+			const r = parseDrag(e); setDropping(null);
 		if (!r) return;
+			if (!can('travel:book')) return; // gated in read-only
 		addSegment(tripId, { type: 'flight', from: r.origin, to: r.dest, dep: r.dep, arr: r.arr, carrier: r.carrier, price: r.price, currency: (r.currency as any) });
 	};
 	const onDropCreate = (e: React.DragEvent) => {
 		e.preventDefault();
 		const r = parseDrag(e); setDropping(null);
 		if (!r) return;
+			if (!can('travel:book')) return; // gated in read-only
 		setPendingPayload(r);
 		setCreateOpen(true);
 	};

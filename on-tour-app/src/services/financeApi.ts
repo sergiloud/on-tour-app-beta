@@ -3,6 +3,8 @@
 
 import type { FinanceShow, FinanceSnapshot } from '../features/finance/types';
 import { buildFinanceSnapshotFromShows, buildFinanceSnapshot } from '../features/finance/snapshot';
+import { getCurrentOrgId } from '../lib/tenants';
+import { secureStorage } from '../lib/secureStorage';
 
 export type FinanceTargetsDTO = {
   yearNet: number;
@@ -18,7 +20,8 @@ export async function fetchShows(): Promise<FinanceShow[]> {
   // TODO: wire to backend
   // For now, mirror local store content as a placeholder
   const { showStore } = await import('../shared/showStore');
-  return showStore.getAll() as unknown as FinanceShow[];
+  const org = getCurrentOrgId();
+  return (showStore.getAll() as unknown as FinanceShow[]).filter((s: any) => !s.tenantId || s.tenantId === org);
 }
 
 // Fetch computed snapshot from server (authoritative), fallback to client build
@@ -40,9 +43,9 @@ const DEFAULT_TARGETS: FinanceTargetsDTO = {
 export async function fetchTargets(): Promise<FinanceTargetsDTO> {
   // TODO: GET /api/finance/targets
   try {
-    const raw = localStorage.getItem(TARGETS_LS_KEY);
-    if (raw) return { ...DEFAULT_TARGETS, ...JSON.parse(raw) } as FinanceTargetsDTO;
-  } catch {}
+    const stored = secureStorage.getItem<FinanceTargetsDTO>(TARGETS_LS_KEY);
+    if (stored) return { ...DEFAULT_TARGETS, ...stored };
+  } catch { }
   return DEFAULT_TARGETS;
 }
 
@@ -50,7 +53,7 @@ export async function updateTargetsApi(patch: Partial<FinanceTargetsDTO>): Promi
   // TODO: PATCH /api/finance/targets
   const current = await fetchTargets();
   const next = { ...current, ...patch } as FinanceTargetsDTO;
-  try { localStorage.setItem(TARGETS_LS_KEY, JSON.stringify(next)); } catch {}
+  try { secureStorage.setItem(TARGETS_LS_KEY, next); } catch { }
   return next;
 }
 
@@ -71,9 +74,11 @@ export function subscribeSnapshot(onEvent: (e: SnapshotEvent) => void): () => vo
     const mod = await import('../shared/showStore');
     const ss = mod.showStore;
     unsub = ss.subscribe((shows: FinanceShow[]) => {
-      const snap = buildFinanceSnapshotFromShows(shows, new Date());
+      const org = getCurrentOrgId();
+      const scoped = (shows as any[]).filter(s => !s.tenantId || s.tenantId === org);
+      const snap = buildFinanceSnapshotFromShows(scoped as FinanceShow[], new Date());
       onEvent({ type: 'snapshot.updated', payload: snap });
     });
   })();
-  return () => { try { unsub && unsub(); } catch {} };
+  return () => { try { unsub && unsub(); } catch { } };
 }

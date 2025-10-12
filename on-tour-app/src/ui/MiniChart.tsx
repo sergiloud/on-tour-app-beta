@@ -17,11 +17,22 @@ const toneStroke: Record<string,string> = {
 };
 
 export const MiniChart: React.FC<MiniChartProps> = React.memo(({ values, tone='accent', width=80, height=24, title, ariaLabel, mask }) => {
-  const safe = values.length ? values : [0];
+  // Guard against empty or single-point arrays to avoid division by zero (safe.length-1)
+  const safe = Array.isArray(values) && values.length > 0 ? values : [0, 0];
   const min = Math.min(...safe);
   const max = Math.max(...safe);
-  const norm = (v: number) => max===min ? 0.5 : (v - min) / (max - min);
-  const pts = safe.map((v, i) => `${(i/(safe.length-1))*(width-2)+1},${(1-norm(v))*(height-4)+2}`).join(' ');
+  const norm = (v: number) => (max === min) ? 0.5 : (v - min) / (max - min);
+  const denom = Math.max(1, safe.length - 1);
+  const innerW = Math.max(2, width - 2);
+  const innerH = Math.max(4, height - 4);
+  const pts = safe.map((v, i) => {
+    const x = (i / denom) * innerW + 1;
+    const y = (1 - norm(v)) * innerH + 2;
+    // Ensure finite numbers
+    const xf = Number.isFinite(x) ? x : 1;
+    const yf = Number.isFinite(y) ? y : height / 2;
+    return `${xf},${yf}`;
+  }).join(' ');
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label={ariaLabel} role="img">
       {title && <title>{title}</title>}

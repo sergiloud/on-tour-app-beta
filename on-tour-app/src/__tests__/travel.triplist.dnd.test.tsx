@@ -45,7 +45,7 @@ it('drops a flight onto a trip and adds a segment', async () => {
     </div>
   );
   const lists = await screen.findAllByRole('list');
-  const cardList = lists[0];
+  const cardList = lists[0]!;
   const card = cardList.firstChild as HTMLElement;
   const tripBtn = screen.getByRole('button', { name: /Test Trip/ });
 
@@ -72,7 +72,7 @@ it('drop on create new opens picker with default title', async () => {
     </div>
   );
   const lists = await screen.findAllByRole('list');
-  const cardList = lists[0];
+  const cardList = lists[0]!;
   const card = cardList.firstChild as HTMLElement;
   const dropzone = screen.getByRole('button', { name: /Drop here to create/ });
 

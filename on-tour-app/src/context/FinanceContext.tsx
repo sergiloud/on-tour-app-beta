@@ -7,6 +7,7 @@ import { fetchFinanceSnapshot, fetchTargets as fetchTargetsApi, updateTargetsApi
 import { useSettings } from './SettingsContext';
 import { isInRegion } from '../lib/geo';
 import { trackEvent } from '../lib/telemetry';
+import { secureStorage } from '../lib/secureStorage';
 
 type FinanceContextValue = {
   snapshot: FinanceSnapshot;
@@ -60,9 +61,9 @@ const DEFAULT_TARGETS: FinanceTargets = {
 
 function loadTargets(): FinanceTargets {
   try {
-    const raw = localStorage.getItem(TARGETS_LS_KEY);
-    if (raw) return { ...DEFAULT_TARGETS, ...JSON.parse(raw) } as FinanceTargets;
-  } catch {}
+    const stored = secureStorage.getItem<FinanceTargets>(TARGETS_LS_KEY);
+    if (stored) return { ...DEFAULT_TARGETS, ...stored };
+  } catch { }
   return DEFAULT_TARGETS;
 }
 
@@ -126,8 +127,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const from = new Date(dateRange.from + 'T00:00:00');
       const to = new Date(dateRange.to + 'T23:59:59.999');
       const lenMs = Math.max(0, to.getTime() - from.getTime());
-      const prevFrom = new Date(from.getTime() - (lenMs + 24*60*60*1000)); // shift back inclusive by 1 day
-      const prevTo = new Date(to.getTime() - (lenMs + 24*60*60*1000));
+      const prevFrom = new Date(from.getTime() - (lenMs + 24 * 60 * 60 * 1000)); // shift back inclusive by 1 day
+      const prevTo = new Date(to.getTime() - (lenMs + 24 * 60 * 60 * 1000));
       const pf = prevFrom.getTime();
       const pt = prevTo.getTime();
       const shows = (baseSnapshot.shows as FinanceShow[]).filter(s => {
@@ -153,7 +154,24 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     aging: selectARAgingV2(snapshot)
   }), [snapshot]);
 
-  const value: FinanceContextValue = {
+  // Memoize updateTargets and refresh to maintain stable references
+  const updateTargetsMemo = React.useCallback((patch: Partial<FinanceTargets>) => {
+    setTargets(prev => {
+      const next = { ...prev, ...patch };
+      try { secureStorage.setItem(TARGETS_LS_KEY, next); } catch { }
+      try { trackEvent('finance.targets.update', patch as any); } catch { }
+      return next;
+    });
+    updateTargetsApi(patch).catch(() => { });
+  }, []);
+
+  const refreshMemo = React.useCallback(() => {
+    setLoading(true);
+    fetchFinanceSnapshot(new Date()).then(s => setBaseSnapshot(s)).finally(() => setLoading(false));
+  }, []);
+
+  // Memoize entire context value to prevent cascading re-renders
+  const value: FinanceContextValue = useMemo(() => ({
     snapshot,
     kpis,
     netSeries,
@@ -162,23 +180,26 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     compareMonthlySeries,
     thisMonth,
     statusBreakdown,
-  loading,
+    loading,
     targets,
-    updateTargets: (patch) => {
-      setTargets(prev => {
-        const next = { ...prev, ...patch };
-        try { localStorage.setItem(TARGETS_LS_KEY, JSON.stringify(next)); } catch {}
-        try { trackEvent('finance.targets.update', patch as any); } catch {}
-        return next;
-      });
-      updateTargetsApi(patch).catch(()=>{});
-    },
-  v2,
-  refresh: () => {
-      setLoading(true);
-      fetchFinanceSnapshot(new Date()).then(s => setBaseSnapshot(s)).finally(()=>setLoading(false));
-    },
-  };
+    updateTargets: updateTargetsMemo,
+    v2,
+    refresh: refreshMemo,
+  }), [
+    snapshot,
+    kpis,
+    netSeries,
+    monthlySeries,
+    compareSnapshot,
+    compareMonthlySeries,
+    thisMonth,
+    statusBreakdown,
+    loading,
+    targets,
+    updateTargetsMemo,
+    v2,
+    refreshMemo
+  ]);
 
   // Hydrate targets from API on mount (backed by localStorage in dev)
   useEffect(() => {
@@ -194,7 +215,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         incomeMonth: dto.incomeMonth,
         costsMonth: dto.costsMonth,
       });
-    }).catch(()=>{});
+    }).catch(() => { });
     return () => { mounted = false; };
   }, []);
 

@@ -9,7 +9,7 @@ export function toCurrency(amount: number, from: string, to: string, rates: FXRa
   // Then EUR -> target: * rates[target]
   const fromRate = rates[from] || 1;
   const toRate = rates[to] || 1;
-  const eur = amount / fromRate;
+  const eur = fromRate !== 0 ? amount / fromRate : amount;
   return eur * toRate;
 }
 
@@ -23,5 +23,5 @@ export function sumTripCosts(trip: Trip, currency: string, rates: FXRateMap): { 
     total += val;
     byCategory[c.category] = (byCategory[c.category] || 0) + val;
   }
-  return { total: Math.round(total), byCategory: Object.fromEntries(Object.entries(byCategory).map(([k,v])=>[k, Math.round(v)])) };
+  return { total: Math.round(total), byCategory: Object.fromEntries(Object.entries(byCategory).map(([k, v]) => [k, Math.round(v)])) };
 }

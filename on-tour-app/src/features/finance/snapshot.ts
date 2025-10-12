@@ -1,5 +1,10 @@
 import { showStore } from '../../shared/showStore';
+import { getCurrentOrgId } from '../../lib/tenants';
 import type { FinanceSnapshot, FinanceShow, BreakdownEntry, MarginBreakdown, ForecastPoint } from './types';
+import { agenciesForShow, computeCommission } from '../../lib/agencies';
+import { loadSettings } from '../../lib/persist';
+import type { Show } from '../../lib/shows';
+import { convertToBase, sumFees, type SupportedCurrency } from '../../lib/fx';
 
 // Previously applied a 45% heuristic cost. For the curated dataset we want net === fee unless explicit costs are provided.
 const EXPENSE_RATE = 0; // effectively disabled heuristic
@@ -19,9 +24,57 @@ export function buildFinanceSnapshotFromShows(shows: FinanceShow[], now = new Da
   });
   const inYear = shows.filter(s => new Date(s.date).getFullYear() === now.getFullYear());
 
-  const sumIncome = (list: FinanceShow[]) => list.reduce((acc, s) => acc + (s.status !== 'offer' ? s.fee : 0), 0);
-  // Expense now only counts if an explicit cost field is provided; otherwise zero so net = fee.
-  const showCost = (s: FinanceShow) => s.status !== 'offer' ? (typeof s.cost === 'number' ? s.cost : 0) : 0;
+  // Load agencies from settings
+  const settings = loadSettings() as any;
+  const bookingAgencies = settings.bookingAgencies || [];
+  const managementAgencies = settings.managementAgencies || [];
+  const baseCurrency = (settings.currency || 'EUR') as SupportedCurrency;
+
+  // FIXED: Currency mixing - using centralized sumFees function
+  const sumIncome = (list: FinanceShow[]) => sumFees(list, baseCurrency);
+
+  // Calculate show cost including explicit costs AND agency commissions
+  const showCost = (s: FinanceShow) => {
+    if (s.status === 'offer') return 0;
+
+    let totalCost = 0;
+
+    // Add explicit cost if provided
+    if (typeof s.cost === 'number') {
+      totalCost += s.cost;
+    }
+
+    // Add agency commissions
+    try {
+      // Convert FinanceShow to DemoShow format for agency calculations
+      const demoShow: Show = {
+        id: s.id,
+        name: s.name || '',
+        city: s.city,
+        country: s.country,
+        lat: s.lat,
+        lng: s.lng,
+        date: s.date,
+        fee: s.fee,
+        status: s.status
+      };
+
+      // Get applicable agencies for this show
+      const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);
+      const allAgencies = [...applicable.booking, ...applicable.management];
+
+      // Calculate total agency commissions
+      if (allAgencies.length > 0) {
+        const agencyCommission = computeCommission(demoShow, allAgencies);
+        totalCost += agencyCommission;
+      }
+    } catch (e) {
+      console.error('[snapshot] Error calculating agency commission:', e);
+    }
+
+    return totalCost;
+  };
+
   const sumExpenses = (list: FinanceShow[]) => list.reduce((acc, s) => acc + showCost(s), 0);
 
   const monthIncome = sumIncome(inMonth);
@@ -29,14 +82,26 @@ export function buildFinanceSnapshotFromShows(shows: FinanceShow[], now = new Da
   const yearIncome = sumIncome(inYear);
   const yearExpenses = sumExpenses(inYear);
 
-  const pending = shows.filter(s => s.status === 'pending').reduce((acc, s) => acc + s.fee, 0);
+  const pending = sumFees(shows.filter(s => s.status === 'pending'), baseCurrency);
 
   // Margin breakdown utilities
   const groupBy = <K extends keyof FinanceShow>(key: K, list: FinanceShow[]): BreakdownEntry[] => {
     const map = new Map<string, BreakdownEntry>();
     for (const s of list) {
       const k = (s[key] as unknown as string) || '—';
-      const income = s.status !== 'offer' ? s.fee : 0;
+
+      // FIXED: Convert fee to base currency before adding to breakdown
+      let income = 0;
+      if (s.status !== 'offer') {
+        const feeCurrency = (s.feeCurrency || 'EUR') as SupportedCurrency;
+        if (feeCurrency === baseCurrency) {
+          income = s.fee;
+        } else {
+          const converted = convertToBase(s.fee, s.date, feeCurrency, baseCurrency);
+          income = converted?.value || s.fee;
+        }
+      }
+
       const expenses = showCost(s);
       const entry = map.get(k) || { key: k, income: 0, expenses: 0, net: 0, count: 0 };
       entry.income += income;
@@ -45,7 +110,7 @@ export function buildFinanceSnapshotFromShows(shows: FinanceShow[], now = new Da
       entry.count += 1;
       map.set(k, entry);
     }
-    return Array.from(map.values()).sort((a,b)=> b.net - a.net);
+    return Array.from(map.values()).sort((a, b) => b.net - a.net);
   };
 
   const breakdown: MarginBreakdown = {
@@ -54,7 +119,9 @@ export function buildFinanceSnapshotFromShows(shows: FinanceShow[], now = new Da
     byPromoter: groupBy('promoter', inYear)
   };
 
-  // Simple forecast placeholder: next 6 months projecting flat net from current month
+  // ⚠️ FORECAST PLACEHOLDER: Simple projection replicating current month
+  // WARNING: This is NOT a real forecast model - for demo/visualization only
+  // DO NOT use for business decisions - implement proper forecasting before production
   const next: ForecastPoint[] = Array.from({ length: 6 }, (_, i) => {
     const d2 = new Date(now);
     d2.setMonth(d2.getMonth() + i + 1);
@@ -89,6 +156,7 @@ export function buildFinanceSnapshotFromShows(shows: FinanceShow[], now = new Da
 }
 
 export function buildFinanceSnapshot(now = new Date()): FinanceSnapshot {
-  const shows = showStore.getAll() as unknown as FinanceShow[];
+  const org = getCurrentOrgId();
+  const shows = (showStore.getAll() as unknown as FinanceShow[]).filter((s: any) => !s.tenantId || s.tenantId === org);
   return buildFinanceSnapshotFromShows(shows, now);
 }

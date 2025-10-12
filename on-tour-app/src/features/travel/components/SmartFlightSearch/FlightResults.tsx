@@ -15,8 +15,18 @@ export const FlightResults: React.FC<{ results: FlightResult[]; onAdd: (r: Fligh
   };
   return (
     <div role="list" className="space-y-2">
-      {results.map(r=> (
-        <div key={r.id} draggable onDragStart={(e)=> onDragStart(e, r)} aria-grabbed={false}>
+      {results.map((r, index)=> (
+        <div 
+          key={r.id} 
+          draggable 
+          onDragStart={(e)=> onDragStart(e, r)} 
+          aria-grabbed={false}
+          className="opacity-0 animate-fade-in-up"
+          style={{ 
+            animationDelay: `${index * 50}ms`,
+            animationFillMode: 'forwards'
+          }}
+        >
           <FlightResultCard r={r} onAdd={onAdd} onPin={onPin} pinned={pinnedIds?.has(r.id)} />
         </div>
       ))}

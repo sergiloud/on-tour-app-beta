@@ -3,6 +3,7 @@ import type { FlightResult } from '../../../travel/providers/types';
 import { t } from '../../../../lib/i18n';
 import { useSettings } from '../../../../context/SettingsContext';
 import { Button } from '../../../../ui/Button';
+import GuardedAction from '../../../../components/common/GuardedAction';
 
 export const PinnedDrawer: React.FC<{
   items: FlightResult[];
@@ -12,6 +13,13 @@ export const PinnedDrawer: React.FC<{
   const { fmtMoney } = useSettings();
   if (!items.length) return null;
   const [open, setOpen] = React.useState(false);
+  const [justAdded, setJustAdded] = React.useState<string | null>(null);
+
+  const handleAdd = (r: FlightResult) => {
+    onAdd(r);
+    setJustAdded(r.id);
+    setTimeout(() => setJustAdded(null), 1000);
+  };
 
   // Floating Action Button (FAB) to show comparison
   if (!open) {
@@ -43,14 +51,20 @@ export const PinnedDrawer: React.FC<{
           </thead>
           <tbody>
             {items.map(r => (
-              <tr key={r.id} className="border-t border-white/10 hover:bg-white/5">
+              <tr key={r.id} className={`border-t border-white/10 hover:bg-white/5 transition-colors ${justAdded === r.id ? 'bg-green-500/10 animate-pulse' : ''}`}>
                 <td className="py-1 pr-2 whitespace-nowrap">{r.origin}→{r.dest}</td>
                 <td className="py-1 pr-2 whitespace-nowrap">{new Date(r.dep).toLocaleDateString(undefined, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
                 <td className="py-1 pr-2">{r.stops===0 ? (t('travel.flight_card.nonstop')||'nonstop') : `${r.stops} ${r.stops===1?(t('travel.flight_card.stop')||'stop'):(t('travel.flight_card.stops')||'stops')}`}</td>
                 <td className="py-1 pr-2 whitespace-nowrap">{fmtMoney(r.price)}</td>
                 <td className="py-1 pr-2">
                   <div className="flex gap-2">
-                    <Button size="sm" variant="soft" onClick={()=> onAdd(r)}>{t('travel.add_to_trip')||'Add to trip'}</Button>
+                    <GuardedAction
+                      scope="travel:book"
+                      className="relative inline-flex items-center justify-center font-semibold rounded-full focus-ring motion-safe:transition disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98] text-[11px] px-3 py-1.5 bg-white/8 hover:bg-white/12 text-white/90"
+                      onClick={()=> handleAdd(r)}
+                    >
+                      {t('travel.add_to_trip')||'Add to trip'}
+                    </GuardedAction>
                     <Button size="sm" variant="ghost" onClick={()=> onUnpin(r.id)}>{t('travel.unpin')||'Unpin'}</Button>
                   </div>
                 </td>

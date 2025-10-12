@@ -111,14 +111,14 @@ const WeekGrid: React.FC<Props> = ({ weekStart, eventsByDay, tz, onOpen }) => {
                 const weekEv = items.find(it=> it.id===l.id)!;
                 return (
                   <div key={l.id} className="absolute px-1" style={{ top: `calc(${top}% + 2rem)`, height: `calc(${height}% - 2px)`, left: `${left}%`, width: `${width}%` }}>
-                    <EventChip title={weekEv.title} kind={weekEv.kind} status={weekEv.status} city={weekEv.kind==='show' ? weekEv.title.split(',')[0] : undefined} startIso={weekEv.start} endIso={weekEv.end} />
+                    <EventChip title={weekEv.title} kind={weekEv.kind} status={weekEv.status} city={weekEv.kind==='show' ? weekEv.title.split(',')[0] : undefined} startIso={weekEv.start} endIso={weekEv.end} meta={weekEv.meta} />
                   </div>
                 );
               })}
               {/* all-day events row */}
               <div className="px-2 py-1 space-y-1">
                 {items.filter(e=> e.allDay || !e.start || !e.end).map(ev => (
-                  <EventChip key={ev.id} title={ev.title} kind={ev.kind} status={ev.status} city={ev.kind==='show' ? ev.title.split(',')[0] : undefined} onClick={()=> onOpen(ev)} />
+                  <EventChip key={ev.id} title={ev.title} kind={ev.kind} status={ev.status} city={ev.kind==='show' ? ev.title.split(',')[0] : undefined} onClick={()=> onOpen(ev)} meta={ev.meta} />
                 ))}
               </div>
             </div>

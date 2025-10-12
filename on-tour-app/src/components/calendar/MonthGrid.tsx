@@ -5,7 +5,9 @@ import StatusBadge from '../../ui/StatusBadge';
 import EventChip from './EventChip';
 import MorePopover from './MorePopover';
 import QuickAdd from './QuickAdd';
+import ContextMenu from './ContextMenu';
 import { trackEvent } from '../../lib/telemetry';
+import { useShows } from '../../hooks/useShows';
 import type { CalEvent } from './types';
 
 type Props = {
@@ -22,11 +24,14 @@ type Props = {
   onQuickAdd?: (dateStr: string) => void; // request to open quick add at date
   onQuickAddSave?: (dateStr: string, data: { city: string; country: string; fee?: number }) => void;
   ariaDescribedBy?: string; // id of hidden hint text
+  heatmapMode?: 'none'|'financial'|'activity';
+  shows?: Array<{ id: string; date: string; fee: number; status: string }>; // Add shows for financial calculations
 };
 
 const weekdays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, setSelectedDay, onOpen, locale = 'en-US', tz, onOpenDay, onMoveShow, onQuickAdd, onQuickAddSave, ariaDescribedBy }) => {
+const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, setSelectedDay, onOpen, locale = 'en-US', tz, onOpenDay, onMoveShow, onQuickAdd, onQuickAddSave, ariaDescribedBy, heatmapMode = 'none', shows = [] }) => {
+  const { shows: allShows } = useShows();
   const gridRef = useRef<HTMLDivElement|null>(null);
   const [moreOpen, setMoreOpen] = React.useState(false);
   const [moreList, setMoreList] = React.useState<CalEvent[]>([]);
@@ -35,6 +40,19 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
   const [dragOverDay, setDragOverDay] = React.useState<string>('');
   const [kbdDragFrom, setKbdDragFrom] = React.useState<string>('');
   const dragImgRef = React.useRef<HTMLDivElement|null>(null);
+  const [isSelecting, setIsSelecting] = React.useState(false);
+  const [selectionStart, setSelectionStart] = React.useState<string>('');
+  const [selectionEnd, setSelectionEnd] = React.useState<string>('');
+  const [dragStart, setDragStart] = React.useState<string>('');
+  
+  // Context menu state
+  const [contextMenu, setContextMenu] = React.useState<{
+    x: number;
+    y: number;
+    dateStr: string;
+    events: CalEvent[];
+  } | null>(null);
+
   useEffect(()=>{
     const root = gridRef.current; if (!root) return;
     const onKey = (e: KeyboardEvent) => {
@@ -126,6 +144,96 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
     return () => root.removeEventListener('keydown', onKey);
   }, [gridRef.current]);
 
+  // Context menu handler
+  const handleContextMenu = (e: React.MouseEvent, dateStr: string) => {
+    e.preventDefault();
+    const events = eventsByDay.get(dateStr) || [];
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      dateStr,
+      events
+    });
+  };
+
+  // Generate context menu items
+  const getContextMenuItems = (dateStr: string, events: CalEvent[]) => {
+    const items = [];
+
+    // Add show option
+    items.push({
+      label: t('calendar.context.addShow') || 'Add Show',
+      icon: '🎵',
+      action: () => {
+        setQaDay(dateStr);
+        setSelectionStart('');
+        setSelectionEnd('');
+      }
+    });
+
+    // Add travel option
+    items.push({
+      label: t('calendar.context.addTravel') || 'Plan Travel',
+      icon: '✈️',
+      action: () => {
+        // For now, just open quick add - could be extended to open travel planning
+        setQaDay(dateStr);
+        setSelectionStart('');
+        setSelectionEnd('');
+      }
+    });
+
+    // Separator if there are events
+    if (events.length > 0) {
+      items.push({ separator: true } as any);
+    }
+
+    // Event-specific actions
+    events.forEach(event => {
+      if (event.kind === 'show') {
+        items.push({
+          label: `${t('calendar.context.edit') || 'Edit'} ${event.title}`,
+          icon: '✏️',
+          action: () => onOpen(event)
+        });
+
+        items.push({
+          label: `${t('calendar.context.duplicate') || 'Duplicate'} ${event.title}`,
+          icon: '📋',
+          action: () => {
+            // Find the show and duplicate it
+            const show = allShows.find(s => `show:${s.id}` === event.id);
+            if (show && onQuickAddSave) {
+              onQuickAddSave(dateStr, {
+                city: show.city,
+                country: show.country,
+                fee: show.fee
+              });
+            }
+          }
+        });
+      } else if (event.kind === 'travel') {
+        items.push({
+          label: `${t('calendar.context.edit') || 'Edit'} ${event.title}`,
+          icon: '✏️',
+          action: () => onOpen(event)
+        });
+      }
+    });
+
+    // Day navigation
+    items.push({ separator: true } as any);
+    items.push({
+      label: t('calendar.context.viewDay') || 'View Day',
+      icon: '📅',
+      action: () => {
+        if (onOpenDay) onOpenDay(dateStr);
+      }
+    });
+
+    return items;
+  };
+
   return (
     <div className="glass rounded-xl overflow-hidden border border-white/10">
       <div className="grid grid-cols-7 text-[11px] uppercase tracking-wide border-b border-white/10 py-1.5 px-2 sticky top-0 bg-ink-900/30 backdrop-blur supports-[backdrop-filter]:bg-ink-900/25">
@@ -165,6 +273,7 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
                     }
                     setDragOverDay('');
                   }}
+                  onContextMenu={(e) => handleContextMenu(e, cell.dateStr)} // Add context menu handler
                 >
                   <div className="flex items-start justify-between">
                     <button
@@ -244,6 +353,14 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
         onOpenDay={()=>{ if (onOpenDay && moreDay) onOpenDay(moreDay); }}
         dayLabel={moreDay ? new Date(moreDay).toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric', timeZone: tz }) : undefined}
       />
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={getContextMenuItems(contextMenu.dateStr, contextMenu.events)}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 };

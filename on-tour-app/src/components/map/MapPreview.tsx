@@ -27,12 +27,15 @@ function project(lat: number, lng: number) {
 
 export const MapPreview: React.FC<MapPreviewProps> = ({
   center = { lat: 0, lng: 0 },
-  markers = [],
+  markers,
   onMarkerClick,
   className = '',
   decorative = false,
   reduceMotion = false
 }) => {
+  // Use a stable empty array to avoid effects re-running on every render when markers prop is omitted
+  const EMPTY_MARKERS = useRef<ReadonlyArray<MapMarker>>([]);
+  const safeMarkers = markers ?? (EMPTY_MARKERS.current as MapMarker[]);
   const ariaProps = decorative
     ? { 'aria-hidden': true }
     : { role: 'group', 'aria-label': 'Tour map preview with markers' };
@@ -42,13 +45,16 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
   const { highContrast } = useHighContrast();
   const [focusedId, setFocusedId] = useState<string | null>(null);
   useEffect(() => {
+    let mq: MediaQueryList | undefined;
+    const onChange = () => setPrefersRM(!!mq?.matches);
     try {
-      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-      const onChange = () => setPrefersRM(!!mq.matches);
+      mq = window.matchMedia('(prefers-reduced-motion: reduce)');
       onChange();
       mq.addEventListener('change', onChange);
-      return () => mq.removeEventListener('change', onChange);
-    } catch {}
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[MapPreview] matchMedia unavailable', err);
+    }
+    return () => { try { mq?.removeEventListener('change', onChange); } catch {} };
   }, []);
   const effectiveRM = reduceMotion || prefersRM;
   const [travelT, setTravelT] = useState(0); // 0..1 travel progress along route
@@ -60,18 +66,18 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
-    return () => { try { cancelAnimationFrame(raf); } catch {} };
+  return () => { try { cancelAnimationFrame(raf); } catch (err) { if (process.env.NODE_ENV !== 'production') console.warn('[MapPreview] cancelAnimationFrame failed', err); } };
   }, [effectiveRM]);
 
   // Route polyline points (in given order)
   const routePoints = useMemo(() => {
-    if (!markers.length) return '';
-    const pts = markers.map(m => {
+    if (!safeMarkers.length) return '';
+    const pts = safeMarkers.map(m => {
       const { x, y } = project(m.lat, m.lng);
       return `${x * 100},${y * 56}`;
     });
     return pts.join(' ');
-  }, [markers]);
+  }, [safeMarkers]);
 
   // Simple geodesic arc generator between two lat/lng points using great-circle sampling
   function arcPath(a: { lat:number; lng:number }, b:{ lat:number; lng:number }, samples = 24) {
@@ -102,55 +108,68 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
   const [routeSamples, setRouteSamples] = useState<Array<{x:number;y:number}>>([]);
   const workerRef = useRef<Worker|null>(null);
   useEffect(() => {
-    if (markers.length < 2) { setRouteSamples([]); return; }
-    // For small sets, compute inline to avoid worker overhead
-    if (markers.length <= 8) {
+    let cleanup: (() => void) | undefined;
+    // When fewer than 2 markers, ensure we only update state if needed to avoid render loops
+    if (safeMarkers.length < 2) {
+      setRouteSamples(prev => (prev.length ? [] : prev));
+    } else if (safeMarkers.length <= 8) {
+      // For small sets, compute inline to avoid worker overhead
       const pts: Array<{x:number;y:number}> = [];
-      for (let i=0;i<markers.length-1;i++){
-        const d = arcPath({ lat:markers[i].lat, lng:markers[i].lng }, { lat:markers[i+1].lat, lng:markers[i+1].lng }, 28);
+      for (let i=0;i<safeMarkers.length-1;i++){
+        const curr = safeMarkers[i]!;
+        const next = safeMarkers[i+1]!;
+        const d = arcPath({ lat:curr.lat, lng:curr.lng }, { lat:next.lat, lng:next.lng }, 28);
         if (!d) continue;
         const segs = d.replace(/^M/,'').split('L');
         for (const s of segs){
-          const [sx, sy] = s.split(',').map(Number);
+          const parts = s.split(',');
+          const sx = Number(parts[0]);
+          const sy = Number(parts[1]);
           if (Number.isFinite(sx) && Number.isFinite(sy)) pts.push({ x:sx, y:sy });
         }
       }
       setRouteSamples(pts);
-      return;
-    }
-    // Larger sets: offload to worker
-    try {
-      if (!workerRef.current) {
-        workerRef.current = new Worker(new URL('../../workers/routeSampleWorker.ts', import.meta.url), { type: 'module' });
-      }
-      const w = workerRef.current;
-      const onMsg = (ev: MessageEvent) => {
-        if (ev.data && ev.data.type === 'result') setRouteSamples(ev.data.points || []);
-      };
-      w.addEventListener('message', onMsg);
-      w.postMessage({ type:'compute', markers });
-      return () => { try { w.removeEventListener('message', onMsg); } catch {} };
-    } catch {
-      // Fallback inline if worker fails
-      const pts: Array<{x:number;y:number}> = [];
-      for (let i=0;i<markers.length-1;i++){
-        const d = arcPath({ lat:markers[i].lat, lng:markers[i].lng }, { lat:markers[i+1].lat, lng:markers[i+1].lng }, 28);
-        if (!d) continue;
-        const segs = d.replace(/^M/,'').split('L');
-        for (const s of segs){
-          const [sx, sy] = s.split(',').map(Number);
-          if (Number.isFinite(sx) && Number.isFinite(sy)) pts.push({ x:sx, y:sy });
+    } else {
+      // Larger sets: offload to worker
+      try {
+        if (!workerRef.current) {
+          workerRef.current = new Worker(new URL('../../workers/routeSampleWorker.ts', import.meta.url), { type: 'module' });
         }
+        const w = workerRef.current;
+        const onMsg = (ev: MessageEvent) => {
+          if (ev.data && ev.data.type === 'result') setRouteSamples(ev.data.points || []);
+        };
+        w.addEventListener('message', onMsg);
+        w.postMessage({ type:'compute', markers: safeMarkers });
+        cleanup = () => { try { w.removeEventListener('message', onMsg); } catch (err) { if (process.env.NODE_ENV !== 'production') console.warn('[MapPreview] worker cleanup failed', err); } };
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'production') console.warn('[MapPreview] worker fallback engaged', err);
+        // Fallback inline if worker fails
+        const pts: Array<{x:number;y:number}> = [];
+        for (let i=0;i<safeMarkers.length-1;i++){
+          const curr = safeMarkers[i]!;
+          const next = safeMarkers[i+1]!;
+          const d = arcPath({ lat:curr.lat, lng:curr.lng }, { lat:next.lat, lng:next.lng }, 28);
+          if (!d) continue;
+          const segs = d.replace(/^M/,'').split('L');
+          for (const s of segs){
+            const parts = s.split(',');
+            const sx = Number(parts[0]);
+            const sy = Number(parts[1]);
+            if (Number.isFinite(sx) && Number.isFinite(sy)) pts.push({ x:sx, y:sy });
+          }
+        }
+        setRouteSamples(pts);
       }
-      setRouteSamples(pts);
     }
-  }, [markers]);
+    return cleanup;
+  }, [safeMarkers]);
 
   // Light clustering when there are many markers
   const { renderClusters, clusters } = useMemo(() => {
-    const max = markers.length;
+    const max = safeMarkers.length;
     if (max <= 12) return { renderClusters:false, clusters: [] as any[] };
-    const projected = markers.map(m => ({ m, ...project(m.lat, m.lng) }));
+    const projected = safeMarkers.map(m => ({ m, ...project(m.lat, m.lng) }));
     const R = Math.min(6, 2 + Math.floor(max/10)); // 2..6 units threshold
     const acc: Array<{ x:number; y:number; ids:string[]; labels:string[]; count:number; accent:boolean }>=[];
     for (const p of projected){
@@ -174,7 +193,7 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
       if (!merged) acc.push({ x:px, y:py, ids:[p.m.id], labels:[p.m.label], count:1, accent: !!p.m.accent });
     }
     return { renderClusters:true, clusters: acc };
-  }, [markers]);
+  }, [safeMarkers]);
 
   return (
     <div
@@ -233,19 +252,31 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
           );
         })()}
         {/* Route connecting markers (optional if >= 2 points); hide when clustering is on */}
-        {!renderClusters && markers.length > 1 && (
+        {!renderClusters && safeMarkers.length > 1 && (
           <>
-            {markers.slice(0, -1).map((m, i) => {
-              const n = markers[i+1];
+            {safeMarkers.slice(0, -1).map((m, i) => {
+              const n = safeMarkers[i+1]!;
               const d = arcPath({ lat:m.lat, lng:m.lng }, { lat:n.lat, lng:n.lng }, 28);
               if (!d) return null;
               return (
-                <path key={m.id+'=>'+n.id} d={d} fill="none" stroke="url(#routegrad)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                <path 
+                  key={m.id+'=>'+n.id} 
+                  d={d} 
+                  fill="none" 
+                  stroke="url(#routegrad)" 
+                  strokeWidth={1.5} 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className={effectiveRM ? '' : 'route-draw'}
+                  style={{ 
+                    strokeDasharray: effectiveRM ? 'none' : '1000'
+                  }}
+                />
               );
             })}
           </>
         )}
-        {!renderClusters && markers.map(m => {
+        {!renderClusters && safeMarkers.map(m => {
           const { x, y } = project(m.lat, m.lng);
           // compute an approximate width for label based on char count for better wrapping
           const charW = 2.2; // px at this SVG scale
@@ -302,7 +333,8 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
         {!renderClusters && !effectiveRM && routeSamples.length>1 && (
           (() => {
             const idx = Math.floor(travelT * (routeSamples.length-1));
-            const p = routeSamples[idx];
+            const p = routeSamples[idx] ?? routeSamples[routeSamples.length-1];
+            if (!p) return null;
             return <circle cx={p.x} cy={p.y} r={1.4} fill="var(--accent-500)" fillOpacity={0.95} stroke="black" strokeWidth={0.3} />
           })()
         )}

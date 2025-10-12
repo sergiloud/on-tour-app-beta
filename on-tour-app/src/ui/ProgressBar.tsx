@@ -20,12 +20,12 @@ const toneMap: Record<string,{bg:string;grad:string}> = {
 export const ProgressBar: React.FC<ProgressBarProps> = ({ value, tone='accent', height='xs', showValue=false, label, className, ...rest }) => {
   const pct = Math.min(1, Math.max(0, value));
   const h = height==='md' ? 'h-3' : height==='sm' ? 'h-2' : 'h-1.5';
-  const toneDef = toneMap[tone];
+  const toneDef = toneMap[tone] ?? toneMap['accent'];
   return (
     <div className={clsx('w-full flex flex-col gap-1', className)} {...rest}>
       {label && <span className="text-[10px] uppercase tracking-wide opacity-70" aria-hidden>{label}</span>}
-      <div className={clsx('w-full rounded-full overflow-hidden', toneDef.bg, h)} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct*100)} aria-label={label||'progress'}>
-        <div className={clsx('h-full bg-gradient-to-r transition-all duration-700', toneDef.grad)} style={{ width: `${Math.max(pct*100,4)}%` }} />
+      <div className={clsx('w-full rounded-full overflow-hidden', toneDef!.bg, h)} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct*100)} aria-label={label||'progress'}>
+        <div className={clsx('h-full bg-gradient-to-r transition-all duration-700', toneDef!.grad)} style={{ width: `${Math.max(pct*100,4)}%` }} />
       </div>
       {showValue && <span className="text-[10px] tabular-nums opacity-70">{Math.round(pct*100)}%</span>}
     </div>

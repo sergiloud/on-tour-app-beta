@@ -7,6 +7,7 @@ export type ShowsPrefs = {
   totalsVisible?: boolean;
   totalsPinned?: boolean; // pin the floating totals bar (prevents auto-hide positioning changes)
   whtVisible?: boolean; // visibility of WHT % column
+  filtersCollapsed?: boolean; // collapse the filters section for less visual density
   dateRange?: { from: string; to: string };
   region?: 'all'|'AMER'|'EMEA'|'APAC';
   feeRange?: { min?: number; max?: number };

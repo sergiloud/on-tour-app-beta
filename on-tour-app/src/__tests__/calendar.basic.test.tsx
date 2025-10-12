@@ -35,7 +35,7 @@ describe('Calendar basic interactions', () => {
     // Focus the first focusable calendar cell button
     const cells = screen.getAllByRole('button').filter(b => b.getAttribute('data-cal-cell') === '1');
     if (cells.length === 0) return;
-    const first = cells[0];
+    const first = cells[0]!;
     first.focus();
     // ArrowRight should move focus to next day cell (if it exists)
     fireEvent.keyDown(first, { key: 'ArrowRight' });

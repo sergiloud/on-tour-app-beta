@@ -2,6 +2,7 @@ import React from 'react';
 import { listTrips, createTrip } from '../../services/trips';
 import { t } from '../../lib/i18n';
 import TripSummaryBadge from './TripSummaryBadge';
+import { can } from '../../lib/tenants';
 
 type Props = {
   title?: string;
@@ -22,6 +23,7 @@ export const QuickTripPicker: React.FC<Props> = ({ title, defaultTitle, onCancel
   };
 
   const confirm = () => {
+    if (!can('travel:book')) return; // gated in read-only
     if (selected==='new' || !trips.length) {
       const id = createTrip({ title: newTitle || (t('travel.trip.new')||'New Trip'), status: 'planned' }).id;
       onConfirm(id);

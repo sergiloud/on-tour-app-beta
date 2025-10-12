@@ -7,7 +7,8 @@ export type FinanceShow = {
   lng: number;
   date: string; // ISO
   fee: number;
-  status: 'confirmed'|'pending'|'offer'|'canceled'|'archived'|'postponed';
+  feeCurrency?: 'EUR' | 'USD' | 'GBP' | 'AUD'; // ADDED: Currency for fee (defaults to EUR)
+  status: 'confirmed' | 'pending' | 'offer' | 'canceled' | 'archived' | 'postponed';
   // Optional enrichment fields (used for breakdowns/costs)
   route?: string; // e.g., EU/US/LatAm tour leg or internal routing key
   venue?: string; // venue name or code

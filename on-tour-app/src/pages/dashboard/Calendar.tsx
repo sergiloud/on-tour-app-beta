@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useShows } from '../../hooks/useShows';
-import type { DemoShow } from '../../lib/demoShows';
+import type { DemoShow } from '../lib/shows';
 import { useSettings } from '../../context/SettingsContext';
 import { t } from '../../lib/i18n';
 import { fetchItinerariesGentle, onItinerariesUpdated, Itinerary } from '../../services/travelApi';
@@ -32,9 +32,9 @@ const toDateOnlyTz = (iso: string, tz: string) => {
       .reduce<Record<string, string>>((acc, p) => { if (p.type !== 'literal') acc[p.type] = p.value; return acc; }, {});
     const y = parts.year, m = parts.month, day = parts.day;
     if (y && m && day) return `${y}-${m}-${day}`;
-  } catch {}
+  } catch { }
   // If iso already like YYYY-MM-DD or T00:00:00, slice first 10
-  return iso.slice(0,10);
+  return iso.slice(0, 10);
 };
 
 const Calendar: React.FC = () => {
@@ -42,48 +42,50 @@ const Calendar: React.FC = () => {
   const { lang } = useSettings();
   const navigate = useNavigate();
   const { view, setView, cursor, setCursor, tz, setTz, filters, setFilters, today } = useCalendarState();
-  const year = Number(cursor.slice(0,4));
-  const month = Number(cursor.slice(5,7));
+  const year = Number(cursor.slice(0, 4));
+  const month = Number(cursor.slice(5, 7));
   const [selectedDay, setSelectedDay] = useState<string>('');
 
   const [travel, setTravel] = useState<Itinerary[]>([]);
   const [travelError, setTravelError] = useState(false);
   const [gotoOpen, setGotoOpen] = useState(false);
   const [debouncedCursor, setDebouncedCursor] = useState(cursor);
-  const [weekStartsOn, setWeekStartsOn] = useState<0|1>(()=>{ try { return Number(localStorage.getItem('calendar:weekStart')||'1') as 0|1; } catch { return 1; } });
-  useEffect(()=>{ try { localStorage.setItem('calendar:weekStart', String(weekStartsOn)); } catch {} }, [weekStartsOn]);
-  useEffect(()=>{
-    const id = setTimeout(()=> setDebouncedCursor(cursor), 180);
-    return ()=> clearTimeout(id);
+  const [weekStartsOn, setWeekStartsOn] = useState<0 | 1>(() => { try { return Number(localStorage.getItem('calendar:weekStart') || '1') as 0 | 1; } catch { return 1; } });
+  const [heatmapMode, setHeatmapMode] = useState<'none' | 'financial' | 'activity'>(() => { try { return (localStorage.getItem('calendar:heatmap') || 'none') as 'none' | 'financial' | 'activity'; } catch { return 'none'; } });
+  useEffect(() => { try { localStorage.setItem('calendar:weekStart', String(weekStartsOn)); } catch { } }, [weekStartsOn]);
+  useEffect(() => { try { localStorage.setItem('calendar:heatmap', heatmapMode); } catch { } }, [heatmapMode]);
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedCursor(cursor), 180);
+    return () => clearTimeout(id);
   }, [cursor]);
   // Gentle refresh travel whenever visible month changes
-  useEffect(()=>{
-    const year = Number(debouncedCursor.slice(0,4));
-    const month = Number(debouncedCursor.slice(5,7));
-    const from = new Date(year, month-1, 1).toISOString().slice(0,10);
-    const to = new Date(year, month, 0).toISOString().slice(0,10);
+  useEffect(() => {
+    const year = Number(debouncedCursor.slice(0, 4));
+    const month = Number(debouncedCursor.slice(5, 7));
+    const from = new Date(year, month - 1, 1).toISOString().slice(0, 10);
+    const to = new Date(year, month, 0).toISOString().slice(0, 10);
     const ac = new AbortController();
     setTravelError(false);
-    fetchItinerariesGentle({ from, to }, { signal: ac.signal }).then(res=>{
+    fetchItinerariesGentle({ from, to }, { signal: ac.signal }).then(res => {
       setTravel(res.data);
-    }).catch(err=>{
+    }).catch(err => {
       if ((err as any)?.name !== 'AbortError') setTravelError(true);
     });
-    const unsub = onItinerariesUpdated((e)=>{
+    const unsub = onItinerariesUpdated((e) => {
       // naive key match by from/to; update regardless
       setTravel(e.data);
     });
-    return ()=> { ac.abort(); unsub(); };
+    return () => { ac.abort(); unsub(); };
   }, [debouncedCursor]);
-  
+
   // Merge shows + travel into day buckets
   const eventsByDay = useCalendarEvents({ shows, travel, lang, kinds: filters.kinds, filters: { status: filters.status }, toDateOnlyTz, tz });
 
   const grid = useCalendarMatrix(year, month, weekStartsOn);
 
   const changeMonth = (delta: number) => {
-    const d = new Date(year, month-1+delta, 1);
-    const next = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const d = new Date(year, month - 1 + delta, 1);
+    const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     setCursor(next);
     trackEvent('calendar.month.change', { month: next });
   };
@@ -92,7 +94,7 @@ const Calendar: React.FC = () => {
   const inferRouteForDate = (day: string): { origin?: string; dest?: string } => {
     try {
       const dayTs = new Date(`${day}T00:00:00`).getTime();
-      const ordered = shows.slice().sort((a,b)=> new Date(a.date).getTime() - new Date(b.date).getTime());
+      const ordered = shows.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       let prev: typeof ordered[number] | undefined;
       let next: typeof ordered[number] | undefined;
       for (const s of ordered) {
@@ -114,70 +116,71 @@ const Calendar: React.FC = () => {
     if (dest) q.set('dest', dest.toUpperCase());
     q.set('adults', '1'); q.set('bags', '1'); q.set('nonstop', '1'); q.set('cabin', 'E');
     navigate(`/dashboard/travel?${q.toString()}`);
-    try { trackEvent('calendar.open.travel', { day, origin: origin||null, dest: dest||null }); } catch {}
+    try { trackEvent('calendar.open.travel', { day, origin: origin || null, dest: dest || null }); } catch { }
   };
-  const goToday = () => { const d = new Date(); const next = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; setCursor(next); setSelectedDay(toDateOnlyTz(d.toISOString(), tz)); trackEvent('calendar.today'); };
+  const goToday = () => { const d = new Date(); const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; setCursor(next); setSelectedDay(toDateOnlyTz(d.toISOString(), tz)); trackEvent('calendar.today'); };
 
   // prev/next per view
   const onPrev = () => {
-    if (view==='month') return changeMonth(-1);
-    if (view==='week') {
+    if (view === 'month') return changeMonth(-1);
+    if (view === 'week') {
       const cur = selectedDay || `${cursor}-01`;
-      const d = new Date(cur); d.setDate(d.getDate()-7);
-      setSelectedDay(d.toISOString().slice(0,10));
-      if (d.getMonth()+1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+      const d = new Date(cur); d.setDate(d.getDate() - 7);
+      setSelectedDay(d.toISOString().slice(0, 10));
+      if (d.getMonth() + 1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
       trackEvent('cal.navigate', { view: 'week', dir: 'prev' });
       return;
     }
-    if (view==='day') {
+    if (view === 'day') {
       const cur = selectedDay || `${cursor}-01`;
-      const d = new Date(cur); d.setDate(d.getDate()-1);
-      setSelectedDay(d.toISOString().slice(0,10));
-      if (d.getMonth()+1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+      const d = new Date(cur); d.setDate(d.getDate() - 1);
+      setSelectedDay(d.toISOString().slice(0, 10));
+      if (d.getMonth() + 1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
       trackEvent('cal.navigate', { view: 'day', dir: 'prev' });
       return;
     }
   };
   const onNext = () => {
-    if (view==='month') return changeMonth(1);
-    if (view==='week') {
+    if (view === 'month') return changeMonth(1);
+    if (view === 'week') {
       const cur = selectedDay || `${cursor}-01`;
-      const d = new Date(cur); d.setDate(d.getDate()+7);
-      setSelectedDay(d.toISOString().slice(0,10));
-      if (d.getMonth()+1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+      const d = new Date(cur); d.setDate(d.getDate() + 7);
+      setSelectedDay(d.toISOString().slice(0, 10));
+      if (d.getMonth() + 1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
       trackEvent('cal.navigate', { view: 'week', dir: 'next' });
       return;
     }
-    if (view==='day') {
+    if (view === 'day') {
       const cur = selectedDay || `${cursor}-01`;
-      const d = new Date(cur); d.setDate(d.getDate()+1);
-      setSelectedDay(d.toISOString().slice(0,10));
-      if (d.getMonth()+1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+      const d = new Date(cur); d.setDate(d.getDate() + 1);
+      setSelectedDay(d.toISOString().slice(0, 10));
+      if (d.getMonth() + 1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
       trackEvent('cal.navigate', { view: 'day', dir: 'next' });
       return;
     }
   };
 
   // Go to date dialog
-  const GoToDateDialog: React.FC<{ open: boolean; onClose: () => void; onGo: (isoDate: string) => void }>=({ open, onClose, onGo })=>{
-    const [val, setVal] = useState<string>(new Date().toISOString().slice(0,10));
-    const ref = useRef<HTMLInputElement|null>(null);
-    const dialogRef = useRef<HTMLDivElement|null>(null);
-    useEffect(()=>{ if (open) setTimeout(()=> ref.current?.focus(), 0); }, [open]);
-    useEffect(()=>{
+  const GoToDateDialog: React.FC<{ open: boolean; onClose: () => void; onGo: (isoDate: string) => void }> = ({ open, onClose, onGo }) => {
+    const [val, setVal] = useState<string>(new Date().toISOString().slice(0, 10));
+    const ref = useRef<HTMLInputElement | null>(null);
+    const dialogRef = useRef<HTMLDivElement | null>(null);
+    useEffect(() => { if (open) setTimeout(() => ref.current?.focus(), 0); }, [open]);
+    useEffect(() => {
       if (!open) return;
       const key = (e: KeyboardEvent) => {
         if (e.key === 'Escape') { e.preventDefault(); onClose(); }
         if (e.key === 'Tab' && dialogRef.current) {
           const nodes = dialogRef.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
           if (!nodes.length) return;
-          const first = nodes[0]; const last = nodes[nodes.length-1];
+          const first = nodes[0]; const last = nodes[nodes.length - 1];
+          if (!first || !last) return;
           if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
           if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         }
       };
       window.addEventListener('keydown', key);
-      return ()=> window.removeEventListener('keydown', key);
+      return () => window.removeEventListener('keydown', key);
     }, [open]);
     if (!open) return null;
     return (
@@ -185,15 +188,15 @@ const Calendar: React.FC = () => {
         <div className="absolute inset-0 bg-black/40" onClick={onClose} />
         <div ref={dialogRef} className="relative glass rounded-lg p-4 w-[360px] border border-white/12">
           <div className="flex items-center justify-between mb-2">
-            <div id="goto-title" className="text-sm font-medium">{t('calendar.goto')||'Go to date'}</div>
-            <button className="text-xs underline opacity-80 hover:opacity-100" onClick={onClose}>{t('shows.dialog.close')||'Close'}</button>
+            <div id="goto-title" className="text-sm font-medium">{t('calendar.goto') || 'Go to date'}</div>
+            <button className="text-xs underline opacity-80 hover:opacity-100" onClick={onClose}>{t('shows.dialog.close') || 'Close'}</button>
           </div>
           <div className="space-y-2">
-            <input ref={ref} type="date" className="w-full rounded bg-white/5 px-2 py-1 text-sm" value={val} onChange={e=> setVal(e.target.value)} onKeyDown={e=>{ if (e.key==='Enter'){ onGo(val); onClose(); } if (e.key==='Escape'){ onClose(); } }} />
+            <input ref={ref} type="date" className="w-full rounded bg-white/5 px-2 py-1 text-sm" value={val} onChange={e => setVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { onGo(val); onClose(); } if (e.key === 'Escape') { onClose(); } }} />
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[11px] opacity-70">{t('calendar.goto.hint')||'Enter to go • Esc to close'}</div>
-              <button className="text-xs underline opacity-80 hover:opacity-100" onClick={onClose}>{t('common.cancel')||'Cancel'}</button>
-              <button className="px-2 py-1 rounded bg-accent-500 text-black shadow-glow hover:brightness-110" onClick={()=>{ onGo(val); onClose(); }}>{t('common.go')||'Go'}</button>
+              <div className="text-[11px] opacity-70">{t('calendar.goto.hint') || 'Enter to go • Esc to close'}</div>
+              <button className="text-xs underline opacity-80 hover:opacity-100" onClick={onClose}>{t('common.cancel') || 'Cancel'}</button>
+              <button className="px-2 py-1 rounded bg-accent-500 text-black shadow-glow hover:brightness-110" onClick={() => { onGo(val); onClose(); }}>{t('common.go') || 'Go'}</button>
             </div>
           </div>
         </div>
@@ -202,14 +205,14 @@ const Calendar: React.FC = () => {
   };
 
   const monthLabel = new Date(`${cursor}-01`).toLocaleDateString(lang, { year: 'numeric', month: 'long', timeZone: tz });
-  const weekLabel = useMemo(()=>{
+  const weekLabel = useMemo(() => {
     const base = selectedDay || `${cursor}-01`;
     const d0 = new Date(base);
     const day = d0.getDay(); // 0 Sun
-    const startDelta = weekStartsOn===1 ? (day+6)%7 : day; // days since start of week
-    const start = new Date(d0); start.setDate(start.getDate()-startDelta);
-    const end = new Date(start); end.setDate(end.getDate()+6);
-    const fmt = (d: Date)=> d.toLocaleDateString(lang, { month: 'short', day: 'numeric', timeZone: tz });
+    const startDelta = weekStartsOn === 1 ? (day + 6) % 7 : day; // days since start of week
+    const start = new Date(d0); start.setDate(start.getDate() - startDelta);
+    const end = new Date(start); end.setDate(end.getDate() + 6);
+    const fmt = (d: Date) => d.toLocaleDateString(lang, { month: 'short', day: 'numeric', timeZone: tz });
     return `${fmt(start)} – ${fmt(end)}`;
   }, [selectedDay, cursor, lang, tz, weekStartsOn]);
   const dayLabel = selectedDay ? new Date(selectedDay).toLocaleDateString(lang, { weekday: 'long', month: 'long', day: 'numeric', timeZone: tz }) : monthLabel;
@@ -221,7 +224,7 @@ const Calendar: React.FC = () => {
     const base = selectedDay || `${cursor}-01`;
     const d0 = new Date(base);
     const day = d0.getDay();
-    const startDelta = weekStartsOn===1 ? (day + 6) % 7 : day;
+    const startDelta = weekStartsOn === 1 ? (day + 6) % 7 : day;
     const start = new Date(d0);
     start.setDate(start.getDate() - startDelta);
     return start.toISOString().slice(0, 10);
@@ -242,7 +245,7 @@ const Calendar: React.FC = () => {
   }, [selectedDay, cursor, eventsByDay]);
 
   // Global keyboard shortcuts (T/←/→/PgUp/PgDn)
-  useEffect(()=>{
+  useEffect(() => {
     const onPrev = () => changeMonth(-1);
     const onNext = () => changeMonth(1);
     const onToday = () => goToday();
@@ -253,13 +256,13 @@ const Calendar: React.FC = () => {
       if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         if (view === 'week' || view === 'day') {
           e.preventDefault();
-          if (e.key === 'ArrowLeft') { (view==='week' || view==='day') && (onPrevWeekDay()); }
-          else { (view==='week' || view==='day') && (onNextWeekDay()); }
+          if (e.key === 'ArrowLeft') { (view === 'week' || view === 'day') && (onPrevWeekDay()); }
+          else { (view === 'week' || view === 'day') && (onNextWeekDay()); }
         }
       }
     };
-    const onPrevWeekDay = () => { if (view==='week') { const cur = selectedDay || `${cursor}-01`; const d = new Date(cur); d.setDate(d.getDate()-7); setSelectedDay(d.toISOString().slice(0,10)); if (d.getMonth()+1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); trackEvent('cal.navigate', { view: 'week', dir: 'prev' }); } else if (view==='day') { const cur = selectedDay || `${cursor}-01`; const d = new Date(cur); d.setDate(d.getDate()-1); setSelectedDay(d.toISOString().slice(0,10)); if (d.getMonth()+1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); trackEvent('cal.navigate', { view: 'day', dir: 'prev' }); } };
-    const onNextWeekDay = () => { if (view==='week') { const cur = selectedDay || `${cursor}-01`; const d = new Date(cur); d.setDate(d.getDate()+7); setSelectedDay(d.toISOString().slice(0,10)); if (d.getMonth()+1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); trackEvent('cal.navigate', { view: 'week', dir: 'next' }); } else if (view==='day') { const cur = selectedDay || `${cursor}-01`; const d = new Date(cur); d.setDate(d.getDate()+1); setSelectedDay(d.toISOString().slice(0,10)); if (d.getMonth()+1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); trackEvent('cal.navigate', { view: 'day', dir: 'next' }); } };
+    const onPrevWeekDay = () => { if (view === 'week') { const cur = selectedDay || `${cursor}-01`; const d = new Date(cur); d.setDate(d.getDate() - 7); setSelectedDay(d.toISOString().slice(0, 10)); if (d.getMonth() + 1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); trackEvent('cal.navigate', { view: 'week', dir: 'prev' }); } else if (view === 'day') { const cur = selectedDay || `${cursor}-01`; const d = new Date(cur); d.setDate(d.getDate() - 1); setSelectedDay(d.toISOString().slice(0, 10)); if (d.getMonth() + 1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); trackEvent('cal.navigate', { view: 'day', dir: 'prev' }); } };
+    const onNextWeekDay = () => { if (view === 'week') { const cur = selectedDay || `${cursor}-01`; const d = new Date(cur); d.setDate(d.getDate() + 7); setSelectedDay(d.toISOString().slice(0, 10)); if (d.getMonth() + 1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); trackEvent('cal.navigate', { view: 'week', dir: 'next' }); } else if (view === 'day') { const cur = selectedDay || `${cursor}-01`; const d = new Date(cur); d.setDate(d.getDate() + 1); setSelectedDay(d.toISOString().slice(0, 10)); if (d.getMonth() + 1 !== month) setCursor(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); trackEvent('cal.navigate', { view: 'day', dir: 'next' }); } };
     const prevL = () => onPrev(); const nextL = () => onNext(); const todayL = () => onToday();
     window.addEventListener('cal:prev' as any, prevL);
     window.addEventListener('cal:next' as any, nextL);
@@ -283,20 +286,20 @@ const Calendar: React.FC = () => {
         {t('calendar.kb.hint') || 'Keyboard: Arrow keys move day, PageUp/PageDown change month, T go to today, Enter or Space select day.'}
       </p>
       <CalendarToolbar
-        title={view==='month' ? monthLabel : view==='week' ? weekLabel : dayLabel}
+        title={view === 'month' ? monthLabel : view === 'week' ? weekLabel : dayLabel}
         onPrev={onPrev}
         onNext={onNext}
         onToday={goToday}
-        onGoToDate={()=> setGotoOpen(true)}
+        onGoToDate={() => setGotoOpen(true)}
         view={view}
-        setView={(v)=>{ setView(v); try { trackEvent('cal.view.change', { view: v }); } catch {}; announce((t('calendar.view.announce')||'{v} view').replace('{v}', t(`calendar.view.${v}`)||v)); }}
+        setView={(v) => { setView(v); try { trackEvent('cal.view.change', { view: v }); } catch { }; announce((t('calendar.view.announce') || '{v} view').replace('{v}', t(`calendar.view.${v}`) || v)); }}
         tz={tz}
-        setTz={(next)=> { setTz(next); try { announce((t('calendar.tz.changed')||'Time zone set to {tz}').replace('{tz}', next)); } catch {} }}
+        setTz={(next) => { setTz(next); try { announce((t('calendar.tz.changed') || 'Time zone set to {tz}').replace('{tz}', next)); } catch { } }}
         weekStartsOn={weekStartsOn}
         setWeekStartsOn={setWeekStartsOn}
         filters={filters}
         setFilters={setFilters}
-        onImportIcs={async (file)=>{
+        onImportIcs={async (file) => {
           try {
             const text = await file.text();
             const events = parseICS(text);
@@ -304,92 +307,96 @@ const Calendar: React.FC = () => {
             for (const ev of events) {
               // Only map VEVENTs with DTSTART; derive city/country heuristically from LOCATION e.g., "Madrid, ES"
               if (!ev.dtStart) continue;
-              const dateOnly = ev.dtStart.slice(0,10);
-              const id = (()=>{ try { return crypto.randomUUID(); } catch { return Math.random().toString(36).slice(2,10); } })();
+              const dateOnly = ev.dtStart.slice(0, 10);
+              const id = (() => { try { return crypto.randomUUID(); } catch { return Math.random().toString(36).slice(2, 10); } })();
               let city = 'CITY', country = 'US';
               if (ev.location) {
-                const parts = ev.location.split(',').map(s=> s.trim());
+                const parts = ev.location.split(',').map(s => s.trim());
                 if (parts[0]) city = parts[0].toUpperCase();
-                if (parts[1]) country = parts[1].toUpperCase().slice(0,2);
+                if (parts[1]) country = parts[1].toUpperCase().slice(0, 2);
               }
               add({ id, city, country, lat: 0, lng: 0, date: `${dateOnly}T00:00:00`, fee: 0, status: 'pending' } as DemoShow);
               created++;
             }
-            announce((t('calendar.import.done')||'Imported {n} events').replace('{n}', String(created)));
-            try { trackEvent('calendar.import.ics', { count: created }); } catch {}
+            announce((t('calendar.import.done') || 'Imported {n} events').replace('{n}', String(created)));
+            try { trackEvent('calendar.import.ics', { count: created }); } catch { }
           } catch {
-            announce(t('calendar.import.error')||'Failed to import .ics');
+            announce(t('calendar.import.error') || 'Failed to import .ics');
           }
         }}
+        heatmapMode={heatmapMode}
+        setHeatmapMode={setHeatmapMode}
       />
 
-      {view==='month' && (
+      {view === 'month' && (
         <MonthGrid
           grid={grid}
           eventsByDay={eventsByDay}
           today={today}
           selectedDay={selectedDay}
-          setSelectedDay={(d)=>{ setSelectedDay(d); trackEvent('calendar.day.select', { day: d }); }}
+          setSelectedDay={(d) => { setSelectedDay(d); trackEvent('calendar.day.select', { day: d }); }}
           locale={lang}
           tz={tz}
           ariaDescribedBy="cal-kb-hint"
-          onOpenDay={(d)=> setSelectedDay(d)}
-          onOpen={(ev)=>{
-            if (ev.kind==='show') { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); trackEvent('calendar.open.show', { id }); }
+          onOpenDay={(d) => setSelectedDay(d)}
+          onOpen={(ev) => {
+            if (ev.kind === 'show') { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); trackEvent('calendar.open.show', { id }); }
             else { const day = ev.date; goTravel(day); }
           }}
-          onMoveShow={(showId, toDate, duplicate)=>{
+          onMoveShow={(showId, toDate, duplicate) => {
             const id = showId.split(':')[1] || showId;
-            const found = shows.find(s=> s.id===id);
+            const found = shows.find(s => s.id === id);
             if (!found) return;
             const iso = `${toDate}T00:00:00`;
             if (duplicate) {
-              const newId = (()=>{ try { return crypto.randomUUID(); } catch { return Math.random().toString(36).slice(2,10); } })();
-              const copy: DemoShow = { ...found, id: newId, date: iso };
+              const newId = (() => { try { return crypto.randomUUID(); } catch { return Math.random().toString(36).slice(2, 10); } })();
+              const copy: Show = { ...found, id: newId, date: iso };
               add(copy);
             } else {
               update(id, { date: iso });
             }
           }}
-          onQuickAddSave={(dateStr, data)=>{
-            const id = (()=>{ try { return crypto.randomUUID(); } catch { return Math.random().toString(36).slice(2,10); } })();
-            const newShow: DemoShow = { id, city: data.city, country: data.country, lat: 0, lng: 0, date: `${dateStr}T00:00:00`, fee: Number(data.fee||0), status: 'pending' } as DemoShow;
+          onQuickAddSave={(dateStr, data) => {
+            const id = (() => { try { return crypto.randomUUID(); } catch { return Math.random().toString(36).slice(2, 10); } })();
+            const newShow: Show = { id, city: data.city, country: data.country, lat: 0, lng: 0, date: `${dateStr}T00:00:00`, fee: Number(data.fee || 0), status: 'pending' } as DemoShow;
             add(newShow);
-            try { trackEvent('cal.create.quick', { id, day: dateStr }); } catch {}
+            try { trackEvent('cal.create.quick', { id, day: dateStr }); } catch { }
             navigate(`/dashboard/shows?edit=${id}`);
           }}
+          heatmapMode={heatmapMode}
+          shows={shows}
         />
       )}
 
-      {view==='week' && (
+      {view === 'week' && (
         <WeekGrid
           weekStart={weekStart}
           eventsByDay={weekEventsByDay}
           tz={tz}
-          onOpen={(ev)=>{
-            if (ev.kind==='show') { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); }
+          onOpen={(ev) => {
+            if (ev.kind === 'show') { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); }
             else { const day = ev.date; goTravel(day); }
           }}
         />
       )}
 
-      {view==='day' && (
+      {view === 'day' && (
         <DayGrid
           day={selectedDay || `${cursor}-01`}
           events={dayEvents}
           tz={tz}
-          onOpen={(ev)=>{
-            if (ev.kind==='show') { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); }
+          onOpen={(ev) => {
+            if (ev.kind === 'show') { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); }
             else { const day = ev.date; goTravel(day); }
           }}
         />
       )}
 
-      {view==='agenda' && (
+      {view === 'agenda' && (
         <AgendaList
           eventsByDay={eventsByDay as unknown as Map<string, any>}
-          onOpen={(ev)=>{
-            if (ev.kind==='show') { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); }
+          onOpen={(ev) => {
+            if (ev.kind === 'show') { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); }
             else { const day = ev.date; goTravel(day); }
           }}
         />
@@ -403,15 +410,15 @@ const Calendar: React.FC = () => {
             <ul className="space-y-2">
               {selectedEvents.map(ev => (
                 <li key={ev.id} className="flex items-center gap-2">
-                  <span className={`inline-block w-2 h-2 rounded-full border ${ev.kind==='show' ? 'bg-accent-400 border-accent-300/60' : 'bg-cyan-300 border-cyan-200/60'}`} aria-hidden />
+                  <span className={`inline-block w-2 h-2 rounded-full border ${ev.kind === 'show' ? 'bg-accent-400 border-accent-300/60' : 'bg-cyan-300 border-cyan-200/60'}`} aria-hidden />
                   <span className="text-sm">{ev.title}</span>
                   {ev.meta && <span className="text-xs opacity-70">{ev.meta}</span>}
                   {ev.status && <span className="ml-auto"><StatusBadge status={ev.status as any}>{ev.status}</StatusBadge></span>}
                   <div className="ml-2 flex items-center gap-1">
-                    {ev.kind==='show' ? (
-                      <button className="text-xs underline opacity-80 hover:opacity-100" onClick={()=>{ const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); trackEvent('calendar.open.show', { id }); }}>{t('common.open')||'Open'}</button>
+                    {ev.kind === 'show' ? (
+                      <button className="text-xs underline opacity-80 hover:opacity-100" onClick={() => { const id = ev.id.split(':')[1]; navigate(`/dashboard/shows?edit=${id}`); trackEvent('calendar.open.show', { id }); }}>{t('common.open') || 'Open'}</button>
                     ) : (
-                      <button className="text-xs underline opacity-80 hover:opacity-100" onClick={()=>{ const day = ev.date; goTravel(day); }}>{t('common.open')||'Open'}</button>
+                      <button className="text-xs underline opacity-80 hover:opacity-100" onClick={() => { const day = ev.date; goTravel(day); }}>{t('common.open') || 'Open'}</button>
                     )}
                   </div>
                 </li>
@@ -432,11 +439,11 @@ const Calendar: React.FC = () => {
 
       <GoToDateDialog
         open={gotoOpen}
-        onClose={()=> setGotoOpen(false)}
-        onGo={(iso)=>{
+        onClose={() => setGotoOpen(false)}
+        onGo={(iso) => {
           if (!iso) return;
           const d = new Date(iso);
-          const next = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+          const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
           setCursor(next);
           setSelectedDay(iso);
           trackEvent('calendar.goto', { date: iso });

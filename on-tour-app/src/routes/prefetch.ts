@@ -13,6 +13,7 @@ const loaders: Record<string, Loader> = {
   '/dashboard/mission/lab': () => import('../pages/dashboard/MissionControlLab'),
   '/dashboard/calendar': () => import('../pages/dashboard/Calendar'),
   '/dashboard/settings': () => import('../pages/dashboard/Settings'),
+  '/login': () => import('../pages/Login'),
 };
 
 export function prefetchByPath(path: string) {
@@ -38,4 +39,5 @@ export const prefetch = {
   travelWorkspace: () => prefetchByPath('/dashboard/travel/workspace'),
   calendar: () => prefetchByPath('/dashboard/calendar'),
   settings: () => prefetchByPath('/dashboard/settings'),
+  login: () => prefetchByPath('/login'),
 };

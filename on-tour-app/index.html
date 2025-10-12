@@ -1,26 +1,58 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b0f14" />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0f14" />
+  <meta name="description"
+    content="Professional tour management platform for artists and agencies. Manage shows, finances, travel, and more." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OnTour" />
   <title>On Tour App</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <style>body{margin:0;font:14px system-ui;background:#111;color:#ccc}</style>
-  </head>
-  <body>
-    <!-- GH Pages SPA redirect fix (rafgraph) -->
-    <script>
-      (function(l){
-        if (l.search && l.search.indexOf('?p=') !== -1) {
-          var p = new URLSearchParams(l.search).get('p');
-          if (p) l.replace(l.origin + l.pathname.replace(/\/index\.html$/, '') + p + (l.hash||''));
-        }
-      })(window.location);
-    </script>
-    <script>document.body.dataset.inline='ok';</script>
-    <div id="root"><div style="padding:24px;font:12px system-ui;opacity:.6">Fallback inline (index.html)</div></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+
+  <!-- Resource Hints for faster connections -->
+  <!-- DNS prefetch for external domains -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+
+  <!-- Preconnect to critical origins (includes DNS + TLS + TCP) -->
+  <link rel="preconnect" href="https://api.openstreetmap.org" crossorigin />
+  <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
+
+  <!-- Preload critical assets -->
+  <link rel="preload" href="/maplibre-gl.css" as="style" />
+
+  <style>
+    body {
+      margin: 0;
+      font: 14px system-ui;
+      background: #111;
+      color: #ccc
+    }
+  </style>
+</head>
+
+<body>
+  <!-- GH Pages SPA redirect fix (rafgraph) -->
+  <script>
+    (function (l) {
+      if (l.search && l.search.indexOf('?p=') !== -1) {
+        var p = new URLSearchParams(l.search).get('p');
+        if (p) l.replace(l.origin + l.pathname.replace(/\/index\.html$/, '') + p + (l.hash || ''));
+      }
+    })(window.location);
+  </script>
+  <script>document.body.dataset.inline = 'ok';</script>
+  <div id="root">
+    <div style="padding:24px;font:12px system-ui;opacity:.6">Fallback inline (index.html)</div>
+  </div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

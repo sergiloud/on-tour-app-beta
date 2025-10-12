@@ -4,7 +4,7 @@ export type SeriesPoint = { timestamp: string; label?: string; value: number };
 export function toSeries(months: string[], values: number[], labelFmt?: (m: string)=>string): SeriesPoint[] {
   const points: SeriesPoint[] = [];
   for (let i=0;i<months.length;i++) {
-    const m = months[i];
+  const m = months[i] ?? `m${i}`; // fallback label to satisfy non-undefined timestamp
     const v = values[i] ?? 0;
     points.push({ timestamp: m, label: labelFmt ? labelFmt(m) : m, value: v });
   }
@@ -27,8 +27,11 @@ export function sum(points: SeriesPoint[]): number {
 
 export function trend(points: SeriesPoint[]): number {
   if (points.length < 2) return 0;
-  const first = points[0].value;
-  const last = points[points.length-1].value;
+  const firstP = points[0];
+  const lastP = points[points.length-1];
+  if (!firstP || !lastP) return 0;
+  const first = firstP.value;
+  const last = lastP.value;
   if (first === 0) return last === 0 ? 0 : 100;
   return Math.round(((last - first) / Math.abs(first)) * 100);
 }

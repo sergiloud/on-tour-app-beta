@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { DemoShow } from '../../lib/demoShows';
+import type { DemoShow } from '../lib/shows';
 import { useShows } from '../../hooks/useShows';
 import { useSettings, type Region, type DateRange } from '../../context/SettingsContext';
 
@@ -12,7 +12,7 @@ export function regionOf(country?: string): 'AMER'|'EMEA'|'APAC' {
   return 'APAC';
 }
 
-export function applyDateRange(list: DemoShow[], dateRange: DateRange): DemoShow[] {
+export function applyDateRange(list: Show[], dateRange: DateRange): Show[] {
   const fromTs = dateRange.from ? new Date(dateRange.from).getTime() : -Infinity;
   const toTs = dateRange.to ? new Date(dateRange.to + 'T23:59:59').getTime() : Infinity;
   return list.filter(s => {
@@ -21,7 +21,7 @@ export function applyDateRange(list: DemoShow[], dateRange: DateRange): DemoShow
   });
 }
 
-export function applyRegion(list: DemoShow[], region: Region): DemoShow[] {
+export function applyRegion(list: Show[], region: Region): Show[] {
   if (region === 'all') return list;
   return list.filter(s => regionOf(s.country) === region);
 }
@@ -31,9 +31,9 @@ export function teamOf(id: string): 'A'|'B' {
 }
 
 // Trivial memoization keyed by object identity of inputs + primitive args
-let _lastArgs: { listRef: DemoShow[]|null; region: Region; from: string; to: string } = { listRef: null, region: 'all', from: '', to: '' };
-let _lastOut: DemoShow[] = [];
-export function selectFilteredShows(list: DemoShow[], opts: { region: Region; dateRange: DateRange }): DemoShow[] {
+let _lastArgs: { listRef: Show[]|null; region: Region; from: string; to: string } = { listRef: null, region: 'all', from: '', to: '' };
+let _lastOut: Show[] = [];
+export function selectFilteredShows(list: Show[], opts: { region: Region; dateRange: DateRange }): Show[] {
   const from = opts.dateRange.from; const to = opts.dateRange.to; const region = opts.region;
   if (_lastArgs.listRef === list && _lastArgs.region === region && _lastArgs.from === from && _lastArgs.to === to) return _lastOut;
   const res = applyRegion(applyDateRange(list, opts.dateRange), opts.region);

@@ -1,26 +1,40 @@
-import { DemoShow } from '../lib/demoShows';
+import { DemoShow } from '../lib/shows';
 
-type Listener = (shows: DemoShow[]) => void;
+type Listener = (shows: Show[]) => void;
 
-// Bump storage key to avoid loading previous seeded demo data and start fresh.
+// Primary storage key for shows
 const LS_KEY = 'shows-store-v3';
+// Legacy key used by older tests/utilities
+const LEGACY_KEY = 'demo:shows';
 
 class ShowStore {
-  private shows: DemoShow[] = [];
+  private shows: Show[] = [];
   private listeners = new Set<Listener>();
 
   constructor() {
     try {
+      // Prefer primary key; fall back to legacy if present
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) this.shows = JSON.parse(raw);
-      else this.shows = [];
+      const legacy = localStorage.getItem(LEGACY_KEY);
+      if (raw) {
+        this.shows = JSON.parse(raw);
+      } else if (legacy) {
+        this.shows = JSON.parse(legacy);
+        // Migrate to new key for consistency
+        try { localStorage.setItem(LS_KEY, legacy); } catch {}
+      } else {
+        this.shows = [];
+      }
     } catch {
       this.shows = [];
     }
   }
 
   private emit() {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(this.shows)); } catch {}
+    const payload = JSON.stringify(this.shows);
+    try { localStorage.setItem(LS_KEY, payload); } catch {}
+    // Keep legacy key in sync for tests or tools that still read it
+    try { localStorage.setItem(LEGACY_KEY, payload); } catch {}
     for (const l of this.listeners) l(this.shows);
   }
 
@@ -32,12 +46,12 @@ class ShowStore {
     return () => { this.listeners.delete(fn); };
   }
 
-  setAll(next: DemoShow[]) {
+  setAll(next: Show[]) {
     this.shows = next.slice().sort((a,b)=> new Date(a.date).getTime() - new Date(b.date).getTime());
     this.emit();
   }
 
-  addShow(s: DemoShow) {
+  addShow(s: Show) {
     this.setAll([...this.shows, s]);
   }
 
@@ -45,7 +59,7 @@ class ShowStore {
     return this.shows.find(s => s.id === id);
   }
 
-  updateShow(id: string, patch: Partial<DemoShow> & Record<string, unknown>) {
+  updateShow(id: string, patch: Partial<Show> & Record<string, unknown>) {
     const idx = this.shows.findIndex(s => s.id === id);
     if (idx === -1) return;
     const current = this.shows[idx] as DemoShow & Record<string, unknown>;

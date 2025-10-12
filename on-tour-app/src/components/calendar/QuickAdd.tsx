@@ -2,15 +2,17 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../../lib/i18n';
 import { CountrySelect } from '../../ui/CountrySelect';
 import { useShows } from '../../hooks/useShows';
+import { getCurrentOrgId } from '../../lib/tenants';
 import { useSettings } from '../../context/SettingsContext';
 
 type Props = {
   dateStr: string; // YYYY-MM-DD
+  selectedRange?: string[]; // Array of selected dates for range creation
   onSave: (data: { city: string; country: string; fee?: number }) => void;
   onCancel: () => void;
 };
 
-const QuickAdd: React.FC<Props> = ({ dateStr, onSave, onCancel }) => {
+const QuickAdd: React.FC<Props> = ({ dateStr, selectedRange = [], onSave, onCancel }) => {
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
   const [fee, setFee] = useState<string>('');
@@ -49,9 +51,9 @@ const QuickAdd: React.FC<Props> = ({ dateStr, onSave, onCancel }) => {
     let countryParsed: string | undefined;
     // Fee token at end if numeric-ish
     const last = parts[parts.length-1];
-    const feeMatch = last.match(/^([0-9]+(?:[.,][0-9]+)?)([kKmM])?$/);
+    const feeMatch = last?.match(/^([0-9]+(?:[.,][0-9]+)?)([kKmM])?$/);
     if(feeMatch){
-      const base = parseFloat(feeMatch[1].replace(',','.'));
+      const base = parseFloat(feeMatch[1]!.replace(',','.'));
       const mult = feeMatch[2]?.toLowerCase()==='m' ? 1_000_000 : feeMatch[2]?.toLowerCase()==='k' ? 1_000 : 1;
       feeParsed = Math.round(base * mult);
       parts.pop();
@@ -89,8 +91,14 @@ const QuickAdd: React.FC<Props> = ({ dateStr, onSave, onCancel }) => {
 
   return (
     <div className="absolute inset-x-1 top-7 z-20 glass rounded p-2 border border-white/12 shadow-[var(--elev-3)]" role="dialog" aria-label={t('calendar.quickAdd')||'Quick add show'} onClick={e=> e.stopPropagation()}>
-      <div className="flex items-center justify-between mb-1">
-        <div className="text-[11px] opacity-70">{new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+    <div className="flex items-center justify-between mb-1">
+        <div className="text-[11px] opacity-70">
+          {selectedRange.length > 1 ? (
+            `${selectedRange.length} ${t('calendar.days') || 'days'} • ${new Date(selectedRange[0]!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - ${new Date(selectedRange[selectedRange.length - 1]!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
+          ) : (
+            new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+          )}
+        </div>
         <button className="text-[11px] underline opacity-80 hover:opacity-100" onClick={()=> setAdvanced(a=> !a)}>
           {advanced ? (t('calendar.quickAdd.simple')||'Simple') : (t('calendar.quickAdd.advanced')||'Advanced')}
         </button>

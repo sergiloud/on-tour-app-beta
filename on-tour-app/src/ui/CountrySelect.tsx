@@ -2,7 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { COUNTRIES } from '../lib/countries';
 import { t } from '../lib/i18n';
 import { useSettings } from '../context/SettingsContext';
-import { trackEvent } from '../lib/telemetry';
+import * as telemetry from '../lib/telemetry';
 import { TE } from '../lib/telemetryEvents';
 
 // Accessible combobox country selector with search by name or code and emoji flag.
@@ -15,80 +15,101 @@ export interface CountrySelectProps {
   'data-field'?: string;
 }
 
-function flagEmoji(cc: string){
-  if(!cc || cc.length!==2) return '🏳️';
-  const codePoints = cc.toUpperCase().split('').map(c=> 127397 + c.charCodeAt(0));
+function flagEmoji(cc: string) {
+  if (!cc || cc.length !== 2) return '🏳️';
+  const codePoints = cc.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0));
   return String.fromCodePoint(...codePoints);
 }
 
 const STORAGE_KEY = 'lastCountry';
 
 export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, id, required, ...rest }) => {
+  // Safely resolve telemetry function even when tests mock the module without trackEvent/track
+  const getTrack = () => {
+    try {
+      const m: any = telemetry;
+      const fn = m?.trackEvent ?? m?.track;
+      return typeof fn === 'function' ? fn : (() => { });
+    } catch {
+      return () => { };
+    }
+  };
   const list = Object.keys(COUNTRIES);
   const { lang } = useSettings();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement|null>(null);
-  const listRef = useRef<HTMLUListElement|null>(null);
-  const rootRef = useRef<HTMLDivElement|null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const [listStyle, setListStyle] = useState<React.CSSProperties>({});
   const internalId = useId();
   const cid = id || internalId;
   const lastSearchRef = useRef<string>('');
-  const liveRef = useRef<HTMLDivElement|null>(null);
+  const liveRef = useRef<HTMLDivElement | null>(null);
   const [liveMsg, setLiveMsg] = useState('');
   const announceTimer = useRef<number | null>(null);
 
   // Precompute lowercased labels once per lang for perf (avoid per-keystroke toLowerCase allocations)
-  const lowerCacheRef = useRef<Record<string,{ label:string; lower:string }>>({});
-  if(Object.keys(lowerCacheRef.current).length===0){
-    const cache: Record<string,{ label:string; lower:string }> = {};
-    for(const code of list){ const label = COUNTRIES[code][lang]; cache[code] = { label, lower: label.toLowerCase() }; }
+  const lowerCacheRef = useRef<Record<string, { label: string; lower: string }>>({});
+  if (Object.keys(lowerCacheRef.current).length === 0) {
+    const cache: Record<string, { label: string; lower: string }> = {};
+    for (const code of list) {
+      const label = COUNTRIES[code]?.[lang];
+      if (label) cache[code] = { label, lower: label.toLowerCase() };
+    }
     lowerCacheRef.current = cache;
   }
   // If language changes, rebuild cache
-  useEffect(()=> {
-    const cache: Record<string,{ label:string; lower:string }> = {};
-    for(const code of list){ const label = COUNTRIES[code][lang]; cache[code] = { label, lower: label.toLowerCase() }; }
+  useEffect(() => {
+    const cache: Record<string, { label: string; lower: string }> = {};
+    for (const code of list) {
+      const label = COUNTRIES[code]?.[lang];
+      if (label) cache[code] = { label, lower: label.toLowerCase() };
+    }
     lowerCacheRef.current = cache;
   }, [lang]);
 
   const qLower = query.toLowerCase();
   const items = list
-    .map(code => ({ code, label: lowerCacheRef.current[code].label, lower: lowerCacheRef.current[code].lower }))
+    .map(code => {
+      const cached = lowerCacheRef.current[code];
+      if (!cached) return null;
+      return { code, label: cached.label, lower: cached.lower };
+    })
+    .filter((it): it is NonNullable<typeof it> => it !== null)
     .filter(it => !query
       || it.code.toLowerCase().includes(qLower)
       || it.lower.includes(qLower)
     )
     .slice(0, 50);
 
-  useEffect(()=>{
-    if(!value){
-      try { const last = localStorage.getItem(STORAGE_KEY); if(last) onChange(last); } catch {}
+  useEffect(() => {
+    if (!value) {
+      try { const last = localStorage.getItem(STORAGE_KEY); if (last) onChange(last); } catch { }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(()=> {
-    if(value){ try { localStorage.setItem(STORAGE_KEY, value); } catch {} }
+  useEffect(() => {
+    if (value) { try { localStorage.setItem(STORAGE_KEY, value); } catch { } }
   }, [value]);
 
-  useEffect(()=> { if(open){ setActiveIndex(0); } }, [open, query]);
+  useEffect(() => { if (open) { setActiveIndex(0); } }, [open, query]);
 
   // Adjust dropdown height/position so scroll can reach the bottom of viewport.
-  useEffect(()=> {
-    if(!open) return;
+  useEffect(() => {
+    if (!open) return;
     const el = rootRef.current;
-    if(!el) return;
+    if (!el) return;
     const rect = el.getBoundingClientRect();
     const viewportH = window.innerHeight;
     const spaceBelow = viewportH - rect.bottom - 8; // padding
     const desiredMax = Math.max(160, spaceBelow); // ensure at least previous ~208px (52*4)
     // If spaceBelow too small (e.g., near bottom), try opening upward.
-    if(spaceBelow < 120){
+    if (spaceBelow < 120) {
       const spaceAbove = rect.top - 8;
-      if(spaceAbove > spaceBelow){
+      if (spaceAbove > spaceBelow) {
         setListStyle({ maxHeight: spaceAbove, bottom: '100%', top: 'auto', marginTop: 0, marginBottom: '4px' });
         return;
       }
@@ -96,84 +117,84 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
     setListStyle({ maxHeight: desiredMax });
   }, [open, query, items.length]);
 
-  function select(code: string){
+  function select(code: string) {
     onChange(code);
     setOpen(false);
     setQuery('');
     inputRef.current?.focus();
-    trackEvent(TE.COUNTRY_SELECT, { code });
+    getTrack()(TE.COUNTRY_SELECT, { code });
   }
 
   // Outside click to close
-  useEffect(()=> {
-    if(!open) return;
+  useEffect(() => {
+    if (!open) return;
     const handler = (e: Event) => {
-      if(!rootRef.current) return;
-      if(e.target instanceof Node && rootRef.current.contains(e.target)) return;
+      if (!rootRef.current) return;
+      if (e.target instanceof Node && rootRef.current.contains(e.target)) return;
       setOpen(false);
       setQuery('');
     };
     window.addEventListener('mousedown', handler as any, true);
     window.addEventListener('pointerdown', handler as any, true);
-    return ()=> {
+    return () => {
       window.removeEventListener('mousedown', handler as any, true);
       window.removeEventListener('pointerdown', handler as any, true);
     };
   }, [open]);
 
   // Close on any page scroll (user intent changed / reposition risk)
-  useEffect(()=> {
-    if(!open) return;
+  useEffect(() => {
+    if (!open) return;
     const onScroll = () => { setOpen(false); setQuery(''); };
     window.addEventListener('scroll', onScroll, true);
-    return ()=> window.removeEventListener('scroll', onScroll, true);
+    return () => window.removeEventListener('scroll', onScroll, true);
   }, [open]);
 
   const hasValue = !!value;
   const showClear = hasValue || (!!query && open);
-  function clear(){
+  function clear() {
     onChange('');
     setQuery('');
     setOpen(true); // reopen to allow immediate new selection
     setActiveIndex(0);
     inputRef.current?.focus();
-    trackEvent(TE.COUNTRY_CLEAR);
+    getTrack()(TE.COUNTRY_CLEAR);
   }
 
   // Emit search telemetry when query changes (debounced-ish & only for length >1)
-  useEffect(()=> {
-    if(!open) return; // only while dropdown open
-    if(query.length <= 1) return;
-    if(query === lastSearchRef.current) return;
+  useEffect(() => {
+    if (!open) return; // only while dropdown open
+    if (query.length <= 1) return;
+    if (query === lastSearchRef.current) return;
     lastSearchRef.current = query;
-    trackEvent(TE.COUNTRY_SEARCH, { q: query, len: query.length, results: items.length });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    getTrack()(TE.COUNTRY_SEARCH, { q: query, len: query.length, results: items.length });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, open]);
 
   // Aria-live announcement of result count (debounced) for screen reader users
-  useEffect(()=> {
-    if(!open) return; // only while user interacting
-  if(announceTimer.current!=null) window.clearTimeout(announceTimer.current);
+  useEffect(() => {
+    if (!open) return; // only while user interacting
+    if (announceTimer.current != null) window.clearTimeout(announceTimer.current);
     // Debounce to avoid chatter while typing quickly
-  announceTimer.current = window.setTimeout(()=> {
-      if(!open) return;
-      if(!query){ setLiveMsg(''); return; }
+    announceTimer.current = window.setTimeout(() => {
+      if (!open) return;
+      if (!query) { setLiveMsg(''); return; }
       const count = items.length;
-      if(count===0){
-        setLiveMsg((t('common.noResults')||'No results') + '.');
-      } else if(count===1){
-        setLiveMsg('1 ' + (t('common.result')||'result'));
+      if (count === 0) {
+        setLiveMsg((t('common.noResults') || 'No results') + '.');
+      } else if (count === 1) {
+        setLiveMsg('1 ' + (t('common.result') || 'result'));
       } else {
         // Attempt i18n key; fallback English
         const tpl = t('common.results.count');
-        if(tpl){
+        if (tpl) {
           setLiveMsg(tpl.replace('{count}', String(count)));
         } else {
-          setLiveMsg(count + ' ' + (t('common.results')||'results'));
+          setLiveMsg(count + ' ' + (t('common.results') || 'results'));
         }
       }
     }, 250);
-    return ()=> { if(announceTimer.current!=null) window.clearTimeout(announceTimer.current); };
+    return () => { if (announceTimer.current != null) window.clearTimeout(announceTimer.current); };
   }, [query, items.length, open, lang]);
 
   return (
@@ -183,24 +204,24 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
         id={cid}
         role="combobox"
         aria-autocomplete="list"
-        aria-controls={open? cid+'-list': undefined}
-        aria-activedescendant={open? cid+'-opt-'+activeIndex: undefined}
-        placeholder={t('shows.editor.label.country')||'Country'}
-  className="px-3 py-2 pr-9 rounded bg-white/5 border border-white/12 focus-ring uppercase w-full"
-        value={open? query : (value||'')}
-        data-country-value={value||''}
-        onChange={e=> { setQuery(e.target.value); setOpen(true); }}
-        onFocus={()=> setOpen(true)}
-        onKeyDown={e=> {
-          if(e.key==='ArrowDown'){ e.preventDefault(); setOpen(true); setActiveIndex(i=> Math.min(items.length-1, i+1)); }
-          else if(e.key==='ArrowUp'){ e.preventDefault(); setActiveIndex(i=> Math.max(0, i-1)); }
-          else if(e.key==='PageDown'){ e.preventDefault(); setOpen(true); setActiveIndex(i=> Math.min(items.length-1, i+10)); }
-          else if(e.key==='PageUp'){ e.preventDefault(); setActiveIndex(i=> Math.max(0, i-10)); }
-          else if(e.key==='Home'){ e.preventDefault(); setActiveIndex(0); }
-          else if(e.key==='End'){ e.preventDefault(); setActiveIndex(items.length-1); }
-          else if(e.key==='Enter'){ if(open){ e.preventDefault(); const it = items[activeIndex]; if(it) select(it.code); } }
-          else if(e.key==='Escape'){ if(open){ e.preventDefault(); setOpen(false); } }
-          else if(e.key==='Backspace' && !query && value){ onChange(''); }
+        aria-controls={open ? cid + '-list' : undefined}
+        aria-activedescendant={open ? cid + '-opt-' + activeIndex : undefined}
+        placeholder={t('shows.editor.label.country') || 'Country'}
+        className="px-3 py-2 pr-9 rounded bg-white/5 border border-white/12 focus-ring uppercase w-full"
+        value={open ? query : (value || '')}
+        data-country-value={value || ''}
+        onChange={e => { setQuery(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={e => {
+          if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); setActiveIndex(i => Math.min(items.length - 1, i + 1)); }
+          else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex(i => Math.max(0, i - 1)); }
+          else if (e.key === 'PageDown') { e.preventDefault(); setOpen(true); setActiveIndex(i => Math.min(items.length - 1, i + 10)); }
+          else if (e.key === 'PageUp') { e.preventDefault(); setActiveIndex(i => Math.max(0, i - 10)); }
+          else if (e.key === 'Home') { e.preventDefault(); setActiveIndex(0); }
+          else if (e.key === 'End') { e.preventDefault(); setActiveIndex(items.length - 1); }
+          else if (e.key === 'Enter') { if (open) { e.preventDefault(); const it = items[activeIndex]; if (it) select(it.code); } }
+          else if (e.key === 'Escape') { if (open) { e.preventDefault(); setOpen(false); } }
+          else if (e.key === 'Backspace' && !query && value) { onChange(''); }
         }}
         {...rest}
       />
@@ -213,28 +234,28 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
       {showClear && (
         <button
           type="button"
-          aria-label={t('filters.clear')||'Clear'}
+          aria-label={t('filters.clear') || 'Clear'}
           className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 rounded hover:bg-white/10 flex items-center justify-center text-[10px]"
           onClick={clear}
         >×</button>
       )}
-      {open && items.length>0 && (
+      {open && items.length > 0 && (
         <ul
           ref={listRef}
-          id={cid+'-list'}
+          id={cid + '-list'}
           role="listbox"
           style={listStyle}
           className="absolute z-10 mt-1 overflow-auto w-full bg-ink-900 border border-white/15 rounded shadow-lg text-xs"
         >
-          {items.map((it, idx)=> (
+          {items.map((it, idx) => (
             <li
-              id={cid+'-opt-'+idx}
+              id={cid + '-opt-' + idx}
               key={it.code}
               role="option"
-              aria-selected={value===it.code}
-              onMouseDown={e=> { e.preventDefault(); select(it.code); }}
-              className={`px-2 py-1 cursor-pointer flex items-center gap-2 ${idx===activeIndex? 'bg-white/15':''}`}
-              onMouseEnter={()=> setActiveIndex(idx)}
+              aria-selected={value === it.code}
+              onMouseDown={e => { e.preventDefault(); select(it.code); }}
+              className={`px-2 py-1 cursor-pointer flex items-center gap-2 ${idx === activeIndex ? 'bg-white/15' : ''}`}
+              onMouseEnter={() => setActiveIndex(idx)}
             >
               <span>{flagEmoji(it.code)}</span>
               <span className="flex-1 truncate">{it.label}</span>
@@ -243,9 +264,9 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
           ))}
         </ul>
       )}
-      {open && items.length===0 && (
+      {open && items.length === 0 && (
         <div className="absolute z-10 mt-1 w-full bg-ink-900 border border-white/15 rounded shadow-lg text-xs p-2 opacity-70" role="status">
-          {t('common.noResults')||'No results'}
+          {t('common.noResults') || 'No results'}
         </div>
       )}
       {/* Visually hidden aria-live region for announcing count updates */}

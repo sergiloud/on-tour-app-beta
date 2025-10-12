@@ -8,26 +8,117 @@ import { HighContrastProvider } from './context/HighContrastContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { initTelemetry } from './lib/telemetry';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import './styles/index.css';
+import './styles/performance.css';
+import { ensureDemoTenants } from './lib/tenants';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { logger } from './lib/logger';
+import { initWebVitals, trackResourceTiming, trackLongTasks } from './lib/webVitals';
 
 const el = document.getElementById('root');
-if (el) {
-  initTelemetry();
-  const root = createRoot(el);
-  const queryClient = new QueryClient();
-  root.render(
+if (!el) {
+  throw new Error('Root element not found');
+}
+
+initTelemetry();
+try { ensureDemoTenants(); } catch { }
+
+// Initialize Web Vitals monitoring
+initWebVitals();
+trackResourceTiming();
+trackLongTasks();
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error instanceof Error && 'status' in error && typeof error.status === 'number') {
+          return error.status >= 500 && failureCount < 3;
+        }
+        return failureCount < 3;
+      },
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
+
+const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <ErrorBoundary>
     <ThemeProvider>
       <HighContrastProvider>
         <SettingsProvider>
           <QueryClientProvider client={queryClient}>
             <FinanceProvider>
               <KPIDataProvider>
-                <App />
+                {children}
+                <ReactQueryDevtools initialIsOpen={false} />
               </KPIDataProvider>
             </FinanceProvider>
           </QueryClientProvider>
         </SettingsProvider>
       </HighContrastProvider>
     </ThemeProvider>
+  </ErrorBoundary>
+);
+
+const root = createRoot(el);
+
+if (import.meta.env.DEV) {
+  root.render(
+    <React.StrictMode>
+      <AppProviders>
+        <App />
+      </AppProviders>
+    </React.StrictMode>
   );
+} else {
+  root.render(
+    <AppProviders>
+      <App />
+    </AppProviders>
+  );
+}
+
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/' })
+      .then((registration) => {
+        logger.info('Service Worker registered', { scope: registration.scope });
+
+        // Check for updates on page load
+        registration.update();
+
+        // Handle service worker updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (!newWorker) return;
+
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              logger.info('New service worker available', { state: newWorker.state });
+              // The PWAUpdatePrompt component will handle showing the update UI
+            }
+          });
+        });
+      })
+      .catch((error) => {
+        logger.error('Service Worker registration failed', error as Error, { component: 'main' });
+      });
+  });
+
+  // Listen for messages from service worker
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SW_UPDATED') {
+      logger.info('Service worker updated', { type: event.data.type });
+    }
+  });
 }

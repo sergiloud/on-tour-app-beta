@@ -36,7 +36,7 @@ describe('MissionControl persistence & layers', () => {
     const whatsNextTab = screen.getByRole('tab', { name: /What's Next/i });
     expect(whatsNextTab).toHaveAttribute('aria-selected', 'true');
     // Use Center map action (if there is a next show it should be enabled)
-    const centerBtn = screen.getAllByRole('button', { name: /Center map/i })[0];
+    const centerBtn = screen.getAllByRole('button', { name: /Center map/i })[0]!;
     expect(centerBtn).toBeInTheDocument();
     fireEvent.click(centerBtn);
   });
@@ -45,7 +45,7 @@ describe('MissionControl persistence & layers', () => {
     localStorage.clear();
     // First render: interact with center map
     setup();
-    const centerBtn = screen.getAllByRole('button', { name: /Center map/i })[0];
+    const centerBtn = screen.getAllByRole('button', { name: /Center map/i })[0]!;
     fireEvent.click(centerBtn);
     // Rerender new tree simulating reload
     cleanup();

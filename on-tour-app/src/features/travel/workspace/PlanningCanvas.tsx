@@ -43,26 +43,27 @@ const PlanningCanvas: React.FC<PlanningCanvasProps> = ({
       {error && (
         <div className="text-xs text-red-300" role="alert">{t(`errors.${error}`) || 'Search failed. Try again.'}</div>
       )}
-      {isLoading && results.length===0 ? (
+      {isLoading && results.length === 0 ? (
         <div className="animate-pulse space-y-2" aria-busy>
           <div className="h-16 rounded bg-white/5" />
           <div className="h-16 rounded bg-white/5" />
           <div className="h-16 rounded bg-white/5" />
         </div>
-      ) : grouped && Object.keys(grouped).length>0 ? (
+      ) : grouped && Object.keys(grouped).length > 0 ? (
         <div className="space-y-4" aria-label={t('travel.workspace.timeline')}>
           {Object.keys(grouped).sort().map(date => {
             const d = new Date(date);
             const label = d.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+            const dateResults = grouped[date] ?? [];
             return (
               <div key={date} className="space-y-2">
                 <div className="text-xs font-semibold opacity-80">{label}</div>
-                <FlightResults results={grouped[date]} onAdd={onAdd} onPin={onPin} pinnedIds={pinnedIds} />
+                <FlightResults results={dateResults} onAdd={onAdd} onPin={onPin} pinnedIds={pinnedIds} />
               </div>
             );
           })}
         </div>
-      ) : results.length>0 ? (
+      ) : results.length > 0 ? (
         <FlightResults results={results} onAdd={onAdd} onPin={onPin} pinnedIds={pinnedIds} />
       ) : (
         <div className="text-center py-10">

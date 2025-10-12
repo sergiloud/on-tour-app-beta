@@ -42,11 +42,12 @@ describe('showStore', () => {
     showStore.updateShow(id, { date: d1 });
     const all = showStore.getAll();
     const idx = all.findIndex(s => s.id === id);
+    expect(idx).toBeGreaterThan(-1); // Ensure the show was found
     // Ensure there's no item with a date earlier than d1 after it (basic monotonicity check around the updated item)
-    const updatedTime = new Date(all[idx].date).getTime();
+    const updatedTime = new Date(all[idx]!.date).getTime();
     for (let i = 0; i < all.length; i++) {
       if (i > idx) {
-        expect(new Date(all[i].date).getTime()).toBeGreaterThanOrEqual(updatedTime);
+        expect(new Date(all[i]!.date).getTime()).toBeGreaterThanOrEqual(updatedTime);
       }
     }
   });

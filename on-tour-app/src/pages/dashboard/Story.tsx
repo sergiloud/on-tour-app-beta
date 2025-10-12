@@ -10,7 +10,7 @@ import { announce } from '../../lib/announcer';
 // Story mode: sync finance monthly timeline with an animated route preview
 const Story: React.FC = () => {
   const { monthlySeries, snapshot } = useFinance();
-  type MiniShow = { id:string; city:string; date:string; lat:number; lng:number };
+  type MiniShow = { id: string; city: string; date: string; lat: number; lng: number };
   const shows: MiniShow[] = useMemo(() => [], []); // clean slate
   const [idx, setIdx] = useState(() => Math.max(0, monthlySeries.months.length - 1));
   const [playing, setPlaying] = useState(true);
@@ -21,7 +21,9 @@ const Story: React.FC = () => {
       const on = () => setRm(!!mq.matches);
       on(); mq.addEventListener('change', on);
       return () => mq.removeEventListener('change', on);
-    } catch {}
+    } catch {
+      return undefined;
+    }
   }, []);
   useEffect(() => {
     if (!playing || rm || monthlySeries.months.length === 0) return;
@@ -31,25 +33,27 @@ const Story: React.FC = () => {
 
   const monthKey = monthlySeries.months[idx] ?? '';
   const monthLabel = useMemo(() => {
-    const [y, m] = (monthKey || snapshot.asOf.slice(0,7)).split('-').map(Number);
-    const d = new Date(y, (m||1)-1, 1);
+    const [y, m] = (monthKey || snapshot.asOf.slice(0, 7)).split('-').map(Number);
+    const d = new Date(y ?? 2024, (m ?? 1) - 1, 1);
     return d.toLocaleString(undefined, { month: 'short', year: 'numeric' });
   }, [monthKey, snapshot.asOf]);
 
   // Shows for the selected month (to accent)
   const monthShows = useMemo<MiniShow[]>(() => {
     if (!shows.length) return [];
-    const [y, m] = (monthKey || snapshot.asOf.slice(0,7)).split('-').map(Number);
+    const [y, m] = (monthKey || snapshot.asOf.slice(0, 7)).split('-').map(Number);
+    const year = y ?? 2024;
+    const month = m ?? 1;
     return shows.filter(s => {
-      const d = new Date(s.date); return d.getFullYear() === y && (d.getMonth()+1) === m;
+      const d = new Date(s.date); return d.getFullYear() === year && (d.getMonth() + 1) === month;
     });
   }, [shows, monthKey, snapshot.asOf]);
   // Visible markers are cumulative up to the selected month (story progression)
   const visibleMarkers: MapMarker[] = useMemo(() => {
     if (!shows.length) return [];
-    const cutoff = monthKey || snapshot.asOf.slice(0,7);
+    const cutoff = monthKey || snapshot.asOf.slice(0, 7);
     const [cy, cm] = cutoff.split('-').map(Number);
-    const cur = new Date(cy, (cm||1)-1, 1).getTime();
+    const cur = new Date(cy ?? 2024, (cm ?? 1) - 1, 1).getTime();
     return shows.filter(s => {
       const d = new Date(s.date);
       const t = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
@@ -58,7 +62,8 @@ const Story: React.FC = () => {
   }, [shows, monthKey, snapshot.asOf, monthShows]);
   const center = useMemo(() => {
     if (!monthShows.length) return { lat: 20, lng: 0 };
-    const mid = monthShows[Math.floor(monthShows.length/2)];
+    const mid = monthShows[Math.floor(monthShows.length / 2)];
+    if (!mid) return { lat: 20, lng: 0 };
     return { lat: mid.lat, lng: mid.lng };
   }, [monthShows]);
 
@@ -75,7 +80,7 @@ const Story: React.FC = () => {
         <div className="flex items-center gap-2 text-xs">
           <button
             className="px-2 py-1 rounded bg-white/10 hover:bg-white/20"
-            onClick={()=> { trackEvent('story.toggle', { next: !playing }); setPlaying(p=>!p); }}
+            onClick={() => { trackEvent('story.toggle', { next: !playing }); setPlaying(p => !p); }}
             aria-pressed={playing}
           >{playing ? t('story.pause') : t('story.play')}</button>
           <span className="opacity-70">{monthLabel}</span>
@@ -100,14 +105,14 @@ const Story: React.FC = () => {
               aria-label={t('story.scrub')}
               type="range"
               min={0}
-              max={Math.max(0, monthlySeries.months.length-1)}
+              max={Math.max(0, monthlySeries.months.length - 1)}
               value={idx}
-              onChange={(e)=> { const next = Number(e.target.value); setIdx(next); trackEvent('story.scrub', { idx: next, month: monthlySeries.months[next] }); }}
+              onChange={(e) => { const next = Number(e.target.value); setIdx(next); trackEvent('story.scrub', { idx: next, month: monthlySeries.months[next] }); }}
               className="w-full"
             />
             <ul className="max-h-56 overflow-y-auto text-xs divide-y divide-white/5">
-              {monthlySeries.months.map((m,k)=>{
-                const active = k===idx;
+              {monthlySeries.months.map((m, k) => {
+                const active = k === idx;
                 const net = monthlySeries.net[k] ?? 0;
                 return (
                   <li key={m} className={`flex items-center justify-between py-2 ${active ? 'text-accent-300' : 'opacity-80'}`}>

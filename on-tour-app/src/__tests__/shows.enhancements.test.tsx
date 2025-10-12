@@ -51,7 +51,7 @@ describe('Shows enhancements', () => {
     const archivedRow = screen.getByText('Berlin').closest('tr')!;
     const menus = within(archivedRow).getAllByRole('button', { name:/Row actions/i });
     // Should be single button in row cell
-    fireEvent.click(menus[0]);
+    fireEvent.click(menus[0]!);
     const duplicateItem = screen.getByRole('menuitem', { name:/Duplicate/i });
     fireEvent.click(duplicateItem);
     // New copy should appear with (copy) in name or city

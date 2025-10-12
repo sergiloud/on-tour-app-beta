@@ -18,12 +18,12 @@ function parseDate(val: string): string | undefined {
   // Supports: YYYYMMDD or YYYYMMDDTHHMMSSZ
   const v = val.trim();
   if (/^\d{8}$/.test(v)) {
-    const y = v.slice(0,4), m = v.slice(4,6), d = v.slice(6,8);
+    const y = v.slice(0, 4), m = v.slice(4, 6), d = v.slice(6, 8);
     return `${y}-${m}-${d}T00:00:00Z`;
   }
   if (/^\d{8}T\d{6}Z?$/.test(v)) {
-    const y = v.slice(0,4), m = v.slice(4,6), d = v.slice(6,8);
-    const hh = v.slice(9,11), mm = v.slice(11,13), ss = v.slice(13,15);
+    const y = v.slice(0, 4), m = v.slice(4, 6), d = v.slice(6, 8);
+    const hh = v.slice(9, 11), mm = v.slice(11, 13), ss = v.slice(13, 15);
     const z = v.endsWith('Z') ? 'Z' : '';
     return `${y}-${m}-${d}T${hh}:${mm}:${ss}${z}`;
   }
@@ -40,8 +40,9 @@ export function parseICS(text: string): IcsEvent[] {
     if (line.startsWith('END:VEVENT')) { if (cur) out.push(cur); cur = null; continue; }
     if (!cur) continue;
     const [rawKey, ...rest] = line.split(':');
+    if (!rawKey) continue;
     const value = rest.join(':');
-    const key = rawKey.split(';')[0].toUpperCase();
+    const key = rawKey.split(';')[0]?.toUpperCase() ?? '';
     if (key === 'SUMMARY') cur.summary = value;
     else if (key === 'LOCATION') cur.location = value;
     else if (key === 'DTSTART') cur.dtStart = parseDate(value);

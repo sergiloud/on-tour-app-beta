@@ -29,7 +29,7 @@ export function selectBreakdownsV2(s: FinanceSnapshot): V2Breakdowns {
   const byRegion = Object.values(bucket(s.shows, sh => (regionOfCountry(sh.country) || '—') as string));
   // Placeholder for agency; data model may carry booking/management agency fields in future
   const byAgency = [] as V2BreakdownEntry[];
-  const sort = (arr: V2BreakdownEntry[]) => arr.sort((a,b) => b.net - a.net);
+  const sort = (arr: V2BreakdownEntry[]) => arr.sort((a, b) => b.net - a.net);
   return {
     route: sort(byRoute),
     venue: sort(byVenue),
@@ -68,13 +68,14 @@ export function selectARAgingV2(s: FinanceSnapshot): AgingBuckets {
     if (sh.status !== 'confirmed') continue;
     const cost = typeof (sh as any).cost === 'number' ? (sh as any).cost : 0;
     const net = Math.max(0, sh.fee - cost);
-    const days = Math.floor((now - new Date(sh.date).getTime()) / (24*60*60*1000));
+    const days = Math.floor((now - new Date(sh.date).getTime()) / (24 * 60 * 60 * 1000));
     let k: keyof typeof buckets = '0-30';
     if (days <= 30) k = '0-30';
     else if (days <= 60) k = '31-60';
     else if (days <= 90) k = '61-90';
     else k = '90+' as any;
-    buckets[k] += net;
+    const bucket = buckets[k];
+    if (bucket !== undefined) buckets[k] = bucket + net;
   }
   return Object.entries(buckets).map(([bucket, amount]) => ({ bucket, amount: Math.round(amount) }));
 }

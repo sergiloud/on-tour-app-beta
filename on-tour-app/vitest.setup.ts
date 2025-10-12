@@ -1,11 +1,15 @@
 import '@testing-library/jest-dom';
-import { afterEach } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 // Ensure RTL cleans up the DOM between tests to avoid duplicate nodes
 afterEach(() => {
 	cleanup();
 });
+
+// Provide Jest API alias for tests that use jest.* helpers
+// @ts-ignore
+(globalThis as any).jest = vi;
 
 // Provide matchMedia mock for theme detection in tests
 if (!window.matchMedia) {

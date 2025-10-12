@@ -16,7 +16,8 @@ export function computeEventLayout(events: TimedEvent[]) {
   const results: { id: string; column: number; columns: number }[] = [];
 
   let groupStartIdx = 0;
-  let groupMaxEnd = evs.length ? evs[0].end.getTime() : 0;
+  const firstEvent = evs[0];
+  let groupMaxEnd = firstEvent ? firstEvent.end.getTime() : 0;
 
   const flushGroup = (startIdx: number, endIdx: number) => {
     if (endIdx <= startIdx) return;
@@ -38,15 +39,17 @@ export function computeEventLayout(events: TimedEvent[]) {
   };
 
   for (let i = 1; i < evs.length; i++) {
-    const s = evs[i].start.getTime();
+    const currentEvent = evs[i];
+    if (!currentEvent) continue;
+    const s = currentEvent.start.getTime();
     if (s < groupMaxEnd) {
       // still overlapping group
-      groupMaxEnd = Math.max(groupMaxEnd, evs[i].end.getTime());
+      groupMaxEnd = Math.max(groupMaxEnd, currentEvent.end.getTime());
     } else {
       // flush previous group
       flushGroup(groupStartIdx, i);
       groupStartIdx = i;
-      groupMaxEnd = evs[i].end.getTime();
+      groupMaxEnd = currentEvent.end.getTime();
     }
   }
   // flush last group

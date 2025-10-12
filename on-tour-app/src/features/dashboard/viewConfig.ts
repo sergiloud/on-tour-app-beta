@@ -46,5 +46,8 @@ export const defaultViews: ViewConfigMap = {
 
 /** Helper to resolve a view by id from a map, with fallback */
 export function resolveView(map: ViewConfigMap, id: string): ViewDefinition {
-  return map[id] || map['default'];
+  const def = map[id];
+  if (def) return def;
+  const fallback = map['default'] ?? { main: [], sidebar: [] };
+  return fallback;
 }

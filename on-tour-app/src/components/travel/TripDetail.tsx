@@ -7,6 +7,8 @@ import { Trip, getTrip, updateTrip, addSegment, removeSegment, addCost, removeCo
 import { sumTripCosts, toCurrency } from '../../lib/travel/cost';
 import { useSettings } from '../../context/SettingsContext';
 import { trackEvent } from '../../lib/telemetry';
+import GuardedAction from '../common/GuardedAction';
+import { can } from '../../lib/tenants';
 
 type Props = { id: string; onClose: () => void };
 
@@ -26,6 +28,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
 
   const handleAddSegment = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!can('travel:book')) return; // gated in read-only
     const formData = new FormData(e.currentTarget);
     const type = formData.get('type') as SegmentType || 'flight';
     addSegment(trip.id, { type, from: formData.get('from') as string, to: formData.get('to') as string, dep: formData.get('dep') as string });
@@ -33,10 +36,11 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
     setShowAddSegment(false);
     trackEvent('travel.segment.add', { id: trip.id, type });
   };
-  const removeSeg = (segId: string) => { removeSegment(trip.id, segId); setTrip(getTrip(id)); trackEvent('travel.segment.remove', { id: trip.id }); };
+  const removeSeg = (segId: string) => { if (!can('travel:book')) return; removeSegment(trip.id, segId); setTrip(getTrip(id)); trackEvent('travel.segment.remove', { id: trip.id }); };
 
   const handleAddCost = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!can('travel:book')) return; // gated in read-only
     const formData = new FormData(e.currentTarget);
     const category = (formData.get('category') as string) as CostCategory;
     const amount = Number(formData.get('amount'));
@@ -46,7 +50,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
     setShowAddCost(false);
     trackEvent('travel.cost.add', { id: trip.id });
   };
-  const removeTripCost = (costId: string) => { removeCost(trip.id, costId); setTrip(getTrip(id)); trackEvent('travel.cost.remove', { id: trip.id }); };
+  const removeTripCost = (costId: string) => { if (!can('travel:book')) return; removeCost(trip.id, costId); setTrip(getTrip(id)); trackEvent('travel.cost.remove', { id: trip.id }); };
 
   return (
     <div className="p-4 space-y-3">
@@ -64,12 +68,24 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
                 <span className="opacity-80 capitalize">{s.type}</span>
                 <span className="opacity-70">{s.from || ''} → {s.to || ''}</span>
                 <span className="ml-auto">
-                  <button className="text-xs underline opacity-80 hover:opacity-100" onClick={()=> removeSeg(s.id)}>{t('shows.views.delete')||'Delete'}</button>
+                  <GuardedAction scope="travel:book" className="text-xs underline opacity-80 hover:opacity-100" onClick={()=> removeSeg(s.id)}>
+                    {t('shows.views.delete')||'Delete'}
+                  </GuardedAction>
                 </span>
               </li>
             ))}
           </ul>
-          {!showAddSegment && <div className="mt-2"><Button variant="soft" onClick={() => setShowAddSegment(true)}>{t('common.add')||'Add'}</Button></div>}
+          {!showAddSegment && (
+            <div className="mt-2">
+              <GuardedAction
+                scope="travel:book"
+                className="relative inline-flex items-center justify-center font-semibold rounded-full focus-ring motion-safe:transition disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98] text-[11px] px-3 py-1.5 bg-white/8 hover:bg-white/12 text-white/90"
+                onClick={() => setShowAddSegment(true)}
+              >
+                {t('common.add')||'Add'}
+              </GuardedAction>
+            </div>
+          )}
           {showAddSegment && (
             <form onSubmit={handleAddSegment} className="mt-2 space-y-2 text-xs p-2 border-t border-white/10">
               <div className="grid grid-cols-3 gap-2">
@@ -97,12 +113,24 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
                 <span className="opacity-80 capitalize">{c.category}</span>
                 <span className="opacity-70">{fmtMoney(toCurrency(c.amount, c.currency || currency, currency, fx))}</span>
                 <span className="ml-auto">
-                  <button className="text-xs underline opacity-80 hover:opacity-100" onClick={()=> removeTripCost(c.id)}>{t('shows.views.delete')||'Delete'}</button>
+                  <GuardedAction scope="travel:book" className="text-xs underline opacity-80 hover:opacity-100" onClick={()=> removeTripCost(c.id)}>
+                    {t('shows.views.delete')||'Delete'}
+                  </GuardedAction>
                 </span>
               </li>
             ))}
           </ul>
-          {!showAddCost && <div className="mt-2"><Button variant="soft" onClick={() => setShowAddCost(true)}>{t('common.add')||'Add'}</Button></div>}
+          {!showAddCost && (
+            <div className="mt-2">
+              <GuardedAction
+                scope="travel:book"
+                className="relative inline-flex items-center justify-center font-semibold rounded-full focus-ring motion-safe:transition disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98] text-[11px] px-3 py-1.5 bg-white/8 hover:bg-white/12 text-white/90"
+                onClick={() => setShowAddCost(true)}
+              >
+                {t('common.add')||'Add'}
+              </GuardedAction>
+            </div>
+          )}
           {showAddCost && (
             <form onSubmit={handleAddCost} className="mt-2 space-y-2 text-xs p-2 border-t border-white/10">
               <div className="grid grid-cols-3 gap-2">

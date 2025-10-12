@@ -124,6 +124,7 @@ const MorePopover: React.FC<Props> = ({ open, onClose, events, onOpen, onOpenDay
                   status={ev.status}
                   city={ev.kind==='show' ? ev.title.split(',')[0] : undefined}
                   onClick={()=> onOpen(ev)}
+                  meta={ev.meta}
                 />
               ))}
               <div style={{ height: afterH }} />

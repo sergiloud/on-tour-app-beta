@@ -9,5 +9,5 @@ const map: Record<string, string> = {
 
 export function escapeHtml(input: unknown): string {
   const s = String(input ?? '');
-  return s.replace(/[&<>"']/g, (ch) => map[ch]);
+  return s.replace(/[&<>"']/g, (ch) => map[ch as keyof typeof map] ?? ch);
 }

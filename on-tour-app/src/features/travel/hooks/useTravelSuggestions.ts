@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { DemoShow } from '../../../lib/demoShows';
+import type { DemoShow } from '../lib/shows';
 
 export type TravelSuggestion = {
   originCity: string;
@@ -15,7 +15,7 @@ export type TravelSuggestion = {
  * Given a list of shows (ideally confirmed), suggest travel legs between consecutive shows in different cities.
  * If shows are on the same city, no suggestion is produced for that pair.
  */
-export function useTravelSuggestions(shows: DemoShow[] = []): TravelSuggestion[] {
+export function useTravelSuggestions(shows: Show[] = []): TravelSuggestion[] {
   return useMemo(() => {
     const ordered = shows.slice().sort((a,b)=> new Date(a.date).getTime() - new Date(b.date).getTime());
     const out: TravelSuggestion[] = [];

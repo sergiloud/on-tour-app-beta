@@ -34,7 +34,7 @@ const AgendaList: React.FC<Props> = ({ eventsByDay, onOpen }) => {
                     <div className="text-[11px] uppercase tracking-wide opacity-70">{t('calendar.show.shows')||'Shows'} • {shows.length}</div>
                     <div className="space-y-1 mt-1">
                       {shows.map(ev => (
-                        <EventChip key={ev.id} title={ev.title} kind={ev.kind} status={ev.status} onClick={()=> onOpen(ev)} />
+                        <EventChip key={ev.id} title={ev.title} kind={ev.kind} status={ev.status} onClick={()=> onOpen(ev)} meta={ev.meta} />
                       ))}
                     </div>
                   </div>
@@ -44,7 +44,7 @@ const AgendaList: React.FC<Props> = ({ eventsByDay, onOpen }) => {
                     <div className="text-[11px] uppercase tracking-wide opacity-70">{t('calendar.show.travel')||'Travel'} • {travel.length}</div>
                     <div className="space-y-1 mt-1">
                       {travel.map(ev => (
-                        <EventChip key={ev.id} title={ev.title} kind={ev.kind} status={ev.status} onClick={()=> onOpen(ev)} />
+                        <EventChip key={ev.id} title={ev.title} kind={ev.kind} status={ev.status} onClick={()=> onOpen(ev)} meta={ev.meta} />
                       ))}
                     </div>
                   </div>

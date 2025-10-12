@@ -19,12 +19,12 @@ export const AIRPORTS: Airport[] = [
 const airportMap = new Map(AIRPORTS.map(a => [a.iata.toUpperCase(), a] as const));
 
 // Basic normalization (remove diacritics, lowercase)
-function norm(s: string){
-	return (s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
+function norm(s: string) {
+	return (s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 }
 
 // Lightweight synonyms for common Spanish/English names
-const SYN: Record<string,string> = {
+const SYN: Record<string, string> = {
 	'nueva york': 'new york',
 	'paris': 'paris',
 	'parís': 'paris',
@@ -36,11 +36,13 @@ const SYN: Record<string,string> = {
 export function findAirport(query: string): Airport[] {
 	let q = norm(query);
 	if (!q) return [];
-	if (SYN[q]) q = SYN[q];
+	const syn = SYN[q];
+	if (syn) q = syn;
 
 	// Fast path for IATA code
-	if (q.length === 3 && airportMap.has(q.toUpperCase())){
-		return [airportMap.get(q.toUpperCase())!];
+	if (q.length === 3 && airportMap.has(q.toUpperCase())) {
+		const airport = airportMap.get(q.toUpperCase());
+		if (airport) return [airport];
 	}
 
 	const results = AIRPORTS.map(a => {
@@ -61,10 +63,10 @@ export function findAirport(query: string): Airport[] {
 
 		return { a, score };
 	})
-	.filter(x => x.score > 0)
-	.sort((x,y)=> y.score - x.score)
-	.slice(0, 10)
-	.map(x => x.a);
+		.filter(x => x.score > 0)
+		.sort((x, y) => y.score - x.score)
+		.slice(0, 10)
+		.map(x => x.a);
 
 	return results;
 }

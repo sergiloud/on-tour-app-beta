@@ -4,6 +4,8 @@ import { useSettings } from '../../context/SettingsContext';
 import { t } from '../../lib/i18n';
 import { useFinance } from '../../context/FinanceContext';
 import { exportFinanceCsv } from '../../lib/finance/export';
+import { can } from '../../lib/tenants';
+import GuardedAction from '../../components/common/GuardedAction';
 import StatusBreakdown from '../../components/finance/StatusBreakdown';
 import NetTimeline from '../../components/finance/NetTimeline';
 import KpiCards from '../../components/finance/KpiCards';
@@ -37,10 +39,9 @@ const FinanceOverview: React.FC = () => {
             <Pill active={region==='AMER'} onClick={()=> setRegion('AMER')}>AMER</Pill>
             <Pill active={region==='APAC'} onClick={()=> setRegion('APAC')}>APAC</Pill>
           </div>
-          <button
-            className="px-2 py-1 rounded bg-white/10 hover:bg-white/15 text-[11px]"
-            onClick={()=> exportFinanceCsv(snapshot.shows as any, { masked: false, columns: ['date','city','country','fee','status','net'] })}
-          >{t('actions.exportCsv') || 'Export CSV'}</button>
+          <GuardedAction scope="finance:export" className="px-2 py-1 rounded bg-white/10 hover:bg-white/15 text-[11px]" onClick={()=> exportFinanceCsv(snapshot.shows as any, { masked: false, columns: ['date','city','country','fee','status','net'] })}>
+            {t('actions.exportCsv') || 'Export CSV'}
+          </GuardedAction>
         </div>
       </div>
 

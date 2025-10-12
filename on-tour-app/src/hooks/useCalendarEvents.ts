@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { CalEvent } from '../components/calendar/types';
 import { countryLabel } from '../lib/countries';
+import { detectTravelRisks } from '../lib/calendar';
 
 type Inputs = {
   shows: Array<{ id: string; date: string; city: string; country: string; status: string }>;
@@ -27,16 +28,33 @@ export function useCalendarEvents({ shows, travel, lang, kinds, filters, toDateO
       if (s === 'offer') return !!filters.status.offer;
       return true;
     };
+
+    // Collect all events first for risk detection
+    const allEvents: CalEvent[] = [];
+
     if (kinds.shows) for (const s of shows) {
       if (!allowStatus(s.status)) continue;
       const d = toDateOnlyTz(s.date, tz);
-      push(d, { id: `show:${s.id}`, date: d, kind: 'show', title: `${s.city}, ${countryLabel(s.country, lang)}` , meta: '', status: s.status });
+      const event: CalEvent = { id: `show:${s.id}`, date: d, kind: 'show', title: `${s.city}, ${countryLabel(s.country, lang)}` , meta: '', status: s.status };
+      push(d, event);
+      allEvents.push(event);
     }
+
     if (kinds.travel) for (const it of travel) {
       if (!allowStatus(it.status)) continue;
       const d = toDateOnlyTz(it.date, tz);
-      push(d, { id: `travel:${it.id}`, date: d, kind: 'travel', title: it.title, meta: it.city || '', status: it.status, start: it.start, end: it.end });
+      const event: CalEvent = { id: `travel:${it.id}`, date: d, kind: 'travel', title: it.title, meta: it.city || '', status: it.status, start: it.start, end: it.end };
+
+      // Detect travel risks
+      const risk = detectTravelRisks(event, allEvents, shows);
+      if (risk) {
+        event.meta = `${event.meta} [${risk.toUpperCase()}]`.trim();
+      }
+
+      push(d, event);
+      allEvents.push(event);
     }
+
     return map;
   }, [shows, travel, lang, kinds.shows, kinds.travel, tz, filters?.status?.confirmed, filters?.status?.pending, filters?.status?.offer]);
 }

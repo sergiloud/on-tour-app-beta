@@ -1,0 +1,222 @@
+/**
+ * GPU Acceleration & Performance CSS Utilities
+ *
+ * These classes enable hardware acceleration and optimize rendering performance
+ * Use sparingly on elements that animate frequently
+ */
+
+/* ========== GPU ACCELERATION ========== */
+
+/**
+ * Force GPU acceleration for smooth animations
+ * Use on elements with frequent animations (transform, opacity)
+ */
+.gpu-accelerate {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/**
+ * For elements that animate opacity
+ */
+.gpu-accelerate-opacity {
+    will-change: opacity;
+    transform: translateZ(0);
+}
+
+/**
+ * For elements that both transform and change opacity
+ */
+.gpu-accelerate-full {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* ========== SMOOTH ANIMATIONS ========== */
+
+/**
+ * Ensure smooth 60fps animations
+ */
+.smooth-animation {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/**
+ * Optimize for touch devices
+ */
+.touch-optimize {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+}
+
+/* ========== PERFORMANCE HINTS ========== */
+
+/**
+ * Container for scrollable content (optimizes scroll performance)
+ */
+.scroll-optimize {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+    will-change: scroll-position;
+}
+
+/**
+ * Prevent layout thrashing during animations
+ */
+.contain-layout {
+    contain: layout style;
+}
+
+/**
+ * Prevent paint operations from affecting siblings
+ */
+.contain-paint {
+    contain: paint;
+}
+
+/**
+ * Full containment for isolated components
+ */
+.contain-strict {
+    contain: strict;
+}
+
+/* ========== REDUCE MOTION ========== */
+
+/**
+ * Respect user's reduced motion preference
+ */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .gpu-accelerate,
+    .gpu-accelerate-opacity,
+    .gpu-accelerate-full {
+        will-change: auto;
+    }
+}
+
+/* ========== OPTIMIZED HOVER STATES ========== */
+
+/**
+ * Optimized hover effects with GPU acceleration
+ */
+.hover-lift {
+    will-change: transform;
+    transform: translateZ(0);
+    transition: transform 200ms ease-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px) translateZ(0);
+}
+
+.hover-scale {
+    will-change: transform;
+    transform: translateZ(0);
+    transition: transform 150ms ease-out;
+}
+
+.hover-scale:hover {
+    transform: scale(1.02) translateZ(0);
+}
+
+/**
+ * Optimized focus states
+ */
+.focus-ring-smooth {
+    transition: box-shadow 200ms ease-out;
+}
+
+/**
+ * Prevent flickering on webkit
+ */
+.no-flicker {
+    -webkit-backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+}
+
+/* ========== COMPONENT-SPECIFIC OPTIMIZATIONS ========== */
+
+/**
+ * Optimize list items for smooth scrolling
+ */
+.list-item-optimize {
+    contain: layout style paint;
+    content-visibility: auto;
+}
+
+/**
+ * Optimize cards with hover effects
+ */
+.card-optimize {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/**
+ * Optimize modal/dialog animations
+ */
+.modal-optimize {
+    will-change: transform, opacity;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+}
+
+/**
+ * Optimize sticky headers
+ */
+.sticky-optimize {
+    position: sticky;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* ========== PERFORMANCE NOTES ========== */
+
+/*
+ * Best Practices:
+ *
+ * 1. USE GPU ACCELERATION FOR:
+ *    - Elements that animate frequently
+ *    - Transform and opacity animations
+ *    - Scroll-triggered elements
+ *
+ * 2. AVOID GPU ACCELERATION FOR:
+ *    - Static elements
+ *    - Entire pages (memory intensive)
+ *    - Too many elements at once
+ *
+ * 3. REMEMBER:
+ *    - will-change is a hint, not a guarantee
+ *    - Remove will-change after animation completes
+ *    - Use contain properties wisely
+ *    - Test on actual devices
+ *
+ * 4. PROPERTIES TO ANIMATE (GPU-friendly):
+ *    - transform (translate, scale, rotate)
+ *    - opacity
+ *    - filter
+ *
+ * 5. PROPERTIES TO AVOID (cause reflows):
+ *    - width, height
+ *    - top, left, right, bottom
+ *    - margin, padding
+ *    - border
+ */

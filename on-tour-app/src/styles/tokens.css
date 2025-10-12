@@ -31,12 +31,21 @@
   --elev-1: 0 6px 22px -8px rgba(0,0,0,0.6);
   --elev-2: 0 10px 34px -12px rgba(0,0,0,0.65);
   --elev-3: 0 16px 42px -16px rgba(0,0,0,0.7);
+  /* Elevation aliases */
+  --elevation-1: var(--elev-1);
+  --elevation-2: var(--elev-2);
+  --elevation-3: var(--elev-3);
 
   /* Motion */
   --easing-emphasized: cubic-bezier(.4,0,.2,1);
   --transition-fast: 120ms var(--easing-emphasized);
   --transition-medium: 220ms var(--easing-emphasized);
   --transition-slow: 480ms var(--easing-emphasized);
+  /* Motion aliases */
+  --dur-fast: 120ms;
+  --dur-med: 220ms;
+  --dur-slow: 480ms;
+  --ease: var(--easing-emphasized);
   --transition-opacity: opacity var(--transition-fast);
   --transition-transform: transform var(--transition-medium);
 
@@ -45,6 +54,22 @@
   --z-modal: 50;
   --z-popover: 30;
   --z-nav: 20;
+
+  /* Typography scale */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
 
     /* Directionality (for future RTL support) */
     --dir: ltr; /* ltr | rtl */

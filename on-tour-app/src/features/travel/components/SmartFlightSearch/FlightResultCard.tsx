@@ -2,6 +2,7 @@ import React from 'react';
 import type { FlightResult } from '../../../travel/providers/types';
 import { useSettings } from '../../../../context/SettingsContext';
 import { t } from '../../../../lib/i18n';
+import GuardedAction from '../../../../components/common/GuardedAction';
 // Icons removed to avoid external dependency; keep minimal text UI
 
 export const FlightResultCard: React.FC<{ r: FlightResult; onAdd: (r: FlightResult)=>void; onPin?: (r: FlightResult)=>void; pinned?: boolean }>=({ r, onAdd, onPin, pinned })=>{
@@ -71,7 +72,13 @@ export const FlightResultCard: React.FC<{ r: FlightResult; onAdd: (r: FlightResu
               {pinned ? (t('travel.unpin')||'Unpin') : (t('travel.pin')||'Pin')}
             </button>
           )}
-            <button onClick={()=> onAdd(r)} className="text-[11px] px-2 py-1 rounded bg-accent-500/20 text-accent-100 hover:bg-accent-500/30">{t('travel.add_to_trip')||'Add to trip'}</button>
+            <GuardedAction
+              scope="travel:book"
+              className="text-[11px] px-2 py-1 rounded bg-accent-500/20 text-accent-100 hover:bg-accent-500/30"
+              onClick={()=> onAdd(r)}
+            >
+              {t('travel.add_to_trip')||'Add to trip'}
+            </GuardedAction>
           {r.deepLink && <a href={r.deepLink} target="_blank" rel="noreferrer" className="text-[11px] px-2 py-1 rounded bg-white/10 hover:bg-white/15">{t('common.open')||'Open'}</a>}
         </div>
       </div>

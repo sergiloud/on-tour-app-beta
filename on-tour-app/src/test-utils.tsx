@@ -51,7 +51,7 @@ export function renderWithProviders(ui: React.ReactElement, options?: RenderOpti
   return rtlRender(ui, { wrapper: Providers, ...options });
 }
 
-// For backwards compatibility - same as renderWithProviders  
+// For backwards compatibility - same as renderWithProviders
 export const render = renderWithProviders;
 
 // Helper to render at a specific route (avoids nested MemoryRouter in tests needing an initial path)

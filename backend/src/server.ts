@@ -4,10 +4,24 @@ import { logger } from './utils/logger.js';
 
 const PORT = process.env.PORT || 3001;
 
+console.log(`
+╔═══════════════════════════════════════════════════════════╗
+║                  🎵 ON TOUR BACKEND v1.0.0              ║
+╠═══════════════════════════════════════════════════════════╣
+║  Status: Starting...                                      ║
+║  Environment: ${(process.env.NODE_ENV || 'development').padEnd(44)}║
+║  Port: ${PORT.toString().padEnd(52)}║
+╚═══════════════════════════════════════════════════════════╝
+`);
+
 const server = app.listen(PORT, () => {
-  logger.info(`🚀 Server running on http://localhost:${PORT}`);
-  logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`🗄️  Database: ${process.env.DATABASE_URL ? '✓ Configured' : '✗ Not configured'}`);
+  logger.info(`✅ Server running on http://localhost:${PORT}`);
+  logger.info(`📊 API Health: http://localhost:${PORT}/health`);
+  logger.info(`� Routes available:`);
+  logger.info(`   - POST /api/auth/login`);
+  logger.info(`   - GET  /api/shows`);
+  logger.info(`   - POST /api/shows`);
+  logger.info(`   - GET  /api/finance/overview`);
 });
 
 // Graceful shutdown

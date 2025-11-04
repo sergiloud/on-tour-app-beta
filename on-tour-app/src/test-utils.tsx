@@ -60,12 +60,12 @@ export function renderWithProvidersAtRoute(ui: React.ReactElement, route: string
 }
 
 // Re-export everything from testing-library EXCEPT render (which we've overridden)
-export { 
-  screen, 
-  fireEvent, 
-  waitFor, 
-  within, 
-  findByText, 
+export {
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+  findByText,
   findByRole,
   queryByText,
   queryByRole,

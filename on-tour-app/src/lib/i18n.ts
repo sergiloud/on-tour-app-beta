@@ -53,11 +53,11 @@ export const formatDate = (
   try {
     const d = typeof date === 'string' ? new Date(date) : date;
     const locale = localeMap[lang];
-    
+
     const options: Intl.DateTimeFormatOptions = format === 'short'
       ? { year: 'numeric', month: '2-digit', day: '2-digit' }
       : { year: 'numeric', month: 'long', day: 'numeric' };
-    
+
     return new Intl.DateTimeFormat(locale, options).format(d);
   } catch {
     return date instanceof Date ? date.toLocaleDateString() : date;
@@ -72,11 +72,11 @@ export const formatTime = (
   try {
     const d = typeof date === 'string' ? new Date(date) : date;
     const locale = localeMap[lang];
-    
+
     const options: Intl.DateTimeFormatOptions = format === 'short'
       ? { hour: '2-digit', minute: '2-digit' }
       : { hour: '2-digit', minute: '2-digit', second: '2-digit' };
-    
+
     return new Intl.DateTimeFormat(locale, options).format(d);
   } catch {
     return date instanceof Date ? date.toLocaleTimeString() : date;
@@ -96,7 +96,7 @@ export const formatCurrency = (
       currency,
       minimumFractionDigits: currency === 'JPY' ? 0 : 2,
     };
-    
+
     return new Intl.NumberFormat(locale, options).format(amount);
   } catch {
     return `${amount} ${currency}`;
@@ -115,7 +115,7 @@ export const formatNumber = (
       minimumFractionDigits: decimalPlaces,
       maximumFractionDigits: decimalPlaces,
     };
-    
+
     return new Intl.NumberFormat(locale, options).format(num);
   } catch {
     return num.toLocaleString();
@@ -3878,14 +3878,14 @@ export function useI18n() {
   // Pluralization support for all languages
   const pluralize = useCallback((count: number, key: string): string => {
     const translation = DICT[langState][key] || DICT.en[key];
-    
+
     if (!translation) return `${count} ${key}`;
-    
+
     // Simple pluralization: use 'one' for count=1, 'other' for everything else
     // Most European languages follow this pattern
     const isPlural = count !== 1;
     const form = isPlural ? 'other' : 'one';
-    
+
     // Check if translation is plural object (e.g., { one: "1 show", other: "{count} shows" })
     if (typeof translation === 'object' && translation !== null && form in translation) {
       const pluralObj = translation as Record<string, string>;
@@ -3894,7 +3894,7 @@ export function useI18n() {
         return template.replace('{count}', String(count));
       }
     }
-    
+
     return `${count} ${translation}`;
   }, [langState]);
 

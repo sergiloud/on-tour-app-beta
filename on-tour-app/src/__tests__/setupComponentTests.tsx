@@ -8,6 +8,8 @@ import { OrgProvider } from '../context/OrgContext';
 import { HighContrastProvider } from '../context/HighContrastContext';
 import { ToastProvider } from '../ui/Toast';
 import { SettingsProvider } from '../context/SettingsContext';
+import { MissionControlProvider } from '../context/MissionControlContext';
+import { ShowModalProvider } from '../context/ShowModalContext';
 
 const createTestQueryClient = () => {
   return new QueryClient({
@@ -65,13 +67,17 @@ export function AllTheProviders({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           <OrgProvider>
             <SettingsProvider>
-              <ThemeProvider>
-                <HighContrastProvider>
-                  <ToastProvider>
-                    {children}
-                  </ToastProvider>
-                </HighContrastProvider>
-              </ThemeProvider>
+              <MissionControlProvider>
+                <ShowModalProvider>
+                  <ThemeProvider>
+                    <HighContrastProvider>
+                      <ToastProvider>
+                        {children}
+                      </ToastProvider>
+                    </HighContrastProvider>
+                  </ThemeProvider>
+                </ShowModalProvider>
+              </MissionControlProvider>
             </SettingsProvider>
           </OrgProvider>
         </AuthProvider>

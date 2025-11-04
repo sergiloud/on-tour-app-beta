@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import 'express-async-errors';
 import pinoHttp from 'pino-http';
+import http from 'http';
 import { AppDataSource } from './database/datasource.js';
 import { setupSwagger } from './config/swagger-v2.js';
 import { showsRouter } from './routes/shows.js';
@@ -11,12 +12,17 @@ import { travelRouter } from './routes/travel.js';
 import { createAmadeusRouter } from './routes/amadeus.js';
 import { createStripeRouter } from './routes/stripe.js';
 import { createEmailRouter } from './routes/email.js';
+import { createRealtimeRouter } from './routes/realtime.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 import { logger } from './utils/logger.js';
+import { webSocketService } from './services/WebSocketService.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Create HTTP server for WebSocket support
+const server = http.createServer(app);
 
 // Initialize database
 async function initializeDatabase() {
@@ -42,6 +48,9 @@ app.use(pinoHttp({ logger }));
 // Setup Swagger documentation
 setupSwagger(app);
 
+// Initialize WebSocket service
+webSocketService.initialize(server);
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({
@@ -58,6 +67,7 @@ app.use('/api/travel', authMiddleware, travelRouter);
 app.use('/api/amadeus', createAmadeusRouter(logger));
 app.use('/api/stripe', createStripeRouter(logger));
 app.use('/api/email', createEmailRouter(logger));
+app.use('/api/realtime', createRealtimeRouter());
 
 // Error handling
 app.use(errorHandler);
@@ -66,8 +76,10 @@ app.use(errorHandler);
 async function start() {
   await initializeDatabase();
 
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     logger.info(`🚀 Server running on port ${PORT}`);
+    logger.info(`🔌 WebSocket server ready for connections`);
+    logger.info(`📚 API Docs available at http://localhost:${PORT}/api-docs`);
   });
 }
 

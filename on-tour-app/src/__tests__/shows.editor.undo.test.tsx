@@ -17,7 +17,7 @@ describe.skip('ShowEditorDrawer undo deletion', () => {
   it('allows undo after delete and restores', () => {
     const onDelete = vi.fn();
     const onRestore = vi.fn();
-  wrapper(<ShowEditorDrawer open initial={baseShow} mode="edit" onRequestClose={()=>{}} onSave={()=>{}} onDelete={onDelete} onRestore={onRestore} />);
+    wrapper(<ShowEditorDrawer open initial={baseShow} mode="edit" onRequestClose={()=>{}} onSave={()=>{}} onDelete={onDelete} onRestore={onRestore} />);
 
     // Open delete dialog
     fireEvent.click(screen.getByRole('button', { name: /delete/i }));
@@ -37,7 +37,7 @@ describe.skip('ShowEditorDrawer undo deletion', () => {
   it('finalizes deletion if timer elapses (simulated)', () => {
     vi.useFakeTimers();
     const onDelete = vi.fn();
-  wrapper(<ShowEditorDrawer open initial={baseShow} mode="edit" onRequestClose={()=>{}} onSave={()=>{}} onDelete={onDelete} onRestore={()=>{}} />);
+    wrapper(<ShowEditorDrawer open initial={baseShow} mode="edit" onRequestClose={()=>{}} onSave={()=>{}} onDelete={onDelete} onRestore={()=>{}} />);
 
     fireEvent.click(screen.getByRole('button', { name: /delete/i }));
     fireEvent.click(screen.getByRole('button', { name: /confirm delete|delete show|delete/i }));

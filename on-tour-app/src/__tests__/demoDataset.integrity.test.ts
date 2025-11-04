@@ -3,7 +3,7 @@ import { showStore } from '../shared/showStore';
 import { describe, it, expect } from 'vitest';
 
 describe('Demo dataset integrity', () => {
-  it.skip('force replace loads exactly curated shows with required fields', () => {
+  it('force replace loads exactly curated shows with required fields', () => {
     // TODO: Update expected show IDs to match actual demo dataset
     const res = forceReplaceDemoData();
     expect(res.replaced).toBe(true);

@@ -44,10 +44,7 @@ const createProviders = (initialEntries?: string[]) => {
 
 const Providers = createProviders();
 
-// Re-export everything from testing-library first
-export * from '@testing-library/react';
-
-// Then override render to use our Providers by default
+// Custom render function that wraps with providers
 export function render(ui: React.ReactElement, options?: RenderOptions) {
   return rtlRender(ui, { wrapper: Providers, ...options });
 }
@@ -61,3 +58,23 @@ export function renderWithProvidersAtRoute(ui: React.ReactElement, route: string
   const RoutedProviders = createProviders([route]);
   return rtlRender(ui, { wrapper: RoutedProviders, ...options });
 }
+
+// Re-export everything from testing-library EXCEPT render (which we've overridden)
+export { 
+  screen, 
+  fireEvent, 
+  waitFor, 
+  within, 
+  findByText, 
+  findByRole,
+  queryByText,
+  queryByRole,
+  getByText,
+  getByRole,
+  getAllByText,
+  getAllByRole,
+  queryAllByText,
+  queryAllByRole,
+  findAllByText,
+  findAllByRole,
+} from '@testing-library/react';

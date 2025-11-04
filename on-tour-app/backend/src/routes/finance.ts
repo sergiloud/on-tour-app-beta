@@ -1,20 +1,32 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import { FinanceService } from '../services/FinanceService.js';
 import { logger } from '../utils/logger.js';
 
 export const financeRouter = Router();
 
+const financeService = new FinanceService(logger);
+
 const calculateFeesSchema = z.object({
-  showIds: z.string().array().min(1),
-  commissionRate: z.number().min(0).max(1).optional(),
-  taxRate: z.number().min(0).max(1).optional(),
+  amount: z.number().positive('Amount must be positive'),
+  artistPercentage: z.number().min(0).max(100),
+  agencyPercentage: z.number().min(0).max(100),
+  taxPercentage: z.number().min(0).max(100),
+});
+
+const currencyConversionSchema = z.object({
+  amount: z.number().positive('Amount must be positive'),
+  from: z.string().min(1),
+  to: z.string().min(1),
 });
 
 const settlementSchema = z.object({
-  showId: z.string(),
-  amount: z.number().positive(),
-  paymentMethod: z.enum(['bank_transfer', 'check', 'card']),
-  notes: z.string().optional(),
+  showId: z.string().uuid(),
+  participants: z.array(z.object({
+    participantId: z.string().uuid(),
+    name: z.string().min(1),
+    percentage: z.number().min(0).max(100),
+  })).min(1),
 });
 
 // GET /api/finance/summary - Get financial summary
@@ -45,28 +57,14 @@ financeRouter.post('/calculate-fees', async (req: Request, res: Response) => {
   try {
     const validated = calculateFeesSchema.parse(req.body);
 
-    // Mock calculation (will integrate with Shows data later)
-    const commissionRate = validated.commissionRate || 0.15;
-    const taxRate = validated.taxRate || 0.08;
+    const breakdown = financeService.calculateFees(
+      validated.amount,
+      validated.artistPercentage,
+      validated.agencyPercentage,
+      validated.taxPercentage
+    );
 
-    const calculation = {
-      showIds: validated.showIds,
-      commissionRate,
-      taxRate,
-      totalGross: 10000, // Mock value
-      commission: 10000 * commissionRate,
-      taxes: 10000 * taxRate,
-      totalNet: 10000 * (1 - commissionRate) * (1 - taxRate),
-      breakdown: validated.showIds.map(id => ({
-        showId: id,
-        gross: 1000,
-        commission: 1000 * commissionRate,
-        taxes: 1000 * taxRate,
-        net: 1000 * (1 - commissionRate) * (1 - taxRate),
-      })),
-    };
-
-    res.json({ data: calculation });
+    res.json({ data: breakdown });
   } catch (error) {
     logger.error(error, 'Failed to calculate fees');
     if (error instanceof z.ZodError) {
@@ -80,21 +78,42 @@ financeRouter.post('/calculate-fees', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/finance/settlement - Create a settlement
+// POST /api/finance/convert-currency - Convert currency
+financeRouter.post('/convert-currency', async (req: Request, res: Response) => {
+  try {
+    const validated = currencyConversionSchema.parse(req.body);
+
+    const conversion = financeService.convertCurrency(
+      validated.amount,
+      validated.from,
+      validated.to
+    );
+
+    res.json({ data: conversion });
+  } catch (error) {
+    logger.error(error, 'Failed to convert currency');
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        error: 'Validation error',
+        details: error.issues,
+      });
+      return;
+    }
+    res.status(500).json({ error: 'Failed to convert currency' });
+  }
+});
+
+// POST /api/finance/settlement - Create a settlement calculation
 financeRouter.post('/settlement', async (req: Request, res: Response) => {
   try {
     const validated = settlementSchema.parse(req.body);
 
-    const settlement = {
-      id: `settle_${Date.now()}`,
-      organizationId: req.organizationId!,
-      ...validated,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      createdBy: req.user!.userId,
-    };
+    const breakdown = await financeService.calculateSettlement(
+      validated.showId,
+      validated.participants
+    );
 
-    res.status(201).json({ data: settlement });
+    res.status(201).json({ data: breakdown });
   } catch (error) {
     logger.error(error, 'Failed to create settlement');
     if (error instanceof z.ZodError) {
@@ -114,7 +133,7 @@ financeRouter.get('/settlements', async (req: Request, res: Response) => {
     const status = (req.query.status as string) || undefined;
 
     // This will be populated from database later
-    const settlements = [];
+    const settlements: any[] = [];
 
     res.json({ data: settlements, pagination: { total: 0, limit: 50, offset: 0 } });
   } catch (error) {

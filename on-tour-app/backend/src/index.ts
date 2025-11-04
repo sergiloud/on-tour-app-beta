@@ -20,7 +20,7 @@ async function initializeDatabase() {
   try {
     await AppDataSource.initialize();
     logger.info('✅ Database connected successfully');
-    
+
     // Run migrations
     await AppDataSource.runMigrations();
     logger.info('✅ Migrations completed');
@@ -41,8 +41,8 @@ setupSwagger(app);
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     database: AppDataSource.isInitialized ? 'connected' : 'disconnected'
   });
@@ -59,7 +59,7 @@ app.use(errorHandler);
 // Start server
 async function start() {
   await initializeDatabase();
-  
+
   app.listen(PORT, () => {
     logger.info(`🚀 Server running on port ${PORT}`);
   });

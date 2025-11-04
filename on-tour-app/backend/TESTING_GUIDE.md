@@ -103,6 +103,7 @@ echo -e "\n✅ Tests completed"
 ```
 
 Run it:
+
 ```bash
 chmod +x test-shows.sh
 ./test-shows.sh
@@ -159,6 +160,7 @@ Create `postman-collection.json`:
 ### 4. Unit Tests with Vitest
 
 File structure:
+
 ```
 tests/
 ├── unit/
@@ -212,9 +214,7 @@ describe('ShowsService', () => {
         location: 'North America',
       };
 
-      await expect(
-        ShowsService.createShow(organizationId, userId, invalidInput)
-      ).rejects.toThrow();
+      await expect(ShowsService.createShow(organizationId, userId, invalidInput)).rejects.toThrow();
     });
   });
 
@@ -238,6 +238,7 @@ describe('ShowsService', () => {
 ```
 
 Run tests:
+
 ```bash
 npm run test                    # Watch mode
 npm run test:run                # Single run
@@ -441,7 +442,7 @@ curl -H "Authorization: Bearer <valid-token>" ...
 ### 3. Tests failing
 
 **Problem**: Tests have errors  
-**Solution**: 
+**Solution**:
 
 ```bash
 # Check errors
@@ -460,7 +461,7 @@ npm run lint
 ### 4. Port already in use
 
 **Problem**: Error "EADDRINUSE"  
-**Solution**: 
+**Solution**:
 
 ```bash
 # Kill process on port 3000
@@ -473,16 +474,19 @@ PORT=3001 npm run dev
 ## Coverage Goals
 
 ### Week 1 Target
+
 - Unit tests: 40% coverage
 - Integration tests: Basic endpoints tested
 - Manual testing: All happy paths verified
 
 ### Week 2 Target
+
 - Unit tests: 60% coverage
 - Integration tests: Error cases included
 - E2E tests: User workflows tested
 
 ### Production Target
+
 - Unit tests: 80% coverage
 - Integration tests: All scenarios
 - E2E tests: Complete workflows

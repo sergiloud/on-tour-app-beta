@@ -7,7 +7,7 @@ Backend API for On Tour App, built with Node.js, Express, and TypeScript.
 **Status**: 🟢 Week 1 Ready  
 **Build**: ✅ TypeScript configured  
 **Tests**: 📝 Framework ready (Vitest)  
-**Database**: 📋 PostgreSQL setup pending  
+**Database**: 📋 PostgreSQL setup pending
 
 ## Quick Start
 
@@ -37,13 +37,13 @@ npm start
 
 ### Shows Management
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/shows` | List all shows |
-| POST | `/api/shows` | Create a new show |
-| GET | `/api/shows/:id` | Get show details |
-| PUT | `/api/shows/:id` | Update a show |
-| DELETE | `/api/shows/:id` | Delete a show |
+| Method | Endpoint         | Description       |
+| ------ | ---------------- | ----------------- |
+| GET    | `/api/shows`     | List all shows    |
+| POST   | `/api/shows`     | Create a new show |
+| GET    | `/api/shows/:id` | Get show details  |
+| PUT    | `/api/shows/:id` | Update a show     |
+| DELETE | `/api/shows/:id` | Delete a show     |
 
 **Example: Create a Show**
 
@@ -62,12 +62,12 @@ curl -X POST http://localhost:3000/api/shows \
 
 ### Finance Management
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/finance/summary` | Get financial summary |
-| POST | `/api/finance/calculate-fees` | Calculate fees & commissions |
-| POST | `/api/finance/settlement` | Create a settlement |
-| GET | `/api/finance/settlements` | List settlements |
+| Method | Endpoint                      | Description                  |
+| ------ | ----------------------------- | ---------------------------- |
+| GET    | `/api/finance/summary`        | Get financial summary        |
+| POST   | `/api/finance/calculate-fees` | Calculate fees & commissions |
+| POST   | `/api/finance/settlement`     | Create a settlement          |
+| GET    | `/api/finance/settlements`    | List settlements             |
 
 **Example: Calculate Fees**
 
@@ -84,12 +84,12 @@ curl -X POST http://localhost:3000/api/finance/calculate-fees \
 
 ### Travel Management
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/travel/search-flights` | Search for flights |
-| POST | `/api/travel/itineraries` | Create itinerary |
-| GET | `/api/travel/itineraries` | List itineraries |
-| GET | `/api/travel/itineraries/:id` | Get itinerary |
+| Method | Endpoint                      | Description        |
+| ------ | ----------------------------- | ------------------ |
+| POST   | `/api/travel/search-flights`  | Search for flights |
+| POST   | `/api/travel/itineraries`     | Create itinerary   |
+| GET    | `/api/travel/itineraries`     | List itineraries   |
+| GET    | `/api/travel/itineraries/:id` | Get itinerary      |
 
 **Example: Search Flights**
 
@@ -353,17 +353,20 @@ docker run -p 3000:3000 --env-file .env on-tour-backend
 ## Roadmap
 
 ### FASE 6 (Backend Foundation)
+
 - ✅ Week 1: Project setup, 3 API modules
 - [ ] Week 2: PostgreSQL + TypeORM
 - [ ] Week 3: Tests + validation
 - [ ] Week 4: Documentation + deployment
 
 ### FASE 7 (Multi-User)
+
 - Real-time collaboration
 - WebSocket integration
 - Advanced permissions
 
 ### FASE 8 (Advanced)
+
 - Third-party integrations
 - Analytics
 - Mobile API
@@ -379,6 +382,7 @@ docker run -p 3000:3000 --env-file .env on-tour-backend
 ## Support
 
 For issues or questions:
+
 1. Check existing GitHub issues
 2. Check `/docs` directory for guides
 3. See `DOCUMENTATION_INDEX.md` for navigation

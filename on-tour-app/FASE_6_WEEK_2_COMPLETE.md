@@ -41,6 +41,7 @@
 #### Database Entities (4 archivos)
 
 **1. Show.ts** - Entidad principal
+
 ```typescript
 // Campos: id, title, description, status, startDate, endDate
 // type, location, capacity, budget, currency, organizationId
@@ -49,6 +50,7 @@
 ```
 
 **2. FinanceRecord.ts** - Registros financieros
+
 ```typescript
 // Campos: id, showId, category, amount, currency, type
 // description, status, transactionDate, approvedBy
@@ -57,6 +59,7 @@
 ```
 
 **3. Itinerary.ts** - Itinerarios de viaje
+
 ```typescript
 // Campos: id, showId, title, description, startDate, endDate
 // destination, activities, status, numberOfDays, estimatedCost
@@ -65,6 +68,7 @@
 ```
 
 **4. Settlement.ts** - Liquidaciones financieras
+
 ```typescript
 // Campos: id, name, settlementDate, totalAmount, currency
 // status, notes, organizationId, createdBy, bankAccountNumber
@@ -81,6 +85,7 @@
 ```
 
 **Features**:
+
 - Timestamps automáticos (createdAt, updatedAt)
 - Índices para búsquedas rápidas
 - Foreign keys con CASCADE DELETE
@@ -99,37 +104,37 @@ describe('ShowsService', () => {
     ✅ should filter shows by status
     ✅ should handle empty results
   })
-  
+
   describe('getShow', {
     ✅ should return a show by id
     ✅ should return null if show not found
     ✅ should load relationships
   })
-  
+
   describe('createShow', {
     ✅ should create a new show
     ✅ should validate required fields
     ✅ should set correct organizational context
   })
-  
+
   describe('updateShow', {
     ✅ should update an existing show
     ✅ should throw error if show not found
     ✅ should update only provided fields
   })
-  
+
   describe('deleteShow', {
     ✅ should delete a show
     ✅ should return false if show not found
     ✅ should cascade delete related records
   })
-  
+
   describe('searchShows', {
     ✅ should search shows by title
     ✅ should filter by date range
     ✅ should handle complex filters
   })
-  
+
   describe('getShowStats', {
     ✅ should return show statistics
     ✅ should calculate correct totals
@@ -138,6 +143,7 @@ describe('ShowsService', () => {
 ```
 
 **Mock Strategy**:
+
 - Mock TypeORM Repository
 - Mock data generators
 - Test error scenarios
@@ -177,6 +183,7 @@ describe('ShowsService', () => {
 ```
 
 **Database Integration**:
+
 - Setup database antes de tests
 - Limpiar datos entre tests
 - Validar cambios en BD
@@ -204,6 +211,7 @@ describe('ShowsService', () => {
 ```
 
 **Endpoints Documentados**:
+
 - All 14 endpoints auto-documentados
 - Request/response schemas
 - Error codes y mensajes
@@ -237,6 +245,7 @@ describe('ShowsService', () => {
 ```
 
 **Uso**:
+
 ```bash
 npm run seed           # Populate database
 npm run db:reset      # Clear & reseed everything
@@ -246,10 +255,10 @@ npm run db:reset      # Clear & reseed everything
 
 ```json
 {
-  "swagger-jsdoc": "^6.2.8",           // OpenAPI spec generation
-  "swagger-ui-express": "^5.0.0",      // Swagger UI
+  "swagger-jsdoc": "^6.2.8", // OpenAPI spec generation
+  "swagger-ui-express": "^5.0.0", // Swagger UI
   "@types/swagger-ui-express": "^4.1.6",
-  "supertest": "^6.3.3",               // HTTP testing
+  "supertest": "^6.3.3", // HTTP testing
   "@types/supertest": "^2.0.12"
 }
 ```
@@ -257,6 +266,7 @@ npm run db:reset      # Clear & reseed everything
 ### 7. Configuration Updates
 
 **Backend `.env.example`**:
+
 ```bash
 # Database (PostgreSQL)
 DB_HOST=localhost
@@ -267,6 +277,7 @@ DB_NAME=on_tour_app
 ```
 
 **Package.json Scripts**:
+
 ```bash
 npm run seed              # Seed database
 npm run db:reset          # Full reset
@@ -569,6 +580,7 @@ Overall:                     🟢 GREEN - PRODUCTION READY
 ## 📞 Troubleshooting
 
 ### Error: "Cannot connect to PostgreSQL"
+
 ```bash
 # Check if PostgreSQL is running
 psql -U postgres -d postgres
@@ -583,6 +595,7 @@ psql -U postgres -d postgres
 ```
 
 ### Error: "Port 5432 already in use"
+
 ```bash
 # Change port in .env
 DB_PORT=5433
@@ -593,6 +606,7 @@ kill -9 <PID>
 ```
 
 ### Tests failing
+
 ```bash
 # Clear dependencies cache
 rm -rf node_modules

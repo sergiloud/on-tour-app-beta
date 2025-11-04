@@ -56,12 +56,14 @@ FASE 6 Week 1 successfully delivered 14 API endpoints with proper authentication
    - Maintain same interface for routes
 
 **Expected Result**:
+
 - All 14 endpoints working with PostgreSQL
 - Data persists across server restarts
 - Migration system ready for future changes
 - Connection pooling for performance
 
 **File Structure**:
+
 ```
 backend/src/
 ├── database/
@@ -115,12 +117,14 @@ backend/src/
    - Setup coverage reporting
 
 **Coverage Target**:
+
 - ShowsService: 100%
 - Routes: 80%
 - Utilities: 90%
 - Overall: 40%+
 
 **File Structure**:
+
 ```
 backend/tests/
 ├── unit/
@@ -173,6 +177,7 @@ backend/tests/
 **Result**: Interactive API documentation at `http://localhost:3000/api-docs`
 
 **File Structure**:
+
 ```
 backend/src/
 ├── swagger/
@@ -195,6 +200,7 @@ backend/src/
 ### 1. Real Business Logic
 
 **Finance Module**:
+
 - Accurate commission calculations
 - Multi-currency support
 - Tax calculation per jurisdiction
@@ -202,6 +208,7 @@ backend/src/
 - Reconciliation reports
 
 **Travel Module**:
+
 - Amadeus API integration
 - Real flight search
 - Hotel booking integration
@@ -228,14 +235,14 @@ backend/src/
 
 ## Success Metrics (Week 2 End)
 
-| Metric | Target | Status |
-|--------|--------|--------|
-| **Test Coverage** | 40% | 📝 To measure |
-| **API Endpoints** | 14/14 | ✅ Already met |
-| **Database** | PostgreSQL working | 📝 To implement |
-| **Documentation** | Swagger live | 📝 To implement |
-| **Build Time** | <30s | 📝 To measure |
-| **Response Time** | <100ms avg | 📝 To measure |
+| Metric            | Target             | Status          |
+| ----------------- | ------------------ | --------------- |
+| **Test Coverage** | 40%                | 📝 To measure   |
+| **API Endpoints** | 14/14              | ✅ Already met  |
+| **Database**      | PostgreSQL working | 📝 To implement |
+| **Documentation** | Swagger live       | 📝 To implement |
+| **Build Time**    | <30s               | 📝 To measure   |
+| **Response Time** | <100ms avg         | 📝 To measure   |
 
 ---
 
@@ -276,46 +283,49 @@ npm run build
 
 ## Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| DB schema mismatch | High | Careful migration planning, test rollbacks |
-| Test flakiness | Medium | Use stable factories, avoid time-dependent tests |
-| Performance issues | High | Database indexing, query optimization |
-| Type safety loss | Medium | Maintain strict TypeScript mode |
+| Risk               | Impact | Mitigation                                       |
+| ------------------ | ------ | ------------------------------------------------ |
+| DB schema mismatch | High   | Careful migration planning, test rollbacks       |
+| Test flakiness     | Medium | Use stable factories, avoid time-dependent tests |
+| Performance issues | High   | Database indexing, query optimization            |
+| Type safety loss   | Medium | Maintain strict TypeScript mode                  |
 
 ---
 
 ## Estimated Timeline
 
-| Task | Duration | Week |
-|------|----------|------|
-| PostgreSQL setup | 3-5 hours | W2.1 |
-| TypeORM config | 1-2 hours | W2.1 |
-| Entity models | 2-3 hours | W2.1-2.2 |
-| Migrations | 1-2 hours | W2.2 |
-| Service updates | 2-3 hours | W2.2-2.3 |
-| **Subtotal** | **9-15 hours** | **Week 2** |
-| Testing | 8-10 hours | W2.3-W3.1 |
-| Documentation | 6-8 hours | W2.3-W3.2 |
-| Buffer/fixes | 4-6 hours | W3.1 |
-| **Total** | **27-39 hours** | **Week 2-3** |
+| Task             | Duration        | Week         |
+| ---------------- | --------------- | ------------ |
+| PostgreSQL setup | 3-5 hours       | W2.1         |
+| TypeORM config   | 1-2 hours       | W2.1         |
+| Entity models    | 2-3 hours       | W2.1-2.2     |
+| Migrations       | 1-2 hours       | W2.2         |
+| Service updates  | 2-3 hours       | W2.2-2.3     |
+| **Subtotal**     | **9-15 hours**  | **Week 2**   |
+| Testing          | 8-10 hours      | W2.3-W3.1    |
+| Documentation    | 6-8 hours       | W2.3-W3.2    |
+| Buffer/fixes     | 4-6 hours       | W3.1         |
+| **Total**        | **27-39 hours** | **Week 2-3** |
 
 ---
 
 ## Key Resources
 
 ### Documentation
+
 - `backend/README.md` - Quick start
 - `backend/DOCUMENTATION_INDEX.md` - Full index
 - `backend/TESTING_GUIDE.md` - Testing strategies
 - `backend/SESSION_COMPLETE.md` - What was built
 
 ### Code Reference
+
 - `backend/src/services/showsService.ts` - Service pattern
 - `backend/src/routes/shows.ts` - Route pattern
 - `backend/src/middleware/auth.ts` - Auth pattern
 
 ### External
+
 - TypeORM docs: https://typeorm.io/
 - PostgreSQL docs: https://www.postgresql.org/docs/
 - Swagger/OpenAPI: https://swagger.io/

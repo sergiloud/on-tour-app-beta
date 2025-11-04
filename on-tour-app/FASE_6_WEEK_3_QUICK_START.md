@@ -13,13 +13,13 @@ FASE 6 Week 3 focuses on implementing **Advanced Business Logic** and **Third-pa
 
 ### Phase Objectives
 
-| Objective | Priority | Hours | Status |
-|-----------|----------|-------|--------|
-| Real Finance Calculation Engine | P1 | 8-10 | ⏳ Ready |
-| Amadeus Flight API Integration | P2 | 6-8 | ⏳ Ready |
-| Payment Processing (Stripe) | P2 | 4-6 | ⏳ Ready |
-| Email Notification System | P3 | 2-4 | ⏳ Ready |
-| Database Seeding Enhancement | P3 | 2-3 | ⏳ Ready |
+| Objective                       | Priority | Hours | Status   |
+| ------------------------------- | -------- | ----- | -------- |
+| Real Finance Calculation Engine | P1       | 8-10  | ⏳ Ready |
+| Amadeus Flight API Integration  | P2       | 6-8   | ⏳ Ready |
+| Payment Processing (Stripe)     | P2       | 4-6   | ⏳ Ready |
+| Email Notification System       | P3       | 2-4   | ⏳ Ready |
+| Database Seeding Enhancement    | P3       | 2-3   | ⏳ Ready |
 
 **Total**: 22-31 hours (flexible priority-based delivery)
 
@@ -73,49 +73,47 @@ npm run seed              # Should populate with sample data
 export class FinanceService {
   // Calculate net profit for a show
   calculateShowProfit(show: Show): {
-    grossRevenue: number
-    expenses: number
-    netProfit: number
-    margin: number
-  }
+    grossRevenue: number;
+    expenses: number;
+    netProfit: number;
+    margin: number;
+  };
 
   // Calculate fees (artist fee, agency fee, taxes)
-  calculateFees(amount: number, feeStructure: FeeConfig): {
-    artistFee: number
-    agencyFee: number
-    taxes: number
-    total: number
-  }
+  calculateFees(
+    amount: number,
+    feeStructure: FeeConfig
+  ): {
+    artistFee: number;
+    agencyFee: number;
+    taxes: number;
+    total: number;
+  };
 
   // Convert currency with real-time rates
-  convertCurrency(
-    amount: number,
-    fromCurrency: string,
-    toCurrency: string
-  ): Promise<number>
+  convertCurrency(amount: number, fromCurrency: string, toCurrency: string): Promise<number>;
 
   // Calculate settlement amounts (split payments)
-  calculateSettlement(
-    showId: string,
-    splitConfig: SplitConfig
-  ): Promise<SettlementBreakdown>
+  calculateSettlement(showId: string, splitConfig: SplitConfig): Promise<SettlementBreakdown>;
 
   // Generate financial report
   generateFinancialReport(
     organizationId: string,
     startDate: Date,
     endDate: Date
-  ): Promise<FinancialReport>
+  ): Promise<FinancialReport>;
 }
 ```
 
 **Testing**: Create `backend/tests/unit/FinanceService.test.ts`
+
 - Test profit calculations with various scenarios
 - Test fee calculations
 - Test currency conversion
 - Test settlement calculations
 
 **Database Additions**:
+
 - Create `FeeConfiguration` entity
 - Create `ExchangeRate` cache table
 - Add indices for performance
@@ -148,6 +146,7 @@ GET /api/finance/report
 ```
 
 **Integration Tests**: `backend/tests/integration/finance.routes.test.ts`
+
 - Test all new endpoints
 - Test error scenarios (invalid amounts, unsupported currencies)
 - Test report generation
@@ -161,25 +160,28 @@ GET /api/finance/report
 export const FeeConfigSchema = z.object({
   artistPercentage: z.number().min(0).max(100),
   agencyPercentage: z.number().min(0).max(100),
-  taxPercentage: z.number().min(0).max(50)
-})
+  taxPercentage: z.number().min(0).max(50),
+});
 
 export const CurrencyConversionSchema = z.object({
   amount: z.number().positive(),
   from: z.enum(['USD', 'EUR', 'GBP', 'MXN', 'ARS']),
-  to: z.enum(['USD', 'EUR', 'GBP', 'MXN', 'ARS'])
-})
+  to: z.enum(['USD', 'EUR', 'GBP', 'MXN', 'ARS']),
+});
 
 export const SettlementSchema = z.object({
   showId: z.string().uuid(),
-  participants: z.array(z.object({
-    participantId: z.string(),
-    percentage: z.number().min(0).max(100)
-  }))
-})
+  participants: z.array(
+    z.object({
+      participantId: z.string(),
+      percentage: z.number().min(0).max(100),
+    })
+  ),
+});
 ```
 
 **Deliverables**:
+
 - [ ] FinanceService with all calculations
 - [ ] FinanceController with 4 new endpoints
 - [ ] 30+ unit tests for FinanceService
@@ -204,28 +206,23 @@ export const SettlementSchema = z.object({
 export class AmadeusService {
   // Search available flights
   searchFlights(
-    from: string,        // IATA code (MAD, NYC, etc)
+    from: string, // IATA code (MAD, NYC, etc)
     to: string,
     date: Date,
     passengers: number
-  ): Promise<Flight[]>
+  ): Promise<Flight[]>;
 
   // Get flight prices
-  getFlightPrices(
-    searchId: string
-  ): Promise<PriceQuote>
+  getFlightPrices(searchId: string): Promise<PriceQuote>;
 
   // Book a flight (creates integration record)
-  bookFlight(
-    flightId: string,
-    passengerDetails: PassengerInfo[]
-  ): Promise<Booking>
+  bookFlight(flightId: string, passengerDetails: PassengerInfo[]): Promise<Booking>;
 
   // Get booking status
-  getBookingStatus(bookingId: string): Promise<BookingStatus>
+  getBookingStatus(bookingId: string): Promise<BookingStatus>;
 
   // Cancel booking
-  cancelBooking(bookingId: string): Promise<CancellationConfirmation>
+  cancelBooking(bookingId: string): Promise<CancellationConfirmation>;
 }
 ```
 
@@ -251,18 +248,21 @@ DELETE /api/travel/bookings/:bookingId
 ```
 
 **Setup Required**:
+
 1. Sign up for Amadeus API at https://developers.amadeus.com
 2. Get Client ID and Client Secret
 3. Add to `.env`: `AMADEUS_API_KEY` and `AMADEUS_API_SECRET`
 4. Create `AmadeusConfig` in database
 
 **Testing**:
+
 - Mock Amadeus API responses
 - Test flight search with various parameters
 - Test error handling (no flights found, API errors)
 - Test booking flow
 
 **Deliverables**:
+
 - [ ] AmadeusService with flight search/booking
 - [ ] 5 new API endpoints for flights
 - [ ] 15+ integration tests
@@ -281,35 +281,19 @@ DELETE /api/travel/bookings/:bookingId
 ```typescript
 export class StripeService {
   // Create payment intent
-  createPaymentIntent(
-    amount: number,
-    currency: string,
-    metadata: object
-  ): Promise<PaymentIntent>
+  createPaymentIntent(amount: number, currency: string, metadata: object): Promise<PaymentIntent>;
 
   // Process payment
-  processPayment(
-    paymentIntentId: string,
-    paymentMethodId: string
-  ): Promise<PaymentResult>
+  processPayment(paymentIntentId: string, paymentMethodId: string): Promise<PaymentResult>;
 
   // Create transfer (for settlement)
-  createTransfer(
-    amount: number,
-    recipientStripeId: string,
-    description: string
-  ): Promise<Transfer>
+  createTransfer(amount: number, recipientStripeId: string, description: string): Promise<Transfer>;
 
   // Refund payment
-  refundPayment(
-    paymentIntentId: string,
-    amount?: number
-  ): Promise<Refund>
+  refundPayment(paymentIntentId: string, amount?: number): Promise<Refund>;
 
   // Get transaction history
-  getTransactionHistory(
-    filters: TransactionFilter
-  ): Promise<Transaction[]>
+  getTransactionHistory(filters: TransactionFilter): Promise<Transaction[]>;
 }
 ```
 
@@ -338,12 +322,14 @@ GET /api/finance/transactions
 ```
 
 **Setup Required**:
+
 1. Create Stripe account at https://stripe.com
 2. Get Publishable Key and Secret Key
 3. Add to `.env`: `STRIPE_PUBLIC_KEY` and `STRIPE_SECRET_KEY`
 4. Create `StripeConfiguration` in database
 
 **Testing**:
+
 - Mock Stripe API responses
 - Test payment intent creation
 - Test payment processing
@@ -351,6 +337,7 @@ GET /api/finance/transactions
 - Test error scenarios (declined cards, etc)
 
 **Deliverables**:
+
 - [ ] StripeService with payment handling
 - [ ] 4 new API endpoints for payments
 - [ ] 15+ integration tests
@@ -369,32 +356,24 @@ GET /api/finance/transactions
 ```typescript
 export class EmailService {
   // Send show confirmation
-  sendShowConfirmation(show: Show, recipient: string): Promise<void>
+  sendShowConfirmation(show: Show, recipient: string): Promise<void>;
 
   // Send settlement notification
-  sendSettlementNotification(
-    settlement: Settlement,
-    recipients: string[]
-  ): Promise<void>
+  sendSettlementNotification(settlement: Settlement, recipients: string[]): Promise<void>;
 
   // Send financial report
-  sendFinancialReport(
-    report: FinancialReport,
-    recipient: string
-  ): Promise<void>
+  sendFinancialReport(report: FinancialReport, recipient: string): Promise<void>;
 
   // Send booking reminder
-  sendBookingReminder(show: Show, recipient: string): Promise<void>
+  sendBookingReminder(show: Show, recipient: string): Promise<void>;
 
   // Send alert (issues detected)
-  sendAlert(
-    alert: Alert,
-    recipients: string[]
-  ): Promise<void>
+  sendAlert(alert: Alert, recipients: string[]): Promise<void>;
 }
 ```
 
 **Email Templates** (`backend/src/email-templates/`):
+
 - `show-confirmation.hbs`
 - `settlement-notification.hbs`
 - `financial-report.hbs`
@@ -402,11 +381,13 @@ export class EmailService {
 - `alert-notification.hbs`
 
 **Setup Options**:
+
 - Option A: SendGrid (recommended for scale)
 - Option B: Mailgun (simple, reliable)
 - Option C: AWS SES (if already using AWS)
 
 **Deliverables**:
+
 - [ ] EmailService with template rendering
 - [ ] 5 email templates
 - [ ] Email queue system (Bull/Redis)
@@ -436,12 +417,14 @@ export class EmailService {
 
 #### 3.2 Test Utilities & Factories
 
-**Files**: 
+**Files**:
+
 - `backend/tests/factories/ShowFactory.ts`
 - `backend/tests/factories/FinanceFactory.ts`
 - `backend/tests/utils/test-helpers.ts`
 
 **Deliverables**:
+
 - [ ] Enhanced seeding script
 - [ ] Factory pattern for test data
 - [ ] Test utilities for common scenarios
@@ -578,6 +561,7 @@ Payment Routes: 20+ tests
 ## 📊 SUCCESS CRITERIA
 
 ### Code Quality
+
 - [ ] 0 TypeScript errors (strict mode)
 - [ ] 0 ESLint issues
 - [ ] All new tests passing (155+)
@@ -585,6 +569,7 @@ Payment Routes: 20+ tests
 - [ ] No performance regressions
 
 ### Functionality
+
 - [ ] Real finance calculations working
 - [ ] Amadeus flight search functional
 - [ ] Stripe payment processing working
@@ -592,6 +577,7 @@ Payment Routes: 20+ tests
 - [ ] All endpoints documented in Swagger
 
 ### Documentation
+
 - [ ] All new code documented
 - [ ] Swagger specs complete
 - [ ] Setup guides for each integration
@@ -599,6 +585,7 @@ Payment Routes: 20+ tests
 - [ ] API examples provided
 
 ### Git & Release
+
 - [ ] Clean commit history
 - [ ] Meaningful commit messages
 - [ ] Release notes prepared
@@ -657,6 +644,7 @@ touch tests/unit/FinanceService.test.ts
 ### Step 4: Manage Priorities
 
 If running short on time:
+
 - **Must Have**: Finance Service + Finance Routes
 - **Should Have**: Amadeus Flight Search + Stripe
 - **Nice to Have**: Email System + Enhanced Seeding
@@ -705,7 +693,8 @@ Remaining:      FASE 6 Week 4 + FASE 7-8 (35%)
 ### Common Issues
 
 **Issue**: Tests failing after adding dependencies
-**Solution**: 
+**Solution**:
+
 ```bash
 npm install
 npm run build
@@ -714,6 +703,7 @@ npm test
 
 **Issue**: API not responding
 **Solution**:
+
 ```bash
 # Check server is running
 npm run dev
@@ -724,6 +714,7 @@ lsof -i :3000
 
 **Issue**: Database connection error
 **Solution**:
+
 ```bash
 # Reset database
 npm run db:reset
@@ -732,6 +723,7 @@ npm run seed
 
 **Issue**: Swagger not showing new endpoints
 **Solution**:
+
 ```bash
 # Clear browser cache
 # Restart server

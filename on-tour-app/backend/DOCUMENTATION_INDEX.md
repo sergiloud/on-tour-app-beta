@@ -5,19 +5,23 @@ Navigation guide for On Tour App backend documentation.
 ## Quick Navigation
 
 ### Getting Started
+
 - **[Backend README](./README.md)** - Project overview and quick start
 - **[Installation Guide](#installation-guide)** - Step-by-step setup
 
 ### API Reference
+
 - **[Shows API](./docs/SHOWS_API.md)** - Shows management endpoints
 - **[Finance API](./docs/FINANCE_API.md)** - Finance operations endpoints
 - **[Travel API](./docs/TRAVEL_API.md)** - Travel management endpoints
 
 ### Architecture
+
 - **[Shows Architecture](./docs/SHOWS_ARCHITECTURE.md)** - Technical design
 - **[Database Schema](./docs/DATABASE_SCHEMA.md)** - Data models (planned)
 
 ### Development
+
 - **[Testing Guide](./TESTING_GUIDE.md)** - Unit and integration tests
 - **[Authentication](./docs/AUTHENTICATION.md)** - JWT setup
 - **[Error Handling](./docs/ERROR_HANDLING.md)** - Error patterns
@@ -60,8 +64,9 @@ curl http://localhost:3000/health
 ```
 
 Response:
+
 ```json
-{"status":"ok","timestamp":"2025-11-04T..."}
+{ "status": "ok", "timestamp": "2025-11-04T..." }
 ```
 
 ## Project Structure
@@ -109,31 +114,31 @@ backend/
 
 ### Shows Module
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/shows` | ✅ | List all shows |
-| POST | `/api/shows` | ✅ | Create show |
-| GET | `/api/shows/:id` | ✅ | Get show |
-| PUT | `/api/shows/:id` | ✅ | Update show |
-| DELETE | `/api/shows/:id` | ✅ | Delete show |
+| Method | Path             | Auth | Description    |
+| ------ | ---------------- | ---- | -------------- |
+| GET    | `/api/shows`     | ✅   | List all shows |
+| POST   | `/api/shows`     | ✅   | Create show    |
+| GET    | `/api/shows/:id` | ✅   | Get show       |
+| PUT    | `/api/shows/:id` | ✅   | Update show    |
+| DELETE | `/api/shows/:id` | ✅   | Delete show    |
 
 ### Finance Module
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/finance/summary` | ✅ | Financial summary |
-| POST | `/api/finance/calculate-fees` | ✅ | Calculate fees |
-| POST | `/api/finance/settlement` | ✅ | Create settlement |
-| GET | `/api/finance/settlements` | ✅ | List settlements |
+| Method | Path                          | Auth | Description       |
+| ------ | ----------------------------- | ---- | ----------------- |
+| GET    | `/api/finance/summary`        | ✅   | Financial summary |
+| POST   | `/api/finance/calculate-fees` | ✅   | Calculate fees    |
+| POST   | `/api/finance/settlement`     | ✅   | Create settlement |
+| GET    | `/api/finance/settlements`    | ✅   | List settlements  |
 
 ### Travel Module
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/travel/search-flights` | ✅ | Search flights |
-| POST | `/api/travel/itineraries` | ✅ | Create itinerary |
-| GET | `/api/travel/itineraries` | ✅ | List itineraries |
-| GET | `/api/travel/itineraries/:id` | ✅ | Get itinerary |
+| Method | Path                          | Auth | Description      |
+| ------ | ----------------------------- | ---- | ---------------- |
+| POST   | `/api/travel/search-flights`  | ✅   | Search flights   |
+| POST   | `/api/travel/itineraries`     | ✅   | Create itinerary |
+| GET    | `/api/travel/itineraries`     | ✅   | List itineraries |
+| GET    | `/api/travel/itineraries/:id` | ✅   | Get itinerary    |
 
 ## Commands Reference
 
@@ -271,6 +276,7 @@ npm run type-check
 ```
 
 For dev dependencies:
+
 ```bash
 npm install --save-dev package-name
 ```
@@ -323,24 +329,29 @@ Skip for now (Week 2 feature). Comment out database imports.
 ## Documentation Files
 
 ### Getting Started
+
 - `README.md` - Project overview ← Start here
 - `DOCUMENTATION_INDEX.md` - This file
 
 ### API Documentation
+
 - `docs/SHOWS_API.md` - Shows endpoint reference
 - `docs/FINANCE_API.md` - Finance endpoint reference (planned)
 - `docs/TRAVEL_API.md` - Travel endpoint reference (planned)
 
 ### Architecture & Design
+
 - `docs/SHOWS_ARCHITECTURE.md` - Shows system design
 - `docs/AUTHENTICATION.md` - JWT authentication (planned)
 - `docs/DATABASE_SCHEMA.md` - Data models (planned)
 - `docs/ERROR_HANDLING.md` - Error patterns (planned)
 
 ### Development
+
 - `TESTING_GUIDE.md` - Testing strategies
 
 ### Session Reports
+
 - `SESSION_COMPLETE.md` - This session's work
 
 ## FAQ

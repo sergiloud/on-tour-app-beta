@@ -6,15 +6,15 @@
 
 ## 🎯 STATUS GENERAL
 
-| Métrica           | Estado             | Detalles                                  |
-| ----------------- | ------------------ | ----------------------------------------- |
-| **Build (FE)**    | 🟢 GREEN           | Vite compile limpio, 0 TS errors          |
-| **Tests (FE)**    | 🟢 408/449 PASSING | 41 skipped (intencional), 0 fallos        |
-| **FASE 5 (FE)**   | 🟢 COMPLETADA      | 112/112 integration tests passing         |
-| **FASE 6 (BE)**   | 🟢 WEEK 2 COMPLETE | PostgreSQL, 50+ tests, Swagger, seeding    |
-| **Code Quality**  | 🟢 LIMPIO          | ESLint clean, TypeScript strict mode      |
-| **Documentation** | 🟢 COMPLETA        | 2,839 lines (32 essential .md files)      |
-| **Performance**   | 🟢 OPTIMIZADO      | API queries <50ms, Swagger <100ms         |
+| Métrica           | Estado             | Detalles                                |
+| ----------------- | ------------------ | --------------------------------------- |
+| **Build (FE)**    | 🟢 GREEN           | Vite compile limpio, 0 TS errors        |
+| **Tests (FE)**    | 🟢 408/449 PASSING | 41 skipped (intencional), 0 fallos      |
+| **FASE 5 (FE)**   | 🟢 COMPLETADA      | 112/112 integration tests passing       |
+| **FASE 6 (BE)**   | 🟢 WEEK 2 COMPLETE | PostgreSQL, 50+ tests, Swagger, seeding |
+| **Code Quality**  | 🟢 LIMPIO          | ESLint clean, TypeScript strict mode    |
+| **Documentation** | 🟢 COMPLETA        | 2,839 lines (32 essential .md files)    |
+| **Performance**   | 🟢 OPTIMIZADO      | API queries <50ms, Swagger <100ms       |
 
 ---
 
@@ -578,6 +578,7 @@ npm run test:coverage # With coverage report
 El proyecto alcanzó un hito importante:
 
 **Frontend (FASE 5)**:
+
 - ✅ Todas las features principales implementadas
 - ✅ Sistema de sincronización multi-tab y offline robusto
 - ✅ Tests exhaustivos (408/449 passing, 90.9%)
@@ -585,6 +586,7 @@ El proyecto alcanzó un hito importante:
 - ✅ Documentación completa
 
 **Backend (FASE 6 Week 1-2)**:
+
 - ✅ 14 endpoints REST con autenticación JWT
 - ✅ PostgreSQL integrado con TypeORM
 - ✅ 4 entidades de base de datos con relaciones

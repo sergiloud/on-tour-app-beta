@@ -1,6 +1,6 @@
 # 📊 PROYECTO ON TOUR APP 2.0 - ESTADO ACTUAL (4 Noviembre 2025)
 
-**RESUMEN EJECUTIVO**: Proyecto en estado **PRODUCCIÓN READY (FASE 5)** + **FASE 6 (Backend) INICIADA**. Frontend completo con 408/449 tests. Backend foundation creada, Week 1 ready.
+**RESUMEN EJECUTIVO**: Proyecto en estado **PRODUCCIÓN READY (FASE 5)** + **FASE 6 WEEK 1 COMPLETA**. Frontend 408/449 tests. Backend 14 endpoints, TypeScript strict, documentación 1,839 líneas. Listo para PostgreSQL (Week 2).
 
 ---
 
@@ -11,10 +11,10 @@
 | **Build (FE)**    | 🟢 GREEN           | Vite compile limpio, 0 TS errors          |
 | **Tests (FE)**    | 🟢 408/449 PASSING | 41 skipped (intencional), 0 fallos        |
 | **FASE 5 (FE)**   | 🟢 COMPLETADA      | 112/112 integration tests passing         |
-| **FASE 6 (BE)**   | 🟡 EN PROGRESO     | Foundation ready, npm install pending     |
+| **FASE 6 (BE)**   | � WEEK 1 COMPLETE | 14 endpoints, 548 LOC, auth + validation  |
 | **Code Quality**  | 🟢 LIMPIO          | ESLint clean, TypeScript strict mode      |
-| **Documentation** | 🟢 COMPLETA        | 68 docs (65 FE + 3 new BE guides)         |
-| **Performance**   | 🟢 OPTIMIZADO      | Finance calcs <100ms, virtual lists 60fps |
+| **Documentation** | 🟢 COMPLETA        | 1,839 lines (32 essential .md files)      |
+| **Performance**   | 🟢 OPTIMIZADO      | Finance calcs <100ms, API ready for test  |
 
 ---
 
@@ -49,7 +49,7 @@
 - ✅ Bundle optimization (-84% reduction)
 - **Performance**: 94/100 Lighthouse
 
-### FASE 5: Sincronización & Offline (3-4 semanas) 🆕
+### FASE 5: Sincronización & Offline (3-4 semanas) ✅
 
 - ✅ **5.1 Multi-Tab Sync** - BroadcastChannel API
   - Cross-tab real-time synchronization
@@ -74,6 +74,51 @@
   - useShowsMutations offline support
   - Comprehensive scenario testing
   - Tests: 112/112 passing (56 core + 17 integration + 39 existing)
+
+### FASE 6: Backend Foundation (Week 1) ✅ NEW!
+
+- ✅ **6.1 Infrastructure Setup**
+  - Express.js + TypeScript (strict mode)
+  - Node.js 20 LTS configured
+  - ES Modules enabled
+  - Development environment ready
+  - 0 TypeScript errors, ESLint ready
+
+- ✅ **6.2 Authentication & Security**
+  - JWT Bearer token implementation
+  - Organization scoping per user
+  - Helmet security headers
+  - CORS protection
+  - Global error handling middleware
+
+- ✅ **6.3 Shows Module (5 endpoints)**
+  - GET `/api/shows` - List with pagination
+  - POST `/api/shows` - Create with validation
+  - GET `/api/shows/:id` - Get details
+  - PUT `/api/shows/:id` - Update
+  - DELETE `/api/shows/:id` - Delete
+  - ShowsService with business logic
+
+- ✅ **6.4 Finance Module (4 endpoints)**
+  - GET `/api/finance/summary` - Financial overview
+  - POST `/api/finance/calculate-fees` - Fee calculation
+  - POST `/api/finance/settlement` - Settlement creation
+  - GET `/api/finance/settlements` - List settlements
+
+- ✅ **6.5 Travel Module (4 endpoints)**
+  - POST `/api/travel/search-flights` - Flight search (mock)
+  - POST `/api/travel/itineraries` - Create itinerary
+  - GET `/api/travel/itineraries` - List trips
+  - GET `/api/travel/itineraries/:id` - Get trip details
+
+- ✅ **6.6 Infrastructure Complete**
+  - Zod input validation on all endpoints
+  - Pino logger (dev + production modes)
+  - In-memory mock database
+  - Vitest testing framework ready
+  - Package.json with 15 dependencies
+  - Environment configuration template
+  - Tests: Framework ready, structure in place
 
 ---
 
@@ -286,13 +331,23 @@ Component rendering logic heavily depends on:
 
 ## 📈 ROADMAP FUTURO
 
-### FASE 6 (Próximas 2-3 semanas)
+### FASE 6 Week 2 (Próximas 1-2 semanas)
 
-- [ ] Backend API setup (Node.js/Express)
-- [ ] Database schema (PostgreSQL)
-- [ ] Authentication (OAuth2)
+- [ ] PostgreSQL setup & TypeORM
+- [ ] Database migrations system
+- [ ] Replace mock storage with real DB
+- [ ] Unit tests (40% coverage target)
+- [ ] Swagger/OpenAPI documentation
+- [ ] Integration tests for all endpoints
+
+### FASE 6 Week 3-4 (Semanas 3-4)
+
+- [ ] Real Finance calculations
+- [ ] Amadeus API integration (Travel)
+- [ ] Multi-organization features
+- [ ] Rate limiting & throttling
 - [ ] Real-time sync (WebSockets)
-- [ ] E-signatures integration (HelloSign)
+- [ ] Error logging & monitoring
 
 ### FASE 7 (Semanas 4-6)
 

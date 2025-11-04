@@ -8,7 +8,7 @@ import DashboardOverview from '../pages/Dashboard';
 function App() {
   return (
     <Routes>
-      <Route path="/dashboard" element={<DashboardLayout />}> 
+      <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<DashboardOverview />} />
       </Route>
     </Routes>

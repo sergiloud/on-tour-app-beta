@@ -105,18 +105,21 @@
 **Impact**: -232 líneas (useShowsMutations), +115 líneas (extracted), net -117
 
 ### Phase 1: useShowsMutations.ts Simplification (282 → 50 líneas)
+
 - Removido: React Query mutations boilerplate (useMutation calls)
 - Resultado: Simple hook con single responsibility
 - Impact: -232 líneas, complexity dramáticamente reducida
 - ✅ Build GREEN, 0 TS errors
 
 ### Phase 2: useOfflineMutation.ts Extraction (115 líneas)
+
 - Nuevo: `useOfflineMutation()` hook
 - Nuevo: `useOfflineStatus()` hook simplificado
 - Reusable para componentes offline
 - ✅ Full integration working
 
 ### Phase 3: FinanceCalc Modularization (529 → 5 módulos)
+
 - Creado: `src/features/finance/calculations/`
   - `income.ts` (45 líneas)
   - `commissions.ts` (23 líneas)
@@ -132,9 +135,11 @@
 ## ⏳ PRÓXIMAS TAREAS
 
 ### REFINE-004: Test Unblocking
+
 **Objetivo**: Crear setupComponentTests() helper, unskip 44 tests, +50 nuevos tests
 
 ### REFINE-005: i18n Completion
+
 **Objetivo**: Traducir FR/DE/IT/PT, lograr 100% coverage
 
 ---
@@ -178,9 +183,10 @@ TOTAL:      ████████████░░░░░░░░  60% �
 ---
 
 ## ⏭️ SIGUIENTE
-  - Compose the two above
-  - Add shows-specific logic
-  - Clean exports
+
+- Compose the two above
+- Add shows-specific logic
+- Clean exports
 
 **Files to Create**:
 

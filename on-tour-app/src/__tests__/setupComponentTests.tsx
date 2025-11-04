@@ -58,7 +58,7 @@ export const setupGlobalMocks = () => {
 
 export function AllTheProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(() => createTestQueryClient());
-  
+
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>

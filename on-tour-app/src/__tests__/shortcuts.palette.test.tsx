@@ -2,7 +2,7 @@ import React from 'react';
 import { renderWithProviders, screen, fireEvent } from '../test-utils';
 import DashboardLayout from '../layouts/DashboardLayout';
 
-describe.skip('Global shortcuts', () => {
+describe('Global shortcuts', () => {
   it('opens palette with Cmd/Ctrl+K and shortcuts overlay with ?', async () => {
     // Force mac platform so metaKey path is used
     const origPlatform = Object.getOwnPropertyDescriptor(Navigator.prototype, 'platform');

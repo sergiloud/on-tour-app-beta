@@ -1,20 +1,18 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { SettingsProvider } from '../context/SettingsContext';
 import { FinanceProvider } from '../context/FinanceContext';
 import { FinanceQuicklook } from '../components/dashboard/FinanceQuicklook';
-import { MemoryRouter } from 'react-router-dom';
+import { renderWithProviders } from './setupComponentTests';
 
-describe.skip('FinanceQuicklook KPIs', () => {
+describe('FinanceQuicklook KPIs', () => {
   it('renders new KPI badges (DSO, GM, MTD, FvT, Δ)', () => {
-    render(
-      <MemoryRouter>
-        <SettingsProvider>
-          <FinanceProvider>
-            <FinanceQuicklook />
-          </FinanceProvider>
-        </SettingsProvider>
-      </MemoryRouter>
+    renderWithProviders(
+      <SettingsProvider>
+        <FinanceProvider>
+          <FinanceQuicklook />
+        </FinanceProvider>
+      </SettingsProvider>
     );
     expect(screen.getByText(/DSO/i)).toBeInTheDocument();
     expect(screen.getByText(/GM/i)).toBeInTheDocument();

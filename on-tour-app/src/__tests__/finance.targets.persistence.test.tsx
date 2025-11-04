@@ -1,23 +1,18 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { SettingsProvider } from '../context/SettingsContext';
+import { screen, fireEvent } from '@testing-library/react';
 import { FinanceProvider } from '../context/FinanceContext';
 import { FinanceQuicklook } from '../components/dashboard/FinanceQuicklook';
+import { renderWithProviders } from './setupComponentTests';
 
 function renderQuicklook() {
-  return render(
-    <MemoryRouter>
-      <SettingsProvider>
-        <FinanceProvider>
-          <FinanceQuicklook />
-        </FinanceProvider>
-      </SettingsProvider>
-    </MemoryRouter>
+  return renderWithProviders(
+    <FinanceProvider>
+      <FinanceQuicklook />
+    </FinanceProvider>
   );
 }
 
-describe.skip('Finance targets persistence', () => {
+describe('Finance targets persistence', () => {
   it('updates and persists targets across remounts', () => {
     // Ensure clean localStorage for deterministic test
     try { localStorage.removeItem('finance-targets-v1'); } catch {}

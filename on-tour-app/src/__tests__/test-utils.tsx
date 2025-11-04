@@ -21,6 +21,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { renderHook, RenderOptions as HookRenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi } from 'vitest';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 // Import all context providers
 import { AuthProvider } from '@/context/AuthContext';
@@ -82,32 +83,36 @@ const createTestQueryClient = () => {
 export interface AllTheProvidersProps {
   children: ReactNode;
   queryClient?: QueryClient;
+  initialRoute?: string;
 }
 
 export const AllTheProviders: React.FC<AllTheProvidersProps> = ({
   children,
   queryClient = createTestQueryClient(),
+  initialRoute = '/',
 }) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SettingsProvider>
-          <OrgProvider>
-            <DashboardProvider>
-              <ShowModalProvider>
-                <FinanceProvider>
-                  <HighContrastProvider>
-                    <MissionControlProvider>
-                      <KPIDataProvider>{children}</KPIDataProvider>
-                    </MissionControlProvider>
-                  </HighContrastProvider>
-                </FinanceProvider>
-              </ShowModalProvider>
-            </DashboardProvider>
-          </OrgProvider>
-        </SettingsProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <MemoryRouter initialEntries={[initialRoute]}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <SettingsProvider>
+            <OrgProvider>
+              <DashboardProvider>
+                <ShowModalProvider>
+                  <FinanceProvider>
+                    <HighContrastProvider>
+                      <MissionControlProvider>
+                        <KPIDataProvider>{children}</KPIDataProvider>
+                      </MissionControlProvider>
+                    </HighContrastProvider>
+                  </FinanceProvider>
+                </ShowModalProvider>
+              </DashboardProvider>
+            </OrgProvider>
+          </SettingsProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </MemoryRouter>
   );
 };
 
@@ -127,12 +132,13 @@ export function renderWithProviders(
   ui: React.ReactElement,
   {
     queryClient = createTestQueryClient(),
+    initialRoute = '/',
     ...renderOptions
-  }: RenderOptions & { queryClient?: QueryClient } = {}
+  }: RenderOptions & { queryClient?: QueryClient; initialRoute?: string } = {}
 ) {
   function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <AllTheProviders queryClient={queryClient}>
+      <AllTheProviders queryClient={queryClient} initialRoute={initialRoute}>
         {children}
       </AllTheProviders>
     );

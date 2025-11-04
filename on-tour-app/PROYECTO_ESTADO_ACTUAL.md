@@ -1,6 +1,6 @@
-# 📊 PROYECTO ON TOUR APP 2.0 - ESTADO ACTUAL (3 Noviembre 2025)
+# 📊 PROYECTO ON TOUR APP 2.0 - ESTADO ACTUAL (4 Noviembre 2025)
 
-**RESUMEN EJECUTIVO**: Proyecto en estado **PRODUCCIÓN READY** con todas las FASEs completadas, tests validados, y build limpio.
+**RESUMEN EJECUTIVO**: Proyecto en estado **PRODUCCIÓN READY (FASE 5)** + **FASE 6 (Backend) INICIADA**. Frontend completo con 408/449 tests. Backend foundation creada, Week 1 ready.
 
 ---
 
@@ -8,11 +8,12 @@
 
 | Métrica           | Estado             | Detalles                                  |
 | ----------------- | ------------------ | ----------------------------------------- |
-| **Build**         | 🟢 GREEN           | Vite compile limpio, 0 TS errors          |
-| **Tests**         | 🟢 408/449 PASSING | 41 skipped (intencional), 0 fallos        |
-| **FASE 5**        | 🟢 COMPLETADA      | 112/112 integration tests passing         |
+| **Build (FE)**    | 🟢 GREEN           | Vite compile limpio, 0 TS errors          |
+| **Tests (FE)**    | 🟢 408/449 PASSING | 41 skipped (intencional), 0 fallos        |
+| **FASE 5 (FE)**   | 🟢 COMPLETADA      | 112/112 integration tests passing         |
+| **FASE 6 (BE)**   | 🟡 EN PROGRESO     | Foundation ready, npm install pending     |
 | **Code Quality**  | 🟢 LIMPIO          | ESLint clean, TypeScript strict mode      |
-| **Documentation** | 🟢 COMPLETA        | 65 docs activos, bien organizados         |
+| **Documentation** | 🟢 COMPLETA        | 68 docs (65 FE + 3 new BE guides)         |
 | **Performance**   | 🟢 OPTIMIZADO      | Finance calcs <100ms, virtual lists 60fps |
 
 ---

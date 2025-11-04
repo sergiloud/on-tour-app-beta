@@ -17,6 +17,7 @@ Authorization: Bearer <your_jwt_token>
 ```
 
 Get a token by logging in first:
+
 - POST `/api/auth/login` - Get JWT token
 
 ## Endpoints
@@ -28,11 +29,13 @@ Get a token by logging in first:
 List all shows for the authenticated user's organization.
 
 **Headers:**
+
 ```
 Authorization: Bearer <jwt_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -68,12 +71,14 @@ Authorization: Bearer <jwt_token>
 Create a new show for the authenticated user's organization.
 
 **Headers:**
+
 ```
 Authorization: Bearer <jwt_token>
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Summer Festival 2025",
@@ -90,10 +95,12 @@ Content-Type: application/json
 ```
 
 **Required Fields:**
+
 - `name` (string) - Show name/title
 - `show_date` (string) - Date in YYYY-MM-DD format
 
 **Optional Fields:**
+
 - `venue` (string) - Venue name
 - `city` (string) - City name
 - `country` (string) - Country name
@@ -104,6 +111,7 @@ Content-Type: application/json
 - `ticket_url` (string) - URL to ticket purchase page
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -131,6 +139,7 @@ Content-Type: application/json
 **Error Responses:**
 
 - 400 Bad Request - Missing required fields
+
 ```json
 {
   "error": "Name and show_date are required"
@@ -146,14 +155,17 @@ Content-Type: application/json
 Retrieve details for a specific show.
 
 **Path Parameters:**
+
 - `id` (string) - Show UUID
 
 **Headers:**
+
 ```
 Authorization: Bearer <jwt_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -180,6 +192,7 @@ Authorization: Bearer <jwt_token>
 **Error Responses:**
 
 - 404 Not Found
+
 ```json
 {
   "error": "Show not found"
@@ -195,15 +208,18 @@ Authorization: Bearer <jwt_token>
 Update an existing show. You can update any field(s).
 
 **Path Parameters:**
+
 - `id` (string) - Show UUID
 
 **Headers:**
+
 ```
 Authorization: Bearer <jwt_token>
 Content-Type: application/json
 ```
 
 **Request Body (partial update - send only fields to change):**
+
 ```json
 {
   "show_time": "20:00",
@@ -213,6 +229,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -245,14 +262,17 @@ Content-Type: application/json
 Delete a show permanently.
 
 **Path Parameters:**
+
 - `id` (string) - Show UUID
 
 **Headers:**
+
 ```
 Authorization: Bearer <jwt_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -268,23 +288,23 @@ Authorization: Bearer <jwt_token>
 
 ```typescript
 interface Show {
-  id: string;                    // UUID
-  organization_id: string;       // Organization UUID
-  created_by: string;           // User UUID who created
-  name: string;                 // Show title
-  venue?: string;              // Venue name
-  city?: string;               // City name
-  country?: string;            // Country name
-  show_date: string;           // Date (YYYY-MM-DD)
-  door_time?: string;          // Door time (HH:mm)
-  show_time?: string;          // Start time (HH:mm)
-  end_time?: string;           // End time (HH:mm)
-  notes?: string;              // Additional notes
-  ticket_url?: string;         // Ticket purchase URL
-  status: 'scheduled' | 'cancelled' | 'completed'; // Show status
+  id: string; // UUID
+  organization_id: string; // Organization UUID
+  created_by: string; // User UUID who created
+  name: string; // Show title
+  venue?: string; // Venue name
+  city?: string; // City name
+  country?: string; // Country name
+  show_date: string; // Date (YYYY-MM-DD)
+  door_time?: string; // Door time (HH:mm)
+  show_time?: string; // Start time (HH:mm)
+  end_time?: string; // End time (HH:mm)
+  notes?: string; // Additional notes
+  ticket_url?: string; // Ticket purchase URL
+  status: "scheduled" | "cancelled" | "completed"; // Show status
   metadata?: Record<string, any>; // Custom data
-  created_at: string;          // ISO timestamp
-  updated_at: string;          // ISO timestamp
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
 }
 ```
 
@@ -315,7 +335,7 @@ interface UpdateShowRequest {
   end_time?: string;
   notes?: string;
   ticket_url?: string;
-  status?: 'scheduled' | 'cancelled' | 'completed';
+  status?: "scheduled" | "cancelled" | "completed";
 }
 
 interface ShowResponse {
@@ -332,14 +352,14 @@ interface ShowResponse {
 
 ## HTTP Status Codes
 
-| Code | Meaning | Example |
-|------|---------|---------|
-| 200 | OK | GET show successful, PUT update successful |
-| 201 | Created | POST show created |
-| 400 | Bad Request | Missing required fields |
-| 401 | Unauthorized | Invalid or missing JWT token |
-| 404 | Not Found | Show ID doesn't exist |
-| 500 | Server Error | Internal server error |
+| Code | Meaning      | Example                                    |
+| ---- | ------------ | ------------------------------------------ |
+| 200  | OK           | GET show successful, PUT update successful |
+| 201  | Created      | POST show created                          |
+| 400  | Bad Request  | Missing required fields                    |
+| 401  | Unauthorized | Invalid or missing JWT token               |
+| 404  | Not Found    | Show ID doesn't exist                      |
+| 500  | Server Error | Internal server error                      |
 
 ---
 
@@ -355,6 +375,7 @@ All error responses follow this format:
 ```
 
 Common errors:
+
 - `"Organization ID required"` - User not properly authenticated
 - `"Name and show_date are required"` - Missing required fields
 - `"Show not found"` - Show ID doesn't exist
@@ -366,6 +387,7 @@ Common errors:
 ### cURL Examples
 
 **Create a show:**
+
 ```bash
 curl -X POST http://localhost:3000/api/shows \
   -H "Authorization: Bearer eyJhbGc..." \
@@ -382,12 +404,14 @@ curl -X POST http://localhost:3000/api/shows \
 ```
 
 **Get all shows:**
+
 ```bash
 curl -X GET http://localhost:3000/api/shows \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 
 **Update a show:**
+
 ```bash
 curl -X PUT http://localhost:3000/api/shows/550e8400-e29b-41d4-a716-446655440000 \
   -H "Authorization: Bearer eyJhbGc..." \
@@ -399,6 +423,7 @@ curl -X PUT http://localhost:3000/api/shows/550e8400-e29b-41d4-a716-446655440000
 ```
 
 **Delete a show:**
+
 ```bash
 curl -X DELETE http://localhost:3000/api/shows/550e8400-e29b-41d4-a716-446655440000 \
   -H "Authorization: Bearer eyJhbGc..."
@@ -407,21 +432,22 @@ curl -X DELETE http://localhost:3000/api/shows/550e8400-e29b-41d4-a716-446655440
 ### JavaScript/Fetch Examples
 
 **Create show:**
+
 ```javascript
-const response = await fetch('http://localhost:3000/api/shows', {
-  method: 'POST',
+const response = await fetch("http://localhost:3000/api/shows", {
+  method: "POST",
   headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    name: 'Summer Tour 2025',
-    venue: 'Amphitheater',
-    city: 'Los Angeles',
-    country: 'USA',
-    show_date: '2025-07-20',
-    show_time: '19:00'
-  })
+    name: "Summer Tour 2025",
+    venue: "Amphitheater",
+    city: "Los Angeles",
+    country: "USA",
+    show_date: "2025-07-20",
+    show_time: "19:00",
+  }),
 });
 const show = await response.json();
 ```

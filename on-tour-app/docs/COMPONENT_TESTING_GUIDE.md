@@ -54,16 +54,16 @@ Tests have access to all 9 context providers in proper order:
 
 **Categories:**
 
-| Category | Count | Examples |
-|----------|-------|----------|
-| ActionHub | 4 | Tab switching, filters, kinds filtering |
-| Shows Editor | 8 | Undo/redo, accessibility, quick entry, enhancements |
-| UI Components | 5 | Country select, language selector, KPI sparkline |
-| Navigation | 2 | CTA navigation, language selector |
-| Dashboard | 2 | Import views error handling |
-| Mission Control | 2 | Mission HUD, persistence |
-| Other | 6 | Various features |
-| Deprecated/Storage | 5 | useSettingsSync, fase3, i18n, e2e auth (have placeholders) |
+| Category           | Count | Examples                                                   |
+| ------------------ | ----- | ---------------------------------------------------------- |
+| ActionHub          | 4     | Tab switching, filters, kinds filtering                    |
+| Shows Editor       | 8     | Undo/redo, accessibility, quick entry, enhancements        |
+| UI Components      | 5     | Country select, language selector, KPI sparkline           |
+| Navigation         | 2     | CTA navigation, language selector                          |
+| Dashboard          | 2     | Import views error handling                                |
+| Mission Control    | 2     | Mission HUD, persistence                                   |
+| Other              | 6     | Various features                                           |
+| Deprecated/Storage | 5     | useSettingsSync, fase3, i18n, e2e auth (have placeholders) |
 
 ### Process for Enabling a Test
 
@@ -206,12 +206,12 @@ npm run test:run -- src/__tests__/myComponent.test.tsx
 
 **Common Errors:**
 
-| Error | Fix |
-|-------|-----|
+| Error                                  | Fix                                                  |
+| -------------------------------------- | ---------------------------------------------------- |
 | `Context must be used within Provider` | Use `renderWithProviders()` instead of manual render |
-| `Element not found` | Use `findBy` or `getAllBy` with proper wait |
-| `act()` warnings | Wrap state updates in `act()` or use async queries |
-| `Unknown element type` | Mock missing components or providers |
+| `Element not found`                    | Use `findBy` or `getAllBy` with proper wait          |
+| `act()` warnings                       | Wrap state updates in `act()` or use async queries   |
+| `Unknown element type`                 | Mock missing components or providers                 |
 
 ## Example: Enabling a Real Test
 
@@ -222,10 +222,10 @@ npm run test:run -- src/__tests__/myComponent.test.tsx
 describe.skip('Shows table name column', () => {
   it('renders Show header and falls back to city', () => {
     renderWithProviders(<Shows />);
-    
+
     const listBtn = screen.getByRole('button', { name: /List/i });
     fireEvent.click(listBtn);
-    
+
     expect(screen.getByRole('columnheader', { name: /Show/i }))
       .toBeInTheDocument();
   });
@@ -240,10 +240,10 @@ describe.skip('Shows table name column', () => {
 describe('Shows table name column', () => {
   it('renders Show header and falls back to city', () => {
     renderWithProviders(<Shows />);
-    
+
     const listBtn = screen.getByRole('button', { name: /List/i });
     fireEvent.click(listBtn);
-    
+
     expect(screen.getByRole('columnheader', { name: /Show/i }))
       .toBeInTheDocument();
   });
@@ -256,10 +256,10 @@ describe('Shows table name column', () => {
 
 ```typescript
 // ✅ Semantic - user-focused
-screen.getByRole('button', { name: /Add/i })
+screen.getByRole('button', { name: /Add/i });
 
 // ❌ Implementation-focused
-screen.getByTestId('add-btn')
+screen.getByTestId('add-btn');
 ```
 
 ### 2. Test User Behavior
@@ -353,12 +353,12 @@ describe('MyForm', () => {
   it('submits form data', async () => {
     const handleSubmit = vi.fn();
     renderWithProviders(<MyForm onSubmit={handleSubmit} />);
-    
+
     fireEvent.change(screen.getByLabelText(/Name/i), {
       target: { value: 'Test' }
     });
     fireEvent.click(screen.getByRole('button', { name: /Submit/i }));
-    
+
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ name: 'Test' })
@@ -376,7 +376,7 @@ describe('MyList', () => {
     renderWithProviders(
       <MyList items={[{ id: '1', name: 'Item 1' }]} />
     );
-    
+
     expect(screen.getByText('Item 1')).toBeInTheDocument();
   });
 });
@@ -393,10 +393,10 @@ describe('MyModal', () => {
         Content
       </MyModal>
     );
-    
+
     const backdrop = screen.getByRole('presentation');
     fireEvent.click(backdrop);
-    
+
     expect(handleClose).toHaveBeenCalled();
   });
 });
@@ -408,7 +408,7 @@ describe('MyModal', () => {
 describe('MyContextComponent', () => {
   it('uses context value', () => {
     renderWithProviders(<MyContextComponent />);
-    
+
     // Component already has access to all providers
     expect(screen.getByText(/Initialized/i))
       .toBeInTheDocument();

@@ -192,12 +192,16 @@ class ShowsService {
     return shows;
   }
 
-  static async createShow(org_id: string, user_id: string, data: CreateShowRequest) {
+  static async createShow(
+    org_id: string,
+    user_id: string,
+    data: CreateShowRequest
+  ) {
     // Creates new show with org context
     const show = showsDb.create({
       organization_id: org_id,
       created_by: user_id,
-      status: 'scheduled',
+      status: "scheduled",
       metadata: {},
       ...data,
     });
@@ -208,14 +212,14 @@ class ShowsService {
   static async getShow(id: string) {
     // Gets single show, throws if not found
     const show = showsDb.findById(id);
-    if (!show) throw new Error('Show not found');
+    if (!show) throw new Error("Show not found");
     return show;
   }
 
   static async updateShow(id: string, data: UpdateShowRequest) {
     // Updates show fields, throws if not found
     const show = showsDb.findById(id);
-    if (!show) throw new Error('Show not found');
+    if (!show) throw new Error("Show not found");
     const updated = showsDb.update(id, data);
     logger.info(`Updated show: ${id}`);
     return updated;
@@ -224,7 +228,7 @@ class ShowsService {
   static async deleteShow(id: string) {
     // Deletes show, throws if not found
     const show = showsDb.findById(id);
-    if (!show) throw new Error('Show not found');
+    if (!show) throw new Error("Show not found");
     showsDb.delete(id);
     logger.info(`Deleted show: ${id}`);
     return { success: true };
@@ -238,19 +242,22 @@ class ShowsService {
 // Pattern used in src/routes/shows.ts
 
 router.get(
-  '/',
-  authMiddleware,  // 1. Check auth first
-  asyncHandler(    // 2. Wrap in error handler
-    async (req: any, res: any) => {  // 3. Request handler
-      const org_id = req.user?.org_id;  // 4. Get from JWT payload
+  "/",
+  authMiddleware, // 1. Check auth first
+  asyncHandler(
+    // 2. Wrap in error handler
+    async (req: any, res: any) => {
+      // 3. Request handler
+      const org_id = req.user?.org_id; // 4. Get from JWT payload
       if (!org_id) {
-        return res.status(400).json({ error: 'Organization ID required' });
+        return res.status(400).json({ error: "Organization ID required" });
       }
 
-      const shows = await ShowsService.listShows(org_id);  // 5. Call service
-      logger.info(`GET /shows - Retrieved ${shows.length} shows`);  // 6. Log
-      
-      return res.json({  // 7. Return response
+      const shows = await ShowsService.listShows(org_id); // 5. Call service
+      logger.info(`GET /shows - Retrieved ${shows.length} shows`); // 6. Log
+
+      return res.json({
+        // 7. Return response
         success: true,
         count: shows.length,
         shows,
@@ -265,16 +272,16 @@ router.get(
 ```typescript
 // asyncHandler catches promises and passes to error middleware
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
-  Promise.resolve(fn(req, res, next)).catch(next);  // Catch errors → next()
+  Promise.resolve(fn(req, res, next)).catch(next); // Catch errors → next()
 };
 
 // Error middleware formats and responds
 const errorHandler = (err: any, req: any, res: any, next: any) => {
-  logger.error('Error:', err.message);
-  
+  logger.error("Error:", err.message);
+
   res.status(err.status || 500).json({
     success: false,
-    error: err.message || 'Internal server error',
+    error: err.message || "Internal server error",
   });
 };
 ```
@@ -314,11 +321,21 @@ class MockDatabase<T> {
 
 // Shows storage specifically
 export const shows = {
-  create: (data: Partial<Show>) => { /* ... */ },
-  findById: (id: string) => { /* ... */ },
-  findByOrganization: (org_id: string) => { /* ... */ },
-  update: (id: string, data: Partial<Show>) => { /* ... */ },
-  delete: (id: string) => { /* ... */ },
+  create: (data: Partial<Show>) => {
+    /* ... */
+  },
+  findById: (id: string) => {
+    /* ... */
+  },
+  findByOrganization: (org_id: string) => {
+    /* ... */
+  },
+  update: (id: string, data: Partial<Show>) => {
+    /* ... */
+  },
+  delete: (id: string) => {
+    /* ... */
+  },
 };
 ```
 
@@ -351,7 +368,7 @@ SERVER PROCESSING:
 4. Handler extracts: org_id="org-123", user_id="user-123"
 5. Validates: name ✓, show_date ✓
 6. ShowsService.createShow() called with data
-7. mockDb.shows.create() creates: 
+7. mockDb.shows.create() creates:
    {
      id: "550e8400-e29b-41d4-a716-446655440001",
      organization_id: "org-123",
@@ -420,7 +437,7 @@ OR if token was valid but data invalid:
 1. authMiddleware passes ✓
 2. Handler receives request
 3. Validates: name ✓, show_date ✗ (missing)
-4. Returns 400 immediately: 
+4. Returns 400 immediately:
    { "error": "Name and show_date are required" }
 
 CLIENT RESPONSE:
@@ -435,28 +452,28 @@ HTTP/1.1 400 Bad Request
 ```typescript
 // Tests would follow this pattern:
 
-describe('Shows API', () => {
-  describe('POST /api/shows', () => {
-    it('should create a show with valid data', async () => {
+describe("Shows API", () => {
+  describe("POST /api/shows", () => {
+    it("should create a show with valid data", async () => {
       const data = {
-        name: 'Test Concert',
-        show_date: '2025-06-15',
+        name: "Test Concert",
+        show_date: "2025-06-15",
       };
-      const result = await ShowsService.createShow('org-123', 'user-123', data);
-      
+      const result = await ShowsService.createShow("org-123", "user-123", data);
+
       expect(result.id).toBeDefined();
-      expect(result.name).toBe('Test Concert');
-      expect(result.organization_id).toBe('org-123');
+      expect(result.name).toBe("Test Concert");
+      expect(result.organization_id).toBe("org-123");
     });
 
-    it('should throw error for missing required fields', async () => {
-      const data = { name: 'Concert' }; // missing show_date
-      
+    it("should throw error for missing required fields", async () => {
+      const data = { name: "Concert" }; // missing show_date
+
       try {
-        await ShowsService.createShow('org-123', 'user-123', data);
-        expect.fail('Should have thrown');
+        await ShowsService.createShow("org-123", "user-123", data);
+        expect.fail("Should have thrown");
       } catch (error) {
-        expect(error.message).toBe('Show not found'); // Will implement validation
+        expect(error.message).toBe("Show not found"); // Will implement validation
       }
     });
   });
@@ -474,13 +491,14 @@ describe('Shows API', () => {
 ✅ **Logging** - All operations logged with Pino  
 ✅ **Testability** - Service layer easily testable without Express  
 ✅ **Scalability** - Ready to swap mock DB with real PostgreSQL  
-✅ **Security** - JWT authentication on all endpoints  
+✅ **Security** - JWT authentication on all endpoints
 
 ---
 
 ## Ready for Next Phase
 
 The Shows CRUD API is production-ready and provides a solid foundation for:
+
 - Finance routes (same pattern)
 - User routes (same pattern)
 - Real PostgreSQL integration

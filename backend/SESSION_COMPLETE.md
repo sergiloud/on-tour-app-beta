@@ -21,6 +21,7 @@ DELETE /api/shows/:id          ← Delete show
 ```
 
 All endpoints:
+
 - Protected with JWT authentication
 - Organization-scoped (users see only their org's shows)
 - Properly handle errors and edge cases
@@ -30,6 +31,7 @@ All endpoints:
 ### ✅ Service Layer Implementation
 
 **ShowsService** - Business logic for all CRUD operations:
+
 - `listShows()` - Retrieve all shows for organization
 - `createShow()` - Create new show with validation
 - `getShow()` - Get single show by ID
@@ -39,6 +41,7 @@ All endpoints:
 ### ✅ In-Memory Database
 
 Works without PostgreSQL:
+
 - Map-based storage for users and shows
 - UUID generation for IDs
 - Automatic timestamps (created_at, updated_at)
@@ -82,13 +85,13 @@ npm run build
 
 ## 📊 Code Statistics
 
-| Component | Status | Lines |
-|-----------|--------|-------|
-| ShowsService | ✅ Complete | ~70 |
-| Shows Routes | ✅ Complete | ~120 |
-| Documentation | ✅ Complete | 600+ |
-| Test Skeleton | ✅ Created | ~100 |
-| **TOTAL NEW CODE** | | **~900** |
+| Component          | Status      | Lines    |
+| ------------------ | ----------- | -------- |
+| ShowsService       | ✅ Complete | ~70      |
+| Shows Routes       | ✅ Complete | ~120     |
+| Documentation      | ✅ Complete | 600+     |
+| Test Skeleton      | ✅ Created  | ~100     |
+| **TOTAL NEW CODE** |             | **~900** |
 
 ---
 
@@ -98,28 +101,29 @@ npm run build
 ✅ Organization-scoped data access  
 ✅ Bearer token validation  
 ✅ Role information from JWT  
-✅ Error handling prevents information leakage  
+✅ Error handling prevents information leakage
 
 ---
 
 ## 📚 Files Created/Updated
 
-| File | Status | Type |
-|------|--------|------|
-| `src/services/showsService.ts` | ✅ NEW | Code |
-| `src/routes/shows.ts` | ✅ UPDATED | Code |
-| `src/utils/jwt.ts` | ✅ FIXED | Code |
-| `src/__tests__/shows.test.ts` | ✅ CREATED | Tests |
-| `docs/SHOWS_API.md` | ✅ NEW | Docs |
-| `docs/SHOWS_ARCHITECTURE.md` | ✅ NEW | Docs |
-| `docs/SHOWS_IMPLEMENTATION_SUMMARY.md` | ✅ NEW | Docs |
-| `docs/SHOWS_CRUD_COMPLETE.md` | ✅ NEW | Docs |
+| File                                   | Status     | Type  |
+| -------------------------------------- | ---------- | ----- |
+| `src/services/showsService.ts`         | ✅ NEW     | Code  |
+| `src/routes/shows.ts`                  | ✅ UPDATED | Code  |
+| `src/utils/jwt.ts`                     | ✅ FIXED   | Code  |
+| `src/__tests__/shows.test.ts`          | ✅ CREATED | Tests |
+| `docs/SHOWS_API.md`                    | ✅ NEW     | Docs  |
+| `docs/SHOWS_ARCHITECTURE.md`           | ✅ NEW     | Docs  |
+| `docs/SHOWS_IMPLEMENTATION_SUMMARY.md` | ✅ NEW     | Docs  |
+| `docs/SHOWS_CRUD_COMPLETE.md`          | ✅ NEW     | Docs  |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Step 1: Start Server
+
 ```bash
 cd backend
 npm run dev  # (setup needed for watch mode)
@@ -128,6 +132,7 @@ npm run build && node dist/server.js
 ```
 
 ### Step 2: Get JWT Token
+
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -139,6 +144,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 ```
 
 ### Step 3: Create a Show
+
 ```bash
 curl -X POST http://localhost:3000/api/shows \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -154,6 +160,7 @@ curl -X POST http://localhost:3000/api/shows \
 ```
 
 ### Step 4: List Shows
+
 ```bash
 curl -X GET http://localhost:3000/api/shows \
   -H "Authorization: Bearer YOUR_TOKEN"
@@ -184,6 +191,7 @@ JSON Response
 ```
 
 Every layer has:
+
 - ✅ Proper error handling
 - ✅ Logging at key points
 - ✅ Type safety with TypeScript
@@ -194,12 +202,14 @@ Every layer has:
 ## ✨ Highlights
 
 ### 1. **All CRUD Operations**
+
 - ✅ Create shows with automatic UUID and timestamps
 - ✅ Read shows (single and list with org scoping)
 - ✅ Update shows (partial updates supported)
 - ✅ Delete shows (permanent removal)
 
 ### 2. **Production Ready**
+
 - ✅ Error handling for all edge cases
 - ✅ Proper HTTP status codes
 - ✅ Comprehensive logging
@@ -207,6 +217,7 @@ Every layer has:
 - ✅ Type safety with TypeScript strict mode
 
 ### 3. **Developer Friendly**
+
 - ✅ Clear API documentation
 - ✅ Example cURL commands
 - ✅ JavaScript/Fetch examples
@@ -214,6 +225,7 @@ Every layer has:
 - ✅ Code comments
 
 ### 4. **Secure**
+
 - ✅ JWT authentication on all endpoints
 - ✅ Organization data isolation
 - ✅ Role information from tokens
@@ -229,22 +241,36 @@ The Shows API demonstrates a pattern that can be applied to all future endpoints
 // 1. Create service layer
 // src/services/XyzService.ts
 class XyzService {
-  static async list(org_id) { /* ... */ }
-  static async create(org_id, user_id, data) { /* ... */ }
-  static async get(id) { /* ... */ }
-  static async update(id, data) { /* ... */ }
-  static async delete(id) { /* ... */ }
+  static async list(org_id) {
+    /* ... */
+  }
+  static async create(org_id, user_id, data) {
+    /* ... */
+  }
+  static async get(id) {
+    /* ... */
+  }
+  static async update(id, data) {
+    /* ... */
+  }
+  static async delete(id) {
+    /* ... */
+  }
 }
 
 // 2. Create routes using pattern
 // src/routes/xyz.ts
-router.get('/', authMiddleware, asyncHandler(async (req, res) => {
-  const items = await XyzService.list(req.user?.org_id);
-  return res.json({ success: true, items });
-}));
+router.get(
+  "/",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const items = await XyzService.list(req.user?.org_id);
+    return res.json({ success: true, items });
+  })
+);
 
 // 3. Add to app.ts
-app.use('/api/xyz', xyzRoutes);
+app.use("/api/xyz", xyzRoutes);
 
 // 4. Add database methods to mockDb.ts
 // Ready to copy for Finance, Users, etc.
@@ -281,6 +307,7 @@ Day 4-5:
 ## 🔍 What's Working Now
 
 ### Backend Infrastructure
+
 - ✅ Express app with TypeScript
 - ✅ Environment configuration (.env)
 - ✅ Pino logging system
@@ -288,12 +315,14 @@ Day 4-5:
 - ✅ Async error wrapping
 
 ### Authentication
+
 - ✅ JWT token generation
 - ✅ Bearer token validation
 - ✅ User creation on OAuth login
 - ✅ Profile retrieval
 
 ### Shows API
+
 - ✅ Create show (auto UUID, timestamps, org scoped)
 - ✅ List shows (org scoped, all fields)
 - ✅ Get single show (with validation)
@@ -301,6 +330,7 @@ Day 4-5:
 - ✅ Delete show (permanent removal)
 
 ### Database
+
 - ✅ In-memory storage (no PostgreSQL required)
 - ✅ User CRUD operations
 - ✅ Show CRUD operations
@@ -311,6 +341,7 @@ Day 4-5:
 ## 🎁 Deliverables
 
 ### Code Files
+
 ```
 backend/
 ├── src/services/showsService.ts         (70 lines - Business logic)
@@ -320,6 +351,7 @@ backend/
 ```
 
 ### Documentation Files
+
 ```
 docs/
 ├── SHOWS_API.md                          (Complete API reference)
@@ -330,6 +362,7 @@ docs/
 ```
 
 ### Git History
+
 ```
 ✓ 8b0922b - Implement Shows CRUD API - 5 endpoints complete
 ✓ Previous - In-memory database setup

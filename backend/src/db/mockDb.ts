@@ -1,6 +1,6 @@
 /**
  * In-Memory Database Mock
- * 
+ *
  * For development without local PostgreSQL
  * In production, replace with real Kysely client
  */

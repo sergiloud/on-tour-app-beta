@@ -26,6 +26,7 @@ npm run dev
 ```
 
 You should see output like:
+
 ```
 ✅ Server starting...
 🚀 Server running on http://localhost:3000
@@ -51,6 +52,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -65,6 +67,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 ```
 
 **Save the token:**
+
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
@@ -94,6 +97,7 @@ curl -X POST http://localhost:3000/api/shows \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -119,6 +123,7 @@ curl -X POST http://localhost:3000/api/shows \
 ```
 
 **Save the show ID:**
+
 ```bash
 SHOW_ID="550e8400-e29b-41d4-a716-446655440001"
 ```
@@ -170,6 +175,7 @@ curl -X GET http://localhost:3000/api/shows \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -209,6 +215,7 @@ curl -X GET http://localhost:3000/api/shows/$SHOW_ID \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -251,6 +258,7 @@ curl -X PUT http://localhost:3000/api/shows/$SHOW_ID \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -285,6 +293,7 @@ curl -X DELETE http://localhost:3000/api/shows/$SHOW_ID \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -293,12 +302,14 @@ curl -X DELETE http://localhost:3000/api/shows/$SHOW_ID \
 ```
 
 **Verify it's deleted:**
+
 ```bash
 curl -X GET http://localhost:3000/api/shows/$SHOW_ID \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -317,6 +328,7 @@ curl -X GET http://localhost:3000/api/shows
 ```
 
 **Response (401 Unauthorized):**
+
 ```json
 {
   "error": "Invalid or expired token"
@@ -331,6 +343,7 @@ curl -X GET http://localhost:3000/api/shows \
 ```
 
 **Response (401 Unauthorized):**
+
 ```json
 {
   "error": "Invalid or expired token"
@@ -350,6 +363,7 @@ curl -X POST http://localhost:3000/api/shows \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Name and show_date are required"
@@ -364,6 +378,7 @@ curl -X GET http://localhost:3000/api/shows/nonexistent-id \
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -460,6 +475,7 @@ echo -e "${GREEN}✅ All tests passed!${NC}"
 ```
 
 **Run the script:**
+
 ```bash
 chmod +x test-shows.sh
 ./test-shows.sh
@@ -483,7 +499,7 @@ Import this into Postman for easy testing.
       "request": {
         "method": "POST",
         "url": "http://localhost:3000/api/auth/login",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\"email\":\"test@example.com\",\"name\":\"Test\",\"oauth_id\":\"123\"}"
@@ -495,7 +511,7 @@ Import this into Postman for easy testing.
       "request": {
         "method": "GET",
         "url": "http://localhost:3000/api/shows",
-        "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
       }
     },
     {
@@ -504,8 +520,8 @@ Import this into Postman for easy testing.
         "method": "POST",
         "url": "http://localhost:3000/api/shows",
         "header": [
-          {"key": "Authorization", "value": "Bearer {{token}}"},
-          {"key": "Content-Type", "value": "application/json"}
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
@@ -529,6 +545,7 @@ npm run dev 2>&1 | grep -E "GET|POST|PUT|DELETE|Error|Created|Updated|Deleted"
 ```
 
 You should see output like:
+
 ```
 🔍 GET /api/shows - Retrieved 3 shows for org org-123
 ✨ POST /api/shows - Created show 550e8400...
@@ -556,23 +573,29 @@ You should see output like:
 ## Troubleshooting
 
 ### "Connection refused"
+
 - Backend not running. Start with `npm run build && node dist/server.js`
 
 ### "Invalid or expired token"
+
 - JWT token invalid or expired. Get a new token with login endpoint.
 
 ### "Show not found"
+
 - Show ID doesn't exist. Check ID in previous response.
 
 ### JSON parsing errors
+
 - Response not valid JSON. Install `jq` for better formatting.
 
 ### CORS errors
+
 - Frontend testing. CORS needs to be configured in app.ts.
 
 ---
 
 For more details, see:
+
 - `docs/SHOWS_API.md` - API reference
 - `docs/SHOWS_ARCHITECTURE.md` - System design
 - `backend/README.md` - Backend setup

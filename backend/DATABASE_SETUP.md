@@ -7,6 +7,7 @@
 ## Prerequisites
 
 Make sure you have:
+
 1. **Node.js 20 LTS** - ✅ Already using
 2. **PostgreSQL 15+** - ⏳ Needs to be running locally
 3. **npm** - ✅ Already available
@@ -146,10 +147,10 @@ sudo systemctl start postgresql
 ### "database on_tour_db already exists"
 
 The database already exists. Either:
+
 - Delete it: `dropdb on_tour_db`
 - Use existing: Just proceed with migrations
 
 ---
 
 **Next**: Install PostgreSQL and create database, then we'll proceed with migrations and authentication setup.
-

@@ -112,11 +112,13 @@ backend/
 ## 🔑 API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/login` - OAuth2 login
 - `POST /api/auth/logout` - Logout
 - `GET /api/auth/profile` - Get user profile
 
 ### Shows
+
 - `GET /api/shows` - List all shows
 - `POST /api/shows` - Create new show
 - `GET /api/shows/:id` - Get show details
@@ -124,12 +126,14 @@ backend/
 - `DELETE /api/shows/:id` - Delete show
 
 ### Finance
+
 - `GET /api/finance/overview` - Finance dashboard data
 - `POST /api/finance/records` - Create finance record
 - `GET /api/finance/records/:showId` - Get show finances
 - `POST /api/finance/settlement` - Create settlement
 
 ### Users
+
 - `GET /api/users` - List organization users
 - `GET /api/users/:id` - Get user details
 - `PUT /api/users/:id` - Update user
@@ -142,6 +146,7 @@ backend/
 ### Tables
 
 **users**
+
 - id (UUID, PK)
 - email (VARCHAR, unique)
 - name (VARCHAR)
@@ -152,6 +157,7 @@ backend/
 - created_at, updated_at (TIMESTAMP)
 
 **organizations**
+
 - id (UUID, PK)
 - name (VARCHAR)
 - owner_id (UUID, FK→users)
@@ -161,6 +167,7 @@ backend/
 - created_at, updated_at (TIMESTAMP)
 
 **organization_members**
+
 - id (UUID, PK)
 - organization_id (UUID, FK→organizations)
 - user_id (UUID, FK→users)
@@ -168,6 +175,7 @@ backend/
 - joined_at (TIMESTAMP)
 
 **shows**
+
 - id (UUID, PK)
 - organization_id (UUID, FK)
 - name (VARCHAR)
@@ -181,6 +189,7 @@ backend/
 - created_by, created_at, updated_at
 
 **finance_records**
+
 - id (UUID, PK)
 - show_id (UUID, FK)
 - organization_id (UUID, FK)
@@ -193,6 +202,7 @@ backend/
 - created_at, updated_at
 
 **audit_logs**
+
 - id (UUID, PK)
 - organization_id (UUID, FK)
 - user_id (UUID, FK)
@@ -235,13 +245,13 @@ npm test -- auth.test.ts --watch
 
 2. Google OAuth dialog opens
    └─> User authorizes
-   
+
 3. Google redirects to /api/auth/google/callback
    └─> Backend creates/updates user in DB
-   
+
 4. Backend creates JWT token
    └─> Redirects to frontend with token
-   
+
 5. Frontend stores JWT
    └─> Uses for all API requests
 ```
@@ -249,11 +259,13 @@ npm test -- auth.test.ts --watch
 ### JWT Validation
 
 All protected endpoints expect:
+
 ```
 Authorization: Bearer <jwt_token>
 ```
 
 The JWT contains:
+
 - `sub` (user ID)
 - `email`
 - `org_id` (organization ID)
@@ -267,6 +279,7 @@ The JWT contains:
 ### Add New API Endpoint
 
 1. **Define types** in `src/types/`
+
    ```typescript
    export interface CreateShowRequest {
      name: string;
@@ -276,6 +289,7 @@ The JWT contains:
    ```
 
 2. **Create service** in `src/services/`
+
    ```typescript
    export class ShowsService {
      async create(orgId: string, data: CreateShowRequest) {
@@ -285,17 +299,22 @@ The JWT contains:
    ```
 
 3. **Create route** in `src/routes/`
+
    ```typescript
-   router.post('/', asyncHandler(async (req, res) => {
-     const show = await showsService.create(req.org.id, req.body);
-     res.json(show);
-   }));
+   router.post(
+     "/",
+     asyncHandler(async (req, res) => {
+       const show = await showsService.create(req.org.id, req.body);
+       res.json(show);
+     })
+   );
    ```
 
 4. **Write tests** in `__tests__/`
+
    ```typescript
-   describe('POST /api/shows', () => {
-     it('creates a new show', async () => {
+   describe("POST /api/shows", () => {
+     it("creates a new show", async () => {
        // Test implementation
      });
    });
@@ -407,6 +426,7 @@ Fix any reported errors before committing.
 ## 📞 Support
 
 For issues or questions:
+
 1. Check existing docs in `docs/`
 2. Review code comments
 3. Run tests to verify behavior

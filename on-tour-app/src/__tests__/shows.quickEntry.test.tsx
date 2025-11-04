@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from '../test-utils';
+import { renderWithProviders as render, screen, fireEvent, within } from '../test-utils';
 import React from 'react';
 import { ShowEditorDrawer } from '../features/shows/editor/ShowEditorDrawer';
 
@@ -7,7 +7,7 @@ const baseDraft = {
   costs: [], status: 'pending'
 };
 
-describe.skip('ShowEditorDrawer Quick Entry', () => {
+describe('ShowEditorDrawer Quick Entry', () => {
   test('parses quick entry and applies fields', () => {
     const handleSave = vi.fn();
     render(<ShowEditorDrawer open mode="edit" initial={baseDraft as any} onSave={handleSave} onRequestClose={()=>{}} />);

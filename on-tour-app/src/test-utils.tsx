@@ -16,9 +16,9 @@ const createProviders = (initialEntries?: string[]) => {
   const ProvidersImpl: React.FC<ProvidersProps> = ({ children }) => {
     const client = new QueryClient();
     return (
-      <ThemeProvider>
+      <SettingsProvider>
         <HighContrastProvider>
-          <SettingsProvider>
+          <ThemeProvider>
             <QueryClientProvider client={client}>
               <FinanceProvider>
                 <KPIDataProvider>
@@ -34,15 +34,23 @@ const createProviders = (initialEntries?: string[]) => {
                 </KPIDataProvider>
               </FinanceProvider>
             </QueryClientProvider>
-          </SettingsProvider>
+          </ThemeProvider>
         </HighContrastProvider>
-      </ThemeProvider>
+      </SettingsProvider>
     );
   };
   return ProvidersImpl;
 };
 
 const Providers = createProviders();
+
+// Re-export everything from testing-library first
+export * from '@testing-library/react';
+
+// Then override render to use our Providers by default
+export function render(ui: React.ReactElement, options?: RenderOptions) {
+  return rtlRender(ui, { wrapper: Providers, ...options });
+}
 
 export function renderWithProviders(ui: React.ReactElement, options?: RenderOptions) {
   return rtlRender(ui, { wrapper: Providers, ...options });
@@ -52,10 +60,4 @@ export function renderWithProviders(ui: React.ReactElement, options?: RenderOpti
 export function renderWithProvidersAtRoute(ui: React.ReactElement, route: string, options?: RenderOptions) {
   const RoutedProviders = createProviders([route]);
   return rtlRender(ui, { wrapper: RoutedProviders, ...options });
-}
-
-// Re-export everything, but override default render to use our Providers by default
-export * from '@testing-library/react';
-export function render(ui: React.ReactElement, options?: RenderOptions) {
-  return rtlRender(ui, { wrapper: Providers, ...options });
 }

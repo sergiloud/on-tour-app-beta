@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '../test-utils';
+import { renderWithProviders as render, screen, fireEvent } from '../test-utils';
 import React from 'react';
 import { ShowEditorDrawer } from '../features/shows/editor/ShowEditorDrawer';
 

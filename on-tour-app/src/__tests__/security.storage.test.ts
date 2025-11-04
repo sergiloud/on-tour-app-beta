@@ -16,7 +16,7 @@ import {
     migrateToSecureStorage
 } from '../lib/secureStorage';
 
-describe.skip('SecureStorage - Encryption/Decryption', () => {
+describe('SecureStorage - Encryption/Decryption', () => {
     beforeEach(() => {
         // Clear storage before each test
         localStorage.clear();

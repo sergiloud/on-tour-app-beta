@@ -1,10 +1,10 @@
-import { render, screen } from '../test-utils';
+import { renderWithProviders as render, screen } from '../test-utils';
 import React from 'react';
 import { ShowEditorDrawer } from '../features/shows/editor/ShowEditorDrawer';
 
 const baseDraft = { id:'hdr1', city:'Madrid', country:'ES', date:'2025-04-20', fee:0, status:'pending' } as any;
 
-describe.skip('ShowEditorDrawer quick entry header copy', () => {
+describe('ShowEditorDrawer quick entry header copy', () => {
   test('uses updated quick add copy (EN)', () => {
     render(<ShowEditorDrawer open mode="edit" initial={baseDraft} onSave={()=>{}} onRequestClose={()=>{}} />);
     // Label

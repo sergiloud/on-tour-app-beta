@@ -1,4 +1,4 @@
-import { describe } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 /**
  * FASE 3.4: Integration Tests (DEPRECATED)
@@ -17,5 +17,8 @@ import { describe } from 'vitest';
  */
 
 describe.skip('FASE 3.4: Integration Tests (DEPRECATED - see FASE 5)', () => {
+  it('placeholder - replaced by FASE 5 tests', () => {
+    expect(true).toBe(true);
+  });
   // Skipped - replaced by FASE 5 integration tests in src/__tests__/fase5_integration.test.ts
 });

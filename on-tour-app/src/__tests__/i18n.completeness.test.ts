@@ -5,7 +5,7 @@
  * @module i18n.completeness.test
  */
 
-import { describe } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 /**
  * Language completeness tests - skipped
@@ -13,5 +13,8 @@ import { describe } from 'vitest';
  * Will be re-enabled once all translations are completed
  */
 describe.skip('i18n Completeness (translations pending)', () => {
+  it('placeholder - awaiting complete translations for all languages', () => {
+    expect(true).toBe(true);
+  });
   // Tests skipped - awaiting complete translations for all languages
 });

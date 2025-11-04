@@ -7,5 +7,13 @@
  * To re-enable: Comment out the .skip() and set up proper test environment.
  */
 
+import { describe, it, expect } from 'vitest';
+
 // E2E tests skipped - requires backend environment
 // Re-enable when backend environment is set up
+
+describe.skip('E2E: Authentication', () => {
+  it('placeholder - backend not available', () => {
+    expect(true).toBe(true);
+  });
+});

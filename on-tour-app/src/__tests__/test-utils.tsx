@@ -178,6 +178,35 @@ export function renderHookWithProviders<TResult,>(
 }
 
 /**
+ * Render component with providers at a specific route
+ * Useful for testing components that depend on routing context
+ *
+ * @param ui - React element to render
+ * @param initialRoute - Initial route path
+ * @param options - Additional render options
+ * @returns Render result from @testing-library/react
+ *
+ * @example
+ * ```tsx
+ * const { getByText } = renderWithProvidersAtRoute(<MyComponent />, '/dashboard');
+ * ```
+ */
+export function renderWithProvidersAtRoute(
+  ui: React.ReactElement,
+  initialRoute: string = '/',
+  {
+    queryClient = createTestQueryClient(),
+    ...renderOptions
+  }: RenderOptions & { queryClient?: QueryClient } = {}
+) {
+  return renderWithProviders(ui, {
+    queryClient,
+    initialRoute,
+    ...renderOptions,
+  });
+}
+
+/**
  * Specialized setup for testing hooks that depend on specific contexts
  *
  * @param selectedContexts - Names of contexts to include

@@ -9,7 +9,7 @@
 | Métrica           | Estado             | Detalles                                  |
 | ----------------- | ------------------ | ----------------------------------------- |
 | **Build**         | 🟢 GREEN           | Vite compile limpio, 0 TS errors          |
-| **Tests**         | 🟢 400/400 PASSING | 44 skipped (intencional), 0 fallos        |
+| **Tests**         | 🟢 407/444 PASSING | 37 skipped (intentional), 0 fallos        |
 | **FASE 5**        | 🟢 COMPLETADA      | 112/112 integration tests passing         |
 | **Code Quality**  | 🟢 LIMPIO          | ESLint clean, TypeScript strict mode      |
 | **Documentation** | 🟢 COMPLETA        | 65 docs activos, bien organizados         |
@@ -151,8 +151,8 @@ docs/
 
 ```
 Total Tests:           444
-  ├─ PASSING:         400 (90.1%)
-  ├─ SKIPPED:          44 (9.9%) [intencional - complex providers]
+  ├─ PASSING:         407 (91.7%)
+  ├─ SKIPPED:          37 (8.3%) [intencional - complex providers]
   └─ FAILING:           0
 
 FASE 5 Specifically:

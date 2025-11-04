@@ -44,14 +44,15 @@ const createProviders = (initialEntries?: string[]) => {
 
 const Providers = createProviders();
 
-// Custom render function that wraps with providers
-export function render(ui: React.ReactElement, options?: RenderOptions) {
-  return rtlRender(ui, { wrapper: Providers, ...options });
-}
+// ⚠️  IMPORTANT: Always use renderWithProviders (or alias it as 'render')
+// Tests that import bare 'render' from @testing-library/react won't include providers!
 
 export function renderWithProviders(ui: React.ReactElement, options?: RenderOptions) {
   return rtlRender(ui, { wrapper: Providers, ...options });
 }
+
+// For backwards compatibility - same as renderWithProviders  
+export const render = renderWithProviders;
 
 // Helper to render at a specific route (avoids nested MemoryRouter in tests needing an initial path)
 export function renderWithProvidersAtRoute(ui: React.ReactElement, route: string, options?: RenderOptions) {
@@ -59,7 +60,7 @@ export function renderWithProvidersAtRoute(ui: React.ReactElement, route: string
   return rtlRender(ui, { wrapper: RoutedProviders, ...options });
 }
 
-// Re-export everything from testing-library EXCEPT render (which we've overridden)
+// Re-export RTL utilities (but NOT render to avoid confusion)
 export {
   screen,
   fireEvent,

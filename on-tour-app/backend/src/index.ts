@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import 'express-async-errors';
 import pinoHttp from 'pino-http';
 import { AppDataSource } from './database/datasource.js';
-import { setupSwagger } from './config/swagger.js';
+import { setupSwagger } from './config/swagger-v2.js';
 import { showsRouter } from './routes/shows.js';
 import { financeRouter } from './routes/finance.js';
 import { travelRouter } from './routes/travel.js';

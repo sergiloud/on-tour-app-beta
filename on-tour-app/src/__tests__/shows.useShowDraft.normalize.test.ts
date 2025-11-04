@@ -31,7 +31,7 @@ describe('useShowDraft normalization', () => {
     expect(result.current.validation.whtPct).toBeTruthy();
   });
 
-  it.skip('sorts costs deterministically (affects dirty only when content changes)', () => {
+  it('sorts costs deterministically (affects dirty only when content changes)', () => {
     // TODO: Fix TypeScript types in this test
     expect(true).toBe(true);
   });

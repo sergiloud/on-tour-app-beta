@@ -449,7 +449,7 @@ export class AmadeusService {
       );
 
       this.logger.info({ flightOfferId }, 'Seat availability retrieved');
-      
+
       // Extract seat count from response
       return response.data?.data?.[0]?.decks?.[0]?.seats?.length || 0;
     } catch (error) {

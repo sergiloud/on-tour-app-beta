@@ -17,7 +17,7 @@ describe('Finance Routes Integration Tests', () => {
     // Get test token (mock JWT for testing)
     const mockUserId = '00000000-0000-0000-0000-000000000001';
     const mockOrgId = '00000000-0000-0000-0000-000000000099';
-    
+
     // Create a simple JWT token for testing
     const jwt = require('jsonwebtoken');
     token = jwt.sign(

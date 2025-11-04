@@ -34,6 +34,94 @@ const detectInitialLang = (): Lang => {
   return 'en';
 };
 
+// Locale mappings for Intl APIs
+const localeMap: Record<Lang, string> = {
+  en: 'en-US',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  it: 'it-IT',
+  pt: 'pt-PT'
+};
+
+// Date/Time formatting helpers
+export const formatDate = (
+  date: Date | string,
+  format: 'short' | 'long' = 'short',
+  lang: Lang = 'en'
+): string => {
+  try {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const locale = localeMap[lang];
+    
+    const options: Intl.DateTimeFormatOptions = format === 'short'
+      ? { year: 'numeric', month: '2-digit', day: '2-digit' }
+      : { year: 'numeric', month: 'long', day: 'numeric' };
+    
+    return new Intl.DateTimeFormat(locale, options).format(d);
+  } catch {
+    return date instanceof Date ? date.toLocaleDateString() : date;
+  }
+};
+
+export const formatTime = (
+  date: Date | string,
+  format: 'short' | 'long' = 'short',
+  lang: Lang = 'en'
+): string => {
+  try {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const locale = localeMap[lang];
+    
+    const options: Intl.DateTimeFormatOptions = format === 'short'
+      ? { hour: '2-digit', minute: '2-digit' }
+      : { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    
+    return new Intl.DateTimeFormat(locale, options).format(d);
+  } catch {
+    return date instanceof Date ? date.toLocaleTimeString() : date;
+  }
+};
+
+// Currency formatting helper
+export const formatCurrency = (
+  amount: number,
+  currency: 'EUR' | 'USD' | 'GBP' | 'JPY' = 'EUR',
+  lang: Lang = 'en'
+): string => {
+  try {
+    const locale = localeMap[lang];
+    const options: Intl.NumberFormatOptions = {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: currency === 'JPY' ? 0 : 2,
+    };
+    
+    return new Intl.NumberFormat(locale, options).format(amount);
+  } catch {
+    return `${amount} ${currency}`;
+  }
+};
+
+// Number formatting helper
+export const formatNumber = (
+  num: number,
+  lang: Lang = 'en',
+  decimalPlaces: number = 2
+): string => {
+  try {
+    const locale = localeMap[lang];
+    const options: Intl.NumberFormatOptions = {
+      minimumFractionDigits: decimalPlaces,
+      maximumFractionDigits: decimalPlaces,
+    };
+    
+    return new Intl.NumberFormat(locale, options).format(num);
+  } catch {
+    return num.toLocaleString();
+  }
+};
+
 const DICT: Record<Lang, Record<string, string>> = {
   en: {
     'welcome.upcoming.14d': 'Upcoming 14 days'
@@ -3787,10 +3875,34 @@ export function useI18n() {
     setLang(nextLang);
   }, []);
 
+  // Pluralization support for all languages
+  const pluralize = useCallback((count: number, key: string): string => {
+    const translation = DICT[langState][key] || DICT.en[key];
+    
+    if (!translation) return `${count} ${key}`;
+    
+    // Simple pluralization: use 'one' for count=1, 'other' for everything else
+    // Most European languages follow this pattern
+    const isPlural = count !== 1;
+    const form = isPlural ? 'other' : 'one';
+    
+    // Check if translation is plural object (e.g., { one: "1 show", other: "{count} shows" })
+    if (typeof translation === 'object' && translation !== null && form in translation) {
+      const pluralObj = translation as Record<string, string>;
+      const template = pluralObj[form];
+      if (template) {
+        return template.replace('{count}', String(count));
+      }
+    }
+    
+    return `${count} ${translation}`;
+  }, [langState]);
+
   return {
     lang: langState,
     setLang: setLanguage,
     t: translate,
+    pluralize,
     dict
   } as const;
 }

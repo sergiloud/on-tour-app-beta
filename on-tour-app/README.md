@@ -71,13 +71,15 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 
 ## 📚 Documentation
 
-**START HERE**: Read [`docs/MASTER_INDEX.md`](docs/MASTER_INDEX.md) for complete documentation navigation.
+**START HERE**: Read [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md) for project health status, architecture overview, and readiness assessment.
 
 ### Strategic Documents (Latest)
 
-- **Project Status**: [`docs/PROYECTO_ESTADO_ACTUAL.md`](docs/PROYECTO_ESTADO_ACTUAL.md) - Complete current state & metrics
+- **Executive Summary**: [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md) - 🟢 Project health, architecture, metrics, roadmap
+- **Project Status**: [`PROYECTO_ESTADO_ACTUAL.md`](PROYECTO_ESTADO_ACTUAL.md) - Complete current state & phase breakdown
 - **Prioritized Roadmap**: [`docs/TODO_PRIORIZADO.md`](docs/TODO_PRIORIZADO.md) - 24 tasks for FASE 6-8
-- **Executive Summary**: [`docs/RESUMEN_EJECUTIVO.md`](docs/RESUMEN_EJECUTIVO.md) - For stakeholders & leadership
+- **Session Summary**: [`SESSION_FASE_6_WEEK_2_COMPLETE.md`](SESSION_FASE_6_WEEK_2_COMPLETE.md) - Latest session accomplishments
+- **Phase 6 Week 2 Details**: [`FASE_6_WEEK_2_COMPLETE.md`](FASE_6_WEEK_2_COMPLETE.md) - PostgreSQL, testing, Swagger implementation
 - **Maintenance Guide**: [`docs/DOCUMENTATION_MAINTENANCE_GUIDE.md`](docs/DOCUMENTATION_MAINTENANCE_GUIDE.md) - Documentation organization
 
 ### Quick Links

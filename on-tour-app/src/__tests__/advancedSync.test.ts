@@ -425,9 +425,9 @@ describe('Phase 2.6: Audit Trail', () => {
       const entries = auditTrail.query({ entityId: 'show-1' });
 
       expect(entries).toHaveLength(1);
-      expect(entries[0].action).toBe('update');
-      expect(entries[0].entityId).toBe('show-1');
-      expect(entries[0].status).toBe('success');
+      expect(entries?.[0]?.action).toBe('update');
+      expect(entries?.[0]?.entityId).toBe('show-1');
+      expect(entries?.[0]?.status).toBe('success');
     });
   });
 
@@ -473,13 +473,13 @@ describe('Phase 2.6: Audit Trail', () => {
     it('should filter by action', () => {
       const entries = auditTrail.query({ action: 'create' });
       expect(entries).toHaveLength(1);
-      expect(entries[0].action).toBe('create');
+      expect(entries?.[0]?.action).toBe('create');
     });
 
     it('should filter by source', () => {
       const entries = auditTrail.query({ source: 'backend' });
       expect(entries).toHaveLength(1);
-      expect(entries[0].source).toBe('backend');
+      expect(entries?.[0]?.source).toBe('backend');
     });
 
     it('should combine multiple filters', () => {

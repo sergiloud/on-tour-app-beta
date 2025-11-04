@@ -6,6 +6,7 @@ import { Card } from '../ui/Card';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import { DashboardProvider } from '../context/DashboardContext';
 import { DashboardFilters } from '../components/dashboard/DashboardFilters';
+import { DashboardWithFAB } from '../components/dashboard/DashboardWithFAB';
 import { staggerFast, slideUp, fadeIn } from '../lib/animations';
 import { useAuth } from '../context/AuthContext';
 import { getCurrentOrgId } from '../lib/tenants';
@@ -197,10 +198,12 @@ export const DashboardOverview: React.FC = () => {
 
   return (
     <DashboardProvider>
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4 md:py-6">
-        {/* Mission Control Dashboard - Sin header redundante */}
-        <MissionControlDashboard />
-      </div>
+      <DashboardWithFAB>
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4 md:py-6">
+          {/* Mission Control Dashboard - Sin header redundante */}
+          <MissionControlDashboard />
+        </div>
+      </DashboardWithFAB>
     </DashboardProvider>
   );
 };

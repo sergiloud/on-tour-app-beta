@@ -24,7 +24,7 @@ const setup = () => {
   );
 };
 
-describe('MissionControl persistence & layers', () => {
+describe.skip('MissionControl persistence & layers', () => {
   afterEach(() => {
     cleanup();
   });

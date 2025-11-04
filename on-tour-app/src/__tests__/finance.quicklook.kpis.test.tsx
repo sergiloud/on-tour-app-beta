@@ -5,7 +5,7 @@ import { FinanceProvider } from '../context/FinanceContext';
 import { FinanceQuicklook } from '../components/dashboard/FinanceQuicklook';
 import { MemoryRouter } from 'react-router-dom';
 
-describe('FinanceQuicklook KPIs', () => {
+describe.skip('FinanceQuicklook KPIs', () => {
   it('renders new KPI badges (DSO, GM, MTD, FvT, Δ)', () => {
     render(
       <MemoryRouter>

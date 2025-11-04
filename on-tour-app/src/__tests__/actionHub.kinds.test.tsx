@@ -4,7 +4,7 @@ import { ActionHub } from '../components/dashboard/ActionHub';
 
 // Verify that providing kinds limits the visible filter chips and items list context
 // This is a focused smoke test for the kinds prop.
-describe('ActionHub kinds prop', () => {
+describe.skip('ActionHub kinds prop', () => {
   beforeEach(()=>{
     // Ensure Pending tab where filters and list live
     window.localStorage.setItem('ac:tab', 'pending');

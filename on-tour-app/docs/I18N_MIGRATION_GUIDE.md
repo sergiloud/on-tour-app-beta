@@ -41,6 +41,7 @@ Migration from custom i18n system to i18next with backward compatibility.
 ## Installation
 
 Already done via `npm install`:
+
 - i18next
 - react-i18next
 - i18next-browser-languagedetector
@@ -66,6 +67,7 @@ root.render(
 ### 2. Configuration (src/lib/i18n/config.ts)
 
 Already created with:
+
 - 4 namespaces: common, profile, finance, travel
 - Language detection (browser + secureStorage preference)
 - Lazy loading backend
@@ -91,10 +93,10 @@ import { useI18nWithNext } from '../hooks/useI18nWithNext';
 
 export function MigratingComponent() {
   const { t } = useI18nWithNext();
-  
+
   // Old-style keys still work (fallback to custom i18n):
   return <div>{t('cmd.go.profile')}</div>;
-  
+
   // New-style with namespaces also work:
   // return <div>{t('profile:profile.tabs.overview')}</div>;
 }
@@ -112,6 +114,7 @@ export function MigratingComponent() {
 ### Namespace: common
 
 Global navigation and common UI elements:
+
 ```json
 {
   "cmd.go.profile": "Go to Profile",
@@ -124,6 +127,7 @@ Global navigation and common UI elements:
 ### Namespace: profile
 
 Profile page and settings:
+
 ```json
 {
   "profile.title": "Profile",
@@ -136,6 +140,7 @@ Profile page and settings:
 ### Namespace: finance
 
 Finance dashboard and reports:
+
 ```json
 {
   "finance.title": "Finance",
@@ -147,6 +152,7 @@ Finance dashboard and reports:
 ### Namespace: travel
 
 Travel calendar and itinerary:
+
 ```json
 {
   "travel.title": "Travel",
@@ -199,9 +205,9 @@ return (
 const { t, i18n } = useI18nWithNext();
 
 // Formatting with options:
-<span>{t('finance:finance.total', { 
+<span>{t('finance:finance.total', {
   amount: 1234.56,
-  currency: 'EUR' 
+  currency: 'EUR'
 })}</span>
 
 // Plural handling:
@@ -216,6 +222,7 @@ const languages = i18n.options.ns.map(ns => ...);
 ### Language Preference
 
 Stored in secureStorage with key `app.language`:
+
 ```json
 {
   "app.language": "es"
@@ -227,6 +234,7 @@ Persists across sessions and syncs with SettingsContext.
 ### Translation Cache
 
 i18next caches loaded namespaces in memory:
+
 - First load: Async import via lazyLoadBackend
 - Subsequent loads: From memory (instant)
 
@@ -249,6 +257,7 @@ npm run test -- src/__tests__/i18n.test.ts
 ### Browser Testing
 
 Open DevTools → Application → Local Storage:
+
 - Check `app.language` is saved correctly
 - Check i18next cache in IndexedDB (if configured)
 
@@ -259,11 +268,13 @@ Open DevTools → Application → Local Storage:
 **Symptom**: Keys appear as-is (e.g., "profile:profile.title")
 
 **Solutions**:
+
 1. Check locale JSON files exist in `src/locales/[lang]/[namespace].json`
 2. Check namespace name matches (e.g., "profile" not "profiles")
 3. Check key path is exact (JSON must have exact structure)
 
 **Debug**:
+
 ```javascript
 // In browser console:
 i18next.getResourceBundle('es', 'profile');
@@ -275,6 +286,7 @@ i18next.getResourceBundle('es', 'profile');
 **Symptom**: After refresh, language reverts to English
 
 **Solutions**:
+
 1. Check `app.language` in localStorage (DevTools → Storage)
 2. Check `secureStorage.setItem` not throwing errors
 3. Verify browser allows localStorage writes
@@ -284,6 +296,7 @@ i18next.getResourceBundle('es', 'profile');
 **Symptom**: Old i18n keys like `t('cmd.go.profile')` return undefined
 
 **Solutions**:
+
 1. Ensure `useI18nWithNext()` is used (not `useTranslation()` directly)
 2. Check custom i18n module is loaded (no import errors)
 3. Verify key exists in `src/lib/i18n.ts` dictionary
@@ -293,7 +306,7 @@ i18next.getResourceBundle('es', 'profile');
 1. **Lazy Loading**: Only specified namespaces loaded on demand
 2. **Debounce**: Language changes debounced with i18next
 3. **Caching**: Loaded namespaces stay in memory
-4. **Bundle Size**: 
+4. **Bundle Size**:
    - i18next: ~15 KB (minified)
    - react-i18next: ~10 KB (minified)
    - Translations: ~50 KB (all languages + namespaces)

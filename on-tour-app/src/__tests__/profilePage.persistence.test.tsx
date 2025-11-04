@@ -1,6 +1,6 @@
 /**
  * Test suite for ProfilePage settings persistence
- * 
+ *
  * Validates:
  * - Settings changes are persisted to storage
  * - Multi-tab sync works (via ProfilePage)

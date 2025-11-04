@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, TrendingUp, MapPin, Clock, DollarSign, Users } from 'lucide-react';
 import { Card } from '../../ui/Card';
-import { showStore } from '../../shared/showStore';
+import { useShowsQuery } from '../../hooks/useShowsQuery';
 import { useSettings } from '../../context/SettingsContext';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { Link } from 'react-router-dom';
@@ -28,6 +28,7 @@ const STATUS_COLORS = {
 
 export const TourOverviewCard: React.FC = React.memo(() => {
   const { fmtMoney } = useSettings();
+  const { data: allShows = [], isLoading } = useShowsQuery();
   const [orgId, setOrgId] = useState<string>(() => { try { return getCurrentOrgId(); } catch { return ''; } });
 
   useEffect(() => {
@@ -42,29 +43,29 @@ export const TourOverviewCard: React.FC = React.memo(() => {
     const now = Date.now();
     const in30 = now + 30 * 24 * 60 * 60 * 1000;
     const in90 = now + 90 * 24 * 60 * 60 * 1000;
-    const shows = showStore.getAll().filter((s: any) => !s.tenantId || s.tenantId === orgId);
+    const shows = (allShows as any[]).filter((s: any) => !s.tenantId || s.tenantId === orgId);
 
     // Upcoming shows (next 30 days)
-    const upcoming = shows.filter(s => {
+    const upcoming = shows.filter((s: any) => {
       const t = new Date(s.date).getTime();
       return t >= now && t <= in30;
-    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     // All future shows (for total count)
-    const allFuture = shows.filter(s => new Date(s.date).getTime() >= now);
+    const allFuture = shows.filter((s: any) => new Date(s.date).getTime() >= now);
 
     // Next 90 days for extended view
-    const next90 = shows.filter(s => {
+    const next90 = shows.filter((s: any) => {
       const t = new Date(s.date).getTime();
       return t >= now && t <= in90;
     });
 
-    const confirmed = upcoming.filter(s => s.status === 'confirmed').length;
-    const pending = upcoming.filter(s => s.status === 'pending').length;
-    const offer = upcoming.filter(s => s.status === 'offer').length;
+    const confirmed = upcoming.filter((s: any) => s.status === 'confirmed').length;
+    const pending = upcoming.filter((s: any) => s.status === 'pending').length;
+    const offer = upcoming.filter((s: any) => s.status === 'offer').length;
 
-    const expected = Math.round(upcoming.reduce((acc, s) => acc + s.fee * probOf(s.status as any), 0));
-    const confirmedRevenue = Math.round(upcoming.filter(s => s.status === 'confirmed').reduce((acc, s) => acc + s.fee, 0));
+    const expected = Math.round(upcoming.reduce((acc: number, s: any) => acc + s.fee * probOf(s.status as any), 0));
+    const confirmedRevenue = Math.round(upcoming.filter((s: any) => s.status === 'confirmed').reduce((acc: number, s: any) => acc + s.fee, 0));
     const avgShowValue = upcoming.length > 0 ? Math.round(expected / upcoming.length) : 0;
 
     // Next show
@@ -76,15 +77,15 @@ export const TourOverviewCard: React.FC = React.memo(() => {
     const weeks = Array.from({ length: 4 }).map((_, i) => {
       const start = now + i * 7 * 24 * 60 * 60 * 1000;
       const end = start + 7 * 24 * 60 * 60 * 1000;
-      const weekShows = upcoming.filter(s => { const t = new Date(s.date).getTime(); return t >= start && t < end; });
-      const sum = Math.round(weekShows.reduce((a, s) => a + s.fee * probOf(s.status as any), 0));
+      const weekShows = upcoming.filter((s: any) => { const t = new Date(s.date).getTime(); return t >= start && t < end; });
+      const sum = Math.round(weekShows.reduce((a: number, s: any) => a + s.fee * probOf(s.status as any), 0));
       return { count: weekShows.length, revenue: sum };
     });
     const maxWeekRevenue = Math.max(1, ...weeks.map(w => w.revenue));
 
     // Top 3 upcoming shows by value
     const topShows = [...upcoming]
-      .sort((a, b) => (b.fee * probOf(b.status as any)) - (a.fee * probOf(a.status as any)))
+      .sort((a: any, b: any) => (b.fee * probOf(b.status as any)) - (a.fee * probOf(a.status as any)))
       .slice(0, 3);
 
     return {
@@ -103,7 +104,7 @@ export const TourOverviewCard: React.FC = React.memo(() => {
       topShows,
       next90Count: next90.length
     };
-  }, [orgId]);
+  }, [orgId, allShows]);
 
   return (
     <Card className="p-0 flex flex-col overflow-hidden" aria-label="Tour overview">

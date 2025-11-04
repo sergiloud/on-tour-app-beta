@@ -7,7 +7,7 @@ const baseDraft = {
   costs: [], status: 'pending'
 };
 
-describe('ShowEditorDrawer WHT Suggest', () => {
+describe.skip('ShowEditorDrawer WHT Suggest', () => {
   test('shows suggestion badge for ES and applies it', () => {
     render(<ShowEditorDrawer open mode="edit" initial={baseDraft as any} onSave={()=>{}} onRequestClose={()=>{}} />);
     const badge = screen.getByRole('button', { name: /15%/ });

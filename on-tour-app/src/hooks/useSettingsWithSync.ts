@@ -1,11 +1,11 @@
 /**
  * useSettingsWithSync
  * Hook that ensures SettingsContext is backed by useSettingsSync
- * 
+ *
  * The SettingsContext already handles persistence via saveSettings/upsertUserPrefs.
  * This hook ensures those changes are also synced via useSettingsSync for
  * multi-tab coordination and versioning.
- * 
+ *
  * @module useSettingsWithSync
  */
 
@@ -20,12 +20,12 @@ export interface UseSettingsWithSyncOptions {
 
 /**
  * Hook that integrates SettingsContext with multi-tab sync
- * 
+ *
  * This ensures that all settings changes are:
  * 1. Persisted to localStorage via SettingsContext
  * 2. Broadcasted to other tabs via CustomEvent
  * 3. Tracked with version and timestamp
- * 
+ *
  * Usage:
  * ```tsx
  * const context = useSettingsWithSync({ debounceMs: 300 });

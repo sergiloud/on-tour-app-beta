@@ -1,19 +1,15 @@
 import React, { useMemo } from 'react';
 import { t } from '../../../lib/i18n';
-import { useFinance } from '../../../context/FinanceContext';
-import { useSettings } from '../../../context/SettingsContext';
-import { showStore } from '../../../shared/showStore';
+import { useFinanceSnapshot } from '../../../hooks/useFinanceSnapshot';
 import { agenciesForShow, computeCommission } from '../../../lib/agencies';
-import type { DemoShow } from '../lib/shows';
 import { TrendingUp, TrendingDown, Users } from 'lucide-react';
 
 const OverviewHeader: React.FC = () => {
-  const { snapshot, compareSnapshot } = useFinance();
-  const { fmtMoney, comparePrev, bookingAgencies, managementAgencies } = useSettings();
+  const { allShows, snapshot, compareSnapshot, fmtMoney, comparePrev, bookingAgencies, managementAgencies } = useFinanceSnapshot();
 
   // Calculate agency commissions for current period
   const agencyData = useMemo(() => {
-    const shows = showStore.getAll() as Show[];
+    const shows = (allShows as any[]) || [];
     const confirmedShows = shows.filter(s => s.status !== 'offer');
     let totalCommissions = 0;
 

@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
-
 /**
- * useDebounce returns a debounced version of a value that only updates
- * after the specified delay has elapsed without further changes.
+ * @deprecated Use useDebounce from '@/lib/performance' instead
+ *
+ * This file is kept for backward compatibility only.
+ * It now simply re-exports the version from lib/performance.
+ *
+ * Migration path:
+ * Old: import { useDebounce } from '@/hooks/useDebounce'
+ * New: import { useDebounce } from '@/lib/performance'
+ *
+ * The version in lib/performance.ts is more robust and is the single
+ * source of truth for all debouncing functionality in the app.
  */
-export function useDebounce<T>(value: T, delay = 180) {
-  const [debounced, setDebounced] = useState<T>(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
-}
+
+// Re-export from lib/performance for backward compatibility
+export { useDebounce } from '../lib/performance';

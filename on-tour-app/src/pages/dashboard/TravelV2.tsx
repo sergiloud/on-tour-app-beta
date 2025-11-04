@@ -9,7 +9,7 @@ import { AIRPORTS } from '../../lib/airports';
 import { AddFlightModal } from '../../components/travel/AddFlightModal';
 import { FlightSearchModal } from '../../components/travel/FlightSearchModal';
 import { logger } from '../../lib/logger';
-import { useDebounce } from '../../hooks/useDebounce';
+import { useDebounce } from '../../lib/performance';
 
 /**
  * TravelV2 - Flighty-inspired travel management

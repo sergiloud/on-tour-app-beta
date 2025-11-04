@@ -24,6 +24,7 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 ## 🚀 Key Features
 
 ### ⚡ Intelligent Tour Management
+
 - **Quick Entry NLP**: "Madrid tomorrow 8pm €5000" → show completo
 - **ActionHub**: Prioriza tareas urgentes automáticamente
 - **Tour Health Score**: Detecta problemas logísticos/financieros
@@ -31,6 +32,7 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 - **Offline-First**: Trabaja sin internet, sync automático
 
 ### 💰 Financial Intelligence
+
 - **Real-time Calculations**: Fee neto, profit margins, breakeven
 - **Settlement 1-Click**: Distribuye pagos multiparte automáticamente
 - **Multi-currency**: Soporte EUR/USD/GBP con conversión real-time
@@ -38,6 +40,7 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 - **Revenue Heatmap**: Visualiza ganancias geográficamente
 
 ### 📄 Contracts & Legal
+
 - **E-Signature**: Integración HelloSign para firmas legales
 - **Templates**: Riders, contratos, invoices por país
 - **Full-Text Search**: Encuentra cualquier cláusula en segundos
@@ -45,25 +48,56 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 - **Auto-reminders**: Notificaciones pre-show
 
 ### 📨 Centralized Inbox
+
 - **Email Threading**: Conversaciones contextuales por show
 - **Smart Parsing**: Attachments automáticos a shows
 - **Team Mentions**: @mention para colaboración
 - **Status Tracking**: pending/resolved workflows
 
 ### 🗺️ Interactive Maps
+
 - **Show Locations**: Visualiza tu tour geográficamente
 - **Revenue Heatmap**: Calor = más dinero
 - **Route Optimization**: IA sugiere rutas eficientes
 - **Venue Database**: Capacidad, specs técnicos, contactos
 
 ### 🎨 Premium UX
+
 - **Glassmorphism**: Diseño moderno profesional
 - **Dark Mode Adaptativo**: Auto/light/dark con transiciones suaves
 - **Mobile-First**: Touch targets 44px+, bottom nav, FAB
 - **Accessibility**: WCAG 2.1 AA, screen readers, keyboard nav
 - **PWA**: Instalable, push notifications, offline
 
-## 🛠️ Tech Stack
+## 📚 Documentation
+
+**START HERE**: Read [`docs/MASTER_INDEX.md`](docs/MASTER_INDEX.md) for complete documentation navigation.
+
+### Strategic Documents (Latest)
+
+- **Project Status**: [`docs/PROYECTO_ESTADO_ACTUAL.md`](docs/PROYECTO_ESTADO_ACTUAL.md) - Complete current state & metrics
+- **Prioritized Roadmap**: [`docs/TODO_PRIORIZADO.md`](docs/TODO_PRIORIZADO.md) - 24 tasks for FASE 6-8
+- **Executive Summary**: [`docs/RESUMEN_EJECUTIVO.md`](docs/RESUMEN_EJECUTIVO.md) - For stakeholders & leadership
+- **Maintenance Guide**: [`docs/DOCUMENTATION_MAINTENANCE_GUIDE.md`](docs/DOCUMENTATION_MAINTENANCE_GUIDE.md) - Documentation organization
+
+### Quick Links
+
+- **Current Phase**: [`docs/FASE_5_COMPLETE.md`](docs/FASE_5_COMPLETE.md) - Multi-tab sync & offline support ✅ COMPLETE
+- **Project Overview**: [`docs/COMPLETE_PROJECT_DESCRIPTION.md`](docs/COMPLETE_PROJECT_DESCRIPTION.md)
+- **Critical Areas**: [`docs/CRITICAL_AREAS_DETAILED.md`](docs/CRITICAL_AREAS_DETAILED.md) - Key challenges & solutions
+- **Architecture**: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - State management decisions
+- **Finance Guide**: [`docs/FINANCE_CALCULATION_GUIDE.md`](docs/FINANCE_CALCULATION_GUIDE.md) - Financial calculations reference
+- **Testing**: [`docs/TEST_INFRASTRUCTURE_GUIDE.md`](docs/TEST_INFRASTRUCTURE_GUIDE.md) - Testing patterns & setup
+- **E2E Testing**: [`docs/E2E_TESTING_SETUP_GUIDE.md`](docs/E2E_TESTING_SETUP_GUIDE.md) - Playwright setup
+
+### Documentation Reorganization (Nov 2025)
+
+- Cleaned up 143 docs → 65 active docs (54% reduction of obsolete/duplicate content)
+- Created [`docs/MASTER_INDEX.md`](docs/MASTER_INDEX.md) as central navigation
+- Archived old WEEK\*_, SEMANA_, SESSION\*\_, OPTION\_\_ docs
+- Kept only active, relevant documentation
+
+## �🛠️ Tech Stack
 
 - **Frontend**: React 18 with TypeScript
 - **Build Tool**: Vite
@@ -132,21 +166,25 @@ src/
 ## 🎨 Design System
 
 ### Colors
+
 - **Primary**: Blue gradient (`from-blue-600 to-purple-600`)
 - **Accent**: Yellow-green (`#bfff00`)
 - **Background**: Dark theme (`ink-900`, `ink-800`, `ink-700`)
 
 ### Typography
+
 - **Font Family**: System fonts with fallbacks
 - **Scale**: Responsive text sizing (4xl to 7xl for headings)
 
 ### Spacing
+
 - **System**: 4px base unit (0.25rem increments)
 - **Consistent**: 4px, 8px, 12px, 16px, 20px, 24px, 32px, 40px, 48px, 64px, 80px, 96px
 
 ## 🔧 Development
 
 ### Code Quality
+
 - **ESLint**: Configured with TypeScript and React rules
 - **Prettier**: Consistent code formatting
 - **Husky**: Pre-commit hooks for quality checks (v9+)
@@ -154,12 +192,14 @@ src/
 - **EditorConfig**: Consistent editor settings
 
 ### Testing
+
 - **Unit Tests**: Component and utility testing with Vitest
 - **Integration Tests**: Feature-level testing
 - **Coverage**: Minimum 70% coverage required (branches, functions, lines, statements)
 - **E2E**: Playwright for end-to-end testing (planned)
 
 ### Scripts
+
 ```bash
 npm run dev          # Start development server
 npm run build        # Type-check and build for production
@@ -176,6 +216,7 @@ npm run validate     # Run type-check, lint, and tests
 ```
 
 ### Performance
+
 - **Bundle Splitting**: Code splitting by route and feature
 - **Lazy Loading**: Components and routes loaded on demand
 - **Image Optimization**: Responsive images with lazy loading
@@ -215,6 +256,7 @@ trackEvent('user.action', { action: 'button_click', component: 'hero' });
 ## 🚀 Deployment
 
 ### Netlify (Recommended)
+
 ```bash
 # Build command
 npm run build
@@ -224,6 +266,7 @@ dist
 ```
 
 ### Environment Variables
+
 ```env
 VITE_API_URL=https://api.ontourapp.com
 VITE_ENVIRONMENT=production
@@ -238,6 +281,7 @@ VITE_ENVIRONMENT=production
 5. Open a Pull Request
 
 ### Commit Convention
+
 - `feat:` New features
 - `fix:` Bug fixes
 - `docs:` Documentation
@@ -252,33 +296,35 @@ This project is proprietary software. All rights reserved.
 
 ## 📞 Support
 
-For support, please contact the development team or create an issue in the repository.
-2. Add localized label/help keys to both `en` and `es` in `src/lib/i18n.ts` (group fields logically; keep alphabetical inside section when practical).
-3. Implement a `usePrevious` (or ref) comparison inside the editor component to guard transitions.
-4. Emit events via the central `trackEvent` helper. Never inline string literals.
-5. Add tests mirroring real interaction (set → change → clear) and assert ordered emission.
+For support, please contact the development team or create an issue in the repository. 2. Add localized label/help keys to both `en` and `es` in `src/lib/i18n.ts` (group fields logically; keep alphabetical inside section when practical). 3. Implement a `usePrevious` (or ref) comparison inside the editor component to guard transitions. 4. Emit events via the central `trackEvent` helper. Never inline string literals. 5. Add tests mirroring real interaction (set → change → clear) and assert ordered emission.
 
 ### Edge Cases Covered
+
 - Re-typing identical value (after trimming) → no duplicate event.
 - Clearing via select-all + delete → emits `SHOW_VENUE_CLEARED` once.
 - Input with trailing spaces that resolves to same normalized value → no `CHANGED` event.
 - Rapid sequential changes: each distinct normalized value produces at most one `CHANGED` per transition path.
 
 ### i18n Keys
+
 (Ensure both languages are present; names illustrative if you search inside `i18n.ts`.)
+
 ```
 show.venue.label
 show.venue.help
 ```
+
 Spanish equivalents mirror the same keys with translated values.
 
 ### Quality Checklist
+
 - a11y: Input has accessible label (from i18n key) and optional description/help text.
 - Telemetry: All three events asserted by test; no console warnings.
 - Performance: Comparison is O(1); no additional renders introduced.
 - Resilience: Safe if telemetry system is disabled (calls become no-ops).
 
 ### Potential Enhancements (Deferred)
+
 - Autocomplete from previously used venue values (client-side LRU list).
 - Structured venue object (link to canonical venue directory) with future disambiguation UI.
 - Geo enrichment (resolving venue to city / coordinates for routing & travel prefill).
@@ -287,12 +333,16 @@ Spanish equivalents mirror the same keys with translated values.
 ---
 
 ## Development (Quick Reference)
+
 Install & run:
+
 ```
 npm install
 npm run dev
 ```
+
 Run tests (includes venue telemetry tests):
+
 ```
 npm test
 ```

@@ -7,6 +7,7 @@
 
 import { useMutation, useQueryClient, type UseMutationOptions } from '@tanstack/react-query';
 import { createOptimisticMutation, optimisticTracker } from '../lib/optimisticUpdates';
+import { api } from '../lib/api';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -105,21 +106,15 @@ export function useOptimisticIndicator() {
 
 /**
  * Pre-configured hooks for common operations
+ * All use api wrapper for consistent retry/timeout handling
  */
 
 // Shows
 export function useOptimisticShowUpdate() {
     return useOptimisticMutation({
         queryKey: ['shows'],
-        mutationFn: async (variables: { id: string; updates: any }) => {
-            const response = await fetch(`/api/shows/${variables.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(variables.updates)
-            });
-            if (!response.ok) throw new Error('Failed to update show');
-            return response.json();
-        },
+        mutationFn: async (variables: { id: string; updates: any }) =>
+            api.patch(`/api/shows/${variables.id}`, variables.updates),
         updateFn: (shows: any[] = [], variables) => {
             return shows.map(show =>
                 show.id === variables.id ? { ...show, ...variables.updates } : show
@@ -134,15 +129,8 @@ export function useOptimisticShowUpdate() {
 export function useOptimisticShowCreate() {
     return useOptimisticMutation({
         queryKey: ['shows'],
-        mutationFn: async (variables: { show: any }) => {
-            const response = await fetch('/api/shows', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(variables.show)
-            });
-            if (!response.ok) throw new Error('Failed to create show');
-            return response.json();
-        },
+        mutationFn: async (variables: { show: any }) =>
+            api.post('/api/shows', variables.show),
         updateFn: (shows: any[] = [], variables) => {
             const optimisticShow = {
                 ...variables.show,
@@ -160,13 +148,8 @@ export function useOptimisticShowCreate() {
 export function useOptimisticShowDelete() {
     return useOptimisticMutation({
         queryKey: ['shows'],
-        mutationFn: async (variables: { id: string }) => {
-            const response = await fetch(`/api/shows/${variables.id}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) throw new Error('Failed to delete show');
-            return response.json();
-        },
+        mutationFn: async (variables: { id: string }) =>
+            api.delete(`/api/shows/${variables.id}`),
         updateFn: (shows: any[] = [], variables) => {
             return shows.filter(show => show.id !== variables.id);
         },
@@ -180,15 +163,8 @@ export function useOptimisticShowDelete() {
 export function useOptimisticFinanceUpdate() {
     return useOptimisticMutation({
         queryKey: ['finance'],
-        mutationFn: async (variables: { id: string; updates: any }) => {
-            const response = await fetch(`/api/finance/${variables.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(variables.updates)
-            });
-            if (!response.ok) throw new Error('Failed to update finance data');
-            return response.json();
-        },
+        mutationFn: async (variables: { id: string; updates: any }) =>
+            api.patch(`/api/finance/${variables.id}`, variables.updates),
         updateFn: (data: any, variables) => {
             return { ...data, ...variables.updates };
         },
@@ -202,15 +178,8 @@ export function useOptimisticFinanceUpdate() {
 export function useOptimisticTravelUpdate() {
     return useOptimisticMutation({
         queryKey: ['travel'],
-        mutationFn: async (variables: { id: string; updates: any }) => {
-            const response = await fetch(`/api/travel/${variables.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(variables.updates)
-            });
-            if (!response.ok) throw new Error('Failed to update travel data');
-            return response.json();
-        },
+        mutationFn: async (variables: { id: string; updates: any }) =>
+            api.patch(`/api/travel/${variables.id}`, variables.updates),
         updateFn: (data: any, variables) => {
             return { ...data, ...variables.updates };
         },

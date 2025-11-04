@@ -5,7 +5,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useShows } from '../../hooks/useShows';
 import { useSettings } from '../../context/SettingsContext';
-import { useDebounce } from '../../hooks/useDebounce';
+import { useDebounce } from '../../lib/performance';
 import { DemoShow, type Show } from '../../lib/shows';
 import { regionOf } from '../../features/shows/selectors';
 import { t } from '../../lib/i18n';

@@ -6,7 +6,7 @@ import {
     Activity, BarChart3, Percent, Award, AlertTriangle, Info
 } from 'lucide-react';
 import { Card } from '../../ui/Card';
-import { showStore } from '../../shared/showStore';
+import { useShowsQuery } from '../../hooks/useShowsQuery';
 import { useSettings } from '../../context/SettingsContext';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { Link } from 'react-router-dom';
@@ -53,6 +53,7 @@ const STAGE_PROB: Record<string, number> = {
 
 export const TourSummaryIntelligent: React.FC = () => {
     const { fmtMoney } = useSettings();
+    const { data: allShowsData = [] } = useShowsQuery();
     const [selectedView, setSelectedView] = useState<'overview' | 'health' | 'predictions'>('overview');
     const orgId = getCurrentOrgId();
 
@@ -65,15 +66,15 @@ export const TourSummaryIntelligent: React.FC = () => {
         const past30 = now - 30 * DAY;
         const past90 = now - 90 * DAY;
 
-        const allShows = showStore.getAll().filter((s: any) => !s.tenantId || s.tenantId === orgId);
+        const allShows = (allShowsData as any[]).filter((s: any) => !s.tenantId || s.tenantId === orgId);
 
         // Time windows
-        const upcoming30 = allShows.filter(s => {
+        const upcoming30 = allShows.filter((s: any) => {
             const t = new Date(s.date).getTime();
             return t >= now && t <= in30;
         });
 
-        const upcoming90 = allShows.filter(s => {
+        const upcoming90 = allShows.filter((s: any) => {
             const t = new Date(s.date).getTime();
             return t >= now && t <= in90;
         });
@@ -286,12 +287,12 @@ export const TourSummaryIntelligent: React.FC = () => {
             shows90: upcoming90.length,
             shows180: upcoming180.length,
             pending: upcoming90.filter(s => s.status === 'pending').length,
-            offers: upcoming90.filter(s => s.status === 'offer').length,
+            offers: upcoming90.filter((s: any) => s.status === 'offer').length,
             growth: pastRevenue30 > 0 ? ((totalRevenue30 - pastRevenue30) / pastRevenue30) * 100 : 0
         };
 
         return { health, alerts, predictions, stats };
-    }, [orgId, fmtMoney]);
+    }, [orgId, allShowsData]);
 
     const healthColor = {
         excellent: { bg: 'from-green-500/20 to-emerald-600/10', border: 'border-green-500/40', text: 'text-green-400', icon: 'text-green-500' },

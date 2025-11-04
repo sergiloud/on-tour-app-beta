@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, MapPin, Award } from 'lucide-react';
-import { useFilteredShows } from '../../features/shows/selectors';
+import { useShowsQuery } from '../../hooks/useShowsQuery';
 import { useSettings } from '../../context/SettingsContext';
 import { getCurrentOrgId } from '../../lib/tenants';
-import { showStore } from '../../shared/showStore';
 import { sanitizeName } from '../../lib/sanitize';
 
 const STAGE_PROB: Record<string, number> = {
@@ -20,7 +19,7 @@ const STAGE_PROB: Record<string, number> = {
  * Muestra trends de revenue, conversion rates, y top venues
  */
 const AnalyticsPanel: React.FC = () => {
-    const { shows } = useFilteredShows();
+    const { data: allShowsData = [] } = useShowsQuery();
     const { fmtMoney } = useSettings();
     const orgId = getCurrentOrgId();
 
@@ -28,7 +27,7 @@ const AnalyticsPanel: React.FC = () => {
         const now = Date.now();
         const DAY = 24 * 60 * 60 * 1000;
 
-        const allShows = showStore.getAll().filter((s: any) => s.tenantId === orgId);
+        const allShows = (allShowsData as any[]).filter((s: any) => s.tenantId === orgId);
         const upcoming = allShows.filter((s: any) => new Date(s.date).getTime() >= now);
 
         // Revenue trends (30/60/90 days)
@@ -93,7 +92,7 @@ const AnalyticsPanel: React.FC = () => {
             trendDirection,
             trendPercentage
         };
-    }, [shows, orgId, fmtMoney]);
+    }, [allShowsData, orgId]);
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useFinanceSnapshot } from '../../../hooks/useFinanceSnapshot';
 import { useSettings } from '../../../context/SettingsContext';
 import { t } from '../../../lib/i18n';
 import { Plus, X, Calendar, DollarSign, Tag, FileText, TrendingDown, Filter, Users } from 'lucide-react';
 import { loadExpenses, saveExpenses, loadDemoExpenses, type Expense as DemoExpense } from '../../../lib/expenses';
-import { showStore } from '../../../shared/showStore';
 import { agenciesForShow, computeCommission } from '../../../lib/agencies';
 import type { Show } from '../../../lib/shows';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -43,7 +43,8 @@ const CATEGORIES: { value: ExpenseCategory; label: string; color: string }[] = [
 const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'JPY', 'CAD', 'AUD'];
 
 const ExpenseManager: React.FC = () => {
-  const { fmtMoney, currency, bookingAgencies, managementAgencies } = useSettings();
+  const { allShows, fmtMoney, bookingAgencies, managementAgencies } = useFinanceSnapshot();
+  const { currency } = useSettings();
   const [isAdding, setIsAdding] = useState(false);
   const [filterCategory, setFilterCategory] = useState<ExpenseCategory | 'all'>('all');
 
@@ -107,7 +108,7 @@ const ExpenseManager: React.FC = () => {
 
   // Calculate agency commissions from all shows
   const agencyCommissions = useMemo(() => {
-    const shows = showStore.getAll() as Show[];
+    const shows = (allShows as any[]) || [];
     const commissionsByAgency: Record<string, { name: string; amount: number; type: 'booking' | 'management' }> = {};
 
     shows.forEach(show => {

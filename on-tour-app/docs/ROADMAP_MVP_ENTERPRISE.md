@@ -4,22 +4,23 @@ Estado: actualizado 2025-11-01
 
 ## Resumen Final — Estado Actual
 
-| Aspecto | Estado | Comentario breve |
-|---|---|---|
-| Core Features | 95% | Listo: calendario, shows, finanzas, travel, dashboard |
-| UX / Perfil | 85% | 7 tabs, falta persistencia y pruebas de uso real |
-| Performance | 100% | Workers, PWA, web-vitals integrados |
-| i18n | 80% | Sistema propio bueno, migración recomendada |
-| Seguridad | 75% | Sanitización, storage; falta 2FA y gestión granular |
-| Mobile UX | 60% | Falta gestos, optimización targets, QA en Android/iOS |
-| Integraciones Externas | 40% | Amadeus parcial, sin clave real ni fallback robusto |
-| Importadores | ELIM. | Eliminados, menos bugs/QA y mayor foco en core |
+| Aspecto                | Estado | Comentario breve                                      |
+| ---------------------- | ------ | ----------------------------------------------------- |
+| Core Features          | 95%    | Listo: calendario, shows, finanzas, travel, dashboard |
+| UX / Perfil            | 85%    | 7 tabs, falta persistencia y pruebas de uso real      |
+| Performance            | 100%   | Workers, PWA, web-vitals integrados                   |
+| i18n                   | 80%    | Sistema propio bueno, migración recomendada           |
+| Seguridad              | 75%    | Sanitización, storage; falta 2FA y gestión granular   |
+| Mobile UX              | 60%    | Falta gestos, optimización targets, QA en Android/iOS |
+| Integraciones Externas | 40%    | Amadeus parcial, sin clave real ni fallback robusto   |
+| Importadores           | ELIM.  | Eliminados, menos bugs/QA y mayor foco en core        |
 
 > Prioridad máxima: Pulir, asegurar y lanzar MVP Enterprise, sin importar importadores y con énfasis en seguridad, mobile y settings persistentes.
 
 ---
 
 ## Objetivo del ciclo (4 semanas)
+
 Versión 2.0 estable, segura, con UX móvil competitiva y settings persistentes.
 Sin importadores. Seguridad nivel enterprise (2FA, sesiones activas). Listo para demo y beta.
 
@@ -36,14 +37,16 @@ Sin importadores. Seguridad nivel enterprise (2FA, sesiones activas). Listo para
   - Soporte plurales, interpolación, RTL
   - Estrategia de migración progresiva (wrapper compatible)
 - Global Theme sync + toggle animado (ya hay ThemeProvider; revisar integración con Settings)
-- Testing/QA: 
+- Testing/QA:
   - Tests de settings (persistencia/cambios) y cambio de idioma
 
 Riesgos y mitigación:
+
 - Integración backend: empezar con stub local, interfaz estable -> swap backend después
 - Edge cases multi-tab: events + storage + backoff; pruebas manuales y automáticas
 
 Entregables:
+
 - `src/hooks/useSettingsSync.ts` + wiring en `SettingsContext`
 - `src/lib/i18n/i18next.ts` + `I18nextProvider` en `main.tsx`
 - 2-3 componentes migrados como ejemplo (UserMenu, Profile)

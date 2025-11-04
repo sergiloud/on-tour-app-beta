@@ -8,10 +8,14 @@ import { GlobalShowModal } from './components/GlobalShowModal';
 import { PWAComponents } from './components/pwa/PWAComponents';
 import { prefetch } from './routes/prefetch';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { useShowsSync } from './hooks/useShowsSync';
 import { swManager } from './lib/serviceWorkerManager';
 import { ServiceWorkerUpdater } from './components/common/ServiceWorkerUpdater';
 
 export const App: React.FC = () => {
+  // Enable cross-tab synchronization and React Query cache integration
+  useShowsSync();
+
   // Network status monitoring
   useNetworkStatus();
 

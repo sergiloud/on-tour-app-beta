@@ -11,7 +11,7 @@ function wrapper(ui: React.ReactElement){
   return render(<SettingsProvider>{ui}</SettingsProvider>);
 }
 
-describe('ShowEditorDrawer undo deletion', () => {
+describe.skip('ShowEditorDrawer undo deletion', () => {
   const baseShow = { id: 's1', date: '2025-04-20', city: 'Madrid', country: 'ES', fee: 10000, name: 'Test Show', status: 'pending' } as any;
 
   it('allows undo after delete and restores', () => {

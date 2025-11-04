@@ -1,12 +1,9 @@
 import React, { useMemo } from 'react';
 import { Card } from '../../../ui/Card';
-import { useFinance } from '../../../context/FinanceContext';
-import { useSettings } from '../../../context/SettingsContext';
+import { useFinanceSnapshot } from '../../../hooks/useFinanceSnapshot';
 import { t } from '../../../lib/i18n';
 import { trackEvent } from '../../../lib/telemetry';
-import { showStore } from '../../../shared/showStore';
 import { agenciesForShow, computeCommission } from '../../../lib/agencies';
-import type { DemoShow } from '../lib/shows';
 import { sanitizeName } from '../../../lib/sanitize';
 
 interface Insight {
@@ -25,14 +22,13 @@ interface KeyInsightsProps {
 }
 
 const KeyInsights: React.FC<KeyInsightsProps> = ({ onFilterChange }) => {
-  const { snapshot, targets, compareMonthlySeries } = useFinance();
-  const { fmtMoney, comparePrev, bookingAgencies, managementAgencies } = useSettings();
+  const { allShows, snapshot, targets, compareMonthlySeries, fmtMoney, comparePrev, bookingAgencies, managementAgencies } = useFinanceSnapshot();
 
   const insights = useMemo<Insight[]>(() => {
     const insightsList: Insight[] = [];
 
     // Calculate agency commissions
-    const shows = showStore.getAll() as Show[];
+    const shows = (allShows as any[]) || [];
     const confirmedShows = shows.filter(s => s.status !== 'offer');
     let totalAgencyCommissions = 0;
     const commissionsByAgency: Record<string, { name: string; amount: number }> = {};

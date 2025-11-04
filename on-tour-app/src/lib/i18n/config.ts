@@ -1,13 +1,13 @@
 /**
  * i18next Configuration
- * 
+ *
  * Initializes i18next with:
  * - Namespace separation (common, profile, finance, travel)
  * - Browser language detection
  * - Lazy loading of language bundles
  * - Fallback to English
  * - secureStorage for language preference persistence
- * 
+ *
  * @module lib/i18n/config
  */
 

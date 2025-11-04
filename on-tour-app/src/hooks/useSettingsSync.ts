@@ -1,14 +1,14 @@
 /**
  * useSettingsSync
  * Multi-tab synchronized settings persistence with versioning
- * 
+ *
  * Features:
  * - Write-through to localStorage (encrypted via secureStorage)
  * - Multi-tab sync via storage events + CustomEvent
  * - Debounced writes (300ms by default)
  * - Version tracking for safe future migrations
  * - Backward compatibility with legacy settings
- * 
+ *
  * @module useSettingsSync
  * @version 1.0.0
  */
@@ -54,14 +54,14 @@ export interface UseSettingsSyncResult<T extends Record<string, any>> {
 
 /**
  * Hook for synchronized settings persistence
- * 
+ *
  * Usage:
  * ```tsx
  * const { data, save, isDirty } = useSettingsSync<MySettings>({
  *   debounceMs: 300,
  *   userId: 'user123'
  * });
- * 
+ *
  * // Update a setting (debounced write)
  * await save({ theme: 'dark' });
  * ```

@@ -34,16 +34,17 @@ The `useSettingsSync` hook provides multi-tab synchronized settings persistence 
 
 ```typescript
 const {
-  data,           // Current settings object
-  isDirty,        // True if unsaved changes
-  isSyncing,      // True while debounce timer active
-  save,           // (partialData) => Promise<void>
-  clear,          // () => Promise<void>
-  reload,         // () => Promise<void>
+  data, // Current settings object
+  isDirty, // True if unsaved changes
+  isSyncing, // True while debounce timer active
+  save, // (partialData) => Promise<void>
+  clear, // () => Promise<void>
+  reload, // () => Promise<void>
 } = useSettingsSync(initialData, options);
 ```
 
 **Options:**
+
 - `debounceMs` (number, default: 300): Wait time before persisting
 - `userId` (string, optional): User identifier for multi-user storage
 - `onError` (function, optional): Error callback
@@ -243,6 +244,7 @@ Settings are stored in secureStorage (encrypted localStorage) with this structur
 ### Unit Tests
 
 Run useSettingsSync tests:
+
 ```bash
 npm run test -- src/__tests__/useSettingsSync.test.ts
 ```
@@ -259,6 +261,7 @@ npm run test -- src/__tests__/useSettingsSync.test.ts
 ### Debugging
 
 Enable logging in browser console:
+
 ```javascript
 // In SettingsContext or ProfilePage
 console.log('[useSettingsSync]', {
@@ -300,6 +303,7 @@ const sync = useSettingsWithSync();
 ### Backward Compatibility
 
 The SettingsContext continues to work as before. The sync layer is additive:
+
 - Existing code continues to work
 - New components can use `useSettingsWithSync` for enhanced persistence
 - Legacy `useSettings()` hook still works

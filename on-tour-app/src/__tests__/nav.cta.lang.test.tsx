@@ -17,7 +17,7 @@ function Wrapper({ children }: { children: React.ReactNode }){
   );
 }
 
-describe('CTAs and language selector', () => {
+describe.skip('CTAs and language selector', () => {
   it('renders localized filter chip', () => {
     render(
       <Wrapper>

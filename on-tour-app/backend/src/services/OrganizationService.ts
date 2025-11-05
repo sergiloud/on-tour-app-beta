@@ -21,11 +21,10 @@ export class OrganizationService {
   /**
    * Create new organization
    * 
-   * @param data Organization data (name, description, etc.)
-   * @param ownerId User ID of organization owner
+   * @param createData Organization data including ownerId
    * @returns Created organization
    */
-  async create(data: {
+  async create(createData: {
     name: string;
     description?: string;
     websiteUrl?: string;
@@ -35,11 +34,11 @@ export class OrganizationService {
     try {
       const organization = new Organization();
       organization.id = uuidv4();
-      organization.name = data.name;
-      organization.description = data.description;
-      organization.websiteUrl = data.websiteUrl;
-      organization.logoUrl = data.logoUrl;
-      organization.ownerId = data.ownerId;
+      organization.name = createData.name;
+      organization.description = createData.description;
+      organization.websiteUrl = createData.websiteUrl;
+      organization.logoUrl = createData.logoUrl;
+      organization.ownerId = createData.ownerId;
       
       // Hooks will generate and validate slug
       const saved = await this.organizationRepository.save(organization);

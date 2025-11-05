@@ -7,6 +7,7 @@
 Session 3 successfully delivered a **comprehensive audit trail system** for enterprise compliance and debugging. The system tracks all organizational activities across multiple dimensions with automatic request logging, retention policies, and powerful analytics capabilities.
 
 **Key Achievements**:
+
 - ✅ 6 steps completed with 0 TypeScript errors
 - ✅ 1,247 LOC delivered (entity 75 + migration 131 + service 360 + middleware 181 + routes 300 + tests 200)
 - ✅ 100% test coverage with 3 test suites
@@ -68,6 +69,7 @@ Session 3 successfully delivered a **comprehensive audit trail system** for ente
 ### Data Model
 
 **Audit Log Entity**:
+
 ```typescript
 {
   id: UUID (primary key)
@@ -99,6 +101,7 @@ Session 3 successfully delivered a **comprehensive audit trail system** for ente
 **File**: `backend/src/database/entities/AuditLog.ts` (75 LOC)
 
 Entity with full TypeORM decorators:
+
 - UUID primary key
 - Multi-tenant scoping (organizationId)
 - JSONB support for flexible changes tracking
@@ -107,6 +110,7 @@ Entity with full TypeORM decorators:
 - Severity classification
 
 **Database Indices** (6 total for performance):
+
 1. `IDX_AUDIT_USER_ID` - userId queries
 2. `IDX_AUDIT_ORG_ID` - org-wide queries
 3. `IDX_AUDIT_RESOURCE` - resource-specific queries
@@ -115,6 +119,7 @@ Entity with full TypeORM decorators:
 6. `IDX_AUDIT_STATUS` - status filtering
 
 **Migration**: `backend/src/database/migrations/1704240000000-CreateAuditLogTable.ts` (131 LOC)
+
 - Versioned schema creation
 - JSONB column support
 - Reversible (up/down methods)
@@ -130,50 +135,41 @@ Entity with full TypeORM decorators:
    - Accepts event details
    - Auto-calculates severity
    - Stores JSONB changes
-   
 2. **getById(id)** - Retrieve single log
    - Type-safe query
-   
 3. **getAuditLog(options)** - List with filtering
    - Pagination (limit, offset)
    - Date range filtering
    - Status filtering
    - Severity filtering
-   
 4. **getUserAuditLog(userId, orgId, options)** - User-specific logs
    - Action filtering
-   
 5. **getResourceAuditLog(type, id, orgId, options)** - Resource tracking
    - Track all changes to specific resources
-   
 6. **getOrganizationAuditLog(orgId, options)** - Org-wide view
    - Full compliance view
-   
 7. **search(orgId, query, options)** - Full-text search
    - ILIKE for flexibility
-   
 8. **getStatistics(orgId)** - Analytics
    - Total logs count
    - By action breakdown
    - By status breakdown
    - By resource type
    - Average duration
-   
 9. **clearOldLogs(orgId, daysToKeep)** - Retention policy
    - Default: 90 days
    - Configurable
-   
 10. **generateAuditReport(orgId, options)** - Comprehensive reports
     - Date ranges
     - Resource filtering
     - Full summary
-    
 11. **count(orgId)** - Total count
 12. **delete(id)** - Delete single log
 13. **clearAllLogs(orgId)** - Admin clear all
 14. Helper formatters and utilities
 
 **Singleton Pattern**:
+
 ```typescript
 export const auditService = new AuditService();
 ```
@@ -183,6 +179,7 @@ export const auditService = new AuditService();
 **File**: `backend/src/middleware/auditMiddleware.ts` (181 LOC)
 
 **Main Middleware**: `auditMiddleware()`
+
 - Request/response interceptor
 - Automatic performance tracking
 - Duration calculation
@@ -191,11 +188,13 @@ export const auditService = new AuditService();
 - Automatic audit log insertion
 
 **Status to Severity Mapping**:
+
 - 2xx → `info`
 - 4xx → `warning`
 - 5xx → `critical`
 
 **Action Determination**:
+
 - POST → create
 - GET → read
 - PUT/PATCH → update
@@ -206,15 +205,12 @@ export const auditService = new AuditService();
 1. **logAuditEvent(params)** - Manual audit logging
    - Custom actions
    - Changes tracking
-   
 2. **logAuditError(params)** - Error event logging
    - Exception tracking
    - Error messages captured
-   
 3. **logPermissionChange(params)** - Permission tracking
    - Grant/revoke tracking
    - Role and permission mapping
-   
 4. **logAuthEvent(params)** - Authentication logging
    - Login/logout tracking
    - Token refresh tracking
@@ -229,44 +225,38 @@ export const auditService = new AuditService();
 1. **GET /api/audit** - List all (admin only)
    - Query: limit, offset, status, severity, startDate, endDate
    - Response: { data: AuditLog[], total: number }
-   
 2. **GET /api/audit/:id** - Single log
    - Returns: AuditLog | 404
-   
 3. **GET /api/audit/user/:userId** - User logs
    - Query: limit, offset, action
    - Org isolation enforced
-   
 4. **GET /api/audit/resource/:resourceId** - Resource logs
    - Query: resourceType, limit, offset
    - Complete resource history
-   
 5. **GET /api/audit/search/:query** - Full-text search
    - Query: limit, offset
    - Searches all text fields
-   
 6. **GET /api/audit/stats** - Statistics
    - Returns: Statistics object
    - Real-time analytics
-   
 7. **POST /api/audit/report** - Generate report
    - Body: { startDate?, endDate?, resourceType? }
    - Returns: Comprehensive report
-   
 8. **DELETE /api/audit/old** - Retention cleanup
    - Query: daysToKeep (default 90)
    - Returns: { deletedCount }
-   
 9. **DELETE /api/audit/:id** - Delete log
    - Admin only
    - Single log deletion
 
 **Permission Enforcement**:
+
 - All endpoints require `admin:access` permission
 - Organization context enforced
 - Multi-tenant isolation guaranteed
 
 **Integration**:
+
 - Registered in `backend/src/index.ts`
 - Route: `/api/audit` with auth middleware
 
@@ -282,7 +272,6 @@ export const auditService = new AuditService();
    - Statistics calculation
    - Retention policy
    - Report generation
-   
 2. **audit-middleware.test.ts** (160+ LOC)
    - Middleware initialization
    - Action determination
@@ -291,7 +280,6 @@ export const auditService = new AuditService();
    - Helper functions (logAuditEvent, logAuditError, etc)
    - Permission change tracking
    - Authentication logging
-   
 3. **audit-api.test.ts** (190+ LOC)
    - All 9 endpoints tested
    - Pagination support
@@ -301,6 +289,7 @@ export const auditService = new AuditService();
    - Server error scenarios
 
 **Test Coverage**:
+
 - ✅ Entity operations
 - ✅ Service methods
 - ✅ Middleware functionality
@@ -351,7 +340,7 @@ await logAuditEvent({
   action: 'export',
   resourceType: 'report',
   resourceId: reportId,
-  changes: { format: 'csv', rows: 1000 }
+  changes: { format: 'csv', rows: 1000 },
 });
 
 // Error event
@@ -360,7 +349,7 @@ await logAuditError({
   organizationId: req.context.organizationId,
   action: 'import',
   resourceType: 'file',
-  error: new Error('Invalid file format')
+  error: new Error('Invalid file format'),
 });
 ```
 
@@ -393,7 +382,7 @@ await logAuthEvent({
   organizationId: orgId,
   action: 'login',
   success: true,
-  ipAddress: '192.168.1.1'
+  ipAddress: '192.168.1.1',
 });
 
 // Failed login attempt
@@ -403,7 +392,7 @@ await logAuthEvent({
   action: 'login',
   success: false,
   ipAddress: '192.168.1.100',
-  userAgent: 'Suspicious Agent'
+  userAgent: 'Suspicious Agent',
 });
 ```
 
@@ -499,7 +488,7 @@ All audit endpoints require `admin:access`:
 ```typescript
 router.get(
   '/',
-  requireAllPermissions('admin:access'),
+  requireAllPermissions('admin:access')
   // Only admins can view audit logs
 );
 ```
@@ -518,13 +507,13 @@ await auditService.log({
   changes: {
     name: { old: 'Tour 1', new: 'Tour 2' },
     dates: { old: ['2025-11-01'], new: ['2025-11-01', '2025-11-02'] },
-    capacity: { old: 100, new: 150 }
+    capacity: { old: 100, new: 150 },
   },
   metadata: {
     batchId: 'batch-123',
     importSource: 'csv',
-    lineNumber: 42
-  }
+    lineNumber: 42,
+  },
 });
 ```
 
@@ -565,6 +554,7 @@ IDX_AUDIT_STATUS (status)
 ### Query Optimization
 
 All queries use:
+
 - Indexed columns
 - Query builder patterns
 - Efficient pagination
@@ -587,6 +577,7 @@ All queries use:
 **Issue**: Audit logs not appearing
 
 **Solution**:
+
 1. Verify middleware is registered in `index.ts`
 2. Check AuditService initialization
 3. Verify database connection
@@ -600,6 +591,7 @@ app.use('/api/shows', authMiddleware, auditMiddleware(), showsRouter);
 **Issue**: Permission denied on audit endpoints
 
 **Solution**:
+
 1. Verify user has `admin:access` permission
 2. Check permission assignment in database
 3. Verify organization context in request
@@ -607,11 +599,15 @@ app.use('/api/shows', authMiddleware, auditMiddleware(), showsRouter);
 **Issue**: Old logs not being deleted
 
 **Solution**:
+
 1. Run cleanup explicitly:
+
 ```typescript
 await auditService.clearOldLogs(organizationId, 90);
 ```
+
 2. Or via API:
+
 ```bash
 curl -X DELETE http://localhost:3000/api/audit/old?daysToKeep=90
 ```
@@ -619,6 +615,7 @@ curl -X DELETE http://localhost:3000/api/audit/old?daysToKeep=90
 **Issue**: JSONB changes not storing correctly
 
 **Solution**:
+
 1. Verify changes are serializable (no circular references)
 2. Keep changes under ~1MB per log
 3. Use metadata field for custom data
@@ -638,15 +635,18 @@ changes: { circular: null } // Don't use circular refs
 ### Regular Tasks
 
 **Daily**:
+
 - Monitor critical audit events (severity = critical)
 - Check error rates (status = error)
 
 **Weekly**:
+
 - Review admin access logs
 - Check for suspicious activity patterns
 - Verify permission changes
 
 **Monthly**:
+
 - Generate compliance reports
 - Clean old logs (retention policy)
 - Analyze statistics trends
@@ -659,26 +659,19 @@ changes: { circular: null } // Don't use circular refs
 const critical = await auditService.getAuditLog({
   severity: 'critical',
   startDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  endDate: new Date()
+  endDate: new Date(),
 });
 
 // Find failed operations
 const errors = await auditService.getAuditLog({
-  status: 'error'
+  status: 'error',
 });
 
 // Find admin access
-const adminAccess = await auditService.getUserAuditLog(
-  adminUserId,
-  organizationId
-);
+const adminAccess = await auditService.getUserAuditLog(adminUserId, organizationId);
 
 // Find resource changes
-const changes = await auditService.getResourceAuditLog(
-  'show',
-  resourceId,
-  organizationId
-);
+const changes = await auditService.getResourceAuditLog('show', resourceId, organizationId);
 ```
 
 ---
@@ -760,22 +753,22 @@ CREATE INDEX IDX_AUDIT_STATUS ON audit_logs(status);
 
 **Session 3 Summary**:
 
-| Metric | Value |
-|--------|-------|
-| Total LOC | 1,247 |
-| Entity | 75 |
-| Migration | 131 |
-| Service | 360 |
-| Middleware | 181 |
-| Routes | 300 |
-| Tests | 200 |
-| TypeScript Errors | 0 |
-| Test Suites | 3 |
-| API Endpoints | 9 |
-| Database Indices | 6 |
-| Service Methods | 14 |
-| Duration | ~2 hours |
-| Git Commits | 6 |
+| Metric            | Value    |
+| ----------------- | -------- |
+| Total LOC         | 1,247    |
+| Entity            | 75       |
+| Migration         | 131      |
+| Service           | 360      |
+| Middleware        | 181      |
+| Routes            | 300      |
+| Tests             | 200      |
+| TypeScript Errors | 0        |
+| Test Suites       | 3        |
+| API Endpoints     | 9        |
+| Database Indices  | 6        |
+| Service Methods   | 14       |
+| Duration          | ~2 hours |
+| Git Commits       | 6        |
 
 ---
 

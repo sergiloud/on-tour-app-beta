@@ -1,10 +1,10 @@
 ╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║            🚀 FASE 7 - ENTERPRISE FEATURES (QUICK START) 🚀              ║
-║                                                                           ║
-║                  Multi-Org | Advanced Permissions | Analytics            ║
-║                     Estimated Duration: 2-3 weeks                        ║
-║                                                                           ║
+║ ║
+║ 🚀 FASE 7 - ENTERPRISE FEATURES (QUICK START) 🚀 ║
+║ ║
+║ Multi-Org | Advanced Permissions | Analytics ║
+║ Estimated Duration: 2-3 weeks ║
+║ ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 
 **Phase**: FASE 7 - Enterprise Features  
@@ -53,14 +53,14 @@ FASE 7 will transform the backend from **single-organization** to **enterprise-g
 
 #### Features to Implement
 
-| Feature | Description | Complexity | Time |
-|---------|-------------|-----------|------|
-| **Organization Entity** | Create Org model with fields | Low | 1h |
-| **User-Org Relationship** | Associate users to orgs | Low | 1h |
-| **Tenant Middleware** | Extract org from request | Medium | 2h |
-| **Query Scoping** | Scope all queries by org | Medium | 2h |
-| **Seed Multi-Org Data** | Test scenarios | Low | 1h |
-| **Integration Tests** | Multi-org workflows | Medium | 2h |
+| Feature                   | Description                  | Complexity | Time |
+| ------------------------- | ---------------------------- | ---------- | ---- |
+| **Organization Entity**   | Create Org model with fields | Low        | 1h   |
+| **User-Org Relationship** | Associate users to orgs      | Low        | 1h   |
+| **Tenant Middleware**     | Extract org from request     | Medium     | 2h   |
+| **Query Scoping**         | Scope all queries by org     | Medium     | 2h   |
+| **Seed Multi-Org Data**   | Test scenarios               | Low        | 1h   |
+| **Integration Tests**     | Multi-org workflows          | Medium     | 2h   |
 
 #### Deliverables
 
@@ -134,13 +134,13 @@ export class Organization {
   @Column()
   slug: string;
 
-  @OneToMany(() => User, (user) => user.organization)
+  @OneToMany(() => User, user => user.organization)
   users: User[];
 
-  @OneToMany(() => Show, (show) => show.organization)
+  @OneToMany(() => Show, show => show.organization)
   shows: Show[];
 
-  @OneToMany(() => FinanceRecord, (finance) => finance.organization)
+  @OneToMany(() => FinanceRecord, finance => finance.organization)
   finances: FinanceRecord[];
 }
 
@@ -148,14 +148,14 @@ export class Organization {
 export function tenantMiddleware(req: Request, res: Response, next: NextFunction) {
   const orgId = req.headers['x-organization-id'] as string;
   if (!orgId) return res.status(400).json({ error: 'Missing organization' });
-  
+
   req.context = { organizationId: orgId };
   next();
 }
 
 // Usage in service
 const shows = await showRepository.find({
-  where: { organizationId: req.context.organizationId }
+  where: { organizationId: req.context.organizationId },
 });
 ```
 
@@ -167,14 +167,14 @@ const shows = await showRepository.find({
 
 #### Features to Implement
 
-| Feature | Description | Complexity | Time |
-|---------|-------------|-----------|------|
-| **Role System** | Predefined roles (Admin, Manager, Viewer) | Low | 1h |
-| **Permission System** | Fine-grained permissions | Medium | 2h |
-| **Authorization Guards** | Middleware/decorators | Medium | 2h |
-| **Audit Logging** | Track permission changes | Low | 1h |
-| **Permission APIs** | GET/SET permissions | Low | 1h |
-| **Testing** | 30+ permission tests | Medium | 2h |
+| Feature                  | Description                               | Complexity | Time |
+| ------------------------ | ----------------------------------------- | ---------- | ---- |
+| **Role System**          | Predefined roles (Admin, Manager, Viewer) | Low        | 1h   |
+| **Permission System**    | Fine-grained permissions                  | Medium     | 2h   |
+| **Authorization Guards** | Middleware/decorators                     | Medium     | 2h   |
+| **Audit Logging**        | Track permission changes                  | Low        | 1h   |
+| **Permission APIs**      | GET/SET permissions                       | Low        | 1h   |
+| **Testing**              | 30+ permission tests                      | Medium     | 2h   |
 
 #### Role Hierarchy
 
@@ -268,13 +268,13 @@ Step 5: API Endpoints (new)
 
 #### Analytics Features
 
-| Feature | Description | Complexity | Time |
-|---------|-------------|-----------|------|
-| **Event Logging** | Track all user actions | Medium | 1.5h |
-| **Finance Dashboard** | Income/expense metrics | Medium | 2h |
-| **Activity Reports** | User activity tracking | Low | 1h |
-| **Export Functionality** | CSV/JSON exports | Low | 1.5h |
-| **Dashboard APIs** | Aggregate data endpoints | Medium | 2h |
+| Feature                  | Description              | Complexity | Time |
+| ------------------------ | ------------------------ | ---------- | ---- |
+| **Event Logging**        | Track all user actions   | Medium     | 1.5h |
+| **Finance Dashboard**    | Income/expense metrics   | Medium     | 2h   |
+| **Activity Reports**     | User activity tracking   | Low        | 1h   |
+| **Export Functionality** | CSV/JSON exports         | Low        | 1.5h |
+| **Dashboard APIs**       | Aggregate data endpoints | Medium     | 2h   |
 
 #### Analytics Endpoints (6 new)
 
@@ -442,33 +442,36 @@ Before implementing Session 1, integrate these production-critical features:
 ```typescript
 // JWT Payload Structure (auth.service.ts)
 interface JwtPayload {
-  sub: string;           // userId
-  org: string;           // organizationId ← SECURE
-  role: string;          // user role
+  sub: string; // userId
+  org: string; // organizationId ← SECURE
+  role: string; // user role
   permissions: string[]; // fine-grained permissions
-  scope?: 'superadmin';  // for support/migrations
+  scope?: 'superadmin'; // for support/migrations
   iat: number;
   exp: number;
 }
 
 // Token generation
-const token = jwt.sign({
-  sub: user.id,
-  org: user.organizationId,
-  role: user.role,
-  permissions: user.permissions,
-  iat: Math.floor(Date.now() / 1000),
-  exp: Math.floor(Date.now() / 1000) + 3600
-}, SECRET_KEY);
+const token = jwt.sign(
+  {
+    sub: user.id,
+    org: user.organizationId,
+    role: user.role,
+    permissions: user.permissions,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 3600,
+  },
+  SECRET_KEY
+);
 
 // Updated tenantMiddleware.ts
 export function tenantMiddleware(req: Request, res: Response, next: NextFunction) {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Missing token' });
-    
+
     const payload = jwt.verify(token, SECRET_KEY) as JwtPayload;
-    
+
     // Superadmin can bypass tenant scoping
     if (payload.scope === 'superadmin') {
       req.context = {
@@ -476,20 +479,20 @@ export function tenantMiddleware(req: Request, res: Response, next: NextFunction
         organizationId: null, // bypass filtering
         role: payload.role,
         permissions: payload.permissions,
-        isSuperAdmin: true
+        isSuperAdmin: true,
       };
       return next();
     }
-    
+
     // Regular user: locked to their organization
     req.context = {
       userId: payload.sub,
       organizationId: payload.org, // ← From JWT, cannot be spoofed
       role: payload.role,
       permissions: payload.permissions,
-      isSuperAdmin: false
+      isSuperAdmin: false,
     };
-    
+
     next();
   } catch (error) {
     return res.status(401).json({ error: 'Invalid token' });
@@ -498,6 +501,7 @@ export function tenantMiddleware(req: Request, res: Response, next: NextFunction
 ```
 
 **Advantages**:
+
 - ✅ Cannot be spoofed (JWT-signed)
 - ✅ Stateless (no server lookup)
 - ✅ Audit-ready (org in token)
@@ -555,6 +559,7 @@ export class Organization {
 ```
 
 **Benefits**:
+
 - Unique slug per org → URL-friendly domain mapping
 - Auto-generated → no manual entry
 - Validates consistency → name=slug relationship
@@ -570,7 +575,7 @@ export class Organization {
 deletedAt?: Date;
 
 // Organization: Add cascade delete
-@OneToMany(() => Show, show => show.organization, { 
+@OneToMany(() => Show, show => show.organization, {
   onDelete: 'CASCADE'  // ← Critical for safety
 })
 shows: Show[];
@@ -585,6 +590,7 @@ protected getBaseQuery(repository: Repository<any>) {
 ```
 
 **Why Critical**:
+
 - Soft deletes = audit trail + recovery
 - Cascade = when org deleted, all data goes too
 - Prevents orphaned data
@@ -608,7 +614,7 @@ export function scopeByOrg<T>(
 ): SelectQueryBuilder<T> {
   // Skip if superadmin (orgId === null)
   if (!orgId) return queryBuilder;
-  
+
   return queryBuilder.andWhere(
     `${entityAlias}.organizationId = :orgId`,
     { orgId }
@@ -621,14 +627,15 @@ async listForOrg(orgId: string, filters: any) {
   let qb = this.showRepository.createQueryBuilder('show')
     .where('show.status = :status', { status: 'active' })
     .leftJoinAndSelect('show.finance', 'finance');
-  
+
   qb = scopeByOrg(qb, orgId, 'show');
-  
+
   return qb.getMany();
 }
 ```
 
 **Benefits**:
+
 - Single source of truth
 - Easy to audit (find all org filtering)
 - One place to fix bugs
@@ -639,13 +646,16 @@ async listForOrg(orgId: string, filters: any) {
 
 ```typescript
 // JWT with superadmin scope
-const superAdminToken = jwt.sign({
-  sub: 'support-user-789',
-  org: null,  // ← null signals superadmin
-  scope: 'superadmin',
-  role: 'superadmin',
-  iat: Math.floor(Date.now() / 1000)
-}, SECRET_KEY);
+const superAdminToken = jwt.sign(
+  {
+    sub: 'support-user-789',
+    org: null, // ← null signals superadmin
+    scope: 'superadmin',
+    role: 'superadmin',
+    iat: Math.floor(Date.now() / 1000),
+  },
+  SECRET_KEY
+);
 
 // In middleware: already handled above
 // If scope === 'superadmin', bypass org filtering
@@ -669,34 +679,34 @@ import { RateLimiterMemory } from 'rate-limiter-flexible';
 const rateLimiters = new Map<string, RateLimiterMemory>();
 
 const DEFAULT_LIMIT = {
-  points: 100,        // 100 requests
-  duration: 60,       // per 60 seconds
-  blockDuration: 300  // block for 5 minutes if exceeded
+  points: 100, // 100 requests
+  duration: 60, // per 60 seconds
+  blockDuration: 300, // block for 5 minutes if exceeded
 };
 
 export function orgRateLimiter(req: Request, res: Response, next: NextFunction) {
   const orgId = req.context?.organizationId;
-  
+
   // Superadmin bypass
   if (req.context?.isSuperAdmin) return next();
-  
+
   // No org = skip (public endpoint)
   if (!orgId) return next();
-  
+
   // Get or create limiter for this org
   let limiter = rateLimiters.get(orgId);
   if (!limiter) {
     limiter = new RateLimiterMemory(DEFAULT_LIMIT);
     rateLimiters.set(orgId, limiter);
   }
-  
+
   limiter
     .consume(orgId, 1) // consume 1 point
     .then(() => next())
-    .catch((error) => {
+    .catch(error => {
       res.status(429).json({
         error: 'Too many requests',
-        retryAfter: Math.ceil(error.msBeforeNext / 1000)
+        retryAfter: Math.ceil(error.msBeforeNext / 1000),
       });
     });
 }
@@ -744,7 +754,7 @@ export class EventLog {
 // analyticsService.ts - Efficient query
 async getActivityByDay(orgId: string, days: number = 30) {
   const query = `
-    SELECT 
+    SELECT
       date_trunc('day', created_at) as day,
       action,
       COUNT(*) as count
@@ -754,7 +764,7 @@ async getActivityByDay(orgId: string, days: number = 30) {
     GROUP BY day, action
     ORDER BY day DESC
   `;
-  
+
   return this.eventLogRepository.query(query, [orgId]);
 }
 ```
@@ -775,10 +785,10 @@ async streamCSV(
 ) {
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="export.csv"');
-  
+
   const query = this.buildExportQuery(orgId, filters);
   const stream = this.database.query(query);
-  
+
   stream.pipe(res);
 }
 
@@ -790,21 +800,21 @@ async requestExport(orgId: string, filters: any) {
     filters,
     userId: req.context.userId
   });
-  
+
   return { jobId: job.id, status: 'queued' };
 }
 
 // GET /api/analytics/export/:jobId
 async getExportStatus(jobId: string) {
   const job = await jobQueue.getJob(jobId);
-  
+
   if (job.isCompleted()) {
     return { status: 'ready', downloadUrl: `/downloads/${jobId}.csv` };
   }
   if (job.isFailed()) {
     return { status: 'failed', error: job.failedReason };
   }
-  
+
   return { status: job.getState() };
 }
 ```
@@ -839,13 +849,13 @@ async function backfillOrganizations() {
 
     user.organizationId = org.id;
     await userRepository.save(user);
-    
+
     // Update all user's data
     await showRepository.update(
       { userId: user.id },
       { organizationId: org.id }
     );
-    
+
     console.log(`✅ Backfilled ${user.email} → ${org.id}`);
   }
 }
@@ -857,7 +867,8 @@ async function backfillOrganizations() {
 ALTER TABLE shows ALTER COLUMN organization_id SET NOT NULL;
 ```
 
-**Why Gradual**: 
+**Why Gradual**:
+
 - No data loss
 - Can rollback if needed
 - Auditability
@@ -884,24 +895,24 @@ export async function createTestOrg(
 export async function createMultiTenantScenario() {
   const org1 = await createTestOrg('Broadway Co');
   const org2 = await createTestOrg('Off-Broadway Ltd');
-  
-  const user1 = await createTestUser('alice@broadway.com', { 
-    organizationId: org1.id 
+
+  const user1 = await createTestUser('alice@broadway.com', {
+    organizationId: org1.id
   });
-  const user2 = await createTestUser('bob@offbroadway.com', { 
-    organizationId: org2.id 
+  const user2 = await createTestUser('bob@offbroadway.com', {
+    organizationId: org2.id
   });
-  
+
   return { org1, org2, user1, user2 };
 }
 
 // In tests:
 it('should not leak data between orgs', async () => {
   const { org1, org2, user1, user2 } = await createMultiTenantScenario();
-  
+
   const org1Shows = await showService.listForOrg(org1.id);
   const org2Shows = await showService.listForOrg(org2.id);
-  
+
   expect(org1Shows).not.toContain(any show from org2);
 });
 ```
@@ -931,6 +942,7 @@ Time    Task
 ```
 
 **Deliverables**:
+
 - Organization entity & migration
 - OrganizationService with CRUD
 - Tenant middleware
@@ -938,6 +950,7 @@ Time    Task
 - 50+ tests
 
 **Success Criteria**:
+
 - ✅ Multiple orgs can be created
 - ✅ Users can be assigned to orgs
 - ✅ All queries properly scoped
@@ -981,6 +994,7 @@ validateAndSlugify() { ... }
 ```
 
 **Expected Result After Session 1**:
+
 - ✅ JWT-based tenant identification (no headers)
 - ✅ Organization with unique slug
 - ✅ Soft deletes + CASCADE
@@ -1006,6 +1020,7 @@ Time    Task
 ```
 
 **Deliverables**:
+
 - Role & Permission entities
 - PermissionService with methods
 - Authorization middleware
@@ -1013,6 +1028,7 @@ Time    Task
 - 60+ tests
 
 **Success Criteria**:
+
 - ✅ Roles properly assigned
 - ✅ Permissions enforced
 - ✅ Unauthorized access blocked
@@ -1036,6 +1052,7 @@ Time    Task
 ```
 
 **Deliverables**:
+
 - EventLog entity
 - AnalyticsService with aggregations
 - 6 analytics endpoints
@@ -1043,6 +1060,7 @@ Time    Task
 - 50+ tests
 
 **Success Criteria**:
+
 - ✅ Events properly logged
 - ✅ Metrics accurately calculated
 - ✅ Export works for CSV/JSON
@@ -1063,6 +1081,7 @@ Time    Task
 ```
 
 **Deliverables**:
+
 - Updated API documentation (OpenAPI)
 - Complete reference guide
 - Session summary
@@ -1168,12 +1187,14 @@ Documentation:
 ## 📚 REFERENCE DOCUMENTS
 
 ### Completed
+
 - `FASE_6_FINAL_COMPLETION_SUMMARY.md` - What was built in FASE 6
 - `API_REFERENCE.md` - Current 41 endpoints
 - `WEEK_4_REALTIME_COMPLETE.md` - WebSocket implementation
 - `FASE_6_WEEK_3_EXECUTIVE_SUMMARY.md` - Integrations
 
 ### For FASE 7
+
 - This document - Quick start & roadmap
 - Architecture diagrams (will create during implementation)
 - Entity relationship diagram (will create)
@@ -1243,9 +1264,9 @@ Total: 12-15 hours (fits in 2-3 days of focused work)
 // This prevents cross-org data leaks
 
 const shows = await showRepository.find({
-  where: { 
-    organizationId: req.context.organizationId 
-  }
+  where: {
+    organizationId: req.context.organizationId,
+  },
 });
 ```
 
@@ -1286,18 +1307,21 @@ Keep commits focused and logical
 ### Common Issues
 
 **Issue**: "Missing organization ID in request"
+
 ```
 Solution: Ensure tenant middleware is applied before routes
 Check: middleware/index.ts registers tenantMiddleware
 ```
 
 **Issue**: "Query returns data from different organizations"
+
 ```
 Solution: Check WHERE clause includes organizationId
 Review: All service methods add org scoping
 ```
 
 **Issue**: "Tests failing with permission denied"
+
 ```
 Solution: Ensure test user has required role
 Check: Test setup assigns roles before API calls
@@ -1366,7 +1390,7 @@ const shows = await showRepository.find();
 
 // ✅ CORRECT
 const shows = await showRepository.find({
-  where: { organizationId: req.context.organizationId }
+  where: { organizationId: req.context.organizationId },
 });
 
 // 🚀 BEST (using utility)
@@ -1396,14 +1420,14 @@ shows: Show[];
 // ❌ DANGEROUS
 const show = await showService.create({
   title: 'Test Show',
-  organizationId: 'hardcoded-org-id'
+  organizationId: 'hardcoded-org-id',
 });
 
 // ✅ CORRECT
 const testOrg = await createTestOrg('Test');
 const show = await showService.create({
   title: 'Test Show',
-  organizationId: testOrg.id
+  organizationId: testOrg.id,
 });
 ```
 
@@ -1499,25 +1523,25 @@ validateSlug() {
 ---
 
 ╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║          ✨ ENTERPRISE-GRADE FASE 7 - PRODUCTION READY! ✨              ║
-║                                                                           ║
-║                   Duration: 2-3 weeks (12-15 hours)                      ║
-║                   Output: 4,500+ LOC + Security                          ║
-║                   Status: 🚀 Ready to Execute                            ║
-║                                                                           ║
-║              Key Differences from v1:                                     ║
-║              • JWT-based tenant identification (not headers)              ║
-║              • Organization slug validation                               ║
-║              • Soft deletes + CASCADE                                     ║
-║              • DRY query scoping utility                                  ║
-║              • Rate limiting per organization                             ║
-║              • Zero-downtime deployment strategy                          ║
-║              • Comprehensive audit logging                                ║
-║              • Production-hardened from day 1                             ║
-║                                                                           ║
-║                  Next: Begin Session 1 (3-4 hours)                       ║
-║                                                                           ║
+║ ║
+║ ✨ ENTERPRISE-GRADE FASE 7 - PRODUCTION READY! ✨ ║
+║ ║
+║ Duration: 2-3 weeks (12-15 hours) ║
+║ Output: 4,500+ LOC + Security ║
+║ Status: 🚀 Ready to Execute ║
+║ ║
+║ Key Differences from v1: ║
+║ • JWT-based tenant identification (not headers) ║
+║ • Organization slug validation ║
+║ • Soft deletes + CASCADE ║
+║ • DRY query scoping utility ║
+║ • Rate limiting per organization ║
+║ • Zero-downtime deployment strategy ║
+║ • Comprehensive audit logging ║
+║ • Production-hardened from day 1 ║
+║ ║
+║ Next: Begin Session 1 (3-4 hours) ║
+║ ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 
 **Document Created**: November 5, 2025  

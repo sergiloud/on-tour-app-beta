@@ -8,6 +8,7 @@ import { authRoutes } from './routes/auth.js';
 import { showsRoutes } from './routes/shows.js';
 import { financeRoutes } from './routes/finance.js';
 import { usersRoutes } from './routes/users.js';
+import auditRoutes from './routes/audit.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/shows', showsRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/audit', auditRoutes);
 
 // 404 handler
 app.use((req, res) => {

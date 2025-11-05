@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 
 /**
  * Organization Service Tests
- * 
+ *
  * Tests for multi-tenant organization management:
  * - CRUD operations with tenant isolation
  * - Slug generation and validation

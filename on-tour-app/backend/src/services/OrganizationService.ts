@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 
 /**
  * Organization Service
- * 
+ *
  * Handles CRUD operations for organizations
  * Implements multi-tenant isolation
  * Provides utility methods for tenant management
@@ -20,7 +20,7 @@ export class OrganizationService {
 
   /**
    * Create new organization
-   * 
+   *
    * @param createData Organization data including ownerId
    * @returns Created organization
    */
@@ -39,7 +39,7 @@ export class OrganizationService {
       organization.websiteUrl = createData.websiteUrl;
       organization.logoUrl = createData.logoUrl;
       organization.ownerId = createData.ownerId;
-      
+
       // Hooks will generate and validate slug
       const saved = await this.organizationRepository.save(organization);
 
@@ -57,7 +57,7 @@ export class OrganizationService {
 
   /**
    * Get organization by ID
-   * 
+   *
    * @param id Organization ID
    * @param includeDeleted Include soft-deleted orgs (default: false)
    * @returns Organization or null
@@ -80,7 +80,7 @@ export class OrganizationService {
 
   /**
    * Get organization by slug
-   * 
+   *
    * @param slug Organization slug (URL-friendly name)
    * @returns Organization or null
    */
@@ -100,7 +100,7 @@ export class OrganizationService {
 
   /**
    * List all organizations (admin only)
-   * 
+   *
    * @param limit Results per page
    * @param offset Pagination offset
    * @returns Organizations list
@@ -127,7 +127,7 @@ export class OrganizationService {
 
   /**
    * List organizations for owner (user's own organizations)
-   * 
+   *
    * @param ownerId Owner user ID
    * @returns Organizations owned by user
    */
@@ -150,7 +150,7 @@ export class OrganizationService {
 
   /**
    * Update organization
-   * 
+   *
    * @param id Organization ID
    * @param data Fields to update
    * @returns Updated organization
@@ -201,10 +201,10 @@ export class OrganizationService {
 
   /**
    * Delete organization (soft delete)
-   * 
+   *
    * Data is preserved for recovery
    * CASCADE delete configured at DB level
-   * 
+   *
    * @param id Organization ID
    */
   async delete(id: string): Promise<void> {
@@ -226,7 +226,7 @@ export class OrganizationService {
 
   /**
    * Restore soft-deleted organization
-   * 
+   *
    * @param id Organization ID
    * @returns Restored organization
    */
@@ -251,7 +251,7 @@ export class OrganizationService {
 
   /**
    * Count organizations (admin metrics)
-   * 
+   *
    * @returns Total active organizations
    */
   async count(): Promise<number> {
@@ -267,7 +267,7 @@ export class OrganizationService {
 
   /**
    * Verify organization exists and is active
-   * 
+   *
    * @param id Organization ID
    * @returns true if exists and not deleted
    */

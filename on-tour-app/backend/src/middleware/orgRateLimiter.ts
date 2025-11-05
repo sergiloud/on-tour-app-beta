@@ -3,23 +3,23 @@ import { logger } from "../utils/logger.js";
 
 /**
  * Rate Limiter per Organization
- * 
+ *
  * PURPOSE: Prevent one organization from impacting others
  * PROBLEM: Global rate limiting = one org's spike DOS others
  * SOLUTION: Per-org rate limiting (isolated limits)
- * 
+ *
  * IMPLEMENTATION:
  * - Simple in-memory counters per organization
  * - 100 requests per minute per org (configurable)
  * - Superadmin bypass (cross-org access not rate limited)
  * - Returns 429 when limit exceeded
- * 
+ *
  * SCALABILITY NOTE:
  * For production with multiple servers:
  * - Use Redis instead of Map
  * - Share rate limit state across instances
  * - Consider: npm i rate-limiter-flexible
- * 
+ *
  * CURRENT: Simple in-memory (works for single server)
  */
 
@@ -70,7 +70,7 @@ function getRateLimitEntry(
 
 /**
  * Rate limiter middleware - per organization
- * 
+ *
  * SETUP: Register BEFORE routes
  * app.use(tenantMiddleware); // Must set req.context first
  * app.use(orgRateLimiter);    // Rate limit per org

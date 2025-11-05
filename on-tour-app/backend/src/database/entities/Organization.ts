@@ -11,13 +11,13 @@ import {
 
 /**
  * Organization Entity
- * 
+ *
  * Represents a multi-tenant organization with:
  * - Unique slug for URL-friendly identification
  * - Soft deletes for data recovery
  * - CASCADE delete relationships (data safety)
  * - Audit timestamps (createdAt, updatedAt, deletedAt)
- * 
+ *
  * SECURITY:
  * - Slug is auto-generated from name (immutable)
  * - organizationId in JWT ensures tenant isolation
@@ -97,7 +97,7 @@ export class Organization {
 
   /**
    * Convert organization name to URL-safe slug
-   * 
+   *
    * Examples:
    * "Broadway Company" → "broadway-company"
    * "Off-Broadway Ltd." → "off-broadway-ltd"

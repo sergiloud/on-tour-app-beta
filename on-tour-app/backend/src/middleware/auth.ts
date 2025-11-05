@@ -55,14 +55,14 @@ export function authMiddleware(
     };
 
     logger.debug(
-      { 
-        userId: payload.userId, 
+      {
+        userId: payload.userId,
         organizationId: payload.organizationId,
         isSuperAdmin: req.context.isSuperAdmin
-      }, 
+      },
       'User authenticated'
     );
-    
+
     next();
   } catch (error) {
     logger.error(error, 'Authentication failed');
@@ -86,7 +86,7 @@ export function optionalAuthMiddleware(
       const payload = verifyToken(token);
       req.user = payload;
       req.organizationId = payload.organizationId;
-      
+
       // NEW: Enhanced context
       req.context = {
         userId: payload.userId,

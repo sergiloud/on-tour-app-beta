@@ -4,11 +4,16 @@ import { FinanceRecord } from "./entities/FinanceRecord.js";
 import { Itinerary } from "./entities/Itinerary.js";
 import { Settlement } from "./entities/Settlement.js";
 import { Organization } from "./entities/Organization.js";
+import { Permission } from "./entities/Permission.js";
+import { RolePermission } from "./entities/RolePermission.js";
+import { AuditLog } from "./entities/AuditLog.js";
 import { CreateShowsTable } from "./migrations/1704067200000-CreateShowsTable.js";
 import { CreateFinanceTable } from "./migrations/1704067200001-CreateFinanceTable.js";
 import { CreateItinerariesTable } from "./migrations/1704067200002-CreateItinerariesTable.js";
 import { CreateSettlementsTable } from "./migrations/1704067200003-CreateSettlementsTable.js";
 import { CreateOrganizationsTable1699209600000 } from "./migrations/1704067200004-CreateOrganizationsTable.js";
+import { CreatePermissionsTables1704153600000 } from "./migrations/1704153600000-CreatePermissionsTables.js";
+import { CreateAuditLogTable1704240000000 } from "./migrations/1704240000000-CreateAuditLogTable.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -19,13 +24,15 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || "on_tour_app",
   synchronize: process.env.NODE_ENV === "development",
   logging: process.env.NODE_ENV === "development",
-  entities: [Organization, Show, FinanceRecord, Itinerary, Settlement],
+  entities: [Organization, Show, FinanceRecord, Itinerary, Settlement, Permission, RolePermission, AuditLog],
   migrations: [
     CreateShowsTable,
     CreateFinanceTable,
     CreateItinerariesTable,
     CreateSettlementsTable,
     CreateOrganizationsTable1699209600000,
+    CreatePermissionsTables1704153600000,
+    CreateAuditLogTable1704240000000,
   ],
   subscribers: [],
   dropSchema: false,

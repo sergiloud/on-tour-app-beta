@@ -13,6 +13,7 @@ import { createAmadeusRouter } from './routes/amadeus.js';
 import { createStripeRouter } from './routes/stripe.js';
 import { createEmailRouter } from './routes/email.js';
 import { createRealtimeRouter } from './routes/realtime.js';
+import auditRouter from './routes/audit.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 import { logger } from './utils/logger.js';
@@ -64,6 +65,7 @@ app.get('/health', (req, res) => {
 app.use('/api/shows', authMiddleware, showsRouter);
 app.use('/api/finance', authMiddleware, financeRouter);
 app.use('/api/travel', authMiddleware, travelRouter);
+app.use('/api/audit', authMiddleware, auditRouter);
 app.use('/api/amadeus', createAmadeusRouter(logger));
 app.use('/api/stripe', createStripeRouter(logger));
 app.use('/api/email', createEmailRouter(logger));

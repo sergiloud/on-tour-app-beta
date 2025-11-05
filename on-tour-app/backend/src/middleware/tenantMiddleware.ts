@@ -24,15 +24,15 @@ declare global {
 
 /**
  * Tenant Middleware - JWT-based tenant identification
- * 
+ *
  * SECURITY:
  * - organizationId extracted from JWT signature (cannot be spoofed)
  * - No header-based identification (headers are easily manipulated)
  * - Superadmin scope enables cross-org access (logged)
- * 
+ *
  * USAGE:
  * app.use(tenantMiddleware);
- * 
+ *
  * TENANT CONTEXT AVAILABLE IN ROUTES:
  * req.context.organizationId - The organization ID (or null if superadmin)
  * req.context.isSuperAdmin - Is this a superadmin request?
@@ -69,7 +69,7 @@ export function tenantMiddleware(
         { userId: payload.userId },
         'User without organization ID attempted access'
       );
-      res.status(403).json({ 
+      res.status(403).json({
         error: 'User not assigned to organization',
         code: 'NO_ORGANIZATION'
       });
@@ -93,8 +93,8 @@ export function tenantMiddleware(
       );
     } else {
       logger.debug(
-        { 
-          userId: payload.userId, 
+        {
+          userId: payload.userId,
           organizationId: payload.organizationId,
           role: payload.role
         },
@@ -107,7 +107,7 @@ export function tenantMiddleware(
     // Token validation failed
     if (error instanceof Error && error.message.includes('expired')) {
       logger.warn(error, 'Token expired');
-      res.status(401).json({ 
+      res.status(401).json({
         error: 'Token expired',
         code: 'TOKEN_EXPIRED'
       });
@@ -115,7 +115,7 @@ export function tenantMiddleware(
     }
 
     logger.error(error, 'Tenant middleware: Token verification failed');
-    res.status(401).json({ 
+    res.status(401).json({
       error: 'Invalid token',
       code: 'INVALID_TOKEN'
     });
@@ -133,7 +133,7 @@ export function requireTenant(
   next: NextFunction
 ): void {
   if (!req.context) {
-    res.status(401).json({ 
+    res.status(401).json({
       error: 'Authentication required',
       code: 'AUTH_REQUIRED'
     });
@@ -162,14 +162,14 @@ export function verifyTenantAccess(requiredOrgId: string | undefined) {
     // Regular user must match organization
     if (!requiredOrgId || req.context.organizationId !== requiredOrgId) {
       logger.warn(
-        { 
-          userId: req.context.userId, 
+        {
+          userId: req.context.userId,
           requestedOrg: requiredOrgId,
           userOrg: req.context.organizationId
         },
         'Tenant access verification failed'
       );
-      res.status(403).json({ 
+      res.status(403).json({
         error: 'Access denied',
         code: 'FORBIDDEN'
       });

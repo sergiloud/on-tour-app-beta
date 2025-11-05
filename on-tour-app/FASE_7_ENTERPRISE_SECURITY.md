@@ -1,15 +1,15 @@
 ╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║             🔐 FASE 7 - ENTERPRISE SECURITY & BEST PRACTICES 🔐          ║
-║                                                                           ║
-║              Production-Grade Multi-Tenant Implementation Guide           ║
-║                                                                           ║
+║ ║
+║ 🔐 FASE 7 - ENTERPRISE SECURITY & BEST PRACTICES 🔐 ║
+║ ║
+║ Production-Grade Multi-Tenant Implementation Guide ║
+║ ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 
 **Document**: FASE_7_ENTERPRISE_SECURITY.md  
 **Status**: Implementation Guide  
 **Created**: November 5, 2025  
-**Critical**: Read before Session 1  
+**Critical**: Read before Session 1
 
 ---
 
@@ -168,7 +168,7 @@ import {
   BeforeUpdate,
   DeleteDateColumn,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from './User';
 import { Show } from './Show';
@@ -200,12 +200,12 @@ export class Organization {
   // Relationships
   @OneToMany(() => User, user => user.organization, {
     cascade: true,
-    eager: false
+    eager: false,
   })
   users: User[];
 
   @OneToMany(() => Show, show => show.organization, {
-    onDelete: 'CASCADE'  // ← Critical: delete all shows if org deleted
+    onDelete: 'CASCADE', // ← Critical: delete all shows if org deleted
   })
   shows: Show[];
 
@@ -232,9 +232,7 @@ export class Organization {
   validateSlug() {
     const expectedSlug = this.slugify(this.name);
     if (this.slug !== expectedSlug) {
-      throw new Error(
-        `Invalid slug. Expected: ${expectedSlug}, Got: ${this.slug}`
-      );
+      throw new Error(`Invalid slug. Expected: ${expectedSlug}, Got: ${this.slug}`);
     }
   }
 
@@ -243,8 +241,8 @@ export class Organization {
     return text
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9]+/g, '-')    // Replace non-alphanumeric with dash
-      .replace(/(^-|-$)/g, '');       // Remove leading/trailing dashes
+      .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with dash
+      .replace(/(^-|-$)/g, ''); // Remove leading/trailing dashes
   }
 }
 ```
@@ -266,61 +264,61 @@ export class CreateOrganization1699209600000 implements MigrationInterface {
             type: 'uuid',
             isPrimary: true,
             generationStrategy: 'uuid',
-            default: 'uuid_generate_v4()'
+            default: 'uuid_generate_v4()',
           },
           {
             name: 'name',
             type: 'varchar',
-            isNullable: false
+            isNullable: false,
           },
           {
             name: 'slug',
             type: 'varchar',
             isNullable: false,
-            isUnique: true
+            isUnique: true,
           },
           {
             name: 'description',
             type: 'text',
-            isNullable: true
+            isNullable: true,
           },
           {
             name: 'websiteUrl',
             type: 'varchar',
-            isNullable: true
+            isNullable: true,
           },
           {
             name: 'logoUrl',
             type: 'varchar',
-            isNullable: true
+            isNullable: true,
           },
           {
             name: 'ownerId',
             type: 'uuid',
-            isNullable: false
+            isNullable: false,
           },
           {
             name: 'createdAt',
             type: 'timestamp',
-            default: 'CURRENT_TIMESTAMP'
+            default: 'CURRENT_TIMESTAMP',
           },
           {
             name: 'updatedAt',
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
-            onUpdate: 'CURRENT_TIMESTAMP'
+            onUpdate: 'CURRENT_TIMESTAMP',
           },
           {
             name: 'deletedAt',
             type: 'timestamp',
-            isNullable: true
-          }
+            isNullable: true,
+          },
         ],
         indices: [
           { columnNames: ['slug'], isUnique: true },
           { columnNames: ['ownerId'] },
-          { columnNames: ['createdAt'] }
-        ]
+          { columnNames: ['createdAt'] },
+        ],
       }),
       true
     );
@@ -426,15 +424,15 @@ Without this, you repeat `where: { organizationId }` in 50+ places:
 ```typescript
 // ❌ Repetitive
 const shows = await showRepository.find({
-  where: { organizationId: orgId, status: 'active' }
+  where: { organizationId: orgId, status: 'active' },
 });
 
 const finances = await financeRepository.find({
-  where: { organizationId: orgId, month: 'November' }
+  where: { organizationId: orgId, month: 'November' },
 });
 
 const itineraries = await itineraryRepository.find({
-  where: { organizationId: orgId, published: true }
+  where: { organizationId: orgId, published: true },
 });
 
 // If you need to add additional scoping, update 50 places!
@@ -448,12 +446,12 @@ import { SelectQueryBuilder, IsNull } from 'typeorm';
 
 /**
  * Scope a TypeORM query to a specific organization
- * 
+ *
  * @param qb Query builder instance
  * @param orgId Organization ID (null = superadmin, no scoping)
  * @param entityAlias Entity alias (e.g., 'show', 'finance')
  * @returns Modified query builder
- * 
+ *
  * @example
  * const shows = await scopeByOrg(
  *   showRepository.createQueryBuilder('show'),
@@ -472,10 +470,7 @@ export function scopeByOrg<T>(
   }
 
   // Regular user: filter by org
-  return queryBuilder.andWhere(
-    `${entityAlias}.organizationId = :orgId`,
-    { orgId }
-  );
+  return queryBuilder.andWhere(`${entityAlias}.organizationId = :orgId`, { orgId });
 }
 
 /**
@@ -510,8 +505,8 @@ export class ShowsService {
     return this.showRepository.findOne({
       where: {
         id,
-        ...buildOrgWhere(orgId)  // ← One-liner scoping
-      }
+        ...buildOrgWhere(orgId), // ← One-liner scoping
+      },
     });
   }
 
@@ -536,11 +531,11 @@ grep -r "where: {" src/services/ | grep -v organizationId
 const items = await repository.find({ where: { status: 'active' } });
 
 // After
-const items = await repository.find({ 
-  where: { 
+const items = await repository.find({
+  where: {
     status: 'active',
     ...buildOrgWhere(orgId)
-  } 
+  }
 });
 ```
 
@@ -560,9 +555,9 @@ const rateLimiters = new Map<string, RateLimiterMemory>();
 
 // Configuration per tier (future)
 const TIER_LIMITS = {
-  free: { points: 100, duration: 60 },      // 100 req/min
-  pro: { points: 500, duration: 60 },       // 500 req/min
-  enterprise: { points: 5000, duration: 60 } // 5000 req/min
+  free: { points: 100, duration: 60 }, // 100 req/min
+  pro: { points: 500, duration: 60 }, // 500 req/min
+  enterprise: { points: 5000, duration: 60 }, // 5000 req/min
 };
 
 const DEFAULT_LIMIT = TIER_LIMITS.pro;
@@ -595,11 +590,10 @@ export function orgRateLimiter(req: Request, res: Response, next: NextFunction) 
       .then(() => {
         // Success: add rate limit headers
         res.setHeader('X-RateLimit-Limit', DEFAULT_LIMIT.points);
-        res.setHeader('X-RateLimit-Remaining', 
-          DEFAULT_LIMIT.points - 1);
+        res.setHeader('X-RateLimit-Remaining', DEFAULT_LIMIT.points - 1);
         next();
       })
-      .catch((rejRes) => {
+      .catch(rejRes => {
         // Rate limit exceeded
         const retryAfter = Math.ceil(rejRes.msBeforeNext / 1000);
         res.status(429).json({
@@ -607,7 +601,7 @@ export function orgRateLimiter(req: Request, res: Response, next: NextFunction) 
           message: `Too many requests. Try again in ${retryAfter} seconds`,
           retryAfter,
           limit: DEFAULT_LIMIT.points,
-          window: DEFAULT_LIMIT.duration
+          window: DEFAULT_LIMIT.duration,
         });
       });
   } catch (error) {
@@ -674,9 +668,7 @@ PHASE 3: ENFORCE (Deploy Monday)
 
 ```typescript
 // Migration file: AddOrganizationIdToShows.ts
-export class AddOrganizationIdToShows1699209600000 
-  implements MigrationInterface {
-  
+export class AddOrganizationIdToShows1699209600000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Step 1: Add nullable column
     await queryRunner.addColumn(
@@ -684,7 +676,7 @@ export class AddOrganizationIdToShows1699209600000
       new TableColumn({
         name: 'organizationId',
         type: 'uuid',
-        isNullable: true  // ← NULLABLE in Phase 1
+        isNullable: true, // ← NULLABLE in Phase 1
       })
     );
 
@@ -695,7 +687,7 @@ export class AddOrganizationIdToShows1699209600000
         columnNames: ['organizationId'],
         referencedTableName: 'organizations',
         referencedColumnNames: ['id'],
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       })
     );
 
@@ -703,7 +695,7 @@ export class AddOrganizationIdToShows1699209600000
     await queryRunner.createIndex(
       'shows',
       new TableIndex({
-        columnNames: ['organizationId']
+        columnNames: ['organizationId'],
       })
     );
   }
@@ -734,7 +726,7 @@ async function backfillOrganizations() {
   try {
     // Find users without organization
     const usersToProcess = await userRepository.find({
-      where: { organizationId: null }
+      where: { organizationId: null },
     });
 
     console.log(`Found ${usersToProcess.length} users without organization`);
@@ -756,7 +748,7 @@ async function backfillOrganizations() {
 
       // Assign all user's shows to organization
       const userShows = await showRepository.find({
-        where: { createdBy: user, organizationId: null }
+        where: { createdBy: user, organizationId: null },
       });
 
       for (const show of userShows) {
@@ -788,9 +780,7 @@ backfillOrganizations().then(() => {
 
 ```typescript
 // Migration: MakeOrganizationIdNotNull.ts
-export class MakeOrganizationIdNotNull1699296000000 
-  implements MigrationInterface {
-  
+export class MakeOrganizationIdNotNull1699296000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.changeColumn(
       'shows',
@@ -798,7 +788,7 @@ export class MakeOrganizationIdNotNull1699296000000
       new TableColumn({
         name: 'organizationId',
         type: 'uuid',
-        isNullable: false  // ← NOW REQUIRED
+        isNullable: false, // ← NOW REQUIRED
       })
     );
   }
@@ -810,7 +800,7 @@ export class MakeOrganizationIdNotNull1699296000000
       new TableColumn({
         name: 'organizationId',
         type: 'uuid',
-        isNullable: true
+        isNullable: true,
       })
     );
   }
@@ -846,22 +836,25 @@ export async function createTestOrg(
 export async function createMultiTenantScenario() {
   // Org 1 with users
   const org1 = await createTestOrg('Broadway Company');
-  const user1a = await createTestUser('alice@broadway.com', { 
-    organizationId: org1.id 
+  const user1a = await createTestUser('alice@broadway.com', {
+    organizationId: org1.id,
   });
-  const user1b = await createTestUser('bob@broadway.com', { 
-    organizationId: org1.id 
+  const user1b = await createTestUser('bob@broadway.com', {
+    organizationId: org1.id,
   });
 
   // Org 2 with users
   const org2 = await createTestOrg('Off-Broadway Ltd');
-  const user2a = await createTestUser('charlie@offbroadway.com', { 
-    organizationId: org2.id 
+  const user2a = await createTestUser('charlie@offbroadway.com', {
+    organizationId: org2.id,
   });
 
   return {
-    org1, user1a, user1b,
-    org2, user2a
+    org1,
+    user1a,
+    user1b,
+    org2,
+    user2a,
   };
 }
 ```
@@ -890,7 +883,7 @@ describe('Multi-Tenant Isolation', () => {
       .post('/api/shows')
       .set('Authorization', `Bearer ${user1Token}`)
       .send({ title: 'Broadway Show', description: 'Org 1 show' });
-    
+
     expect(showOrg1.status).toBe(201);
     expect(showOrg1.body.organizationId).toBe(org1.id);
 
@@ -898,7 +891,7 @@ describe('Multi-Tenant Isolation', () => {
     const getShow = await request(app)
       .get(`/api/shows/${showOrg1.body.id}`)
       .set('Authorization', `Bearer ${user2Token}`);
-    
+
     // Should return 404 (not found) or 403 (forbidden)
     expect([404, 403]).toContain(getShow.status);
     expect(getShow.body.error).toBeDefined();
@@ -909,9 +902,9 @@ describe('Multi-Tenant Isolation', () => {
     const listOrg1 = await request(app)
       .get('/api/shows')
       .set('Authorization', `Bearer ${user1Token}`);
-    
+
     expect(listOrg1.status).toBe(200);
-    
+
     // All shows should belong to org1
     listOrg1.body.data.forEach((show: any) => {
       expect(show.organizationId).toBe(org1.id);
@@ -921,9 +914,9 @@ describe('Multi-Tenant Isolation', () => {
     const listOrg2 = await request(app)
       .get('/api/shows')
       .set('Authorization', `Bearer ${user2Token}`);
-    
+
     expect(listOrg2.status).toBe(200);
-    
+
     // All shows should belong to org2
     listOrg2.body.data.forEach((show: any) => {
       expect(show.organizationId).toBe(org2.id);
@@ -939,7 +932,7 @@ describe('Multi-Tenant Isolation', () => {
       .put(`/api/shows/${show.id}`)
       .set('Authorization', `Bearer ${user2Token}`)
       .send({ title: 'Hacked Title' });
-    
+
     expect([404, 403]).toContain(update.status);
 
     // Verify data unchanged
@@ -950,22 +943,22 @@ describe('Multi-Tenant Isolation', () => {
   it('should enforce rate limits per organization', async () => {
     // Make 101 requests from Org 1 (should hit limit at 100)
     let finalStatus = 200;
-    
+
     for (let i = 0; i < 101; i++) {
       const response = await request(app)
         .get('/api/shows')
         .set('Authorization', `Bearer ${user1Token}`);
-      
+
       finalStatus = response.status;
     }
-    
+
     expect(finalStatus).toBe(429); // Rate limited
 
     // Org 2 should NOT be rate limited
     const org2Request = await request(app)
       .get('/api/shows')
       .set('Authorization', `Bearer ${user2Token}`);
-    
+
     expect(org2Request.status).toBe(200); // Still works!
   });
 });
@@ -1034,7 +1027,7 @@ export function auditMiddleware(req: Request, res: Response, next: NextFunction)
         userId: req.context.userId,
         action: `${req.method.toLowerCase()}.${req.path}`,
         ipAddress: req.ip,
-        userAgent: req.get('user-agent')
+        userAgent: req.get('user-agent'),
       });
     }
 
@@ -1049,7 +1042,7 @@ export function auditMiddleware(req: Request, res: Response, next: NextFunction)
 
 ```typescript
 // queries to run periodically
-SELECT 
+SELECT
   DATE_TRUNC('hour', created_at) as hour,
   action,
   COUNT(*) as count
@@ -1060,7 +1053,7 @@ ORDER BY hour DESC
 LIMIT 24;
 
 // Top active orgs
-SELECT 
+SELECT
   organization_id,
   COUNT(*) as request_count
 FROM event_logs
@@ -1069,7 +1062,7 @@ GROUP BY organization_id
 ORDER BY request_count DESC;
 
 // Rate limit violations
-SELECT 
+SELECT
   organization_id,
   COUNT(*) as violations
 FROM rate_limit_events
@@ -1160,7 +1153,7 @@ const shows = await showRepository.find();
 
 // ✅ Fix:
 const shows = await showRepository.find({
-  where: { organizationId: req.context.organizationId }
+  where: { organizationId: req.context.organizationId },
 });
 
 // ✅ Better:
@@ -1197,8 +1190,8 @@ shows: Show[];
 shows: Show[];
 
 // Verify in DB:
-SELECT constraint_name, constraint_type 
-FROM information_schema.table_constraints 
+SELECT constraint_name, constraint_type
+FROM information_schema.table_constraints
 WHERE table_name = 'shows';
 ```
 
@@ -1208,31 +1201,31 @@ WHERE table_name = 'shows';
 // ❌ Problem: Processing one by one
 for (const user of usersToProcess) {
   user.organizationId = org.id;
-  await userRepository.save(user);  // Slow!
+  await userRepository.save(user); // Slow!
 }
 
 // ✅ Fix: Batch operations
 const batchSize = 100;
 for (let i = 0; i < usersToProcess.length; i += batchSize) {
   const batch = usersToProcess.slice(i, i + batchSize);
-  await userRepository.save(batch);  // Much faster
+  await userRepository.save(batch); // Much faster
 }
 ```
 
 ---
 
 ╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║              🔐 Enterprise Security Guide - Complete ✅                  ║
-║                                                                           ║
-║              All patterns tested in production environments                ║
-║              Ready for Session 1 implementation                           ║
-║                                                                           ║
-║              Next Step: Create Organization entity                        ║
-║                                                                           ║
+║ ║
+║ 🔐 Enterprise Security Guide - Complete ✅ ║
+║ ║
+║ All patterns tested in production environments ║
+║ Ready for Session 1 implementation ║
+║ ║
+║ Next Step: Create Organization entity ║
+║ ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 
 **Document Created**: November 5, 2025  
 **Last Updated**: Production-ready version  
 **Status**: Ready for implementation  
-**Next**: Start Session 1 with JWT updates  
+**Next**: Start Session 1 with JWT updates

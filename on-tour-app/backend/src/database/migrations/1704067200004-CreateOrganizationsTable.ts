@@ -2,14 +2,14 @@ import { MigrationInterface, QueryRunner, Table, TableIndex } from "typeorm";
 
 /**
  * Migration: Create Organizations Table
- * 
+ *
  * Purpose: Create multi-tenant organization table with:
  * - UUID primary key
  * - Unique slug for URL-friendly identification
  * - Soft delete via deletedAt column
  * - Audit timestamps (createdAt, updatedAt)
  * - Indices for query performance
- * 
+ *
  * PHASE 1 (This): Nullable organizationId columns
  * Later phases: Add FK constraints and make NOT NULL
  */

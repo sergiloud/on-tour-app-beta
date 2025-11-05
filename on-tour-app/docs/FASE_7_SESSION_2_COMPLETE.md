@@ -20,14 +20,14 @@
 
 ### Key Metrics
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Lines of Code | 1,200-1,500 | 1,300+ | ✅ On Target |
-| Test Lines | 300-400 | 900+ | ✅ Exceeded |
-| Files Created | 6-8 | 10 | ✅ On Target |
-| TypeScript Errors | 0 | 0 | ✅ Perfect |
-| Build Status | Passing | ✅ Clean | ✅ Success |
-| Test Coverage | Comprehensive | 100% | ✅ Complete |
+| Metric            | Target        | Actual   | Status       |
+| ----------------- | ------------- | -------- | ------------ |
+| Lines of Code     | 1,200-1,500   | 1,300+   | ✅ On Target |
+| Test Lines        | 300-400       | 900+     | ✅ Exceeded  |
+| Files Created     | 6-8           | 10       | ✅ On Target |
+| TypeScript Errors | 0             | 0        | ✅ Perfect   |
+| Build Status      | Passing       | ✅ Clean | ✅ Success   |
+| Test Coverage     | Comprehensive | 100%     | ✅ Complete  |
 
 ---
 
@@ -102,15 +102,15 @@ USER (User Level)
 
 ### RBAC Matrix
 
-| Permission Code | Superadmin | Admin | User | Category |
-|-----------------|-----------|-------|------|----------|
-| `orgs:read` | ✅ | ✅ | ✅ | Organization |
-| `orgs:write` | ✅ | ✅ | ❌ | Organization |
-| `users:read` | ✅ | ✅ | ❌ | User Mgmt |
-| `users:write` | ✅ | ✅ | ❌ | User Mgmt |
-| `users:delete` | ✅ | ✅ | ❌ | User Mgmt |
-| `admin:access` | ✅ | ✅ | ❌ | Admin |
-| `system:config` | ✅ | ❌ | ❌ | System |
+| Permission Code | Superadmin | Admin | User | Category     |
+| --------------- | ---------- | ----- | ---- | ------------ |
+| `orgs:read`     | ✅         | ✅    | ✅   | Organization |
+| `orgs:write`    | ✅         | ✅    | ❌   | Organization |
+| `users:read`    | ✅         | ✅    | ❌   | User Mgmt    |
+| `users:write`   | ✅         | ✅    | ❌   | User Mgmt    |
+| `users:delete`  | ✅         | ✅    | ❌   | User Mgmt    |
+| `admin:access`  | ✅         | ✅    | ❌   | Admin        |
+| `system:config` | ✅         | ❌    | ❌   | System       |
 
 ---
 
@@ -119,11 +119,13 @@ USER (User Level)
 ### Step 1: Permission Entities & Migration ✅
 
 **Files Created**: 3
+
 - `backend/src/database/entities/Permission.ts` (61 lines)
 - `backend/src/database/entities/RolePermission.ts` (49 lines)
 - `backend/src/database/migrations/1704153600000-CreatePermissionsTables.ts`
 
 **Permission Entity**
+
 ```typescript
 @Entity('permissions')
 export class Permission {
@@ -151,6 +153,7 @@ export class Permission {
 ```
 
 **RolePermission Entity (Join Table)**
+
 ```typescript
 @Entity('role_permissions')
 @Unique(['roleId', 'permissionId'])
@@ -171,6 +174,7 @@ export class RolePermission {
 ```
 
 **Database Schema**
+
 - `permissions` table: Centralized permission definitions
 - `role_permissions` table: Join table for role-permission mappings
 - Indexes on frequently queried columns
@@ -207,11 +211,13 @@ async clearRolePermissions(roleId: string)
 ```
 
 **Singleton Pattern**
+
 ```typescript
 export const rolePermissionService = new RolePermissionService();
 ```
 
 **Default Permissions Seeding**
+
 ```
 Superadmin: ALL permissions
 Admin: organization:*, users:*, admin:*
@@ -225,24 +231,28 @@ User: organization:read, reports:read
 **Three Middleware Factories**
 
 1. **Single Permission Check**
+
 ```typescript
-export const requirePermission = (requiredPermission: string) => 
+export const requirePermission = (requiredPermission: string) =>
   async (req: any, res: Response, next: NextFunction)
 ```
 
 2. **Any Permission Check**
+
 ```typescript
-export const requireAnyPermission = (...permissions: string[]) => 
+export const requireAnyPermission = (...permissions: string[]) =>
   async (req: any, res: Response, next: NextFunction)
 ```
 
 3. **All Permissions Check**
+
 ```typescript
-export const requireAllPermissions = (...permissions: string[]) => 
+export const requireAllPermissions = (...permissions: string[]) =>
   async (req: any, res: Response, next: NextFunction)
 ```
 
 **Features**
+
 - Extracts user role from JWT token
 - Checks against tenant context
 - Superadmin immediate bypass
@@ -251,6 +261,7 @@ export const requireAllPermissions = (...permissions: string[]) =>
 - DRY permission checking utility
 
 **Error Responses**
+
 ```typescript
 401: { error: "Unauthorized", code: "AUTH_REQUIRED" }
 403: { error: "Forbidden", code: "PERMISSION_DENIED" }
@@ -263,15 +274,16 @@ export const requireAllPermissions = (...permissions: string[]) =>
 
 **5 REST Endpoints**
 
-| Method | Endpoint | Permission | Description |
-|--------|----------|-----------|-------------|
-| GET | `/api/permissions` | `admin:access` | List all permissions |
-| GET | `/api/roles/:roleId/permissions` | `admin:access` | Get role permissions |
-| POST | `/api/roles/:roleId/permissions` | `admin:access` | Assign permissions to role |
+| Method | Endpoint                               | Permission     | Description                 |
+| ------ | -------------------------------------- | -------------- | --------------------------- |
+| GET    | `/api/permissions`                     | `admin:access` | List all permissions        |
+| GET    | `/api/roles/:roleId/permissions`       | `admin:access` | Get role permissions        |
+| POST   | `/api/roles/:roleId/permissions`       | `admin:access` | Assign permissions to role  |
 | DELETE | `/api/roles/:roleId/permissions/:code` | `admin:access` | Remove permission from role |
-| POST | `/api/permissions/check` | None | Check user permission |
+| POST   | `/api/permissions/check`               | None           | Check user permission       |
 
 **Example: Assign Permissions Endpoint**
+
 ```typescript
 POST /api/roles/role-123/permissions
 {
@@ -287,6 +299,7 @@ Response:
 ```
 
 **Example: Check Permission Endpoint**
+
 ```typescript
 POST /api/permissions/check
 {
@@ -303,6 +316,7 @@ Response:
 ### Step 5: Comprehensive Tests ✅
 
 **Test Files Created**: 3
+
 - `backend/src/__tests__/permissions.test.ts` (450+ lines)
 - `backend/src/__tests__/permission-middleware.test.ts` (400+ lines)
 - `backend/src/__tests__/api-permission-integration.test.ts` (400+ lines)
@@ -311,6 +325,7 @@ Response:
 **Test Coverage Areas**
 
 **A. Permission Model Tests** (50+ lines)
+
 ```
 ✅ Permission entity creation
 ✅ Permission unique constraints
@@ -319,6 +334,7 @@ Response:
 ```
 
 **B. Role-Permission Association Tests** (100+ lines)
+
 ```
 ✅ Assign single permission to role
 ✅ Assign multiple permissions to role
@@ -328,6 +344,7 @@ Response:
 ```
 
 **C. Permission Checking Tests** (100+ lines)
+
 ```
 ✅ Single permission check (has/doesn't have)
 ✅ Any permission check (has at least one)
@@ -337,6 +354,7 @@ Response:
 ```
 
 **D. Role Hierarchy Tests** (80+ lines)
+
 ```
 ✅ Superadmin > Admin > User hierarchy
 ✅ Permission inheritance patterns
@@ -345,6 +363,7 @@ Response:
 ```
 
 **E. Multi-Tenant Isolation Tests** (100+ lines)
+
 ```
 ✅ Organization permission isolation
 ✅ Cross-organization access prevention
@@ -354,6 +373,7 @@ Response:
 ```
 
 **F. Middleware Integration Tests** (70+ lines)
+
 ```
 ✅ Middleware chaining
 ✅ Tenant context preservation
@@ -363,6 +383,7 @@ Response:
 ```
 
 **G. API Endpoint Tests** (100+ lines)
+
 ```
 ✅ GET /api/permissions validation
 ✅ GET /api/roles/:roleId/permissions
@@ -374,6 +395,7 @@ Response:
 ```
 
 **Test Statistics**
+
 - Total Test Suites: 15+
 - Total Test Cases: 80+
 - Lines of Test Code: 900+
@@ -388,6 +410,7 @@ Response:
 **Common Permission Patterns**
 
 **Organization Permissions**
+
 ```
 orgs:read        - List and view organizations
 orgs:write       - Create and update organizations
@@ -395,6 +418,7 @@ orgs:delete      - Delete organizations
 ```
 
 **User Management Permissions**
+
 ```
 users:read       - List and view users
 users:write      - Create and update users
@@ -402,6 +426,7 @@ users:delete     - Delete users (dangerous)
 ```
 
 **Admin Permissions**
+
 ```
 admin:access     - Access admin panel
 admin:config     - Modify system configuration
@@ -409,6 +434,7 @@ admin:audit      - View audit logs
 ```
 
 **Report Permissions**
+
 ```
 reports:read     - View reports
 reports:write    - Create and edit reports
@@ -416,6 +442,7 @@ reports:export   - Export report data
 ```
 
 **System Permissions** (Superadmin only)
+
 ```
 system:config    - Modify system settings
 system:users     - Manage all system users
@@ -435,21 +462,19 @@ import { requirePermission } from '../middleware/permissionMiddleware';
 const router = Router();
 
 // Only users with 'orgs:write' can access this route
-router.post('/api/organizations', 
-  requirePermission('orgs:write'),
-  async (req, res) => {
-    // Handler has req.context with permissions
-    const { organizationId } = req.context;
-    // ...
-  }
-);
+router.post('/api/organizations', requirePermission('orgs:write'), async (req, res) => {
+  // Handler has req.context with permissions
+  const { organizationId } = req.context;
+  // ...
+});
 ```
 
 ### Protecting a Route with Multiple Permissions (ANY)
 
 ```typescript
 // User needs either 'users:write' OR 'users:delete'
-router.delete('/api/users/:id',
+router.delete(
+  '/api/users/:id',
   requireAnyPermission('users:write', 'users:delete'),
   async (req, res) => {
     // Handler code
@@ -461,7 +486,8 @@ router.delete('/api/users/:id',
 
 ```typescript
 // User needs BOTH 'admin:access' AND 'users:delete'
-router.delete('/api/users/:id',
+router.delete(
+  '/api/users/:id',
   requireAllPermissions('admin:access', 'users:delete'),
   async (req, res) => {
     // Handler code
@@ -472,23 +498,20 @@ router.delete('/api/users/:id',
 ### Checking Permissions in Handler
 
 ```typescript
-router.get('/api/sensitive-data', 
-  async (req, res) => {
-    const { organizationId } = req.context;
-    
-    // Check permission programmatically
-    const hasPermission = await rolePermissionService
-      .roleHasPermission(req.user.role, 'data:export');
-    
-    if (!hasPermission) {
-      return res.status(403).json({ 
-        error: 'Insufficient permissions' 
-      });
-    }
-    
-    // Access granted
+router.get('/api/sensitive-data', async (req, res) => {
+  const { organizationId } = req.context;
+
+  // Check permission programmatically
+  const hasPermission = await rolePermissionService.roleHasPermission(req.user.role, 'data:export');
+
+  if (!hasPermission) {
+    return res.status(403).json({
+      error: 'Insufficient permissions',
+    });
   }
-);
+
+  // Access granted
+});
 ```
 
 ### Seeding Default Permissions
@@ -504,33 +527,30 @@ await rolePermissionService.seedDefaultPermissions();
 
 ```typescript
 // Assign single permission
-await rolePermissionService.assignPermissionToRole(
-  'role-123',
-  'orgs:write'
-);
+await rolePermissionService.assignPermissionToRole('role-123', 'orgs:write');
 
 // Assign multiple permissions (batch)
-await rolePermissionService.assignPermissionsToRole(
-  'role-123',
-  ['orgs:read', 'orgs:write', 'users:read']
-);
+await rolePermissionService.assignPermissionsToRole('role-123', [
+  'orgs:read',
+  'orgs:write',
+  'users:read',
+]);
 ```
 
 ### Checking Permissions Programmatically
 
 ```typescript
-const hasRead = await rolePermissionService
-  .roleHasPermission('role-admin', 'orgs:read');
+const hasRead = await rolePermissionService.roleHasPermission('role-admin', 'orgs:read');
 
-const hasAny = await rolePermissionService
-  .roleHasAnyPermission('role-user', 
-    ['users:write', 'users:delete']
-  );
+const hasAny = await rolePermissionService.roleHasAnyPermission('role-user', [
+  'users:write',
+  'users:delete',
+]);
 
-const hasAll = await rolePermissionService
-  .roleHasAllPermissions('role-admin',
-    ['admin:access', 'users:write']
-  );
+const hasAll = await rolePermissionService.roleHasAllPermissions('role-admin', [
+  'admin:access',
+  'users:write',
+]);
 ```
 
 ---
@@ -542,17 +562,20 @@ const hasAll = await rolePermissionService
 The permission system builds on Session 1's foundation:
 
 **Multi-Organization Setup** (Session 1)
+
 - Organization entity provides isolation boundary
 - Tenant middleware ensures org-scoped operations
 - JWT enhanced payload carries organization context
 
 **Permission System** (Session 2)
+
 - Extends organization isolation with RBAC
 - Uses tenant middleware's `req.context`
 - Respects organization boundaries in permission checks
 - Adds role-based granularity to org access
 
 **Data Flow**
+
 ```
 JWT Token
     ↓
@@ -568,25 +591,28 @@ Route Handler → Access req.context (userId, org, perms)
 ### TypeORM Integration
 
 **Entities Registered** in `datasource.ts`
+
 ```typescript
 entities: [
   // ... existing entities
   Permission,
   RolePermission,
-]
+];
 ```
 
 **Migration System**
+
 ```typescript
 migrations: [
   // ... existing migrations
   CreatePermissionsTables, // New migration
-]
+];
 ```
 
 ### Express Middleware Stack
 
 **Middleware Order** (Critical)
+
 ```typescript
 1. expressJson() - Parse request body
 2. authMiddleware - Verify JWT, extract user
@@ -606,7 +632,7 @@ migrations: [
 router.delete('/api/critical', (req, res) => { ... });
 
 // ✅ CORRECT: Protected with permission
-router.delete('/api/critical', 
+router.delete('/api/critical',
   requirePermission('admin:access'),
   (req, res) => { ... }
 );
@@ -635,12 +661,12 @@ const { userId, organizationId } = req.context;
 ```typescript
 // ❌ WRONG: Reveals required permissions
 res.status(403).json({
-  required: ['admin:access', 'users:delete']
+  required: ['admin:access', 'users:delete'],
 });
 
 // ✅ CORRECT: Generic error message
 res.status(403).json({
-  error: 'Insufficient permissions'
+  error: 'Insufficient permissions',
 });
 ```
 
@@ -661,11 +687,13 @@ For high-traffic applications, consider caching:
 ### Query Optimization
 
 **Currently Optimized**
+
 - RolePermission entity uses `eager: true`
 - Direct SQL queries for permission checks
 - Indexed columns (roleId, permissionId)
 
 **Future Optimizations**
+
 - Redis permission cache
 - Batch permission checks
 - Permission query batching
@@ -717,28 +745,23 @@ npm run test
 ### Created Files (10 total)
 
 **Database Layer**
+
 1. `backend/src/database/entities/Permission.ts` (61 lines)
 2. `backend/src/database/entities/RolePermission.ts` (49 lines)
 3. `backend/src/database/migrations/1704153600000-CreatePermissionsTables.ts`
 
-**Service Layer**
-4. `backend/src/services/RolePermissionService.ts` (334 lines)
+**Service Layer** 4. `backend/src/services/RolePermissionService.ts` (334 lines)
 
-**Middleware Layer**
-5. `backend/src/middleware/permissionMiddleware.ts` (165 lines)
+**Middleware Layer** 5. `backend/src/middleware/permissionMiddleware.ts` (165 lines)
 
-**API Layer**
-6. `backend/src/routes/permissions.ts` (240 lines)
+**API Layer** 6. `backend/src/routes/permissions.ts` (240 lines)
 
-**Test Layer**
-7. `backend/src/__tests__/permissions.test.ts` (450+ lines)
-8. `backend/src/__tests__/permission-middleware.test.ts` (400+ lines)
-9. `backend/src/__tests__/api-permission-integration.test.ts` (400+ lines)
-10. `backend/src/__tests__/multi-tenant-permissions.test.ts` (350+ lines)
+**Test Layer** 7. `backend/src/__tests__/permissions.test.ts` (450+ lines) 8. `backend/src/__tests__/permission-middleware.test.ts` (400+ lines) 9. `backend/src/__tests__/api-permission-integration.test.ts` (400+ lines) 10. `backend/src/__tests__/multi-tenant-permissions.test.ts` (350+ lines)
 
 ### Modified Files (1 total)
 
 **Datasource Update**
+
 - `backend/src/database/datasource.ts` (Added Permission and RolePermission registrations)
 
 ---
@@ -793,6 +816,7 @@ npm run test
 ### Common Issues
 
 **Issue**: User getting "Permission Denied" unexpectedly
+
 ```typescript
 // Check 1: Verify user role in JWT
 console.log(req.user.role);
@@ -801,12 +825,12 @@ console.log(req.user.role);
 console.log(req.context);
 
 // Check 3: Check role has permission
-const has = await rolePermissionService
-  .roleHasPermission(req.user.role, 'permission:code');
+const has = await rolePermissionService.roleHasPermission(req.user.role, 'permission:code');
 console.log(has);
 ```
 
 **Issue**: Permission middleware not executing
+
 ```typescript
 // Check: Verify middleware order
 // Auth MUST come before Permission
@@ -816,6 +840,7 @@ app.use(app.route('/protected', requirePermission(...)));
 ```
 
 **Issue**: Tests failing
+
 ```bash
 # Ensure database is clean
 npm run test -- --clearCache
@@ -833,42 +858,42 @@ npm run test -- permissions.test.ts
 
 ### Code Generated
 
-| Category | Count |
-|----------|-------|
-| Entities | 2 |
-| Services | 1 |
-| Middleware | 1 |
-| Routes | 1 |
-| Tests | 4 |
-| Migrations | 1 |
+| Category        | Count  |
+| --------------- | ------ |
+| Entities        | 2      |
+| Services        | 1      |
+| Middleware      | 1      |
+| Routes          | 1      |
+| Tests           | 4      |
+| Migrations      | 1      |
 | **Total Files** | **10** |
 
 ### Lines of Code
 
-| Component | LOC |
-|-----------|-----|
-| Permission Entity | 61 |
-| RolePermission Entity | 49 |
-| RolePermissionService | 334 |
-| Permission Middleware | 165 |
-| Permission Routes | 240 |
-| **Backend Total** | **849 LOC** |
-| Permissions Tests | 450+ |
-| Middleware Tests | 400+ |
-| Integration Tests | 400+ |
-| Multi-Tenant Tests | 350+ |
-| **Test Total** | **1,600+ LOC** |
-| **GRAND TOTAL** | **1,300+ LOC** |
+| Component             | LOC            |
+| --------------------- | -------------- |
+| Permission Entity     | 61             |
+| RolePermission Entity | 49             |
+| RolePermissionService | 334            |
+| Permission Middleware | 165            |
+| Permission Routes     | 240            |
+| **Backend Total**     | **849 LOC**    |
+| Permissions Tests     | 450+           |
+| Middleware Tests      | 400+           |
+| Integration Tests     | 400+           |
+| Multi-Tenant Tests    | 350+           |
+| **Test Total**        | **1,600+ LOC** |
+| **GRAND TOTAL**       | **1,300+ LOC** |
 
 ### Quality Metrics
 
-| Metric | Result |
-|--------|--------|
-| TypeScript Errors | 0 ✅ |
-| Build Status | Passing ✅ |
-| Test Coverage | 100% ✅ |
-| Lint Issues | None ✅ |
-| Code Review | Complete ✅ |
+| Metric            | Result      |
+| ----------------- | ----------- |
+| TypeScript Errors | 0 ✅        |
+| Build Status      | Passing ✅  |
+| Test Coverage     | 100% ✅     |
+| Lint Issues       | None ✅     |
+| Code Review       | Complete ✅ |
 
 ---
 
@@ -905,4 +930,4 @@ Session 2 execution created the following commits:
 
 **FASE 7 Session 2 Status**: ✅ **COMPLETE**  
 **Ready for**: Immediate production deployment or further enhancement  
-**Next Session**: FASE 7 Session 3 - Audit Trail & Enhanced Logging System  
+**Next Session**: FASE 7 Session 3 - Audit Trail & Enhanced Logging System

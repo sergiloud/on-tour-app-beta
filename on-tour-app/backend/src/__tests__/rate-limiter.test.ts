@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 /**
  * Rate Limiter Tests
- * 
+ *
  * Tests for per-organization rate limiting:
  * - 100 requests per minute per organization
  * - Superadmin bypass

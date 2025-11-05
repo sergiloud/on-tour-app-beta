@@ -8,9 +8,9 @@ const router = Router();
 
 /**
  * Organization API Routes
- * 
+ *
  * 5 REST endpoints for multi-tenant organization management
- * 
+ *
  * Security:
  * - All endpoints require authentication (authMiddleware)
  * - Regular users: access to their own org only
@@ -20,7 +20,7 @@ const router = Router();
 /**
  * POST /api/organizations
  * Create new organization
- * 
+ *
  * Request Body:
  * {
  *   "name": "Broadway Company",
@@ -71,11 +71,11 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
 /**
  * GET /api/organizations
  * List organizations
- * 
+ *
  * Query Params:
  * - limit: Results per page (default: 20)
  * - offset: Pagination offset (default: 0)
- * 
+ *
  * Behavior:
  * - Superadmin: lists ALL organizations
  * - Regular user: lists THEIR organizations
@@ -131,7 +131,7 @@ router.get("/", authMiddleware, async (req: Request, res: Response) => {
 /**
  * GET /api/organizations/:id
  * Get specific organization
- * 
+ *
  * Security:
  * - Superadmin: can access any org
  * - Regular user: can only access their own
@@ -184,7 +184,7 @@ router.get("/:id", authMiddleware, async (req: Request, res: Response) => {
 /**
  * PUT /api/organizations/:id
  * Update organization
- * 
+ *
  * Request Body:
  * {
  *   "name": "New Name",
@@ -192,7 +192,7 @@ router.get("/:id", authMiddleware, async (req: Request, res: Response) => {
  *   "websiteUrl": "...",
  *   "logoUrl": "..."
  * }
- * 
+ *
  * Note: organizationId cannot be changed (immutable)
  */
 router.put("/:id", authMiddleware, async (req: Request, res: Response) => {
@@ -256,7 +256,7 @@ router.put("/:id", authMiddleware, async (req: Request, res: Response) => {
 /**
  * DELETE /api/organizations/:id
  * Delete organization (soft delete)
- * 
+ *
  * Data is preserved (soft delete via deletedAt)
  */
 router.delete("/:id", authMiddleware, async (req: Request, res: Response) => {

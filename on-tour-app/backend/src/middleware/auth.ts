@@ -2,15 +2,32 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyToken, extractToken, JwtPayload } from '../utils/jwt.js';
 import { logger } from '../utils/logger.js';
 
+/**
+ * Enhanced context with organization and permission info
+ */
+export interface RequestContext {
+  userId: string;
+  organizationId: string | null; // null for superadmin (cross-org access)
+  role?: string;
+  permissions: string[];
+  isSuperAdmin: boolean;
+}
+
 declare global {
   namespace Express {
     interface Request {
       user?: JwtPayload;
       organizationId?: string;
+      context?: RequestContext; // ← NEW: Enhanced context
     }
   }
 }
 
+/**
+ * Main authentication middleware
+ * Extracts JWT, verifies signature, sets request context
+ * Handles superadmin scope for cross-tenant access
+ */
 export function authMiddleware(
   req: Request,
   res: Response,
@@ -28,7 +45,24 @@ export function authMiddleware(
     req.user = payload;
     req.organizationId = payload.organizationId;
 
-    logger.debug({ userId: payload.userId, organizationId: payload.organizationId }, 'User authenticated');
+    // NEW: Enhanced context with security info
+    req.context = {
+      userId: payload.userId,
+      organizationId: payload.scope === 'superadmin' ? null : payload.organizationId,
+      role: payload.role,
+      permissions: payload.permissions || [],
+      isSuperAdmin: payload.scope === 'superadmin'
+    };
+
+    logger.debug(
+      { 
+        userId: payload.userId, 
+        organizationId: payload.organizationId,
+        isSuperAdmin: req.context.isSuperAdmin
+      }, 
+      'User authenticated'
+    );
+    
     next();
   } catch (error) {
     logger.error(error, 'Authentication failed');
@@ -36,6 +70,10 @@ export function authMiddleware(
   }
 }
 
+/**
+ * Optional authentication middleware
+ * Allows unauthenticated requests to proceed
+ */
 export function optionalAuthMiddleware(
   req: Request,
   res: Response,
@@ -48,6 +86,15 @@ export function optionalAuthMiddleware(
       const payload = verifyToken(token);
       req.user = payload;
       req.organizationId = payload.organizationId;
+      
+      // NEW: Enhanced context
+      req.context = {
+        userId: payload.userId,
+        organizationId: payload.scope === 'superadmin' ? null : payload.organizationId,
+        role: payload.role,
+        permissions: payload.permissions || [],
+        isSuperAdmin: payload.scope === 'superadmin'
+      };
     }
 
     next();

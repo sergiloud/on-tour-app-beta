@@ -3,12 +3,19 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET: string = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const JWT_EXPIRES_IN = '24h';
 
+/**
+ * Enterprise JWT Payload
+ * Encodes organization and permission info for stateless authentication
+ */
 export interface JwtPayload {
-  userId: string;
-  organizationId: string;
+  userId: string;       // sub: User ID
+  organizationId: string; // org: Organization ID (cannot be spoofed)
   email: string;
-  iat?: number;
-  exp?: number;
+  role?: string;        // User role (admin, manager, viewer, etc.)
+  permissions?: string[]; // Fine-grained permissions array
+  scope?: string;       // 'superadmin' for cross-tenant access
+  iat?: number;         // Issued at
+  exp?: number;         // Expiration
 }
 
 export function generateToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {

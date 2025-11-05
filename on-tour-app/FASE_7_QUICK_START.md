@@ -429,20 +429,504 @@ Total Modified: 15+ files
 
 ---
 
+## � CRITICAL ENTERPRISE REQUIREMENTS
+
+Before implementing Session 1, integrate these production-critical features:
+
+### 1. Tenant Identification via JWT (Security Critical) ⭐
+
+**Problem**: Using `x-organization-id` headers is insecure and easily spoofable
+
+**Solution**: Encode `organizationId` in JWT payload
+
+```typescript
+// JWT Payload Structure (auth.service.ts)
+interface JwtPayload {
+  sub: string;           // userId
+  org: string;           // organizationId ← SECURE
+  role: string;          // user role
+  permissions: string[]; // fine-grained permissions
+  scope?: 'superadmin';  // for support/migrations
+  iat: number;
+  exp: number;
+}
+
+// Token generation
+const token = jwt.sign({
+  sub: user.id,
+  org: user.organizationId,
+  role: user.role,
+  permissions: user.permissions,
+  iat: Math.floor(Date.now() / 1000),
+  exp: Math.floor(Date.now() / 1000) + 3600
+}, SECRET_KEY);
+
+// Updated tenantMiddleware.ts
+export function tenantMiddleware(req: Request, res: Response, next: NextFunction) {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Missing token' });
+    
+    const payload = jwt.verify(token, SECRET_KEY) as JwtPayload;
+    
+    // Superadmin can bypass tenant scoping
+    if (payload.scope === 'superadmin') {
+      req.context = {
+        userId: payload.sub,
+        organizationId: null, // bypass filtering
+        role: payload.role,
+        permissions: payload.permissions,
+        isSuperAdmin: true
+      };
+      return next();
+    }
+    
+    // Regular user: locked to their organization
+    req.context = {
+      userId: payload.sub,
+      organizationId: payload.org, // ← From JWT, cannot be spoofed
+      role: payload.role,
+      permissions: payload.permissions,
+      isSuperAdmin: false
+    };
+    
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+```
+
+**Advantages**:
+- ✅ Cannot be spoofed (JWT-signed)
+- ✅ Stateless (no server lookup)
+- ✅ Audit-ready (org in token)
+- ✅ Scalable (no permission DB lookup per request)
+
+---
+
+### 2. Organization Slug + Unique Constraint
+
+```typescript
+// Organization.ts
+@Entity()
+export class Organization {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column({ unique: true })
+  slug: string; // e.g., "broadway-2025", "acme-corp"
+
+  @BeforeInsert()
+  generateSlug() {
+    if (!this.slug) {
+      this.slug = this.slugify(this.name);
+    }
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  validateSlug() {
+    const expectedSlug = this.slugify(this.name);
+    if (this.slug !== expectedSlug) {
+      throw new Error('Slug must be derived from organization name');
+    }
+  }
+
+  private slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+
+  @OneToMany(() => User, user => user.organization, { onDelete: 'CASCADE' })
+  users: User[];
+
+  @OneToMany(() => Show, show => show.organization, { onDelete: 'CASCADE' })
+  shows: Show[];
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
+}
+```
+
+**Benefits**:
+- Unique slug per org → URL-friendly domain mapping
+- Auto-generated → no manual entry
+- Validates consistency → name=slug relationship
+- Future-proof → app.broadway-2025.yourdomain.com
+
+---
+
+### 3. Soft Deletes + Cascade (Data Safety)
+
+```typescript
+// All entities: Add soft delete column
+@DeleteDateColumn()
+deletedAt?: Date;
+
+// Organization: Add cascade delete
+@OneToMany(() => Show, show => show.organization, { 
+  onDelete: 'CASCADE'  // ← Critical for safety
+})
+shows: Show[];
+
+// Query scope (auto-exclude soft-deleted)
+// Add to base service:
+protected getBaseQuery(repository: Repository<any>) {
+  return repository.find({
+    where: { deletedAt: IsNull() }
+  });
+}
+```
+
+**Why Critical**:
+- Soft deletes = audit trail + recovery
+- Cascade = when org deleted, all data goes too
+- Prevents orphaned data
+
+---
+
+### 4. DRY Query Builder: scopeByOrg() Utility
+
+**Problem**: Repeating `where: { organizationId }` in 50 services
+
+**Solution**: Single utility function
+
+```typescript
+// utils/tenantQueryBuilder.ts
+import { SelectQueryBuilder } from 'typeorm';
+
+export function scopeByOrg<T>(
+  queryBuilder: SelectQueryBuilder<T>,
+  orgId: string,
+  entityAlias: string = 'entity'
+): SelectQueryBuilder<T> {
+  // Skip if superadmin (orgId === null)
+  if (!orgId) return queryBuilder;
+  
+  return queryBuilder.andWhere(
+    `${entityAlias}.organizationId = :orgId`,
+    { orgId }
+  );
+}
+
+// Usage example:
+// showsService.ts
+async listForOrg(orgId: string, filters: any) {
+  let qb = this.showRepository.createQueryBuilder('show')
+    .where('show.status = :status', { status: 'active' })
+    .leftJoinAndSelect('show.finance', 'finance');
+  
+  qb = scopeByOrg(qb, orgId, 'show');
+  
+  return qb.getMany();
+}
+```
+
+**Benefits**:
+- Single source of truth
+- Easy to audit (find all org filtering)
+- One place to fix bugs
+
+---
+
+### 5. Super Admin Access (Support + Migrations)
+
+```typescript
+// JWT with superadmin scope
+const superAdminToken = jwt.sign({
+  sub: 'support-user-789',
+  org: null,  // ← null signals superadmin
+  scope: 'superadmin',
+  role: 'superadmin',
+  iat: Math.floor(Date.now() / 1000)
+}, SECRET_KEY);
+
+// In middleware: already handled above
+// If scope === 'superadmin', bypass org filtering
+
+// Use cases:
+// 1. Support: npm run support -- --org-id=abc123 (full access)
+// 2. Migration: npm run migrate:tenant-split (process all orgs)
+// 3. Debug: API calls without org restriction
+```
+
+**Caution**: Only give to trusted operations, log everything
+
+---
+
+### 6. Rate Limiting per Organization
+
+```typescript
+// middleware/orgRateLimiter.ts
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+
+const rateLimiters = new Map<string, RateLimiterMemory>();
+
+const DEFAULT_LIMIT = {
+  points: 100,        // 100 requests
+  duration: 60,       // per 60 seconds
+  blockDuration: 300  // block for 5 minutes if exceeded
+};
+
+export function orgRateLimiter(req: Request, res: Response, next: NextFunction) {
+  const orgId = req.context?.organizationId;
+  
+  // Superadmin bypass
+  if (req.context?.isSuperAdmin) return next();
+  
+  // No org = skip (public endpoint)
+  if (!orgId) return next();
+  
+  // Get or create limiter for this org
+  let limiter = rateLimiters.get(orgId);
+  if (!limiter) {
+    limiter = new RateLimiterMemory(DEFAULT_LIMIT);
+    rateLimiters.set(orgId, limiter);
+  }
+  
+  limiter
+    .consume(orgId, 1) // consume 1 point
+    .then(() => next())
+    .catch((error) => {
+      res.status(429).json({
+        error: 'Too many requests',
+        retryAfter: Math.ceil(error.msBeforeNext / 1000)
+      });
+    });
+}
+
+// Register in Express:
+// app.use('/api', orgRateLimiter);
+```
+
+**Why per-org**: Prevents one org's spike from affecting others
+
+---
+
+### 7. Analytics: Time-Series Optimization
+
+```typescript
+// EventLog.ts with indices
+@Entity()
+@Index(['organizationId', 'action', 'createdAt'])
+export class EventLog {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  organizationId: string;
+
+  @Column()
+  userId: string;
+
+  @Column()
+  action: string; // 'show.create', 'finance.update', etc.
+
+  @Column({ type: 'varchar' })
+  resourceType: string; // 'Show', 'FinanceRecord', etc.
+
+  @Column()
+  resourceId: string;
+
+  @Column({ type: 'json', nullable: true })
+  changes: Record<string, any>;
+
+  @Column({ type: 'timestamptz' })
+  createdAt: Date;
+}
+
+// analyticsService.ts - Efficient query
+async getActivityByDay(orgId: string, days: number = 30) {
+  const query = `
+    SELECT 
+      date_trunc('day', created_at) as day,
+      action,
+      COUNT(*) as count
+    FROM event_log
+    WHERE organization_id = $1
+      AND created_at > NOW() - INTERVAL '${days} days'
+    GROUP BY day, action
+    ORDER BY day DESC
+  `;
+  
+  return this.eventLogRepository.query(query, [orgId]);
+}
+```
+
+**Why**: Composite indices make time-series queries O(log n)
+
+---
+
+### 8. Export: Streaming + Background Jobs Strategy
+
+```typescript
+// v1 (Session 1): Streaming
+// analyticsService.ts
+async streamCSV(
+  orgId: string,
+  filters: any,
+  res: Response
+) {
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="export.csv"');
+  
+  const query = this.buildExportQuery(orgId, filters);
+  const stream = this.database.query(query);
+  
+  stream.pipe(res);
+}
+
+// v2 (Session 3+): Async with Jobs
+// exportService.ts (future)
+async requestExport(orgId: string, filters: any) {
+  const job = await jobQueue.add('export', {
+    orgId,
+    filters,
+    userId: req.context.userId
+  });
+  
+  return { jobId: job.id, status: 'queued' };
+}
+
+// GET /api/analytics/export/:jobId
+async getExportStatus(jobId: string) {
+  const job = await jobQueue.getJob(jobId);
+  
+  if (job.isCompleted()) {
+    return { status: 'ready', downloadUrl: `/downloads/${jobId}.csv` };
+  }
+  if (job.isFailed()) {
+    return { status: 'failed', error: job.failedReason };
+  }
+  
+  return { status: job.getState() };
+}
+```
+
+---
+
+### 9. Zero-Downtime Migration Strategy
+
+**Problem**: Adding `organizationId NOT NULL` breaks existing data
+
+**Solution**: Gradual backfill
+
+```typescript
+// Step 1: Create column (nullable)
+// migration: AddOrganizationIdToShows.ts
+@Column({ nullable: true })
+organizationId?: string;
+
+// Step 2: Deploy + backfill
+// scripts/backfill-org.ts
+async function backfillOrganizations() {
+  const usersWithoutOrg = await userRepository.find({
+    where: { organizationId: IsNull() }
+  });
+
+  for (const user of usersWithoutOrg) {
+    // Create default org per user
+    const org = await organizationService.create({
+      name: `${user.name}'s Organization`,
+      owner: user
+    });
+
+    user.organizationId = org.id;
+    await userRepository.save(user);
+    
+    // Update all user's data
+    await showRepository.update(
+      { userId: user.id },
+      { organizationId: org.id }
+    );
+    
+    console.log(`✅ Backfilled ${user.email} → ${org.id}`);
+  }
+}
+
+// Run: npm run backfill:org
+
+// Step 3: After verification (1-2 days later)
+// migration: MakeOrganizationIdNotNull.ts
+ALTER TABLE shows ALTER COLUMN organization_id SET NOT NULL;
+```
+
+**Why Gradual**: 
+- No data loss
+- Can rollback if needed
+- Auditability
+
+---
+
+### 10. Testing: Organization Factory
+
+```typescript
+// tests/factories/organization.factory.ts
+import { OrganizationService } from 'src/services/OrganizationService';
+
+export async function createTestOrg(
+  name: string = 'Test Org',
+  overrides: Partial<Organization> = {}
+) {
+  return organizationService.create({
+    name,
+    slug: `test-${Date.now()}`,
+    ...overrides
+  });
+}
+
+export async function createMultiTenantScenario() {
+  const org1 = await createTestOrg('Broadway Co');
+  const org2 = await createTestOrg('Off-Broadway Ltd');
+  
+  const user1 = await createTestUser('alice@broadway.com', { 
+    organizationId: org1.id 
+  });
+  const user2 = await createTestUser('bob@offbroadway.com', { 
+    organizationId: org2.id 
+  });
+  
+  return { org1, org2, user1, user2 };
+}
+
+// In tests:
+it('should not leak data between orgs', async () => {
+  const { org1, org2, user1, user2 } = await createMultiTenantScenario();
+  
+  const org1Shows = await showService.listForOrg(org1.id);
+  const org2Shows = await showService.listForOrg(org2.id);
+  
+  expect(org1Shows).not.toContain(any show from org2);
+});
+```
+
+---
+
 ## 🚀 IMPLEMENTATION ROADMAP
 
 ### Session 1: Multi-Organization Foundation (3-4 hours)
 
+**WITH CRITICAL SECURITY ENHANCEMENTS**
+
 ```
 Time    Task
-0:00    1. Create Organization entity
-0:30    2. Create migration
-0:45    3. Create OrganizationService
-1:30    4. Implement tenant middleware
-2:00    5. Update existing entities with FK
-2:30    6. Create API endpoints (5 new)
-3:00    7. Write tests
-3:45    8. Integration testing
+0:00    1. Update JWT generation (add organizationId + scope)
+0:15    2. Update tenantMiddleware.ts (JWT-based extraction)
+0:30    3. Create Organization entity (with slug validation)
+1:00    4. Create migration (with CASCADE, soft delete)
+1:15    5. Create OrganizationService (CRUD + backfill helpers)
+1:45    6. Create scopeByOrg() utility (for DRY queries)
+2:00    7. Implement orgRateLimiter middleware
+2:15    8. Update existing services (add scoping)
+2:45    9. Create API endpoints (5 new)
+3:15    10. Write comprehensive tests (with org factory)
+3:45    11. Integration testing (multi-org isolation)
 4:00    ✅ Commit & document
 ```
 
@@ -459,6 +943,50 @@ Time    Task
 - ✅ All queries properly scoped
 - ✅ No cross-org data leaks
 - ✅ All tests passing
+
+---
+
+### Session 1 Files to Create/Modify
+
+**Security-First Approach**:
+
+```typescript
+// Step 1: Update JWT in auth.service.ts
+// Before token generation, ensure:
+const payload: JwtPayload = {
+  sub: user.id,
+  org: user.organizationId,  // ← ADDED
+  role: user.role,
+  permissions: calculatePermissions(user.role),  // ← ADDED
+  scope: user.isSuperAdmin ? 'superadmin' : undefined
+};
+
+// Step 2: Replace tenantMiddleware.ts completely
+// Use JWT payload instead of headers
+
+// Step 3: Create scopeByOrg() in utils/
+// Use in ALL service queries
+
+// Step 4: Add orgRateLimiter to Express
+app.use(tenantMiddleware);
+app.use(orgRateLimiter);
+app.use('/api', routes);
+
+// Step 5: Organization entity validations
+@BeforeInsert()
+@BeforeUpdate()
+validateAndSlugify() { ... }
+
+// Step 6: All FK entities add @DeleteDateColumn()
+```
+
+**Expected Result After Session 1**:
+- ✅ JWT-based tenant identification (no headers)
+- ✅ Organization with unique slug
+- ✅ Soft deletes + CASCADE
+- ✅ DRY query scoping
+- ✅ Rate limiting per org
+- ✅ 100% multi-org isolation
 
 ---
 
@@ -777,16 +1305,218 @@ Check: Test setup assigns roles before API calls
 
 ---
 
+## 🔒 DEPLOYMENT & AUDIT STRATEGY
+
+### Zero-Downtime Checklist
+
+Before deploying Session 1 to production:
+
+```
+PHASE 1: Preparation (Thursday)
+  ☐ Add JWT claim generation logic (backward compatible)
+  ☐ Deploy with nullable organizationId columns
+  ☐ Enable dual-path: header-based (old) + JWT (new)
+  ☐ Start backfilling in background
+
+PHASE 2: Verification (Friday)
+  ☐ Verify all backfills completed
+  ☐ Smoke test multi-org scenarios
+  ☐ Check tenant isolation in staging
+  ☐ Load testing with multiple orgs
+
+PHASE 3: Cutover (Monday)
+  ☐ Make organizationId NOT NULL
+  ☐ Remove header-based fallback
+  ☐ Enable rate limiter
+  ☐ Monitor for errors (24h)
+
+ROLLBACK PLAN (If issues):
+  ☐ Revert to header-based auth
+  ☐ Add nullable column back
+  ☐ Run backfill reversal script
+  ☐ No data loss (soft delete strategy)
+```
+
+### Audit & Monitoring
+
+```typescript
+// Log all org operations
+eventLog.action === 'organization.created'
+eventLog.action === 'organization.deleted'
+eventLog.action === 'user.org.assigned'
+eventLog.action === 'auth.superadmin.used'
+
+// Monitor these metrics:
+- Requests per org over time
+- Rate limit violations
+- Tenant isolation breaches (should be 0)
+- Backfill progress
+- JWT decode errors
+```
+
+---
+
+## 🚨 COMMON PITFALLS TO AVOID
+
+### ❌ Mistake 1: Querying without org scope
+
+```typescript
+// ❌ DANGEROUS
+const shows = await showRepository.find();
+
+// ✅ CORRECT
+const shows = await showRepository.find({
+  where: { organizationId: req.context.organizationId }
+});
+
+// 🚀 BEST (using utility)
+const shows = await this.scopeByOrg(
+  this.showRepository.createQueryBuilder('show'),
+  req.context.organizationId
+).getMany();
+```
+
+### ❌ Mistake 2: Forgetting CASCADE on delete
+
+```typescript
+// ❌ DANGEROUS
+@OneToMany(() => Show, show => show.organization)
+shows: Show[];
+
+// ✅ CORRECT
+@OneToMany(() => Show, show => show.organization, {
+  onDelete: 'CASCADE'  // ← Auto-delete child records
+})
+shows: Show[];
+```
+
+### ❌ Mistake 3: Hardcoding organization in tests
+
+```typescript
+// ❌ DANGEROUS
+const show = await showService.create({
+  title: 'Test Show',
+  organizationId: 'hardcoded-org-id'
+});
+
+// ✅ CORRECT
+const testOrg = await createTestOrg('Test');
+const show = await showService.create({
+  title: 'Test Show',
+  organizationId: testOrg.id
+});
+```
+
+### ❌ Mistake 4: Allowing org change via API
+
+```typescript
+// ❌ DANGEROUS
+PUT /api/shows/:id
+{
+  title: 'New Title',
+  organizationId: 'hacker-org-id'  // ← Can change org!
+}
+
+// ✅ CORRECT
+Immutable: organizationId comes from JWT, cannot change
+PUT /api/shows/:id
+{
+  title: 'New Title'
+  // organizationId is determined by auth context
+}
+```
+
+### ❌ Mistake 5: Not validating slug uniqueness
+
+```typescript
+// ❌ DANGEROUS
+async createOrganization(name: string) {
+  return this.orgRepository.create({
+    name,
+    slug: name.toLowerCase()
+  }).save();
+  // Fails if duplicate slug exists (but no index!)
+}
+
+// ✅ CORRECT
+@Column({ unique: true, index: true })
+slug: string;
+
+// With validation
+@BeforeInsert()
+validateSlug() {
+  if (this.slug !== this.slugify(this.name)) {
+    throw new Error('Invalid slug');
+  }
+}
+```
+
+---
+
+## 📊 SUCCESS METRICS FOR FASE 7
+
+### Code Quality (Verify After Session 1)
+
+```
+✅ 0 TypeScript errors
+✅ npm run test:run passes (all tests)
+✅ No unused imports
+✅ ESLint clean
+✅ No console.log in production code
+✅ Proper error handling (try/catch)
+```
+
+### Security Metrics
+
+```
+✅ All org-scoped queries use scopeByOrg()
+✅ No org ID in headers (only JWT)
+✅ Rate limiter active for all orgs
+✅ Soft deletes implemented
+✅ CASCADE deletes configured
+```
+
+### Multi-Tenant Isolation
+
+```
+✅ Org A cannot see Org B data
+✅ Org A cannot modify Org B records
+✅ User A in Org A cannot access Org B APIs
+✅ Superadmin can access any org (logged)
+✅ Rate limits per org (not global)
+```
+
+### Testing Coverage
+
+```
+✅ 50+ organization tests
+✅ 30+ multi-tenant isolation tests
+✅ 20+ permission tests
+✅ 100% critical path coverage
+✅ All edge cases covered
+```
+
+---
+
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║                      ✨ READY FOR FASE 7! ✨                             ║
+║          ✨ ENTERPRISE-GRADE FASE 7 - PRODUCTION READY! ✨              ║
 ║                                                                           ║
-║                   Estimated Duration: 2-3 weeks                          ║
-║                   Expected Output: 4,500+ LOC                            ║
-║                   Success Criteria: All listed above ✅                  ║
+║                   Duration: 2-3 weeks (12-15 hours)                      ║
+║                   Output: 4,500+ LOC + Security                          ║
+║                   Status: 🚀 Ready to Execute                            ║
 ║                                                                           ║
-║                  Questions? Review referenced documents                  ║
-║                  Ready to start? Let's go! 🚀                            ║
+║              Key Differences from v1:                                     ║
+║              • JWT-based tenant identification (not headers)              ║
+║              • Organization slug validation                               ║
+║              • Soft deletes + CASCADE                                     ║
+║              • DRY query scoping utility                                  ║
+║              • Rate limiting per organization                             ║
+║              • Zero-downtime deployment strategy                          ║
+║              • Comprehensive audit logging                                ║
+║              • Production-hardened from day 1                             ║
+║                                                                           ║
+║                  Next: Begin Session 1 (3-4 hours)                       ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 

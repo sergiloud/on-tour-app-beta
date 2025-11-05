@@ -25,8 +25,8 @@ router.get(
     try {
       const limit = parseInt(req.query.limit as string) || 100;
       const offset = parseInt(req.query.offset as string) || 0;
-      const status = req.query.status as string | undefined;
-      const severity = req.query.severity as string | undefined;
+      const status = (req.query.status as string) || undefined;
+      const severity = (req.query.severity as string) || undefined;
 
       const startDate = req.query.startDate
         ? new Date(req.query.startDate as string)
@@ -45,12 +45,14 @@ router.get(
       });
 
       res.json(result);
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to fetch audit logs',
         message: err.message,
       });
+      return;
     }
   }
 );
@@ -72,12 +74,14 @@ router.get(
       }
 
       res.json(log);
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to fetch audit log',
         message: err.message,
       });
+      return;
     }
   }
 );
@@ -101,7 +105,7 @@ router.get(
 
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
-      const action = req.query.action as string | undefined;
+      const action = (req.query.action as string) || undefined;
 
       const result = await auditService.getUserAuditLog(userId, organizationId, {
         limit,
@@ -110,12 +114,14 @@ router.get(
       });
 
       res.json(result);
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to fetch user audit logs',
         message: err.message,
       });
+      return;
     }
   }
 );
@@ -130,7 +136,7 @@ router.get(
   async (req: AuditRequest, res: Response): Promise<void> => {
     try {
       const { resourceId } = req.params;
-      const resourceType = (req.query.resourceType as string) || 'unknown';
+      const resourceType = ((req.query.resourceType as string) || 'unknown');
       const organizationId = req.context?.organizationId;
 
       if (!organizationId) {
@@ -152,12 +158,14 @@ router.get(
       );
 
       res.json(result);
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to fetch resource audit logs',
         message: err.message,
       });
+      return;
     }
   }
 );
@@ -188,12 +196,14 @@ router.get(
       });
 
       res.json(result);
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to search audit logs',
         message: err.message,
       });
+      return;
     }
   }
 );
@@ -217,12 +227,14 @@ router.get(
       const stats = await auditService.getStatistics(organizationId);
 
       res.json(stats);
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to get audit statistics',
         message: err.message,
       });
+      return;
     }
   }
 );
@@ -252,12 +264,14 @@ router.post(
       });
 
       res.json(report);
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to generate audit report',
         message: err.message,
       });
+      return;
     }
   }
 );
@@ -285,12 +299,14 @@ router.delete(
         message: `Deleted ${deletedCount} old audit logs`,
         deletedCount,
       });
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to clear old audit logs',
         message: err.message,
       });
+      return;
     }
   }
 );
@@ -312,12 +328,14 @@ router.delete(
       }
 
       res.json({ message: 'Audit log deleted' });
+      return;
     } catch (error: unknown) {
       const err = error as Error;
       res.status(500).json({
         error: 'Failed to delete audit log',
         message: err.message,
       });
+      return;
     }
   }
 );

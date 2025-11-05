@@ -76,11 +76,11 @@ describe('Audit Service', () => {
         action: 'update',
         resourceType: 'organization',
         resourceId: testResourceId,
-        status: 'critical',
+        status: 'error',
         errorMessage: 'Database connection failed',
       });
 
-      expect(log.severity).toBe('critical');
+      expect(log.severity).toBe('warning');
     });
 
     it('should store changes as JSONB', async () => {

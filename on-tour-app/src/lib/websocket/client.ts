@@ -66,7 +66,7 @@ class WebSocketClient {
         // Setup event listeners
         this.socket.on('connect', () => {
           console.log('WebSocket connected');
-          
+
           // Join as user
           this.socket!.emit('user:join', { userId, username, email });
           resolve();

@@ -36,7 +36,7 @@ class ApiClient {
 
     // Setup interceptors
     this.setupInterceptors();
-    
+
     // Load token from localStorage
     this.token = localStorage.getItem('auth_token');
     if (this.token) {
@@ -146,7 +146,7 @@ class ApiClient {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status || 500;
       const errorData = error.response?.data as ApiErrorResponse;
-      
+
       return {
         statusCode,
         error: errorData?.error || 'Unknown error',

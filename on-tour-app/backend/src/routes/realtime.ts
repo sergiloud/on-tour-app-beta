@@ -16,7 +16,7 @@ const router = Router();
 router.get('/users/online', (req: Request, res: Response) => {
   const onlineCount = webSocketService.getOnlineUsersCount();
   const onlineUsers = webSocketService.getOnlineUsers();
-  
+
   res.json({
     statusCode: 200,
     data: {
@@ -30,7 +30,7 @@ router.get('/users/online', (req: Request, res: Response) => {
 router.get('/flights/active', (req: Request, res: Response) => {
   const activeFlights = flightUpdateService.getActiveFlights();
   const flightCount = flightUpdateService.getFlightCount();
-  
+
   res.json({
     statusCode: 200,
     data: {

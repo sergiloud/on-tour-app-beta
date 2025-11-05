@@ -10,7 +10,7 @@ const options = {
       version: '2.0.0',
       description: `
         Comprehensive REST API for managing tours, shows, finance, travel, flight bookings, and payments.
-        
+
         ### Features
         - **Shows Management**: Create, list, update, delete, and search shows
         - **Finance Tracking**: Income/expense management with settlements
@@ -18,7 +18,7 @@ const options = {
         - **Flight Integration**: Amadeus flight search, booking, and status tracking
         - **Payment Processing**: Stripe payment intent, confirmation, refunds
         - **Email Notifications**: Template-based email system for confirmations and alerts
-        
+
         ### Authentication
         All endpoints require JWT Bearer token authentication (except health check).
         Get a token from your authentication service.

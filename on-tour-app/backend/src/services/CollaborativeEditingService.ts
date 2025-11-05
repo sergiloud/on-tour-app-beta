@@ -67,7 +67,7 @@ class CollaborativeEditingService {
     };
 
     this.documents.set(document.id, document);
-    
+
     // Initialize session
     this.documentSessions.set(document.id, {
       documentId: document.id,
@@ -135,7 +135,7 @@ class CollaborativeEditingService {
    */
   public requestLock(documentId: string, userId: string): boolean {
     const currentLock = this.documentLocks.get(documentId);
-    
+
     if (currentLock && currentLock !== userId) {
       return false; // Already locked by someone else
     }
@@ -150,7 +150,7 @@ class CollaborativeEditingService {
    */
   public releaseLock(documentId: string, userId: string): void {
     const currentLock = this.documentLocks.get(documentId);
-    
+
     if (currentLock === userId) {
       this.documentLocks.delete(documentId);
       logger.debug(`Lock released on document ${documentId}`);

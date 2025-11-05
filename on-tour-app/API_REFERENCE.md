@@ -27,6 +27,7 @@ GET /health
 ```
 
 **Response** (200):
+
 ```json
 {
   "status": "ok",
@@ -42,17 +43,20 @@ GET /health
 Base path: `/api/shows`
 
 #### List Shows
+
 ```
 GET /api/shows
 ```
 
 **Query Parameters**:
+
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Results per page (default: 20)
 - `status` (optional): Filter by status (draft, scheduled, active, completed, cancelled)
 - `search` (optional): Search by title
 
 **Response** (200):
+
 ```json
 {
   "data": [
@@ -81,11 +85,13 @@ GET /api/shows
 ```
 
 #### Get Show Details
+
 ```
 GET /api/shows/:id
 ```
 
 #### Create Show
+
 ```
 POST /api/shows
 Content-Type: application/json
@@ -105,6 +111,7 @@ Content-Type: application/json
 ```
 
 **Response** (201):
+
 ```json
 {
   "id": "new-uuid",
@@ -114,6 +121,7 @@ Content-Type: application/json
 ```
 
 #### Update Show
+
 ```
 PATCH /api/shows/:id
 Content-Type: application/json
@@ -126,6 +134,7 @@ Content-Type: application/json
 ```
 
 #### Delete Show
+
 ```
 DELETE /api/shows/:id
 ```
@@ -133,16 +142,19 @@ DELETE /api/shows/:id
 **Response** (204): No content
 
 #### Search Shows
+
 ```
 GET /api/shows/search?query=festival&type=festival
 ```
 
 #### Get Show Statistics
+
 ```
 GET /api/shows/:id/stats
 ```
 
 **Response** (200):
+
 ```json
 {
   "showId": "uuid",
@@ -160,6 +172,7 @@ GET /api/shows/:id/stats
 ```
 
 #### More Shows endpoints...
+
 (Total: 14 endpoints)
 
 ---
@@ -169,17 +182,20 @@ GET /api/shows/:id/stats
 Base path: `/api/finance`
 
 #### Get Finance Records for Show
+
 ```
 GET /api/finance/:showId
 ```
 
 **Query Parameters**:
+
 - `type` (optional): Filter by type (income, expense)
 - `status` (optional): Filter by status (pending, approved, rejected)
 - `startDate` (optional): Date range start
 - `endDate` (optional): Date range end
 
 **Response** (200):
+
 ```json
 [
   {
@@ -199,6 +215,7 @@ GET /api/finance/:showId
 ```
 
 #### Create Finance Record
+
 ```
 POST /api/finance
 Content-Type: application/json
@@ -216,16 +233,19 @@ Content-Type: application/json
 ```
 
 #### Approve Finance Record
+
 ```
 PATCH /api/finance/:recordId/approve
 ```
 
 #### Get Finance Report
+
 ```
 GET /api/finance/:showId/report
 ```
 
 **Response** (200):
+
 ```json
 {
   "showId": "uuid",
@@ -242,6 +262,7 @@ GET /api/finance/:showId/report
 ```
 
 #### Create Settlement
+
 ```
 POST /api/finance/settlements
 Content-Type: application/json
@@ -266,11 +287,13 @@ Content-Type: application/json
 Base path: `/api/travel`
 
 #### Get Itineraries
+
 ```
 GET /api/travel/itineraries?showId=show-uuid
 ```
 
 #### Create Itinerary
+
 ```
 POST /api/travel/itineraries
 Content-Type: application/json
@@ -291,6 +314,7 @@ Content-Type: application/json
 ```
 
 #### Update Itinerary
+
 ```
 PATCH /api/travel/itineraries/:id
 ```
@@ -302,6 +326,7 @@ PATCH /api/travel/itineraries/:id
 Base path: `/api/amadeus`
 
 #### Search Flights
+
 ```
 POST /api/amadeus/search
 Content-Type: application/json
@@ -322,6 +347,7 @@ Content-Type: application/json
 ```
 
 **Response** (200):
+
 ```json
 {
   "flightOffers": [
@@ -349,6 +375,7 @@ Content-Type: application/json
 ```
 
 #### Confirm Flight Offer
+
 ```
 POST /api/amadeus/confirm
 Content-Type: application/json
@@ -359,6 +386,7 @@ Content-Type: application/json
 ```
 
 #### Create Booking
+
 ```
 POST /api/amadeus/book
 Content-Type: application/json
@@ -377,6 +405,7 @@ Content-Type: application/json
 ```
 
 #### Get Flight Status
+
 ```
 GET /api/amadeus/status/:carrierCode/:flightNumber/:date
 ```
@@ -384,6 +413,7 @@ GET /api/amadeus/status/:carrierCode/:flightNumber/:date
 Example: `/api/amadeus/status/DL/123/2025-07-01`
 
 #### Get Airport Info
+
 ```
 GET /api/amadeus/airport/:iataCode
 ```
@@ -391,6 +421,7 @@ GET /api/amadeus/airport/:iataCode
 Example: `/api/amadeus/airport/JFK`
 
 #### Get Airline Info
+
 ```
 GET /api/amadeus/airline/:carrierCode
 ```
@@ -398,11 +429,13 @@ GET /api/amadeus/airline/:carrierCode
 Example: `/api/amadeus/airline/DL`
 
 #### Get Seat Availability
+
 ```
 POST /api/amadeus/seat-availability/:flightOfferId
 ```
 
 #### Check Flight Availability (Batch)
+
 ```
 POST /api/amadeus/availability
 Content-Type: application/json
@@ -424,6 +457,7 @@ Content-Type: application/json
 Base path: `/api/stripe`
 
 #### Create Payment Intent
+
 ```
 POST /api/stripe/payment-intent
 Content-Type: application/json
@@ -438,6 +472,7 @@ Content-Type: application/json
 ```
 
 **Response** (201):
+
 ```json
 {
   "id": "pi_xxx",
@@ -452,6 +487,7 @@ Content-Type: application/json
 ```
 
 #### Confirm Payment
+
 ```
 POST /api/stripe/confirm-payment
 Content-Type: application/json
@@ -463,11 +499,13 @@ Content-Type: application/json
 ```
 
 #### Get Payment Intent
+
 ```
 GET /api/stripe/payment-intent/:paymentIntentId
 ```
 
 #### Create Customer
+
 ```
 POST /api/stripe/customer
 Content-Type: application/json
@@ -480,11 +518,13 @@ Content-Type: application/json
 ```
 
 #### Get Customer
+
 ```
 GET /api/stripe/customer/:customerId
 ```
 
 #### Create Transfer
+
 ```
 POST /api/stripe/transfer
 Content-Type: application/json
@@ -498,6 +538,7 @@ Content-Type: application/json
 ```
 
 #### Create Refund
+
 ```
 POST /api/stripe/refund
 Content-Type: application/json
@@ -510,6 +551,7 @@ Content-Type: application/json
 ```
 
 #### Handle Settlement
+
 ```
 POST /api/stripe/settlement
 Content-Type: application/json
@@ -522,19 +564,17 @@ Content-Type: application/json
 ```
 
 #### Get Account Balance
+
 ```
 GET /api/stripe/balance
 ```
 
 **Response** (200):
+
 ```json
 {
-  "available": [
-    { "amount": 500000, "currency": "USD" }
-  ],
-  "pending": [
-    { "amount": 100000, "currency": "USD" }
-  ]
+  "available": [{ "amount": 500000, "currency": "USD" }],
+  "pending": [{ "amount": 100000, "currency": "USD" }]
 }
 ```
 
@@ -547,6 +587,7 @@ GET /api/stripe/balance
 Base path: `/api/email`
 
 #### Send Generic Email
+
 ```
 POST /api/email/send
 Content-Type: application/json
@@ -562,6 +603,7 @@ Content-Type: application/json
 ```
 
 #### Send Booking Confirmation
+
 ```
 POST /api/email/booking
 Content-Type: application/json
@@ -579,6 +621,7 @@ Content-Type: application/json
 ```
 
 #### Send Event Reminder
+
 ```
 POST /api/email/event-reminder
 Content-Type: application/json
@@ -595,6 +638,7 @@ Content-Type: application/json
 ```
 
 #### Send Invoice
+
 ```
 POST /api/email/invoice
 Content-Type: application/json
@@ -611,6 +655,7 @@ Content-Type: application/json
 ```
 
 #### Send Settlement Report
+
 ```
 POST /api/email/settlement-report
 Content-Type: application/json
@@ -630,6 +675,7 @@ Content-Type: application/json
 ```
 
 #### Send Alert
+
 ```
 POST /api/email/alert
 Content-Type: application/json
@@ -651,6 +697,7 @@ Content-Type: application/json
 All errors follow this format:
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "Validation Error",
@@ -665,6 +712,7 @@ All errors follow this format:
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "Unauthorized",
@@ -674,6 +722,7 @@ All errors follow this format:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "Not Found",
@@ -683,6 +732,7 @@ All errors follow this format:
 ```
 
 ### 500 Internal Server Error
+
 ```json
 {
   "error": "Internal Server Error",
@@ -706,16 +756,19 @@ All errors follow this format:
 ## Webhook Events
 
 ### Payment Events
+
 - `payment_intent.created`
 - `payment_intent.succeeded`
 - `payment_intent.payment_failed`
 
 ### Settlement Events
+
 - `settlement.started`
 - `settlement.completed`
 - `settlement.failed`
 
 ### Flight Events
+
 - `flight_booked`
 - `flight_status_changed`
 
@@ -724,18 +777,20 @@ All errors follow this format:
 ## API Client Examples
 
 ### JavaScript/TypeScript
+
 ```typescript
 const response = await fetch('http://localhost:3000/api/shows', {
   method: 'GET',
   headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  }
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  },
 });
 const data = await response.json();
 ```
 
 ### cURL
+
 ```bash
 curl -X GET http://localhost:3000/api/shows \
   -H "Authorization: Bearer $TOKEN" \
@@ -743,6 +798,7 @@ curl -X GET http://localhost:3000/api/shows \
 ```
 
 ### Python
+
 ```python
 import requests
 
@@ -765,6 +821,6 @@ data = response.json()
 
 ---
 
-*Last Updated: November 4, 2025*  
-*API Version: 2.0.0*  
-*Total Endpoints: 41*
+_Last Updated: November 4, 2025_  
+_API Version: 2.0.0_  
+_Total Endpoints: 41_

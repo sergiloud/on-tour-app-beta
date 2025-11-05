@@ -59,7 +59,7 @@ class FlightUpdateService {
 
     // Simulate flight status updates (in production, call real API)
     const update = this.generateFlightUpdate(flight);
-    
+
     // Broadcast to all subscribed clients
     webSocketService.updateFlight(update);
 
@@ -76,7 +76,7 @@ class FlightUpdateService {
   private generateFlightUpdate(flight: FlightTrackingData): FlightUpdate {
     const now = new Date().getTime();
     const scheduledDeparture = new Date(flight.scheduledDeparture).getTime();
-    
+
     // Determine flight status based on time
     let status: 'on-time' | 'delayed' | 'cancelled' | 'boarding' | 'departed' | 'arrived';
     let delay = 0;

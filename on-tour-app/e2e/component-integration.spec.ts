@@ -32,7 +32,7 @@ test.describe('Component Integration Tests', () => {
 
       // Check for loading indicator
       const loadingIndicator = await page.locator('[data-testid="loading-indicator"]');
-      
+
       if (await loadingIndicator.isVisible({ timeout: 100 }).catch(() => false)) {
         // Loading state was visible
         expect(true).toBeTruthy();
@@ -63,7 +63,7 @@ test.describe('Component Integration Tests', () => {
 
       // Click on first show
       const firstShow = await page.locator('[data-testid="show-card"]').first();
-      
+
       if (await firstShow.isVisible().catch(() => false)) {
         await firstShow.click();
 
@@ -78,7 +78,7 @@ test.describe('Component Integration Tests', () => {
 
       // Click create button
       const createButton = await page.locator('[data-testid="create-show-btn"]');
-      
+
       if (await createButton.isVisible().catch(() => false)) {
         await createButton.click();
 
@@ -89,7 +89,7 @@ test.describe('Component Integration Tests', () => {
         // Fill form
         await page.fill('[data-testid="show-title-input"]', 'Test Show');
         await page.fill('[data-testid="show-location-input"]', 'Test Venue');
-        
+
         // Submit form
         const submitButton = await page.locator('[data-testid="submit-btn"]');
         await submitButton.click();
@@ -107,7 +107,7 @@ test.describe('Component Integration Tests', () => {
 
       // Click delete button on first show
       const deleteButton = await page.locator('[data-testid="delete-show-btn"]').first();
-      
+
       if (await deleteButton.isVisible().catch(() => false)) {
         await deleteButton.click();
 
@@ -128,7 +128,7 @@ test.describe('Component Integration Tests', () => {
 
       // Open a show
       const firstShow = await page.locator('[data-testid="show-card"]').first();
-      
+
       if (await firstShow.isVisible().catch(() => false)) {
         await firstShow.click();
 
@@ -150,13 +150,13 @@ test.describe('Component Integration Tests', () => {
       await page.goto('http://localhost:5173/shows');
 
       const firstShow = await page.locator('[data-testid="show-card"]').first();
-      
+
       if (await firstShow.isVisible().catch(() => false)) {
         await firstShow.click();
 
         // Look for stats display
         const statsDisplay = await page.locator('[data-testid="finance-stats"]');
-        
+
         if (await statsDisplay.isVisible({ timeout: 5000 }).catch(() => false)) {
           // Verify stats are displayed
           const budgetStat = await page.locator('[data-testid="stat-budget"]');
@@ -172,7 +172,7 @@ test.describe('Component Integration Tests', () => {
 
       // Look for connection indicator
       const connectionIndicator = await page.locator('[data-testid="connection-status"]');
-      
+
       if (await connectionIndicator.isVisible({ timeout: 5000 }).catch(() => false)) {
         const status = await connectionIndicator.getAttribute('data-status');
         expect(['connected', 'disconnected', 'connecting']).toContain(status);
@@ -191,7 +191,7 @@ test.describe('Component Integration Tests', () => {
 
       // Make changes in one page
       const deleteButton = await page.locator('[data-testid="delete-show-btn"]').first();
-      
+
       if (await deleteButton.isVisible().catch(() => false)) {
         await deleteButton.click();
 
@@ -223,7 +223,7 @@ test.describe('Component Integration Tests', () => {
 
       // Wait for error
       const errorMessage = await page.locator('[data-testid="error-message"]');
-      
+
       if (await errorMessage.isVisible({ timeout: 5000 }).catch(() => false)) {
         const text = await errorMessage.textContent();
         expect(text).toBeTruthy();
@@ -262,7 +262,7 @@ test.describe('Component Integration Tests', () => {
 
       // Should redirect to login
       const loginForm = await page.locator('[data-testid="login-form"]');
-      
+
       if (await loginForm.isVisible({ timeout: 5000 }).catch(() => false)) {
         expect(true).toBeTruthy();
       }

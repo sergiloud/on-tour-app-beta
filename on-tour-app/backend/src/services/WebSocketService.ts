@@ -141,7 +141,7 @@ class WebSocketService {
 
     // Register socket connection
     this.socketUsers.set(socket.id, userId);
-    
+
     if (!this.userConnections.has(userId)) {
       this.userConnections.set(userId, new Set());
     }
@@ -313,7 +313,7 @@ class WebSocketService {
   private handleDocumentEdit(socket: Socket, data: any): void {
     const userId = this.socketUsers.get(socket.id);
     const user = this.userPresence.get(userId || '');
-    
+
     if (!userId || !user) return;
 
     const edit: CollaborativeEdit = {
@@ -346,7 +346,7 @@ class WebSocketService {
   private broadcastCursorPosition(socket: Socket, data: any): void {
     const userId = this.socketUsers.get(socket.id);
     const user = this.userPresence.get(userId || '');
-    
+
     if (!user) return;
 
     const room = `document:${data.documentId}`;
@@ -366,7 +366,7 @@ class WebSocketService {
   private broadcastTypingIndicator(socket: Socket, data: any): void {
     const userId = this.socketUsers.get(socket.id);
     const user = this.userPresence.get(userId || '');
-    
+
     if (!user) return;
 
     const room = data.documentId ? `document:${data.documentId}` : 'notifications';

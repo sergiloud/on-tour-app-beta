@@ -3,17 +3,20 @@
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Setup Environment
+
 ```bash
 # Create .env.local (or export VITE_API_URL)
 VITE_API_URL=http://localhost:3000/api
 ```
 
 ### 3. Start Development
+
 ```bash
 npm run dev          # Start frontend
 # In another terminal:
@@ -25,6 +28,7 @@ npm run dev:server   # Start backend (if needed)
 ## 📚 API Services
 
 ### Available Services
+
 ```typescript
 import {
   showsService,
@@ -33,11 +37,12 @@ import {
   amadeusService,
   stripeService,
   emailService,
-  apiClient
+  apiClient,
 } from '@/lib/api';
 ```
 
 ### Quick Example
+
 ```typescript
 // Get shows
 const response = await showsService.getShows({ page: 1, limit: 10 });
@@ -51,7 +56,7 @@ const newShow = await showsService.createShow({
   location: 'Venue',
   capacity: 500,
   budget: 50000,
-  currency: 'USD'
+  currency: 'USD',
 });
 
 // Get finance report
@@ -63,14 +68,9 @@ const report = await financeService.getReport(showId);
 ## ⚛️ React Hooks
 
 ### Query Hooks
+
 ```typescript
-import {
-  useShows,
-  useShow,
-  useShowStats,
-  useFinanceRecords,
-  useFinanceReport
-} from '@/lib/hooks';
+import { useShows, useShow, useShowStats, useFinanceRecords, useFinanceReport } from '@/lib/hooks';
 
 // Usage
 const { data, isLoading, error } = useShows();
@@ -81,13 +81,9 @@ const { data: report } = useFinanceReport(showId);
 ```
 
 ### Mutation Hooks
+
 ```typescript
-import {
-  useCreateShow,
-  useUpdateShow,
-  useDeleteShow,
-  useCreateFinanceRecord
-} from '@/lib/hooks';
+import { useCreateShow, useUpdateShow, useDeleteShow, useCreateFinanceRecord } from '@/lib/hooks';
 
 // Usage
 const { mutateAsync: createShow, isPending } = useCreateShow();
@@ -109,6 +105,7 @@ await deleteShow(showId);
 ## 🔌 Real-time Features
 
 ### WebSocket Connection
+
 ```typescript
 import { useWebSocket, useFlightUpdates, useNotifications } from '@/lib/hooks';
 
@@ -116,21 +113,22 @@ import { useWebSocket, useFlightUpdates, useNotifications } from '@/lib/hooks';
 const { isConnected } = useWebSocket({
   userId: user.id,
   username: user.username,
-  email: user.email
+  email: user.email,
 });
 
 // Subscribe to flight updates
-useFlightUpdates(flightId, (flight) => {
+useFlightUpdates(flightId, flight => {
   console.log('Flight status:', flight.status);
 });
 
 // Subscribe to notifications
-useNotifications((notification) => {
+useNotifications(notification => {
   console.log('New notification:', notification.message);
 });
 ```
 
 ### Collaborative Editing
+
 ```typescript
 const { editDocument, updateCursor, setTyping } = useDocumentCollaboration(docId);
 
@@ -149,6 +147,7 @@ setTyping(true);
 ## 🔐 Authentication
 
 ### Setup
+
 ```typescript
 import { AuthProvider, useAuth } from '@/lib/hooks';
 
@@ -159,6 +158,7 @@ import { AuthProvider, useAuth } from '@/lib/hooks';
 ```
 
 ### Usage
+
 ```typescript
 import { useAuth, useCurrentUser, useIsAuthenticated } from '@/lib/hooks';
 
@@ -192,7 +192,7 @@ export function Shows() {
   const { isAuthenticated } = useAuth();
   const { userId, username, email } = useCurrentUser();
   const { data: shows, isLoading, error } = useShows();
-  
+
   // Connect WebSocket
   const { isConnected } = useWebSocket({
     userId: userId || undefined,
@@ -218,11 +218,13 @@ export function Shows() {
 ## 🧪 E2E Tests
 
 ### Run All Tests
+
 ```bash
 npm run test:e2e
 ```
 
 ### Run Specific Test File
+
 ```bash
 npx playwright test e2e/api-integration.spec.ts
 npx playwright test e2e/realtime-features.spec.ts
@@ -230,16 +232,19 @@ npx playwright test e2e/component-integration.spec.ts
 ```
 
 ### Run with UI
+
 ```bash
 npx playwright test --ui
 ```
 
 ### Debug Mode
+
 ```bash
 npx playwright test --debug
 ```
 
 ### View Report
+
 ```bash
 npx playwright show-report
 ```
@@ -249,6 +254,7 @@ npx playwright show-report
 ## 🛠️ Common Tasks
 
 ### Make API Request
+
 ```typescript
 // Direct API call
 const response = await apiClient.get('/shows', { page: 1 });
@@ -261,6 +267,7 @@ const { data } = useShows({ page: 1 });
 ```
 
 ### Create a Show
+
 ```typescript
 // Service
 const show = await showsService.createShow(data);
@@ -271,6 +278,7 @@ const show = await mutateAsync(data);
 ```
 
 ### Handle Errors
+
 ```typescript
 try {
   const response = await showsService.getShows();
@@ -283,13 +291,14 @@ try {
 ```
 
 ### Subscribe to Real-time
+
 ```typescript
-webSocketClient.on('flight:updated', (flight) => {
+webSocketClient.on('flight:updated', flight => {
   console.log('Flight updated:', flight);
 });
 
 // In React
-useFlightUpdates(flightId, (flight) => {
+useFlightUpdates(flightId, flight => {
   console.log('Flight updated:', flight);
 });
 ```
@@ -319,22 +328,26 @@ useFlightUpdates(flightId, (flight) => {
 ## 🚨 Troubleshooting
 
 ### WebSocket Won't Connect
+
 - Check backend running on `http://localhost:3000`
 - Verify Socket.io enabled on backend
 - Check browser console for errors
 - Try clearing localStorage
 
 ### API Requests Return 401
+
 - Clear localStorage and re-login
 - Check token isn't expired
 - Verify `VITE_API_URL` is set correctly
 
 ### Type Errors
+
 - Import from `@/lib/api` or `@/lib/hooks`
 - Ensure AuthProvider wraps your app
 - Check React version compatibility
 
 ### E2E Tests Fail
+
 - Start backend server
 - Database connection working
 - Network connectivity good
@@ -345,6 +358,7 @@ useFlightUpdates(flightId, (flight) => {
 ## 📖 Documentation
 
 Full documentation available in:
+
 - `docs/FRONTEND_INTEGRATION_COMPLETE.md` - Complete API reference
 - `docs/E2E_TESTING_COMPLETE.md` - Full test documentation
 - `docs/ITERATION_1_COMPLETION_SUMMARY.md` - Overview and stats
@@ -353,16 +367,16 @@ Full documentation available in:
 
 ## 🎯 Quick Reference Table
 
-| Feature | Location | Example |
-|---------|----------|---------|
-| REST API | `lib/api/client.ts` | `apiClient.get('/shows')` |
-| Shows Service | `lib/api/services/shows.ts` | `showsService.getShows()` |
+| Feature         | Location                      | Example                       |
+| --------------- | ----------------------------- | ----------------------------- |
+| REST API        | `lib/api/client.ts`           | `apiClient.get('/shows')`     |
+| Shows Service   | `lib/api/services/shows.ts`   | `showsService.getShows()`     |
 | Finance Service | `lib/api/services/finance.ts` | `financeService.getRecords()` |
-| WebSocket | `lib/websocket/client.ts` | `webSocketClient.connect()` |
-| Shows Hooks | `lib/hooks/useShows.ts` | `useShows()` |
-| Finance Hooks | `lib/hooks/useFinance.ts` | `useFinanceRecords()` |
-| WebSocket Hooks | `lib/hooks/useWebSocket.ts` | `useWebSocket()` |
-| Auth | `lib/hooks/useAuth.ts` | `useAuth()` |
+| WebSocket       | `lib/websocket/client.ts`     | `webSocketClient.connect()`   |
+| Shows Hooks     | `lib/hooks/useShows.ts`       | `useShows()`                  |
+| Finance Hooks   | `lib/hooks/useFinance.ts`     | `useFinanceRecords()`         |
+| WebSocket Hooks | `lib/hooks/useWebSocket.ts`   | `useWebSocket()`              |
+| Auth            | `lib/hooks/useAuth.ts`        | `useAuth()`                   |
 
 ---
 

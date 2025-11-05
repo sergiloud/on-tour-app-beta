@@ -5,7 +5,7 @@ import { notificationService } from '../services/NotificationService.js';
 import { collaborativeEditingService } from '../services/CollaborativeEditingService.js';
 
 describe('Real-time Services', () => {
-  
+
   describe('WebSocketService', () => {
     it('should track online users', () => {
       const onlineCount = webSocketService.getOnlineUsersCount();
@@ -80,7 +80,7 @@ describe('Real-time Services', () => {
 
       flightUpdateService.startFlightTracking(flightData);
       flightUpdateService.stopFlightTracking('FL-002');
-      
+
       const activeFlights = flightUpdateService.getActiveFlights();
       const flight = activeFlights.find(f => f.flightId === 'FL-002');
       expect(flight).toBeUndefined();
@@ -219,7 +219,7 @@ describe('Real-time Services', () => {
     it('should add collaborator', () => {
       const doc = collaborativeEditingService.createDocument('user-1', 'Collab Doc');
       collaborativeEditingService.addCollaborator(doc.id, 'user-2');
-      
+
       const updated = collaborativeEditingService.getDocument(doc.id);
       expect(updated?.collaborators).toContain('user-2');
     });
@@ -242,7 +242,7 @@ describe('Real-time Services', () => {
     it('should track cursor positions', () => {
       const doc = collaborativeEditingService.createDocument('user-1', 'Cursor Doc');
       collaborativeEditingService.updateCursorPosition(doc.id, 'user-1', 'User One', 5, 10);
-      
+
       const cursors = collaborativeEditingService.getCursors(doc.id);
       expect(cursors.length).toBeGreaterThan(0);
       expect(cursors[0].userId).toBe('user-1');
@@ -254,7 +254,7 @@ describe('Real-time Services', () => {
       const doc = collaborativeEditingService.createDocument('user-1', 'History Doc');
       collaborativeEditingService.applyEdit(doc.id, 'user-1', 'insert', 'path', 'value1');
       collaborativeEditingService.applyEdit(doc.id, 'user-1', 'insert', 'path', 'value2');
-      
+
       const history = collaborativeEditingService.getEditHistory(doc.id);
       expect(history.length).toBe(2);
     });
@@ -262,7 +262,7 @@ describe('Real-time Services', () => {
     it('should undo edits', () => {
       const doc = collaborativeEditingService.createDocument('user-1', 'Undo Doc');
       collaborativeEditingService.applyEdit(doc.id, 'user-1', 'insert', 'path', 'value');
-      
+
       const undone = collaborativeEditingService.undo(doc.id);
       expect(undone).toBeDefined();
       expect(undone?.action).toBe('insert');
@@ -272,7 +272,7 @@ describe('Real-time Services', () => {
       const doc = collaborativeEditingService.createDocument('user-1', 'Redo Doc');
       collaborativeEditingService.applyEdit(doc.id, 'user-1', 'insert', 'path', 'value');
       collaborativeEditingService.undo(doc.id);
-      
+
       const redone = collaborativeEditingService.redo(doc.id);
       expect(redone).toBeDefined();
     });
@@ -280,7 +280,7 @@ describe('Real-time Services', () => {
     it('should get active users', () => {
       const doc = collaborativeEditingService.createDocument('user-1', 'Users Doc');
       collaborativeEditingService.addCollaborator(doc.id, 'user-2');
-      
+
       const activeUsers = collaborativeEditingService.getActiveUsers(doc.id);
       expect(activeUsers).toContain('user-1');
       expect(activeUsers).toContain('user-2');

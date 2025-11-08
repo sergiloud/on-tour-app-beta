@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-export type CalendarView = 'month'|'week'|'day'|'agenda';
+export type CalendarView = 'month'|'week'|'day'|'agenda'|'timeline';
 
 export type CalendarFilters = {
   kinds: { shows: boolean; travel: boolean };

@@ -93,6 +93,10 @@ const Shows: React.FC = () => {
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     let result = shows.filter(x => {
+      // Filter to only show real Shows (not Personal, Meeting, etc. events stored as Shows)
+      const btnType = (x as any).notes?.match(/__btnType:(\w+)/)?.[1];
+      if (btnType && btnType !== 'show') return false; // Skip non-show events
+
       if (!statusOn[x.status as keyof typeof statusOn]) return false;
       if (dateRange.from || dateRange.to) {
         const d = new Date(x.date).getTime();
@@ -139,6 +143,10 @@ const Shows: React.FC = () => {
   // counts per status under current non-status filters (so counts unaffected by turning status chips off show potential totals)
   const statusCounts = useMemo(() => {
     const base = shows.filter(x => {
+      // Filter to only show real Shows (not Personal, Meeting, etc. events stored as Shows)
+      const btnType = (x as any).notes?.match(/__btnType:(\w+)/)?.[1];
+      if (btnType && btnType !== 'show') return false; // Skip non-show events
+
       // exclude status gating; reuse other filters only
       if (dateRange.from || dateRange.to) {
         const d = new Date(x.date).getTime();

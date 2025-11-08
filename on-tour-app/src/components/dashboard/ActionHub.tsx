@@ -68,7 +68,13 @@ export const ActionHub: React.FC<{ kinds?: Kind[] }> = React.memo(({ kinds }) =>
     const DAY = 24 * 60 * 60 * 1000;
     const result: SmartAction[] = [];
 
-    shows.forEach((show: any) => {
+    // Filter to only include real shows (not Personal, Meeting, etc.)
+    const realShows = shows.filter((show: any) => {
+      const btnType = show.notes?.match(/__btnType:(\w+)/)?.[1];
+      return !btnType || btnType === 'show'; // Include if no btnType or if btnType is 'show'
+    });
+
+    realShows.forEach((show: any) => {
       const showDate = new Date(show.date).getTime();
       const daysUntil = Math.ceil((showDate - now) / DAY);
 

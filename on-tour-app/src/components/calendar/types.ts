@@ -1,4 +1,4 @@
-export type CalEventKind = 'show' | 'travel';
+export type CalEventKind = 'show' | 'travel' | 'meeting' | 'rehearsal' | 'break';
 
 // Shared calendar event type across month/week/day/agenda
 export type CalEvent = {
@@ -12,4 +12,18 @@ export type CalEvent = {
   start?: string; // ISO
   end?: string;   // ISO
   allDay?: boolean;
+  // Advanced calendar metadata (optional)
+  endDate?: string; // YYYY-MM-DD when event spans multiple days
+  color?: 'accent' | 'green' | 'red' | 'blue' | 'yellow' | 'purple';
+  pinned?: boolean;
+  notes?: string;
+  spanId?: string;
+  spanLength?: number;
+  spanIndex?: number;
+  spanStart?: boolean;
+  spanEnd?: boolean;
+  // Dependency/linking system
+  linkedTo?: string[]; // IDs of events this depends on (prerequisites)
+  linkedFrom?: string[]; // IDs of events that depend on this
+  linkType?: 'prerequisite' | 'sequence' | 'conflict'; // Type of relationship
 };

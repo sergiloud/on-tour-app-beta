@@ -1,14 +1,19 @@
 import React, { useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { announce } from '../../lib/announcer';
 import { t } from '../../lib/i18n';
 import StatusBadge from '../../ui/StatusBadge';
 import EventChip from './EventChip';
 import MorePopover from './MorePopover';
-import QuickAdd from './QuickAdd';
 import ContextMenu from './ContextMenu';
+import QuickEventCreator from './QuickEventCreator';
+import EventCreationSuccess from './EventCreationSuccess';
 import { trackEvent } from '../../lib/telemetry';
 import { useShows } from '../../hooks/useShows';
+import useSoundFeedback from '../../hooks/useSoundFeedback';
+import { calculateEventSpans, isMultiDayEvent } from '../../lib/eventSpanCalculator';
 import type { CalEvent } from './types';
+import type { EventButton } from './DraggableEventButtons';
 
 type Props = {
   grid: Array<Array<{ dateStr: string; inMonth: boolean; weekend: boolean }>>;
@@ -21,18 +26,24 @@ type Props = {
   tz?: string;
   onOpenDay?: (dateStr: string) => void;
   onMoveShow?: (showId: string, toDate: string, duplicate?: boolean) => void;
+  onDeleteShow?: (showId: string) => void; // delete when dragged outside grid
   onQuickAdd?: (dateStr: string) => void; // request to open quick add at date
   onQuickAddSave?: (dateStr: string, data: { city: string; country: string; fee?: number }) => void;
   ariaDescribedBy?: string; // id of hidden hint text
   heatmapMode?: 'none'|'financial'|'activity';
   shows?: Array<{ id: string; date: string; fee: number; status: string }>; // Add shows for financial calculations
+  onSpanAdjust?: (id: string, direction: 'start'|'end', delta: number) => void;
+  selectedEventIds?: Set<string>; // Multi-selection support
+  onMultiSelectEvent?: (eventId: string, isSelected: boolean) => void; // Multi-selection callback
 };
 
 const weekdays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, setSelectedDay, onOpen, locale = 'en-US', tz, onOpenDay, onMoveShow, onQuickAdd, onQuickAddSave, ariaDescribedBy, heatmapMode = 'none', shows = [] }) => {
+const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, setSelectedDay, onOpen, locale = 'en-US', tz, onOpenDay, onMoveShow, onDeleteShow, onQuickAdd, onQuickAddSave, ariaDescribedBy, heatmapMode = 'none', shows = [], onSpanAdjust, selectedEventIds = new Set(), onMultiSelectEvent }) => {
   const { shows: allShows } = useShows();
+  const soundFeedback = useSoundFeedback({ enabled: true, volume: 0.2 });
   const gridRef = useRef<HTMLDivElement|null>(null);
+  const dragCounterRef = useRef<{ [key: string]: number }>({});
   const [moreOpen, setMoreOpen] = React.useState(false);
   const [moreList, setMoreList] = React.useState<CalEvent[]>([]);
   const [moreDay, setMoreDay] = React.useState<string>('');
@@ -44,7 +55,14 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
   const [selectionStart, setSelectionStart] = React.useState<string>('');
   const [selectionEnd, setSelectionEnd] = React.useState<string>('');
   const [dragStart, setDragStart] = React.useState<string>('');
-  
+  const [quickCreatorOpen, setQuickCreatorOpen] = React.useState(false);
+  const [quickCreatorButton, setQuickCreatorButton] = React.useState<EventButton | undefined>(undefined);
+  const [quickCreatorDate, setQuickCreatorDate] = React.useState<string | undefined>(undefined);
+  const [successShow, setSuccessShow] = React.useState(false);
+  const [successButton, setSuccessButton] = React.useState<EventButton | undefined>(undefined);
+  const [successCity, setSuccessCity] = React.useState<string | undefined>(undefined);
+  const [successCountry, setSuccessCountry] = React.useState<string | undefined>(undefined);
+
   // Context menu state
   const [contextMenu, setContextMenu] = React.useState<{
     x: number;
@@ -52,6 +70,23 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
     dateStr: string;
     events: CalEvent[];
   } | null>(null);
+
+  // Resize feedback state
+  const [resizeFeedback, setResizeFeedback] = React.useState<{
+    active: boolean;
+    dateStr?: string;
+    delta?: number;
+    direction?: 'start' | 'end';
+  }>({ active: false });
+
+  // Resize preview state (for visual feedback during drag)
+  const [resizingInfo, setResizingInfo] = React.useState<{
+    active: boolean;
+    eventId?: string;
+    direction?: 'start' | 'end';
+    anchorDate?: string; // The date that doesn't move
+    currentHoverDate?: string; // Current date being hovered
+  }>({ active: false });
 
   useEffect(()=>{
     const root = gridRef.current; if (!root) return;
@@ -144,6 +179,8 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
     return () => root.removeEventListener('keydown', onKey);
   }, [gridRef.current]);
 
+
+
   // Context menu handler
   const handleContextMenu = (e: React.MouseEvent, dateStr: string) => {
     e.preventDefault();
@@ -235,15 +272,52 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
   };
 
   return (
-    <div className="glass rounded-xl overflow-hidden border border-white/10">
-      <div className="grid grid-cols-7 text-[11px] uppercase tracking-wide border-b border-white/10 py-1.5 px-2 sticky top-0 bg-ink-900/30 backdrop-blur supports-[backdrop-filter]:bg-ink-900/25">
-        {weekdays.map(w => (
-          <div key={w} role="columnheader" className="px-2">{t(`calendar.wd.${w.toLowerCase()}`) || w}</div>
+    <motion.div
+      ref={gridRef}
+      data-grid-calendar
+      className="glass rounded-2xl shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-white/6 via-white/3 to-white/1 hover:shadow-3xl"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+    >
+      <motion.div
+        className="grid grid-cols-7 text-[7px] md:text-[8px] uppercase tracking-[0.15em] px-2.5 md:px-3 py-3 md:py-3.5 bg-gradient-to-r from-white/6 via-white/4 to-white/2 font-semibold text-white/60"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        {weekdays.map((w, idx) => (
+          <motion.div
+            key={w}
+            role="columnheader"
+            className="px-0.5 md:px-1 text-white/60 font-medium text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2, delay: 0.1 + idx * 0.03 }}
+          >
+            {t(`calendar.wd.${w.toLowerCase()}`) || w}
+          </motion.div>
         ))}
-      </div>
-  <div role="grid" aria-label="Month" ref={gridRef} className="grid grid-cols-7 auto-rows-[minmax(7rem,1fr)]" {...(ariaDescribedBy ? { 'aria-describedby': ariaDescribedBy } : {})}>
+      </motion.div>
+      <motion.div
+        role="grid"
+        aria-label="Month"
+        ref={gridRef}
+        className="grid grid-cols-7 gap-1 md:gap-1.5 auto-rows-[6.5rem] md:auto-rows-[7rem] px-0 py-2 md:py-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        {...(ariaDescribedBy ? { 'aria-describedby': ariaDescribedBy } : {})}
+      >
         {grid.map((row, i) => (
-          <div role="row" className="contents" key={i}>
+          <motion.div
+            role="row"
+            className="contents"
+            key={i}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2, delay: 0.2 + i * 0.05 }}
+          >
             {row.map(cell => {
               const events = eventsByDay.get(cell.dateStr) || [];
               const active = selectedDay === cell.dateStr;
@@ -251,100 +325,383 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
               const weekdayLabel = new Date(cell.dateStr).toLocaleDateString(locale, { weekday: 'long', timeZone: tz });
               const dayNum = parseInt(cell.dateStr.slice(-2));
               const abbrev = new Date(cell.dateStr).toLocaleDateString(locale, { weekday: 'short', timeZone: tz }).slice(0,3);
+
+              // Handle drop logic (outside of motion.div to avoid Framer Motion drag event issues)
+              const handleCellDrop = (e: React.DragEvent<HTMLDivElement>) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Clean up drag counter
+                dragCounterRef.current[cell.dateStr] = 0;
+                setDragOverDay('');
+                setResizingInfo({ active: false });
+
+                let button: EventButton | null = null;
+
+                // First try the memory-stored button (most reliable)
+                try {
+                  const win = window as any;
+                  if (win.__draggedEventButton) {
+                    button = win.__draggedEventButton;
+                  }
+                } catch (err) {
+                  // Silently fail if not available
+                }
+
+                // Fallback: Try dataTransfer JSON
+                if (!button) {
+                  try {
+                    const jsonData = e.dataTransfer.getData('application/json');
+                    if (jsonData) {
+                      button = JSON.parse(jsonData);
+                    }
+                  } catch (err) {
+                    // Silently fail if not valid JSON
+                  }
+                }
+
+                // Fallback: Try dataTransfer plain text
+                if (!button) {
+                  try {
+                    const plainData = e.dataTransfer.getData('text/plain');
+                    if (plainData && plainData.startsWith('{')) {
+                      button = JSON.parse(plainData);
+                    }
+                  } catch (err) {
+                    // Silently fail if not valid JSON
+                  }
+                }
+
+                // Validate button
+                if (button && (button.type === 'show' || button.type === 'travel') && button.label && button.id) {
+                  setQuickCreatorButton(button);
+                  setQuickCreatorDate(cell.dateStr);
+                  setQuickCreatorOpen(true);
+                  announce((t('calendar.announce.dragDetected') || 'Event button detected on {d}').replace('{d}', cell.dateStr));
+                  trackEvent('cal.drag.detected', { buttonId: button.id, day: cell.dateStr });
+                  setDragOverDay('');
+                  return;
+                }
+
+                // Handle event resize (drag handles on edges)
+                const plainData = e.dataTransfer.getData('text/plain');
+
+                if (plainData && plainData.startsWith('resize:') && typeof onSpanAdjust === 'function') {
+                  // Format: resize:eventId:direction (eventId can contain colons, so direction is always the last part)
+                  const lastColonIndex = plainData.lastIndexOf(':');
+                  const direction = plainData.substring(lastColonIndex + 1);
+                  const eventIdWithPrefix = plainData.substring(7, lastColonIndex); // Remove 'resize:' prefix
+
+                  if (eventIdWithPrefix && (direction === 'start' || direction === 'end')) {
+                    // Find the original event to get its original date
+                    const originalEvent = Array.from(eventsByDay.values())
+                      .flat()
+                      .find(ev => ev.id === eventIdWithPrefix);
+
+                    if (originalEvent) {
+                      // For multi-day events, use the correct start/end date based on spanIndex
+                      let baseDate: Date;
+                      if (direction === 'start') {
+                        // For start resize, always use the first day of the span (spanIndex === 0)
+                        baseDate = new Date(originalEvent.date);
+                      } else {
+                        // For end resize, use the last day (spanIndex === spanLength - 1)
+                        if (originalEvent.endDate && originalEvent.spanIndex !== undefined && originalEvent.spanLength !== undefined && originalEvent.spanIndex !== originalEvent.spanLength - 1) {
+                          // This is a copy in the middle, use endDate instead
+                          baseDate = new Date(originalEvent.endDate);
+                        } else {
+                          baseDate = new Date(originalEvent.endDate || originalEvent.date);
+                        }
+                      }
+                      const newDate = new Date(cell.dateStr);
+                      const delta = Math.round(
+                        (newDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24)
+                      );
+
+                      // Show feedback before adjustment
+                      setResizeFeedback({
+                        active: true,
+                        dateStr: cell.dateStr,
+                        delta,
+                        direction: direction as 'start' | 'end',
+                      });
+
+                      // Call the callback with the adjustment
+                      onSpanAdjust(eventIdWithPrefix, direction as 'start' | 'end', delta);
+
+                      try { trackEvent('cal.span.adjust', { eventId: eventIdWithPrefix, direction, deltaDays: delta }); } catch {}
+
+                      // Hide feedback after a delay and clear resize info
+                      setTimeout(() => {
+                        setResizeFeedback({ active: false });
+                        setResizingInfo({ active: false });
+                      }, 1500);
+                    }
+                  }
+                  setDragOverDay('');
+                  setResizingInfo({ active: false });
+                  return;
+                }
+
+                // Fallback to existing show/travel move logic
+                const data = e.dataTransfer.getData('text/plain');
+                if (data && (data.startsWith('show:') || data.startsWith('travel:')) && typeof onMoveShow==='function') {
+                  // Pass the full event ID (with prefix) to the handler
+                  const duplicate = !!(e.ctrlKey || e.metaKey);
+                  onMoveShow(data, cell.dateStr, duplicate);
+                  try { trackEvent(duplicate? 'cal.drag.duplicate' : 'cal.drag.move', { id: data, day: cell.dateStr }); } catch {}
+                  announce((duplicate ? (t('calendar.announce.copied')||'Duplicated show to {d}') : (t('calendar.announce.moved')||'Moved show to {d}')).replace('{d}', cell.dateStr));
+                }
+                setDragOverDay('');
+              };
+
               return (
                 <div
                   key={cell.dateStr}
-                  role="gridcell"
-                  aria-label={`${weekdayLabel} ${dayNum}${isToday? ' • '+(t('common.today')||'Today'):''}${active? ' • '+(t('common.selected')||'Selected'):''}, ${events.length} ${events.length===1?(t('calendar.event.one')||'event'):(t('calendar.event.many')||'events')}`}
-                  className={`relative p-2 border border-white/5 ${cell.weekend ? 'bg-white/[0.02]' : ''} ${!cell.inMonth ? 'bg-white/[0.03] text-white/60' : ''} ${dragOverDay===cell.dateStr ? 'ring-2 ring-accent-500/60' : ''}`}
-                  onClick={()=> { setSelectedDay(cell.dateStr); setQaDay(cell.dateStr); }}
-                  onDragOver={(e)=> { if (events.length>=0) { e.preventDefault(); setDragOverDay(cell.dateStr); const duplicate = !!(e.ctrlKey || e.metaKey); try { (e.dataTransfer as DataTransfer).dropEffect = duplicate ? 'copy' : 'move'; } catch {} } }}
-                  onDragEnter={() => { setDragOverDay(cell.dateStr); announce((t('calendar.dnd.enter')||'Drop here to place event on {d}').replace('{d}', cell.dateStr)); }}
-                  onDragLeave={() => { setDragOverDay(''); announce(t('calendar.dnd.leave')||'Leaving drop target'); }}
-                  onDrop={(e)=> {
+                  onDragOver={(e)=> {
                     e.preventDefault();
-                    const data = e.dataTransfer.getData('text/plain');
-                    if (data && data.startsWith('show:') && typeof onMoveShow==='function') {
-                      const id = data.slice(5);
-                      const duplicate = !!(e.ctrlKey || e.metaKey);
-                      onMoveShow(id, cell.dateStr, duplicate);
-                      try { trackEvent(duplicate? 'cal.drag.duplicate' : 'cal.drag.move', { id, day: cell.dateStr }); } catch {}
-                      announce((duplicate ? (t('calendar.announce.copied')||'Duplicated show to {d}') : (t('calendar.announce.moved')||'Moved show to {d}')).replace('{d}', cell.dateStr));
+                    e.stopPropagation();
+                    setDragOverDay(cell.dateStr);
+
+                    // Check if it's a resize operation (visual feedback during drag)
+                    try {
+                      const plainData = e.dataTransfer.types?.includes('text/plain') ? 'resize' : '';
+                      if (plainData) {
+                        // Try to extract resize info from custom drag image or data
+                        const resizeMatch = e.dataTransfer.getData('text/plain');
+                        if (resizeMatch?.startsWith('resize:')) {
+                          // Format: resize:eventId:direction (eventId can contain colons, so direction is always the last part)
+                          const lastColonIndex = resizeMatch.lastIndexOf(':');
+                          const direction = resizeMatch.substring(lastColonIndex + 1);
+                          const eventId = resizeMatch.substring(7, lastColonIndex); // Remove 'resize:' prefix
+
+                          if (eventId && (direction === 'start' || direction === 'end')) {
+                            // Find original event to get anchor date
+                            const originalEvent = Array.from(eventsByDay.values())
+                              .flat()
+                              .find(ev => ev.id === eventId);
+
+                            if (originalEvent) {
+                              const anchorDate = direction === 'start' ?
+                                (originalEvent.endDate || originalEvent.date) :
+                                originalEvent.date;
+
+                              // Update resize preview state
+                              setResizingInfo({
+                                active: true,
+                                eventId,
+                                direction: direction as 'start' | 'end',
+                                anchorDate,
+                                currentHoverDate: cell.dateStr,
+                              });
+                            }
+                          }
+                        }
+                      }
+                    } catch (err) {
+                      // Silently fail - this is just for preview
                     }
-                    setDragOverDay('');
+
+                    const duplicate = !!(e.ctrlKey || e.metaKey);
+                    try {
+                      (e.dataTransfer as DataTransfer).dropEffect = duplicate ? 'copy' : 'move';
+                    } catch {}
                   }}
-                  onContextMenu={(e) => handleContextMenu(e, cell.dateStr)} // Add context menu handler
+                  onMouseMove={(e) => {
+                    // Check if there's a button being dragged
+                    if ((window as any).__draggedEventButton && e.buttons === 0) {
+                      // Mouse moved with a dragged button but no buttons pressed = drop!
+                      const button = (window as any).__draggedEventButton;
+                      if (button) {
+                        handleCellDrop({
+                          preventDefault: () => {},
+                          stopPropagation: () => {},
+                          clientX: e.clientX,
+                          clientY: e.clientY,
+                          dataTransfer: { getData: () => '', dropEffect: 'move' }
+                        } as any);
+                      }
+                    }
+                  }}
+                  onDragEnter={() => {
+                    dragCounterRef.current[cell.dateStr] = (dragCounterRef.current[cell.dateStr] || 0) + 1;
+                    setDragOverDay(cell.dateStr);
+                    announce((t('calendar.dnd.enter')||'Drop here to place event on {d}').replace('{d}', cell.dateStr));
+                  }}
+                  onDragLeave={() => {
+                    const current = dragCounterRef.current[cell.dateStr] || 0;
+                    dragCounterRef.current[cell.dateStr] = Math.max(0, current - 1);
+                    if ((dragCounterRef.current[cell.dateStr] || 0) <= 0) {
+                      dragCounterRef.current[cell.dateStr] = 0;
+                      setDragOverDay('');
+                      setResizingInfo({ active: false });
+                      announce(t('calendar.dnd.leave')||'Leaving drop target');
+                    }
+                  }}
+                  onDrop={handleCellDrop}
+                  style={{ pointerEvents: 'auto' }}
+                  className="h-full"
                 >
-                  <div className="flex items-start justify-between">
-                    <button
-                      className={`w-7 h-7 text-xs rounded flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 ${isToday ? 'ring-2 ring-offset-1 ring-offset-ink-900 ring-accent-500' : ''} ${active ? 'bg-accent-500 text-black shadow-glow' : 'bg-white/5'} hover:bg-white/10 transition`}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                    role="gridcell"
+                    aria-label={`${weekdayLabel} ${dayNum}${isToday? ' • '+(t('common.today')||'Today'):''}${active? ' • '+(t('common.selected')||'Selected'):''}, ${events.length} ${events.length===1?(t('calendar.event.one')||'event'):(t('calendar.event.many')||'events')}`}
+                    className={`relative h-full flex flex-col p-2 md:p-2.5 border transition-all duration-150 overflow-visible ${
+                      resizingInfo.active &&
+                      resizingInfo.anchorDate &&
+                      resizingInfo.currentHoverDate &&
+                      (() => {
+                        const anchor = new Date(resizingInfo.anchorDate);
+                        const current = new Date(resizingInfo.currentHoverDate);
+                        const cellDate = new Date(cell.dateStr);
+                        const minDate = anchor < current ? anchor : current;
+                        const maxDate = anchor > current ? anchor : current;
+                        return cellDate >= minDate && cellDate <= maxDate;
+                      })()
+                      ? 'bg-accent-500/25 border-accent-500/60 ring-1 ring-accent-400/50 shadow-md'
+                      : `border-white/5 ${cell.weekend ? 'bg-white/[0.02]' : ''} ${!cell.inMonth ? 'bg-white/[0.015] text-white/40' : ''} ${dragOverDay===cell.dateStr ? 'ring-2 ring-accent-500/60 ring-inset shadow-xl bg-accent-500/10 border-accent-500/30' : 'hover:border-white/10'}`
+                    } ${active ? 'bg-gradient-to-br from-accent-500/15 to-accent-600/8 shadow-lg border-accent-500/20' : 'hover:shadow-md'} backdrop-blur-sm`}
+                    whileHover={{ scale: 1.01, y: -1, transition: { duration: 0.15 } }}
+                    whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
+                    onClick={()=> { setSelectedDay(cell.dateStr); if (onOpenDay) onOpenDay(cell.dateStr); }}
+                    onContextMenu={(e) => handleContextMenu(e, cell.dateStr)}
+                    style={{ pointerEvents: 'auto' }}
+                    data-date={cell.dateStr}
+                  >
+                  <div className="flex items-start justify-between gap-2 mb-1 md:mb-1.5 flex-shrink-0">
+                    <motion.button
+                      className={`w-6 h-6 md:w-6 md:h-6 text-[8px] md:text-[9px] rounded-lg flex items-center justify-center focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 font-bold transition-all duration-150 ${isToday ? 'ring-2 ring-offset-1 ring-offset-ink-900 ring-accent-400' : ''} ${active ? 'bg-gradient-to-br from-accent-500/90 to-accent-600/80 text-white shadow-lg' : 'bg-white/10 text-white/70 hover:bg-white/15'}`}
                       onClick={()=> { setSelectedDay(cell.dateStr); announce((t('calendar.day.select')||'Selected {d}').replace('{d}', cell.dateStr)); }}
+                      whileHover={{ scale: 1.1, y: -1 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.12, type: 'spring', stiffness: 400 }}
                       data-date={cell.dateStr}
                       data-cal-cell="1"
                       aria-current={isToday ? 'date' : undefined}
                       aria-selected={active}
                       title={kbdDragFrom===cell.dateStr ? (t('calendar.kbdDnD.origin')||'Origin (keyboard move/copy active)') : undefined}
-                    >{parseInt(cell.dateStr.slice(-2))}</button>
-                    <span className="text-[10px] uppercase tracking-wide mt-0.5 opacity-60" aria-hidden>{abbrev}</span>
+                    >{parseInt(cell.dateStr.slice(-2))}</motion.button>
+                    <span className="text-[6px] md:text-[7px] uppercase tracking-widest mt-0.5 text-white/35 font-semibold" aria-hidden>{abbrev}</span>
                   </div>
-                  <div className="mt-2 space-y-1">
-                    {events.slice(0,3).map(ev => (
-                      <div
-                        key={ev.id}
-                        draggable={ev.kind==='show'}
-                        onDragStart={(e)=> { if (ev.kind==='show'){ e.dataTransfer.setData('text/plain', ev.id); e.dataTransfer.effectAllowed = 'copyMove';
-                          // ghost label: Move/Copy
-                          try {
-                            const duplicate = !!(e.ctrlKey || e.metaKey);
-                            const ghost = document.createElement('div');
-                            ghost.textContent = duplicate ? (t('common.copy')||'Copy') : (t('common.move')||'Move');
-                            ghost.style.position = 'fixed';
-                            ghost.style.top = '-1000px';
-                            ghost.style.left = '-1000px';
-                            ghost.style.padding = '2px 6px';
-                            ghost.style.fontSize = '12px';
-                            ghost.style.borderRadius = '6px';
-                            ghost.style.background = 'rgba(99,102,241,0.9)';
-                            ghost.style.color = '#000';
-                            ghost.style.boxShadow = '0 0 0 1px rgba(255,255,255,0.2)';
-                            document.body.appendChild(ghost);
-                            dragImgRef.current = ghost;
-                            e.dataTransfer.setDragImage(ghost, 8, 8);
-                          } catch {}
-                        } }}
-                        onDragEnd={()=> { if (dragImgRef.current){ try { document.body.removeChild(dragImgRef.current); } catch {} dragImgRef.current = null; } setDragOverDay(''); }}
-                        onClick={(e)=> { e.stopPropagation(); onOpen(ev); }}
-                      >
-                        <EventChip
-                          title={ev.title}
-                          kind={ev.kind}
-                          status={ev.status}
-                          city={ev.kind==='show' ? ev.title.split(',')[0] : undefined}
-                        />
-                      </div>
-                    ))}
-                    {events.length > 3 && (
+                  <div className="flex-1 overflow-visible space-y-0.25 md:space-y-0.5 pr-1 md:pr-1.5">
+                    {/* Events already filtered by eventsByDay - just render them */}
+                    {(() => {
+                      // Render all events (up to 4)
+                      const toRender = events.slice(0, 4);
+                      return toRender.map((ev, idx) => {
+                        const canAdjust = typeof onSpanAdjust === 'function';
+                        return (
+                          <div
+                            key={`${ev.id}-${cell.dateStr}-${ev.spanIndex}`}
+                            className="group relative block w-full"
+                            draggable={ev.kind==='show' || ev.kind==='travel'}
+                            data-event-id={ev.id}
+                            data-span-index={ev.spanIndex}
+                            onDragStart={(e: React.DragEvent<HTMLDivElement>)=> {
+                              if (ev.kind==='show' || ev.kind==='travel'){
+                                e.dataTransfer.setData('text/plain', ev.id);
+                                e.dataTransfer.effectAllowed = 'copyMove';
+                              try {
+                                const duplicate = !!(e.ctrlKey || e.metaKey);
+                                const ghost = document.createElement('div');
+                                ghost.textContent = duplicate ? (t('common.copy')||'Copy') : (t('common.move')||'Move');
+                                ghost.style.position = 'fixed';
+                                ghost.style.top = '-1000px';
+                                ghost.style.left = '-1000px';
+                                ghost.style.padding = '2px 6px';
+                                ghost.style.fontSize = '12px';
+                                ghost.style.borderRadius = '6px';
+                                ghost.style.background = 'rgba(99,102,241,0.9)';
+                                ghost.style.color = '#000';
+                                ghost.style.boxShadow = '0 0 0 1px rgba(255,255,255,0.2)';
+                                document.body.appendChild(ghost);
+                                dragImgRef.current = ghost;
+                                e.dataTransfer.setDragImage(ghost, 8, 8);
+                              } catch {}
+                            } }}
+                            onDragEnd={(e: React.DragEvent<HTMLDivElement>)=> {
+                              if (dragImgRef.current){ try { document.body.removeChild(dragImgRef.current); } catch {} dragImgRef.current = null; }
+                              setDragOverDay('');
+
+                              // Check if dropped outside grid
+                              const gridRef = document.querySelector('[data-grid-calendar]') as HTMLElement | null;
+                              if (gridRef && e.clientX && e.clientY) {
+                                const rect = gridRef.getBoundingClientRect();
+                                const outside = e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom;
+
+                                if (outside && typeof onDeleteShow === 'function') {
+                                  onDeleteShow?.(ev.id);
+                                  announce((t('calendar.announce.deleted') || 'Event deleted').replace('{d}', ev.title));
+                                  try { trackEvent('cal.drag.delete_outside', { id: ev.id }); } catch {}
+                                }
+                              }
+                            }}
+                          >
+                            {canAdjust && (
+                              <button
+                                type="button"
+                                onClick={(e)=> { e.stopPropagation(); const delta = e.altKey ? -1 : 1; onSpanAdjust?.(ev.id, 'start', delta); }}
+                                className="opacity-0 group-hover:opacity-100 transition-all duration-150 absolute -left-2.5 top-1/2 -translate-y-1/2 px-1 py-1 rounded-full bg-white/15 border border-white/25 text-[7px] hover:bg-white/25 hover:border-white/35 shadow-sm hover:shadow-md"
+                                title={t('calendar.extend.start.hint') || 'Click to extend start • Alt+Click to shrink'}
+                                aria-label={t('calendar.extend.start') || 'Adjust start date'}
+                              >
+                                ◂
+                              </button>
+                            )}
+                            <EventChip
+                              id={ev.id}
+                              title={ev.title}
+                              kind={ev.kind}
+                              status={ev.status}
+                              city={ev.kind==='show' ? ev.title.split(',')[0] : undefined}
+                              color={ev.color}
+                              pinned={ev.pinned}
+                              spanLength={ev.spanLength}
+                              spanIndex={ev.spanIndex}
+                              meta={ev.meta}
+                              isSelected={selectedEventIds.has(ev.id)}
+                              onClick={() => onOpen(ev)}
+                              onMultiSelect={(isSelected) => onMultiSelectEvent?.(ev.id, isSelected)}
+                              onResizeStart={(e, direction) => {
+                                e.dataTransfer!.effectAllowed = 'move';
+                                e.dataTransfer!.setData('text/plain', `resize:${ev.id}:${direction}`);
+                                e.stopPropagation();
+                              }}
+                            />
+                            {canAdjust && (
+                              <button
+                                type="button"
+                                onClick={(e)=> { e.stopPropagation(); const delta = e.altKey ? -1 : 1; onSpanAdjust?.(ev.id, 'end', delta); }}
+                                className="opacity-0 group-hover:opacity-100 transition-all duration-150 absolute -right-2.5 top-1/2 -translate-y-1/2 px-1 py-1 rounded-full bg-white/15 border border-white/25 text-[7px] hover:bg-white/25 hover:border-white/35 shadow-sm hover:shadow-md"
+                                title={t('calendar.extend.end.hint') || 'Click to extend end • Alt+Click to shrink'}
+                                aria-label={t('calendar.extend.end') || 'Adjust end date'}
+                              >
+                                ▸
+                              </button>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+                    {events.length > 4 && (
                       <button
-                        className="text-[11px] underline opacity-80 hover:opacity-100"
-                        onClick={(e)=> { e.stopPropagation(); setMoreList(events); setMoreDay(cell.dateStr); setMoreOpen(true); try { trackEvent('cal.more.open', { count: events.length-3 }); } catch {} }}
+                        className="text-[8px] md:text-[9px] font-semibold text-accent-300 hover:text-accent-200 opacity-75 hover:opacity-100 transition-all duration-150"
+                        onClick={(e)=> { e.stopPropagation(); setMoreList(events); setMoreDay(cell.dateStr); setMoreOpen(true); try { trackEvent('cal.more.open', { count: events.length-4 }); } catch {} }}
                       >
-                        +{events.length-3} {t('calendar.more')||'more'}
+                        +{events.length-4} more
                       </button>
                     )}
                   </div>
-                  {qaDay===cell.dateStr && (
-                    <QuickAdd
-                      dateStr={cell.dateStr}
-                      onSave={(data)=> { setQaDay(''); if (typeof (onQuickAddSave) === 'function') onQuickAddSave(cell.dateStr, data); }}
-                      onCancel={()=> setQaDay('')}
-                    />
-                  )}
+                  {/* QuickAdd moved to EventCreationModal - removed inline form */}
+                </motion.div>
                 </div>
               );
             })}
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
       <MorePopover
         open={moreOpen}
         onClose={()=> setMoreOpen(false)}
@@ -361,7 +718,49 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
           onClose={() => setContextMenu(null)}
         />
       )}
-    </div>
+      <QuickEventCreator
+        open={quickCreatorOpen}
+        button={quickCreatorButton}
+        date={quickCreatorDate}
+        onClose={() => {
+          setQuickCreatorOpen(false);
+          setQuickCreatorButton(undefined);
+          setQuickCreatorDate(undefined);
+        }}
+        onSave={(data) => {
+          if (onQuickAddSave && quickCreatorDate) {
+            onQuickAddSave(quickCreatorDate, {
+              city: data.city,
+              country: data.country,
+              fee: 0
+            });
+            announce((t('calendar.announce.eventCreated') || 'Event "{label}" created on {d}').replace('{label}', data.label).replace('{d}', quickCreatorDate));
+            trackEvent('cal.event.created', { type: data.type, city: data.city, date: quickCreatorDate });
+
+            // Show success toast
+            setSuccessButton(quickCreatorButton);
+            setSuccessCity(data.city);
+            setSuccessCountry(data.country);
+            setSuccessShow(true);
+          }
+          setQuickCreatorOpen(false);
+          setQuickCreatorButton(undefined);
+          setQuickCreatorDate(undefined);
+        }}
+      />
+      <EventCreationSuccess
+        show={successShow}
+        button={successButton}
+        city={successCity}
+        country={successCountry}
+        onDismiss={() => {
+          setSuccessShow(false);
+          setSuccessButton(undefined);
+          setSuccessCity(undefined);
+          setSuccessCountry(undefined);
+        }}
+      />
+    </motion.div>
   );
 };
 

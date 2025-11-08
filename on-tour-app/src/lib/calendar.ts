@@ -17,25 +17,9 @@ export function detectTravelRisks(
     return 'overlap';
   }
 
-  // Riesgo 2: Viaje aislado (sin shows en ±2 días)
-  const nearbyDates = [-2, -1, 1, 2].map(offset => {
-    const d = new Date(eventDate);
-    d.setDate(d.getDate() + offset);
-    return d.toISOString().slice(0, 10);
-  });
-
-  const hasNearbyShows = shows.some(show =>
-    nearbyDates.includes(show.date) || show.date === travelEvent.date
-  );
-
-  if (!hasNearbyShows) {
-    return 'isolated';
-  }
-
-  // Riesgo 3: Viaje pendiente sin confirmación
-  if (travelEvent.status === 'pending') {
-    return 'pending';
-  }
+  // Nota: No marcamos como "isolated" los viajes sin shows cercanos
+  // Esto es normal - puede ser un viaje de descanso, transporte, etc.
+  // Solo marcamos si hay conflictos reales de programación
 
   return null;
 }

@@ -259,15 +259,27 @@ const ActionHubProComponent: React.FC = () => {
                 const config = PRIORITY_COLORS[action.priority];
                 const CategoryIcon = CATEGORY_ICONS[action.category];
                 return (
-                  <motion.div key={action.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }} className={`group p-4 transition-all duration-300 hover:bg-white/10 hover:shadow-lg ${config.bg} relative overflow-hidden ${action.completed ? 'opacity-50' : ''}`}>
+                  <motion.div
+                    key={action.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className={`group border-l-2 transition-all duration-300 hover:bg-white/8 relative overflow-hidden ${action.completed ? 'opacity-60' : ''} ${
+                      action.priority === 'critical' ? 'border-l-red-500 hover:bg-red-500/5' :
+                      action.priority === 'high' ? 'border-l-amber-500 hover:bg-amber-500/5' :
+                      action.priority === 'medium' ? 'border-l-blue-500 hover:bg-blue-500/5' :
+                      'border-l-green-500 hover:bg-green-500/5'
+                    }`}
+                  >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    <div className="relative flex items-center gap-3">
+                    <div className="relative p-3.5 flex items-start gap-3">
+                      {/* Checkbox */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleToggleCompleted(action.id, action.completed || false);
                         }}
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500/50 active:scale-95 ${action.completed
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500/50 active:scale-95 ${action.completed
                           ? 'bg-accent-500 border-accent-500'
                           : 'border-white/30 hover:border-accent-400'
                           }`}
@@ -275,26 +287,65 @@ const ActionHubProComponent: React.FC = () => {
                       >
                         {action.completed && <Check className="w-3.5 h-3.5 text-white" />}
                       </button>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-sm truncate">{action.title}</h3>
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wide ${config.text} opacity-70`}>{action.priority}</span>
+
+                      {/* Main Content */}
+                      <div className="flex-1 min-w-0 py-0.5">
+                        {/* Title + Priority Badge */}
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <h3 className="font-semibold text-sm truncate group-hover:text-white/90 transition-colors">{action.title}</h3>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wide font-medium flex-shrink-0 ${
+                            action.priority === 'critical' ? 'bg-red-500/20 text-red-300' :
+                            action.priority === 'high' ? 'bg-amber-500/20 text-amber-300' :
+                            action.priority === 'medium' ? 'bg-blue-500/20 text-blue-300' :
+                            'bg-green-500/20 text-green-300'
+                          }`}>{action.priority}</span>
                         </div>
-                        <p className="text-xs opacity-70 truncate mb-1">{action.description}</p>
-                        <div className="flex items-center gap-3 text-xs opacity-60">
-                          {action.city && (<div className="flex items-center gap-1"><MapPin className="w-3 h-3" /><span>{action.city}</span></div>)}
-                          {action.daysUntil !== undefined && (<div className="flex items-center gap-1"><Clock className="w-3 h-3" /><span>{action.daysUntil === 0 ? 'Today' : action.daysUntil === 1 ? 'Tomorrow' : `${action.daysUntil}d`}</span></div>)}
-                          {action.amount && (<div className="flex items-center gap-1"><DollarSign className="w-3 h-3" /><span className="font-medium">{fmtMoney(action.amount)}</span></div>)}
+
+                        {/* Description */}
+                        <p className="text-xs text-white/60 group-hover:text-white/70 transition-colors truncate mb-2">{action.description}</p>
+
+                        {/* Meta Info */}
+                        <div className="flex items-center gap-3 text-xs text-white/50 group-hover:text-white/60 transition-colors flex-wrap">
+                          {action.city && (
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{action.city}</span>
+                            </div>
+                          )}
+                          {action.daysUntil !== undefined && (
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-3 h-3 flex-shrink-0" />
+                              <span className="font-medium">{action.daysUntil === 0 ? 'Today' : action.daysUntil === 1 ? 'Tomorrow' : `${action.daysUntil}d`}</span>
+                            </div>
+                          )}
+                          {action.amount && (
+                            <div className="flex items-center gap-1.5">
+                              <DollarSign className="w-3 h-3 flex-shrink-0" />
+                              <span className="font-medium">{fmtMoney(action.amount)}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/10 text-xs"><CategoryIcon className="w-3 h-3" /></div>
+
+                      {/* Right Actions */}
+                      <div className="flex items-center gap-2 flex-shrink-0 pt-1">
+                        {/* Category Icon */}
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                          action.priority === 'critical' ? 'bg-red-500/20 text-red-400' :
+                          action.priority === 'high' ? 'bg-amber-500/20 text-amber-400' :
+                          action.priority === 'medium' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-green-500/20 text-green-400'
+                        } group-hover:scale-110`}>
+                          <CategoryIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                        </div>
+
+                        {/* Action Button */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleActionClick(action);
                           }}
-                          className="px-2.5 py-1 min-h-[44px] md:min-h-0 rounded bg-white/10 hover:bg-white/20 text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95"
+                          className="px-3 py-1.5 min-h-[44px] md:min-h-0 rounded-lg bg-white/10 hover:bg-accent-500/20 hover:border-accent-500/30 border border-white/10 text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500/50 active:scale-95 whitespace-nowrap"
                           aria-label={`${action.actionText} for ${action.city || action.title}`}
                           disabled={action.completed}
                         >

@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { TimedEvent, useEventLayout } from '../../hooks/useEventLayout';
 import EventChip from './EventChip';
+import DragToMoveHandler from './DragToMoveHandler';
+import { useMultiSelect, MultiSelectPanel } from './MultiSelectManager';
 import type { CalEvent } from './types';
 import { t } from '../../lib/i18n';
 
@@ -8,10 +11,12 @@ type Props = {
   day: string; // YYYY-MM-DD
   events: CalEvent[];
   onOpen: (ev: CalEvent) => void;
+  onDeleteEvent?: (eventId: string) => void;
   tz?: string;
 };
 
-const DayGrid: React.FC<Props> = ({ day, events, onOpen, tz }) => {
+const DayGrid: React.FC<Props> = ({ day, events, onOpen, onDeleteEvent, tz }) => {
+  const multiSelect = useMultiSelect();
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const timed: TimedEvent[] = events.filter(e=> !e.allDay && e.start && e.end).map(e=> ({ id: e.id, start: new Date(e.start!), end: new Date(e.end!) }));
   const layout = useEventLayout(timed);
@@ -50,18 +55,47 @@ const DayGrid: React.FC<Props> = ({ day, events, onOpen, tz }) => {
   }, [day, tz]);
 
   return (
-  <div className="glass rounded-xl overflow-hidden border border-white/10" role="grid" aria-label="Day">
+    <>
+      <motion.div
+        className="glass rounded-lg overflow-hidden border border-white/10 hover:border-white/20 shadow-xl backdrop-blur-md transition-all duration-300"
+        role="grid"
+        aria-label="Day"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
       <div className="grid" style={{ gridTemplateColumns: '80px 1fr' }}>
         <div></div>
-        <div className="px-2 py-2 text-sm border-b border-white/10" role="columnheader" aria-label={new Date(day).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', timeZone: tz })} aria-current={(()=>{ try { const now = new Date(); const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now).reduce<Record<string,string>>((acc,p)=>{ if (p.type!=='literal') acc[p.type]=p.value; return acc; }, {}); const today = p.year&&p.month&&p.day? `${p.year}-${p.month}-${p.day}` : now.toISOString().slice(0,10); return today===day ? 'date' : undefined; } catch { return undefined; } })()}>
+        <motion.div
+          className="px-2 md:px-2.5 py-2 md:py-2.5 text-xs md:text-sm border-b border-white/10 hover:bg-white/5 transition-all duration-200"
+          role="columnheader"
+          aria-label={new Date(day).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', timeZone: tz })}
+          aria-current={(()=>{ try { const now = new Date(); const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now).reduce<Record<string,string>>((acc,p)=>{ if (p.type!=='literal') acc[p.type]=p.value; return acc; }, {}); const today = p.year&&p.month&&p.day? `${p.year}-${p.month}-${p.day}` : now.toISOString().slice(0,10); return today===day ? 'date' : undefined; } catch { return undefined; } })()}
+          whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.1)' }}
+          transition={{ duration: 0.2 }}
+        >
           {new Date(day).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: tz })}
-        </div>
+        </motion.div>
         <div>
           {hours.map(h => (
-            <div key={h} className="h-16 border-b border-white/[0.06] text-[11px] pr-2 text-right opacity-70">{String(h).padStart(2,'0')}:00</div>
+            <motion.div
+              key={h}
+              className="h-14 border-b border-white/[0.06] text-[10px] md:text-xs pr-2 md:pr-2.5 text-right opacity-70 hover:opacity-100 transition-opacity duration-200"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2, delay: h * 0.02 }}
+            >
+              {String(h).padStart(2,'0')}:00
+            </motion.div>
           ))}
         </div>
-  <div className="relative" role="gridcell" aria-label={`${new Date(day).toLocaleDateString(undefined, { weekday: 'long', timeZone: tz })} ${parseInt(day.slice(-2))}, ${events.length} ${events.length===1?(t('calendar.event.one')||'event'):(t('calendar.event.many')||'events')}`}>
+        <motion.div
+          className="relative hover:bg-white/[0.02] transition-colors duration-200 rounded-lg"
+          role="gridcell"
+          aria-label={`${new Date(day).toLocaleDateString(undefined, { weekday: 'long', timeZone: tz })} ${parseInt(day.slice(-2))}, ${events.length} ${events.length===1?(t('calendar.event.one')||'event'):(t('calendar.event.many')||'events')}`}
+          whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+          transition={{ duration: 0.2 }}
+        >
           {(()=>{ try { const now = new Date(); const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now).reduce<Record<string,string>>((acc,p)=>{ if (p.type!=='literal') acc[p.type]=p.value; return acc; }, {}); const today = p.year&&p.month&&p.day? `${p.year}-${p.month}-${p.day}` : now.toISOString().slice(0,10); return today===day; } catch { return false; } })() && (
             <div ref={nowRef} className="absolute left-0 right-0 h-[1px] bg-accent-500/70" />
           )}
@@ -75,19 +109,68 @@ const DayGrid: React.FC<Props> = ({ day, events, onOpen, tz }) => {
             const left = l.column * width;
             const weekEv = events.find(it=> it.id===l.id)!;
             return (
-              <div key={l.id} className="absolute px-1" style={{ top: `calc(${top}% + 2rem)`, height: `calc(${height}% - 2px)`, left: `${left}%`, width: `${width}%` }}>
-                <EventChip title={weekEv.title} kind={weekEv.kind} status={weekEv.status} city={weekEv.kind==='show' ? weekEv.title.split(',')[0] : undefined} startIso={weekEv.start} endIso={weekEv.end} meta={weekEv.meta} />
-              </div>
+              <DragToMoveHandler
+                key={l.id}
+                event={weekEv}
+                onMove={(eventId, newDate, newStartHour) => {
+                  console.log(`Move event ${eventId} to ${newDate} at ${newStartHour}:00`);
+                }}
+                onCopy={(eventId, newDate) => {
+                  console.log(`Copy event ${eventId} to ${newDate}`);
+                }}
+              >
+                <div className="absolute px-1.5 md:px-2 w-full h-full" style={{ top: `calc(${top}% + 2rem)`, height: `calc(${height}% - 2px)`, left: `${left}%`, width: `${width}%` }}>
+                  <EventChip
+                    title={weekEv.title}
+                    kind={weekEv.kind}
+                    status={weekEv.status}
+                    city={weekEv.kind==='show' ? weekEv.title.split(',')[0] : undefined}
+                    startIso={weekEv.start}
+                    endIso={weekEv.end}
+                    meta={weekEv.meta}
+                    isSelected={multiSelect.isSelected(weekEv.id)}
+                    onMultiSelect={(isSelected) => multiSelect.toggleSelection(weekEv.id, true)}
+                  />
+                </div>
+              </DragToMoveHandler>
             );
           })}
-          <div className="px-2 py-1 space-y-1">
+          <div className="px-2.5 md:px-3 py-1.5 md:py-2 space-y-1.5 md:space-y-2">
             {events.filter(e=> e.allDay || !e.start || !e.end).map(ev => (
-              <EventChip key={ev.id} title={ev.title} kind={ev.kind} status={ev.status} city={ev.kind==='show' ? ev.title.split(',')[0] : undefined} onClick={()=> onOpen(ev)} meta={ev.meta} />
+              <EventChip
+                key={ev.id}
+                title={ev.title}
+                kind={ev.kind}
+                status={ev.status}
+                city={ev.kind==='show' ? ev.title.split(',')[0] : undefined}
+                onClick={()=> onOpen(ev)}
+                meta={ev.meta}
+                isSelected={multiSelect.isSelected(ev.id)}
+                onMultiSelect={(isSelected) => multiSelect.toggleSelection(ev.id, true)}
+              />
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
+
+    {/* Multi-Select Panel */}
+    <MultiSelectPanel
+      selectedCount={multiSelect.count}
+      onMove={() => {
+        console.log('Move selected:', Array.from(multiSelect.selectedIds));
+      }}
+      onCopy={() => {
+        console.log('Copy selected:', Array.from(multiSelect.selectedIds));
+      }}
+      onDelete={() => {
+        for (const eventId of multiSelect.selectedIds) {
+          onDeleteEvent?.(eventId);
+        }
+        multiSelect.clearSelection();
+      }}
+    />
+    </>
   );
 };
 

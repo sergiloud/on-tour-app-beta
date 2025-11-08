@@ -39,7 +39,11 @@ export const TE = {
   FX_UNAVAILABLE: 'shows.editor.fx.unavailable',
   SHOW_VENUE_SET: 'shows.editor.venue.set',
   SHOW_VENUE_CHANGED: 'shows.editor.venue.changed',
-  SHOW_VENUE_CLEARED: 'shows.editor.venue.cleared'
+  SHOW_VENUE_CLEARED: 'shows.editor.venue.cleared',
+  NOTES_AUTO_SAVE: 'shows.editor.notes.autoSave',
+  SHOW_DUPLICATE: 'shows.editor.duplicate',
+  KEYBOARD_SHORTCUT_SAVE: 'shows.editor.keyboard.save',
+  KEYBOARD_SHORTCUT_CLOSE: 'shows.editor.keyboard.close'
 } as const;
 
 export type TelemetryEvent = typeof TE[keyof typeof TE];

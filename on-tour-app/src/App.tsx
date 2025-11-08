@@ -11,6 +11,7 @@ import { useNetworkStatus } from './hooks/useNetworkStatus';
 import { useShowsSync } from './hooks/useShowsSync';
 import { swManager } from './lib/serviceWorkerManager';
 import { ServiceWorkerUpdater } from './components/common/ServiceWorkerUpdater';
+import { nuclearCleanupLocations } from './services/travelApi';
 
 export const App: React.FC = () => {
   // Enable cross-tab synchronization and React Query cache integration
@@ -18,6 +19,11 @@ export const App: React.FC = () => {
 
   // Network status monitoring
   useNetworkStatus();
+
+  // Run migrations on app startup
+  useEffect(() => {
+    nuclearCleanupLocations();
+  }, []);
 
   // Prefetch critical routes when app loads and browser is idle
   useEffect(() => {

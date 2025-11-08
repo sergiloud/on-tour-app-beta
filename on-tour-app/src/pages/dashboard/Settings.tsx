@@ -30,7 +30,13 @@ const TabButton: React.FC<{
     onClick={onClick}
     onKeyDown={onKeyDown}
     tabIndex={tabIndex}
-    className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:ring-offset-2 focus:ring-offset-ink-900 ${active ? 'border-accent-500 text-accent-500' : 'border-transparent text-white/70 hover:text-white'}`}
+    role="tab"
+    aria-selected={active}
+    className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:ring-offset-2 focus:ring-offset-ink-900 transition-all ${
+      active
+        ? 'border-accent-500 text-accent-500 bg-accent-500/5'
+        : 'border-transparent text-white/70 hover:text-white hover:bg-white/5'
+    }`}
   >
     {children}
   </button>
@@ -47,7 +53,13 @@ const SubTabButton: React.FC<{
     onClick={onClick}
     onKeyDown={onKeyDown}
     tabIndex={tabIndex}
-    className={`px-3 py-2 text-xs font-medium rounded border focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:ring-offset-2 focus:ring-offset-ink-900 ${active ? 'bg-accent-500 text-black border-accent-500' : 'border-white/20 text-white/70 hover:text-white hover:bg-white/5'}`}
+    role="tab"
+    aria-selected={active}
+    className={`px-3 py-2 text-xs font-medium rounded border focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:ring-offset-2 focus:ring-offset-ink-900 transition-all ${
+      active
+        ? 'bg-accent-500 text-black border-accent-500 shadow-sm'
+        : 'border-white/20 text-white/70 hover:text-white hover:bg-white/5 hover:border-white/30'
+    }`}
   >
     {children}
   </button>
@@ -111,40 +123,54 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-3 space-y-4">
-      <h1 className="text-lg font-semibold">{t('nav.settings') || 'Settings'}</h1>
+    <div className="min-h-screen bg-ink-900">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        {/* Page Header */}
+        <div className="glass rounded-xl border border-white/10 backdrop-blur-sm mb-6 overflow-hidden hover:border-white/20 transition-all duration-300">
+          <div className="bg-gradient-to-r from-transparent via-white/5 to-transparent px-6 py-5">
+            <div className="flex items-center gap-4">
+              <div className="w-1 h-10 rounded-full bg-gradient-to-b from-accent-500 to-blue-500" />
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {t('nav.settings') || 'Settings'}
+              </h1>
+            </div>
+          </div>
+        </div>
 
-      {/* Main Tabs */}
-      <div className="flex border-b border-white/10" role="tablist" aria-label="Settings tabs">
-        {mainTabs.map((tab, index) => (
-          <TabButton
-            key={tab.id}
-            active={activeTab === tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            onKeyDown={(e) => handleMainTabKeyDown(e, index)}
-            tabIndex={activeTab === tab.id ? 0 : -1}
-          >
-            {tab.label}
-          </TabButton>
-        ))}
-      </div>
+        {/* Main Tabs */}
+        <div className="space-y-6">
+          <div className="flex border-b border-white/10" role="tablist" aria-label="Settings tabs">
+            {mainTabs.map((tab, index) => (
+              <TabButton
+                key={tab.id}
+                active={activeTab === tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                onKeyDown={(e) => handleMainTabKeyDown(e, index)}
+                tabIndex={activeTab === tab.id ? 0 : -1}
+              >
+                {tab.label}
+              </TabButton>
+            ))}
+          </div>
 
-      {/* Tab Content */}
-      <div className="mt-4">
-        {activeTab === 'profile' && <ProfileTab />}
-        {activeTab === 'preferences' && <PreferencesTab />}
-        {activeTab === 'organization' && (
-          <OrganizationTab
-            activeSubTab={orgSubTab}
-            onSubTabChange={setOrgSubTab}
-          />
-        )}
-        {isAgency && activeTab === 'connections' && (
-          <ConnectionsTab
-            activeSubTab={connectionsSubTab}
-            onSubTabChange={setConnectionsSubTab}
-          />
-        )}
+          {/* Tab Content */}
+          <div role="tabpanel" aria-labelledby={activeTab}>
+            {activeTab === 'profile' && <ProfileTab />}
+            {activeTab === 'preferences' && <PreferencesTab />}
+            {activeTab === 'organization' && (
+              <OrganizationTab
+                activeSubTab={orgSubTab}
+                onSubTabChange={setOrgSubTab}
+              />
+            )}
+            {isAgency && activeTab === 'connections' && (
+              <ConnectionsTab
+                activeSubTab={connectionsSubTab}
+                onSubTabChange={setConnectionsSubTab}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

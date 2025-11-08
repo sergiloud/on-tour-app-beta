@@ -144,7 +144,7 @@ class ShowStore {
     const current = this.shows[idx] as Show & Record<string, unknown>;
     // Whitelist patchable fields to prevent stray props from entering the store
     const allowed: (keyof Show | 'venue' | 'whtPct' | 'mgmtAgency' | 'bookingAgency' | 'notes' | 'costs' | 'feeCurrency' | 'archivedAt' | 'createdAt')[] = [
-      'id','city','country','date','fee','lat','lng','status','name',
+      'id','city','country','date','endDate','fee','lat','lng','status','name',
       'venue','whtPct','mgmtAgency','bookingAgency','notes','costs','feeCurrency','archivedAt','createdAt'
     ];
     const safePatch: Record<string, unknown> = {};
@@ -164,6 +164,9 @@ class ShowStore {
     const copy = this.shows.slice();
     copy[idx] = next;
     this.setAll(copy);
+
+    // Queue for backend sync
+    this.queueOfflineOperation('update', id, safePatch);
   }
 
   removeShow(id: string) {

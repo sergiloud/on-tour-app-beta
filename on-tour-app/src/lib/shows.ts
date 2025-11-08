@@ -10,10 +10,13 @@ export type Show = {
   country: string;
   lat: number;
   lng: number;
-  date: string; // ISO
+  date: string; // ISO start date
+  endDate?: string; // ISO end date (optional for multi-day shows/tours)
   fee: number;              // Stored in original currency (feeCurrency)
   feeCurrency?: 'EUR' | 'USD' | 'GBP' | 'AUD'; // Original contract currency
   fxRateToBase?: number;    // Cached rate used to convert fee->base at confirmation time
+  fxRateDate?: string;      // ISO date when FX rate was locked (for accounting)
+  fxRateSource?: string;    // Where the rate came from: 'locked' | 'today' | 'system'
   status: 'confirmed' | 'pending' | 'offer' | 'canceled' | 'archived' | 'postponed';
   paid?: boolean;           // Payment status
   // Optional extended metadata

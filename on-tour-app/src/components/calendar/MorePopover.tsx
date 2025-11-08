@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import EventChip from './EventChip';
 import { t } from '../../lib/i18n';
 import type { CalEvent } from './types';
@@ -56,63 +57,128 @@ const MorePopover: React.FC<Props> = ({ open, onClose, events, onOpen, onOpenDay
   const afterH = Math.max(0, (filtered.length - end) * ROW_H);
   if (!open) return null;
   return (
-    <div role="dialog" aria-labelledby={titleId} aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div ref={dialogRef} className="relative glass rounded-lg p-3 w-[420px] max-h-[70vh] border border-white/12">
+    <AnimatePresence>
+      <motion.div
+        role="dialog"
+        aria-labelledby={titleId}
+        aria-modal="true"
+        className="fixed inset-0 z-50 flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <motion.div
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        />
+        <motion.div
+          ref={dialogRef}
+          className="relative glass rounded-xl p-3 md:p-4 w-[460px] max-w-[90vw] max-h-[80vh] border border-white/10 shadow-2xl backdrop-blur-md flex flex-col bg-gradient-to-br from-white/8 via-white/4 to-white/2"
+          initial={{ opacity: 0, scale: 0.92, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.92, y: 20 }}
+          transition={{ duration: 0.3, ease: "easeOut", type: "spring", stiffness: 300 }}
+        >
         <div className="flex items-start justify-between mb-2 gap-2">
           <div>
-            <div id={titleId} className="text-sm font-medium flex items-center gap-2">
+            <div id={titleId} className="text-xs font-medium flex items-center gap-1.5">
               <span>{t('calendar.more.title')||'More events'}</span>
-              {dayLabel && <span className="text-xs opacity-70 font-normal">{dayLabel}</span>}
-              <span className="text-[11px] px-1.5 py-0.5 rounded bg-white/10 font-normal">{events.length} {(events.length===1?(t('calendar.event.one')||'event'):(t('calendar.event.many')||'events'))}</span>
+              {dayLabel && <span className="text-[11px] opacity-70 font-normal">{dayLabel}</span>}
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 font-normal">{events.length} {(events.length===1?(t('calendar.event.one')||'event'):(t('calendar.event.many')||'events'))}</span>
             </div>
-            <div className="mt-1 flex flex-wrap gap-1">
-              <div className="flex items-center gap-1 text-[11px]">
-                <label className="opacity-70">{t('calendar.kind')||'Kind'}:</label>
-                <div className="flex gap-1">
+            <div className="mt-1.5 md:mt-2 flex flex-wrap gap-1.5 md:gap-2">
+              <div className="flex items-center gap-1.5 text-[10px] md:text-xs">
+                <label className="opacity-70 font-medium">{t('calendar.kind')||'Kind'}:</label>
+                <div className="flex gap-1 md:gap-1.5">
                   {['all','show','travel'].map(k => (
-                    <button key={k} onClick={()=> setKindFilter(k as any)} className={`px-1.5 py-0.5 rounded border text-[11px] ${kindFilter===k? 'bg-accent-500 text-black border-accent-400':'border-white/15 bg-white/5 hover:bg-white/10'}`}>{k}</button>
+                    <motion.button
+                      key={k}
+                      onClick={()=> setKindFilter(k as any)}
+                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold transition-all duration-200 ${kindFilter===k? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
+                      whileHover={{ scale: 1.05, y: -1 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.15, type: 'spring', stiffness: 300 }}
+                    >
+                      {k}
+                    </motion.button>
                   ))}
                 </div>
               </div>
               {statuses.length>1 && (
-                <div className="flex items-center gap-1 text-[11px]">
-                  <label className="opacity-70">{t('calendar.status')||'Status'}:</label>
-                  <div className="flex gap-1">
-                    <button onClick={()=> setStatusFilter('all')} className={`px-1.5 py-0.5 rounded border text-[11px] ${statusFilter==='all'? 'bg-accent-500 text-black border-accent-400':'border-white/15 bg-white/5 hover:bg-white/10'}`}>{t('common.all')||'All'}</button>
+                <div className="flex items-center gap-1.5 text-[10px] md:text-xs">
+                  <label className="opacity-70 font-medium">{t('calendar.status')||'Status'}:</label>
+                  <div className="flex gap-1 md:gap-1.5">
+                    <motion.button
+                      onClick={()=> setStatusFilter('all')}
+                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold transition-all duration-200 ${statusFilter==='all'? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
+                      whileHover={{ scale: 1.05, y: -1 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.15, type: 'spring', stiffness: 300 }}
+                    >
+                      {t('common.all')||'All'}
+                    </motion.button>
                     {statuses.map(s=> (
-                      <button key={s} onClick={()=> setStatusFilter(s||'')} className={`px-1.5 py-0.5 rounded border text-[11px] capitalize ${statusFilter===s? 'bg-accent-500 text-black border-accent-400':'border-white/15 bg-white/5 hover:bg-white/10'}`}>{s}</button>
+                      <motion.button
+                        key={s}
+                        onClick={()=> setStatusFilter(s||'')}
+                        className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold capitalize transition-all duration-200 ${statusFilter===s? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
+                        whileHover={{ scale: 1.05, y: -1 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ duration: 0.15, type: 'spring', stiffness: 300 }}
+                      >
+                        {s}
+                      </motion.button>
                     ))}
                   </div>
                 </div>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 md:gap-2.5">
             {onOpenDay && (
-              <button className="text-xs underline opacity-80 hover:opacity-100" onClick={onOpenDay}>{t('calendar.more.openFullDay')||t('calendar.more.openDay')||'Open full day'}</button>
+              <motion.button
+                className="text-[11px] md:text-xs underline opacity-80 hover:opacity-100 font-medium transition-all duration-200 hover:text-accent-400"
+                onClick={onOpenDay}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.1 }}
+              >
+                {t('calendar.more.openFullDay')||t('calendar.more.openDay')||'Open full day'}
+              </motion.button>
             )}
-            <button className="text-xs underline opacity-80 hover:opacity-100" onClick={onClose}>{t('shows.dialog.close')||'Close'}</button>
+            <motion.button
+              className="text-[11px] md:text-xs underline opacity-80 hover:opacity-100 font-medium transition-all duration-200 hover:text-accent-400"
+              onClick={onClose}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
+            >
+              {t('shows.dialog.close')||'Close'}
+            </motion.button>
           </div>
         </div>
-        <div className="mb-2">
+        <div className="mb-3 md:mb-4">
           <input
             ref={inputRef}
             type="search"
             placeholder={t('common.search')||'Search'}
             value={q}
             onChange={e=> setQ(e.target.value)}
-            className="w-full rounded bg-white/5 px-2 py-1 text-sm"
+            className="w-full rounded-lg bg-white/8 border border-white/15 hover:border-white/25 focus:border-accent-400 focus:bg-white/12 px-3 md:px-3.5 py-2 md:py-2.5 text-xs md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-400/50 backdrop-blur-sm"
             aria-label={t('calendar.more.filter')||'Filter events'}
           />
         </div>
         <div
-          className="space-y-1 overflow-auto"
+          className="space-y-1.5 md:space-y-2 overflow-auto"
           style={{ maxHeight: listH }}
           onScroll={e=> setScrollTop((e.target as HTMLDivElement).scrollTop)}
         >
           {filtered.length===0 ? (
-            <div className="text-xs opacity-70 px-1 py-2">{t('calendar.more.empty')||'No results'}</div>
+            <div className="text-xs md:text-sm opacity-70 px-2 md:px-3 py-3 md:py-4 text-center">{t('calendar.more.empty')||'No results'}</div>
           ) : (
             <>
               <div style={{ height: beforeH }} />
@@ -131,8 +197,9 @@ const MorePopover: React.FC<Props> = ({ open, onClose, events, onOpen, onOpenDay
             </>
           )}
         </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 

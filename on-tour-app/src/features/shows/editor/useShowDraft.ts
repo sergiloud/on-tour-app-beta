@@ -11,6 +11,9 @@ export type ShowDraft = Partial<Show> & {
   bookingPct?: number; // booking commission %
   notes?: string;
   costs?: Cost[];
+  fxRateToBase?: number; // FX rate locked for this show
+  fxRateDate?: string; // ISO date when rate was locked
+  fxRateSource?: string; // 'locked' | 'today' | 'system'
 };
 
 export type ValidationErrors = Record<string,string>;

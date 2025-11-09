@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { t } from '../../lib/i18n';
@@ -10,8 +11,10 @@ const UserMenu: React.FC = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuId = 'user-menu';
+  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
 
   // Extract first grapheme for avatar initial (CJK/emoji aware best-effort)
   const firstGrapheme = (s: string): string => {
@@ -22,8 +25,24 @@ const UserMenu: React.FC = () => {
     try { return Array.from(s)[0] || ''; } catch { return s.slice(0,1); }
   };
 
+  // Calculate menu position when opening
+  useEffect(() => {
+    if (open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right
+      });
+    }
+  }, [open]);
+
   useEffect(()=>{
-    const onDoc = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    const onDoc = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (!ref.current?.contains(target) && !menuRef.current?.contains(target)) {
+        setOpen(false);
+      }
+    };
     document.addEventListener('mousedown', onDoc);
     return ()=> document.removeEventListener('mousedown', onDoc);
   }, []);
@@ -31,7 +50,7 @@ const UserMenu: React.FC = () => {
   // Focus first menuitem when menu opens; return focus to button on close
   useEffect(()=>{
     if (open) {
-      const first = ref.current?.querySelector('[role="menuitem"]') as HTMLElement | null;
+      const first = menuRef.current?.querySelector('[role="menuitem"]') as HTMLElement | null;
       first?.focus();
     } else {
       btnRef.current?.focus();
@@ -40,7 +59,7 @@ const UserMenu: React.FC = () => {
 
   const onMenuKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (!open) return;
-    const items = Array.from(ref.current?.querySelectorAll('[role="menuitem"]') || []) as HTMLElement[];
+    const items = Array.from(menuRef.current?.querySelectorAll('[role="menuitem"]') || []) as HTMLElement[];
     const idx = items.findIndex(el => el === document.activeElement);
     const focusAt = (i: number) => { if (i >=0 && i < items.length) items[i]!.focus(); };
     switch (e.key) {
@@ -59,14 +78,21 @@ const UserMenu: React.FC = () => {
 
   return (
     <div className="relative" ref={ref} onKeyDown={onMenuKeyDown}>
-      <button ref={btnRef} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/10" onClick={()=> setOpen(o=>!o)} aria-haspopup="menu" aria-expanded={open} aria-controls={menuId} aria-label={t('nav.profile')||'Profile'}>
+      <button ref={btnRef} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-200 dark:bg-white/10" onClick={()=> setOpen(o=>!o)} aria-haspopup="menu" aria-expanded={open} aria-controls={menuId} aria-label={t('nav.profile')||'Profile'}>
         <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[11px]" aria-hidden>{firstGrapheme(profile.name)}</span>
         <span className="hidden md:inline text-xs opacity-85">{profile.name}</span>
       </button>
-      {open && (
-        <div id={menuId} role="menu" className="absolute right-0 top-full mt-1 min-w-[220px] glass rounded border border-white/12 p-1 text-sm z-50 shadow-2xl">
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          id={menuId}
+          role="menu"
+          className="fixed min-w-[220px] glass rounded border border-white/12 p-1 text-sm shadow-2xl"
+          style={{ top: `${menuPosition.top}px`, right: `${menuPosition.right}px`, zIndex: 99999 }}
+          onKeyDown={onMenuKeyDown}
+        >
           {/* Profile Section */}
-          <div className="px-3 py-2 border-b border-white/10 mb-1">
+          <div className="px-3 py-2 border-b border-slate-200 dark:border-white/10 mb-1">
             <div className="text-sm font-medium">{profile.name}</div>
             <div className="text-xs opacity-60">{profile.email}</div>
           </div>
@@ -74,7 +100,7 @@ const UserMenu: React.FC = () => {
           {/* Main Actions */}
           <Link
             to="/dashboard/profile"
-            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 focus:outline-none focus-ring transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 focus:outline-none focus-ring transition-colors"
             role="menuitem"
             onClick={()=> setOpen(false)}
           >
@@ -86,7 +112,7 @@ const UserMenu: React.FC = () => {
 
           <Link
             to="/dashboard/settings"
-            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 focus:outline-none focus-ring transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 focus:outline-none focus-ring transition-colors"
             role="menuitem"
             onClick={()=> setOpen(false)}
           >
@@ -98,7 +124,7 @@ const UserMenu: React.FC = () => {
           </Link>
 
           <button
-            className="flex items-center gap-2 w-full text-left px-3 py-2 rounded hover:bg-white/10 focus:outline-none focus-ring transition-colors"
+            className="flex items-center gap-2 w-full text-left px-3 py-2 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 focus:outline-none focus-ring transition-colors"
             role="menuitem"
             onClick={()=>{
               try {
@@ -115,7 +141,7 @@ const UserMenu: React.FC = () => {
             <span>{t('nav.changeOrg')||'Change organization'}</span>
           </button>
 
-          <div className="h-px bg-white/10 my-1" />
+          <div className="h-px bg-slate-200 dark:bg-slate-200 dark:bg-white/10 my-1" />
 
           {/* Logout */}
           <button
@@ -135,7 +161,8 @@ const UserMenu: React.FC = () => {
             </svg>
             <span>{t('nav.logout')||'Logout'}</span>
           </button>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

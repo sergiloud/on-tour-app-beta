@@ -26,7 +26,7 @@ const CostEditor: React.FC<Props> = ({ onAdd }) => {
       <div className="flex-1">
         <label className="block opacity-80 mb-1">{t('shows.costs.type') || 'Type'}</label>
         <input
-          className="w-full px-3 py-2 rounded bg-white/5 border border-white/12 hover:border-white/20 focus-ring motion-safe:transition-colors"
+          className="w-full px-3 py-2 rounded bg-slate-100 dark:bg-white/5 border border-white/12 hover:border-slate-300 dark:border-white/20 focus-ring motion-safe:transition-colors"
           placeholder={t('shows.costs.placeholder') || 'Travel / Production / Marketing'}
           value={type}
           onChange={(e) => setType(e.target.value)}
@@ -36,7 +36,7 @@ const CostEditor: React.FC<Props> = ({ onAdd }) => {
         <label className="block opacity-80 mb-1">{t('shows.costs.amount') || 'Amount'}</label>
         <input
           type="number"
-          className="px-3 py-2 rounded bg-white/5 border border-white/12 hover:border-white/20 focus-ring motion-safe:transition-colors w-36"
+          className="px-3 py-2 rounded bg-slate-100 dark:bg-white/5 border border-white/12 hover:border-slate-300 dark:border-white/20 focus-ring motion-safe:transition-colors w-36"
           aria-label={t('shows.costs.amount') || 'Amount'}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
@@ -45,7 +45,7 @@ const CostEditor: React.FC<Props> = ({ onAdd }) => {
       <div className="flex-1">
         <label className="block opacity-80 mb-1">{t('shows.costs.desc') || 'Description'}</label>
         <input
-          className="w-full px-3 py-2 rounded bg-white/5 border border-white/12 hover:border-white/20 focus-ring motion-safe:transition-colors"
+          className="w-full px-3 py-2 rounded bg-slate-100 dark:bg-white/5 border border-white/12 hover:border-slate-300 dark:border-white/20 focus-ring motion-safe:transition-colors"
           placeholder={t('common.optional') || 'Optional'}
           value={desc}
           onChange={(e) => setDesc(e.target.value)}

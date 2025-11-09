@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../../lib/i18n';
 import { useAuth } from '../../context/AuthContext';
 import { useOrg } from '../../context/OrgContext';
-import { getLinkAgencyToArtist, getSeatsUsage, listLinks, listMembers, listTeams, ORG_AGENCY_SHALIZI, ORG_ARTIST_DANNY, type Link as DemoLink } from '../../lib/tenants';
+import { getLinkAgencyToArtist, getSeatsUsage, listLinks, listMembers, listTeams, type Link as DemoLink } from '../../lib/tenants';
 import { useFilteredShows } from '../../features/shows/selectors';
 import { buildFinanceSnapshot } from '../../features/finance/snapshot';
 import { selectThisMonth } from '../../features/finance/selectors';
@@ -65,14 +65,14 @@ const EmptyState: React.FC<{ icon?: string; title: string; desc?: string; cta?: 
 );
 
 const PeopleList: React.FC<{ title: string; items: Array<{ name: string; role?: string; team?: string }>; action?: { label: string; onClick: (person: { name: string }) => void } }> = ({ title, items, action }) => (
-  <div className="glass rounded border border-white/10 p-3">
+  <div className="glass rounded border border-slate-200 dark:border-white/10 p-3">
     <div className="text-xs opacity-70 mb-2">{title}</div>
     {items.length === 0 && <EmptyState icon="👥" title={t('empty.noPeople') || 'No people yet'} desc={t('empty.inviteHint') || 'Invite someone to get started'} cta={action ? { label: action.label, onClick: () => action.onClick({ name: '' }) } : undefined} />}
     <ul className="text-sm space-y-1.5" role="list">
       {items.map((p, i) => (
         <li key={i} role="listitem" className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-white/10 text-[11px] flex items-center justify-center" aria-hidden>{(p.name || ' ').charAt(0).toUpperCase()}</span>
+            <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[11px] flex items-center justify-center" aria-hidden>{(p.name || ' ').charAt(0).toUpperCase()}</span>
             <span>{p.name}</span>
           </span>
           <span className="text-[11px] opacity-70 flex items-center gap-2">
@@ -89,9 +89,9 @@ const SeatsUsageBar: React.FC<{ orgId: string }> = ({ orgId }) => {
   const seats = getSeatsUsage(orgId);
   const pct = Math.min(100, Math.round((seats.internalUsed / seats.internalLimit) * 100));
   return (
-    <div className="glass rounded border border-white/10 p-3">
+    <div className="glass rounded border border-slate-200 dark:border-white/10 p-3">
       <div className="text-xs opacity-70 mb-2">{t('welcome.seats.usage') || 'Seats used'}</div>
-      <div className="h-2 bg-white/10 rounded overflow-hidden">
+      <div className="h-2 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded overflow-hidden">
         <div className="h-full bg-accent-500" style={{ width: `${pct}%` }} />
       </div>
       <div className="text-[11px] opacity-70 mt-1">{seats.internalUsed}/{seats.internalLimit} internal • {seats.guestUsed}/{seats.guestLimit} guests</div>
@@ -120,7 +120,7 @@ const Checklist: React.FC<{ items: string[]; storageKey: string; done: boolean[]
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
   const isComplete = completed === total;
   return (
-    <div className="glass rounded border border-white/10 p-3" data-checklist>
+    <div className="glass rounded border border-slate-200 dark:border-white/10 p-3" data-checklist>
       <div className="text-xs opacity-70 mb-2 flex items-center justify-between">
         <span>{t('welcome.gettingStarted') || 'Getting started'}</span>
         {isComplete && onToggleExpanded && (
@@ -159,7 +159,7 @@ const Checklist: React.FC<{ items: string[]; storageKey: string; done: boolean[]
               </span>
               <span className="opacity-70">{progress}%</span>
             </div>
-            <div className="h-2 bg-white/10 rounded overflow-hidden">
+            <div className="h-2 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded overflow-hidden">
               <div
                 className={`h-full transition-all duration-300 ${isComplete ? 'bg-green-500' : 'bg-accent-500'}`}
                 style={{ width: `${progress}%` }}
@@ -245,7 +245,7 @@ const PriorityActionsInbox: React.FC<{ isAgency: boolean; onActionClick: (action
       case 'high': return 'border-red-500/30 bg-red-500/5';
       case 'medium': return 'border-amber-500/30 bg-amber-500/5';
       case 'low': return 'border-blue-500/30 bg-blue-500/5';
-      default: return 'border-white/10 bg-white/5';
+      default: return 'border-slate-200 dark:border-white/10 bg-white/5';
     }
   };
 
@@ -259,7 +259,7 @@ const PriorityActionsInbox: React.FC<{ isAgency: boolean; onActionClick: (action
   };
 
   return (
-    <div className="glass rounded border border-white/10 p-4">
+    <div className="glass rounded border border-slate-200 dark:border-white/10 p-4">
       <div className="flex items-center gap-2 mb-4">
         <div className="text-lg">🎯</div>
         <div>
@@ -311,9 +311,13 @@ const AssignmentMatrix: React.FC<{ orgId: string }> = ({ orgId }) => {
   const teams = listTeams(orgId);
   const members = listMembers(orgId);
   const rows = links.map(l => {
-    const team = teams.find(t => t.name === 'Danny Avila'); // simple demo mapping
+    const artistOrg = l.artistOrgId;
+    const artistTeams = listTeams(artistOrg);
+    const team = artistTeams.length > 0 ? artistTeams[0] : null;
     const mgrs = team ? team.members.map(id => members.find(m => m.user.id === id)?.user.name || id) : [];
-    return { artist: 'Danny Avila', team: team?.name || '—', managers: mgrs };
+    const artistMembers = listMembers(artistOrg);
+    const artistName = artistMembers.length > 0 ? (artistMembers[0]?.user.name || 'Artist') : 'Artist';
+    return { artist: artistName, team: team?.name || '—', managers: mgrs };
   });
   const onRowKey = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
@@ -328,7 +332,7 @@ const AssignmentMatrix: React.FC<{ orgId: string }> = ({ orgId }) => {
     rows[nextIdx]?.focus();
   };
   return (
-    <div className="glass rounded border border-white/10 p-3">
+    <div className="glass rounded border border-slate-200 dark:border-white/10 p-3">
       <div className="text-xs opacity-70 mb-2">{t('welcome.section.assignments') || 'Managers per artist'}</div>
       <table className="w-full text-sm" role="grid" aria-label={t('welcome.section.assignments') || 'Managers per artist'}>
         <thead className="text-xs opacity-70">
@@ -340,7 +344,7 @@ const AssignmentMatrix: React.FC<{ orgId: string }> = ({ orgId }) => {
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} tabIndex={0} onKeyDown={onRowKey} className="border-t border-white/10 focus:outline-none focus:ring-1 focus:ring-accent-500/60">
+            <tr key={i} tabIndex={0} onKeyDown={onRowKey} className="border-t border-slate-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-accent-500/60">
               <td className="py-1">{r.artist}</td>
               <td className="py-1">{r.team}</td>
               <td className="py-1">{r.managers.join(', ') || '—'}</td>
@@ -383,6 +387,7 @@ const WelcomePage: React.FC = () => {
   if (!org) return null;
   const isAgency = org.type === 'agency';
   const link = getLinkAgencyToArtist();
+  const agencyLinks = isAgency ? listLinks(orgId).filter(l => l.agencyOrgId === orgId) : [];
   const title = (t('welcome.title') || 'Welcome, {name}').replace('{name}', profile.name || '');
   const subtitle = isAgency ? (t('welcome.subtitle.agency') || 'Manage your managers and artists') : (t('welcome.subtitle.artist') || 'All set for your upcoming shows');
   const checklistItems = isAgency
@@ -495,7 +500,7 @@ const WelcomePage: React.FC = () => {
                   href={`${(((import.meta as any).env?.BASE_URL ?? '/').replace(/\/$/, ''))}/dashboard?landing=1`}
                   className="btn-ghost text-xs"
                   onClick={(e) => {
-                    try { setCurrentOrgId(ORG_ARTIST_DANNY); Events.welcomeCta('dashboard'); } catch { }
+                    try { setCurrentOrgId(orgId); Events.welcomeCta('dashboard'); } catch { }
                     // Force hard navigation to ensure URL change
                     try {
                       const href = `${(((import.meta as any).env?.BASE_URL ?? '/').replace(/\/$/, ''))}/dashboard?landing=1`;
@@ -529,7 +534,7 @@ const WelcomePage: React.FC = () => {
       {/* Recent Activity & Changes Hub */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Changes Feed */}
-        <div className="glass rounded border border-white/10 p-4">
+        <div className="glass rounded border border-slate-200 dark:border-white/10 p-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="text-lg">📈</div>
             <div>
@@ -540,16 +545,16 @@ const WelcomePage: React.FC = () => {
 
           <div className="space-y-3">
             {/* Mock recent activities - in real app, these would come from activity feed */}
-            <div className="flex items-start gap-3 p-3 bg-white/5 rounded">
+            <div className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-white/5 rounded">
               <div className="w-2 h-2 rounded-full bg-green-400 mt-2"></div>
               <div className="flex-1">
                 <div className="text-sm font-medium">New show confirmed</div>
-                <div className="text-xs opacity-70">Amsterdam show for Danny Avila - March 15, 2024</div>
+                <div className="text-xs opacity-70">Show confirmed - March 15, 2024</div>
                 <div className="text-xs opacity-60 mt-1">2 hours ago</div>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-white/5 rounded">
+            <div className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-white/5 rounded">
               <div className="w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
               <div className="flex-1">
                 <div className="text-sm font-medium">Contract updated</div>
@@ -558,7 +563,7 @@ const WelcomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-white/5 rounded">
+            <div className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-white/5 rounded">
               <div className="w-2 h-2 rounded-full bg-amber-400 mt-2"></div>
               <div className="flex-1">
                 <div className="text-sm font-medium">Payment reminder sent</div>
@@ -567,7 +572,7 @@ const WelcomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-white/5 rounded">
+            <div className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-white/5 rounded">
               <div className="w-2 h-2 rounded-full bg-purple-400 mt-2"></div>
               <div className="flex-1">
                 <div className="text-sm font-medium">Team member added</div>
@@ -585,7 +590,7 @@ const WelcomePage: React.FC = () => {
         </div>
 
         {/* Quick Status Overview */}
-        <div className="glass rounded border border-white/10 p-4">
+        <div className="glass rounded border border-slate-200 dark:border-white/10 p-4">
           <div className="flex items-center gap-2 mb-4">
             <div className="text-lg">📊</div>
             <div>
@@ -631,7 +636,7 @@ const WelcomePage: React.FC = () => {
                 <span className="text-sm">Team members</span>
               </div>
               <span className="text-sm font-medium">
-                {isAgency ? listMembers(ORG_AGENCY_SHALIZI).length : listMembers(ORG_ARTIST_DANNY).length}
+                {listMembers(orgId).length}
               </span>
             </div>
           </div>
@@ -649,7 +654,7 @@ const WelcomePage: React.FC = () => {
 
         {/* Recently Viewed - Quick Access Section */}
         {recentActivities.length > 0 && (
-          <div className="glass rounded border border-white/10 p-4">
+          <div className="glass rounded border border-slate-200 dark:border-white/10 p-4">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-sm font-medium">{t('welcome.recentlyViewed') || 'Recently viewed'}</span>
             </div>
@@ -657,7 +662,7 @@ const WelcomePage: React.FC = () => {
               {recentActivities.slice(0, 3).map((activity, index) => {
                 const formatted = formatActivity(activity);
                 return (
-                  <div key={index} className="flex items-center justify-between text-sm py-1 hover:bg-white/5 rounded px-2 -mx-2 transition-colors">
+                  <div key={index} className="flex items-center justify-between text-sm py-1 hover:bg-slate-100 dark:bg-white/5 rounded px-2 -mx-2 transition-colors">
                     <span className="opacity-85">{formatted.text}</span>
                     <span className="text-xs opacity-60">{formatted.time}</span>
                   </div>
@@ -671,14 +676,14 @@ const WelcomePage: React.FC = () => {
           <div className="space-y-3">
             {/* People */}
             {isAgency ? (
-              <PeopleList title={t('welcome.section.team') || 'Your team'} items={listMembers(ORG_AGENCY_SHALIZI).map(m => ({ name: m.user.name, role: m.role }))} />
+              <PeopleList title={t('welcome.section.team') || 'Your team'} items={listMembers(orgId).map(m => ({ name: m.user.name, role: m.role }))} />
             ) : (
               <>
-                <PeopleList title={t('welcome.section.team') || 'Your team'} items={listMembers(ORG_ARTIST_DANNY).map(m => ({ name: m.user.name, role: m.role }))} />
+                <PeopleList title={t('welcome.section.team') || 'Your team'} items={listMembers(orgId).map(m => ({ name: m.user.name, role: m.role }))} />
                 {link && (
-                  <div className="glass rounded border border-white/10 p-3">
+                  <div className="glass rounded border border-slate-200 dark:border-white/10 p-3">
                     <div className="text-xs opacity-70 mb-2">{t('welcome.section.links') || 'Connections & scopes'}</div>
-                    <div className="text-sm mb-2">Shalizi Group</div>
+                    <div className="text-sm mb-2">{org?.name || 'Agency'}</div>
                     <ScopeChips scopes={link.scopes} />
                   </div>
                 )}
@@ -690,21 +695,28 @@ const WelcomePage: React.FC = () => {
             {/* Relationships */}
             {isAgency ? (
               <>
-                <div className="glass rounded border border-white/10 p-3">
+                <div className="glass rounded border border-slate-200 dark:border-white/10 p-3">
                   <div className="text-xs opacity-70 mb-2">{t('welcome.section.clients') || 'Your artists'}</div>
                   <ul className="text-sm space-y-1.5" role="list">
-                    <li role="listitem" className="flex items-center justify-between">
-                      <span>Danny Avila</span>
-                      <button className="btn-ghost text-xs" onClick={() => setShowArtistPanel(true)} title={t('welcome.inlineOnly') || 'Open inline panel from here'}>
-                        {t('welcome.openArtistInline')?.replace('{artist}', 'Danny') || 'Open Danny panel'}
-                      </button>
-                    </li>
+                    {agencyLinks.map((lnk: DemoLink, idx: number) => {
+                      const artistMembers = listMembers(lnk.artistOrgId);
+                      const artistName = artistMembers.length > 0 ? (artistMembers[0]?.user.name || 'Artist') : 'Artist';
+                      const firstName = artistName.split(' ')[0] || 'Artist';
+                      return (
+                        <li key={idx} role="listitem" className="flex items-center justify-between">
+                          <span>{artistName}</span>
+                          <button className="btn-ghost text-xs" onClick={() => setShowArtistPanel(true)} title={t('welcome.inlineOnly') || 'Open inline panel from here'}>
+                            {(t('welcome.openArtistInline') ?? 'Open {artist} panel').replace('{artist}', firstName)}
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
-                <AssignmentMatrix orgId={ORG_AGENCY_SHALIZI} />
+                <AssignmentMatrix orgId={orgId} />
               </>
             ) : (
-              <div className="glass rounded border border-white/10 p-3">
+              <div className="glass rounded border border-slate-200 dark:border-white/10 p-3">
                 <div className="text-xs opacity-70 mb-2">{t('welcome.upcoming.14d') || 'Upcoming 14 days'}</div>
                 {upcoming.length === 0 ? (
                   <EmptyState icon="📅" title={t('empty.noUpcoming') || 'No upcoming events'} desc={t('empty.noUpcoming.hint') || 'Review your calendar or connect your calendar'} cta={{ label: t('welcome.cta.connectCalendar') || 'Connect calendar', onClick: () => { try { Events.welcomeCta('calendar'); } catch { }; setShowIntegrations(true); } }} />
@@ -733,9 +745,9 @@ const WelcomePage: React.FC = () => {
               onToggleExpanded={() => setChecklistExpanded(!checklistExpanded)}
             />
             {isAgency ? (
-              <SeatsUsageBar orgId={ORG_AGENCY_SHALIZI} />
+              <SeatsUsageBar orgId={orgId} />
             ) : (
-              <div className="glass rounded border border-white/10 p-3">
+              <div className="glass rounded border border-slate-200 dark:border-white/10 p-3">
                 <div className="text-xs opacity-70 mb-2">{t('welcome.section.kpis') || 'This month'}</div>
                 <div className="grid grid-cols-3 gap-2 text-sm text-center">
                   <div className="glass rounded p-2">
@@ -774,10 +786,10 @@ const WelcomePage: React.FC = () => {
       {/* Modals and Drawers */}
       <InviteManagerModal orgId={orgId} open={showInvite} onClose={() => setShowInvite(false)} />
       <OrgSwitcher open={showSwitchOrg} onClose={() => setShowSwitchOrg(false)} />
-      <ConnectArtistDrawer open={showConnect} onClose={() => setShowConnect(false)} />
+      <ConnectArtistDrawer open={showConnect} onClose={() => setShowConnect(false)} artistOrgId={(agencyLinks.length > 0 && agencyLinks[0]) ? agencyLinks[0].artistOrgId : orgId} />
       <BrandingModal open={showBranding} onClose={() => setShowBranding(false)} />
       <IntegrationsModal open={showIntegrations} onClose={() => setShowIntegrations(false)} />
-      <ArtistQuickPanel open={showArtistPanel} onClose={() => setShowArtistPanel(false)} />
+      {(agencyLinks.length > 0 && agencyLinks[0]) && <ArtistQuickPanel open={showArtistPanel} onClose={() => setShowArtistPanel(false)} artistOrgId={agencyLinks[0].artistOrgId} />}
     </div>
   );
 }

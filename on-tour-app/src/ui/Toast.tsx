@@ -56,7 +56,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 const toneStyles: Record<ToastTone, string> = {
-  info: 'bg-white/10 border-white/20 text-white',
+  info: 'bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-white/20 text-white',
   success: 'bg-emerald-500/20 border-emerald-400/30 text-emerald-100',
   warn: 'bg-amber-500/25 border-amber-400/30 text-amber-100',
   error: 'bg-rose-600/25 border-rose-400/30 text-rose-100',

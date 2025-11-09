@@ -17,7 +17,7 @@ interface ActivityFeedProps {
   maxItems?: number;
 }
 
-export const ActivityFeed: React.FC<ActivityFeedProps> = ({
+const ActivityFeed: React.FC<ActivityFeedProps> = ({
   activities,
   maxItems = 10
 }) => {
@@ -74,19 +74,14 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     .slice(0, maxItems);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.3 }}
-      className="p-6 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm"
-    >
+    <div className="p-6 rounded-xl border border-slate-300 dark:border-white/20 bg-interactive backdrop-blur-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
             <span className="text-lg">📋</span>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-theme-primary">
               {t('activity.feed.title') || 'Activity Feed'}
             </h3>
             <p className="text-sm text-slate-400">
@@ -101,36 +96,31 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
       <div className="space-y-4">
         {recentActivities.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-8"
-          >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-interactive flex items-center justify-center">
               <span className="text-2xl">📭</span>
             </div>
             <p className="text-slate-400">
               {t('activity.feed.empty') || 'No recent activity'}
             </p>
-          </motion.div>
+          </div>
         ) : (
-          recentActivities.map((activity, index) => (
-            <motion.div
+          recentActivities.map((activity) => (
+            <div
               key={activity.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="flex items-start gap-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+              className={`
+                group flex items-start gap-4 p-4 rounded-lg
+                ${activity.priority === 'high' ? 'bg-red-500/10' : 'bg-interactive'}
+                hover:bg-slate-200 dark:bg-white/10 transition-colors-fast cursor-pointer
+              `}
             >
-              <div className={`w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 ${getActivityColor(activity.type)}`}>
-                <span className="text-lg">
-                  {getActivityIcon(activity.type)}
-                </span>
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                {getActivityIcon(activity.type)}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h4 className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
+                  <h4 className="text-sm font-medium text-slate-900 dark:text-white group-hover:text-blue-300 transition-colors-fast">
                     {activity.title}
                   </h4>
                   {getPriorityBadge(activity.priority)}
@@ -150,7 +140,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                       {Object.entries(activity.metadata).map(([key, value]) => (
                         <span
                           key={key}
-                          className="px-2 py-1 text-xs bg-white/10 rounded-full text-slate-300"
+                          className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full text-slate-300"
                         >
                           {key}: {String(value)}
                         </span>
@@ -159,23 +149,20 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))
         )}
       </div>
 
       {recentActivities.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-6 text-center"
-        >
-          <button className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+        <div className="mt-6 text-center">
+          <button className="px-4 py-2 text-sm font-medium bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-full transition-colors-fast">
             {t('activity.feed.viewAll') || 'View All Activity'}
           </button>
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 };
+
+export default React.memo(ActivityFeed);

@@ -15,7 +15,7 @@ const ScopeToggle: React.FC<{ label: string; value: boolean; onChange: (v: boole
       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
         value
           ? 'bg-accent-500/15 text-accent-300 border-accent-500/30 hover:border-accent-500/50'
-          : 'bg-white/5 text-white/60 border-white/10 hover:border-white/20'
+          : 'bg-white/5 text-slate-400 dark:text-white/60 border-slate-200 dark:border-white/10 hover:border-white/20'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       aria-pressed={value}
       aria-disabled={!!disabled}
@@ -33,16 +33,16 @@ const OrgLinks: React.FC = () => {
   return (
     <div className="px-4 sm:px-6 flex flex-col gap-4 lg:gap-5 pb-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:shadow-md hover:shadow-accent-500/5">
-        <div className="relative px-6 pt-5 pb-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+      <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md hover:shadow-accent-500/5">
+        <div className="relative px-6 pt-5 pb-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1 h-6 rounded-full bg-gradient-to-b from-accent-500 to-blue-500" />
               <div>
-                <h1 className="text-lg font-semibold tracking-tight text-white">
+                <h1 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
                   {t('org.links.title') || 'Connections'}
                 </h1>
-                <p className="text-xs text-white/60 mt-1">Manage your partner links and access scopes</p>
+                <p className="text-xs text-slate-400 dark:text-white/60 mt-1">Manage your partner links and access scopes</p>
               </div>
             </div>
           </div>
@@ -54,11 +54,11 @@ const OrgLinks: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 p-12 text-center"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 p-12 text-center"
         >
           <Link className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-sm text-white/70 mb-1">No active connections</p>
-          <p className="text-xs text-white/50">Links will appear here once established</p>
+          <p className="text-sm text-slate-500 dark:text-white/70 mb-1">No active connections</p>
+          <p className="text-xs text-slate-300 dark:text-white/50">Links will appear here once established</p>
         </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
@@ -72,7 +72,7 @@ const OrgLinks: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 whileHover={{ scale: 1.01 }}
-                className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300"
+                className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300"
               >
                 <div className="p-5 space-y-4">
                   {/* Header */}
@@ -82,14 +82,14 @@ const OrgLinks: React.FC = () => {
                         <Link className="w-4 h-4 text-accent-500" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-white">{l.id.replace(/link_/, '')}</p>
-                        <p className="text-xs text-white/50 mt-0.5">Partnership link</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{l.id.replace(/link_/, '')}</p>
+                        <p className="text-xs text-slate-300 dark:text-white/50 mt-0.5">Partnership link</p>
                       </div>
                     </div>
                     <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${
                       l.status === 'active'
                         ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
-                        : 'bg-white/5 text-white/70 border-white/10'
+                        : 'bg-white/5 text-slate-500 dark:text-white/70 border-white/10'
                     }`}>
                       {l.status === 'active' && <CheckCircle2 className="w-3 h-3" />}
                       <span className="capitalize">{l.status}</span>
@@ -97,7 +97,7 @@ const OrgLinks: React.FC = () => {
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs text-white/60 leading-relaxed">
+                  <p className="text-xs text-slate-400 dark:text-white/60 leading-relaxed">
                     {isAgency ? 'Manage access permissions for connected artists' : 'Permissions granted to your partner'}
                   </p>
 
@@ -107,7 +107,7 @@ const OrgLinks: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Eye className="w-4 h-4 text-blue-400" />
-                        <label className="text-xs font-semibold text-white">Shows</label>
+                        <label className="text-xs font-semibold text-slate-900 dark:text-white">Shows</label>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <ScopeToggle label="Read" value={true} onChange={()=>{}} disabled />
@@ -127,7 +127,7 @@ const OrgLinks: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Edit2 className="w-4 h-4 text-purple-400" />
-                        <label className="text-xs font-semibold text-white">Travel</label>
+                        <label className="text-xs font-semibold text-slate-900 dark:text-white">Travel</label>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <ScopeToggle label="Read" value={true} onChange={()=>{}} disabled />
@@ -147,7 +147,7 @@ const OrgLinks: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Lock className="w-4 h-4 text-red-400" />
-                        <label className="text-xs font-semibold text-white">Finance</label>
+                        <label className="text-xs font-semibold text-slate-900 dark:text-white">Finance</label>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <ScopeToggle
@@ -173,7 +173,7 @@ const OrgLinks: React.FC = () => {
                   </div>
 
                   {/* Footer Note */}
-                  <p className="text-[11px] text-white/50 leading-relaxed border-t border-white/10 pt-3">
+                  <p className="text-[11px] text-slate-300 dark:text-white/50 leading-relaxed border-t border-slate-200 dark:border-white/10 pt-3">
                     {isAgency
                       ? '💡 Agencies can manage scope permissions. Export access is always restricted in this demo.'
                       : '🔒 Contact your partner to adjust these permissions'}
@@ -188,13 +188,13 @@ const OrgLinks: React.FC = () => {
       {/* Info Card */}
       <motion.div
         whileHover={{ scale: 1.01 }}
-        className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+        className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
       >
         <div className="flex items-start gap-3">
           <Link className="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-white mb-1">Connection Scopes</p>
-            <p className="text-xs text-white/60 leading-relaxed">
+            <p className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Connection Scopes</p>
+            <p className="text-xs text-slate-400 dark:text-white/60 leading-relaxed">
               Control what data and features your partners can access. Permissions are managed from the agency side.
             </p>
           </div>

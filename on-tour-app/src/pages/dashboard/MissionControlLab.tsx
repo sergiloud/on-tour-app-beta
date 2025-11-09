@@ -47,7 +47,7 @@ function SizeCycler({ tile, onChange }: { tile: Tile; onChange: (size: 'sm' | 'm
     onChange(n);
   };
   return (
-    <button className="text-[11px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/20" onClick={next} title="Cycle size">{tile.size?.toUpperCase() || 'MD'}</button>
+    <button className="text-[11px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20" onClick={next} title="Cycle size">{tile.size?.toUpperCase() || 'MD'}</button>
   );
 }
 
@@ -157,7 +157,7 @@ export const MissionControlLab: React.FC = () => {
     }
     if (tile.type === 'actionHub') return <ActionHub key={key} kinds={tile.kinds} />;
     if (tile.type === 'financeQuicklook') return (
-      <React.Suspense key={key} fallback={<Card className="p-4"><div className="h-4 w-28 bg-white/10 rounded mb-2" /><div className="space-y-1">{Array.from({ length: 3 }).map((_, i) => (<div key={i} className="h-24 bg-white/5 rounded" />))}</div></Card>}>
+      <React.Suspense key={key} fallback={<Card className="p-4"><div className="h-4 w-28 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded mb-2" /><div className="space-y-1">{Array.from({ length: 3 }).map((_, i) => (<div key={i} className="h-24 bg-slate-100 dark:bg-white/5 rounded" />))}</div></Card>}>
         <FinanceQuicklookLazy />
       </React.Suspense>
     );
@@ -219,16 +219,16 @@ export const MissionControlLab: React.FC = () => {
         onDragOver={(e) => onDragOver(e, col, index)}
         onDrop={(e) => onDrop(e, col, index)}
       >
-        <div className="absolute -top-2 left-2 text-[10px] px-1 py-0.5 rounded bg-white/10 border border-white/10">Drag</div>
+        <div className="absolute -top-2 left-2 text-[10px] px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-white/10">Drag</div>
         {/* keyboard move buttons */}
         <div className="absolute -top-3 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20" onClick={() => move('up')} aria-label="Move up"><ArrowUpIcon /></button>
-          <button className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20" onClick={() => move('down')} aria-label="Move down"><ArrowDownIcon /></button>
+          <button className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20" onClick={() => move('up')} aria-label="Move up"><ArrowUpIcon /></button>
+          <button className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20" onClick={() => move('down')} aria-label="Move down"><ArrowDownIcon /></button>
         </div>
         {renderWidget(tile, tile.id)}
         {/* resizer handle */}
         <div ref={resizerRef} className="absolute bottom-0 left-0 right-0 h-2 cursor-row-resize bg-transparent">
-          <div className="mx-auto w-12 h-1 rounded bg-white/20" aria-hidden />
+          <div className="mx-auto w-12 h-1 rounded bg-slate-200 dark:bg-white/20" aria-hidden />
         </div>
         {over && over.col === col && over.index === index && (
           <div className="absolute -top-2 left-0 right-0 h-1 bg-accent-500/70 rounded" aria-hidden />
@@ -239,7 +239,7 @@ export const MissionControlLab: React.FC = () => {
 
   const EmptyDropzone: React.FC<{ col: 'main' | 'side' }> = ({ col }) => (
     <div
-      className="rounded-md border border-dashed border-white/10 p-6 text-center text-[12px] opacity-70"
+      className="rounded-md border border-dashed border-slate-200 dark:border-white/10 p-6 text-center text-[12px] opacity-70"
       onDragOver={(e) => onDragOver(e, col, 0)}
       onDrop={(e) => onDrop(e, col, 0)}
     >
@@ -250,7 +250,7 @@ export const MissionControlLab: React.FC = () => {
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-6 space-y-5 text-[13px] md:text-[13px]">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-xl hero-gradient border border-white/10 p-4 md:p-6">
+      <div className="relative overflow-hidden rounded-xl hero-gradient border border-slate-200 dark:border-white/10 p-4 md:p-6">
         <div className="relative z-10">
           <h2 className="section-title text-glow text-2xl md:text-3xl">{t('lab.header')}</h2>
           <p className="subtle mt-1 text-[12px] md:text-[12px]">{t('lab.subheader')}</p>
@@ -258,31 +258,31 @@ export const MissionControlLab: React.FC = () => {
             <span className="opacity-75">{t('lab.template')}:</span>
             <div className="flex gap-1">
               {views.map(v => (
-                <button key={v.id} onClick={() => setDashboardView(v.id as any)} aria-pressed={dashboardView === v.id} className={`px-2.5 py-1 rounded border ${dashboardView === v.id ? 'bg-accent-500 text-black border-transparent' : 'bg-white/10 border-white/10 hover:bg-white/15'}`}>{v.label}</button>
+                <button key={v.id} onClick={() => setDashboardView(v.id as any)} aria-pressed={dashboardView === v.id} className={`px-2.5 py-1 rounded border ${dashboardView === v.id ? 'bg-accent-500 text-black border-transparent' : 'bg-slate-200 dark:bg-white/10 border-slate-200 dark:border-white/10 hover:bg-white/15'}`}>{v.label}</button>
               ))}
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <button className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/15" onClick={onReset}>{t('lab.resetToTemplate')}</button>
-              <Link to="/dashboard" className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/15">{t('lab.backToDashboard')}</Link>
+              <button className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={onReset}>{t('lab.resetToTemplate')}</button>
+              <Link to="/dashboard" className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15">{t('lab.backToDashboard')}</Link>
             </div>
           </div>
           <div className="mt-2 flex items-center gap-2 text-[11px]">
-            <input className="bg-white/5 rounded px-2 py-1 w-40" placeholder={t('lab.layoutName')} value={savedName} onChange={e => setSavedName(e.target.value)} aria-label={t('lab.layoutName')} />
-            <button className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/15" onClick={() => { const name = savedName.trim() || `lab-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}`; persistSaved({ ...savedLayouts, [name]: tiles }); setSavedName(''); }}>{t('lab.save')}</button>
+            <input className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1 w-40" placeholder={t('lab.layoutName')} value={savedName} onChange={e => setSavedName(e.target.value)} aria-label={t('lab.layoutName')} />
+            <button className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={() => { const name = savedName.trim() || `lab-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}`; persistSaved({ ...savedLayouts, [name]: tiles }); setSavedName(''); }}>{t('lab.save')}</button>
             <div className="relative">
-              <select className="bg-white/5 rounded px-1 py-1" onChange={(e) => { const n = e.target.value; if (!n) return; const lay = savedLayouts[n]; if (lay) setTiles(lay); e.currentTarget.selectedIndex = 0; }} aria-label={t('lab.applySaved')}>
+              <select className="bg-slate-100 dark:bg-white/5 rounded px-1 py-1" onChange={(e) => { const n = e.target.value; if (!n) return; const lay = savedLayouts[n]; if (lay) setTiles(lay); e.currentTarget.selectedIndex = 0; }} aria-label={t('lab.applySaved')}>
                 <option value="">{t('lab.apply')}</option>
                 {Object.keys(savedLayouts).map(n => (<option key={n} value={n}>{n}</option>))}
               </select>
             </div>
             <div className="relative">
-              <select className="bg-white/5 rounded px-1 py-1" onChange={(e) => { const n = e.target.value; if (!n) return; const { [n]: _, ...rest } = savedLayouts; persistSaved(rest); e.currentTarget.selectedIndex = 0; }} aria-label={t('lab.deleteSaved')}>
+              <select className="bg-slate-100 dark:bg-white/5 rounded px-1 py-1" onChange={(e) => { const n = e.target.value; if (!n) return; const { [n]: _, ...rest } = savedLayouts; persistSaved(rest); e.currentTarget.selectedIndex = 0; }} aria-label={t('lab.deleteSaved')}>
                 <option value="">{t('lab.delete')}</option>
                 {Object.keys(savedLayouts).map(n => (<option key={n} value={n}>{n}</option>))}
               </select>
             </div>
-            <button className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/15" onClick={async () => { const json = JSON.stringify(savedLayouts, null, 2); try { await navigator.clipboard.writeText(json); toast.success(t('actions.toast.export') || 'Export copied'); } catch { const w = window.open('', '_blank'); w?.document.write(`<pre>${json}</pre>`); toast.info(t('copy.manual.title') || 'Manual copy'); } }}>{t('lab.export')}</button>
-            <button className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/15" onClick={() => { const raw = prompt(t('actions.import.prompt') || 'Paste Lab layouts JSON'); if (!raw) return; try { const obj = JSON.parse(raw); if (obj && typeof obj === 'object') { persistSaved(obj); toast.success(t('actions.toast.imported') || 'Imported'); } } catch { toast.error(t('actions.toast.import_invalid') || 'Invalid JSON'); } }}>{t('lab.import')}</button>
+            <button className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={async () => { const json = JSON.stringify(savedLayouts, null, 2); try { await navigator.clipboard.writeText(json); toast.success(t('actions.toast.export') || 'Export copied'); } catch { const w = window.open('', '_blank'); w?.document.write(`<pre>${json}</pre>`); toast.info(t('copy.manual.title') || 'Manual copy'); } }}>{t('lab.export')}</button>
+            <button className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={() => { const raw = prompt(t('actions.import.prompt') || 'Paste Lab layouts JSON'); if (!raw) return; try { const obj = JSON.parse(raw); if (obj && typeof obj === 'object') { persistSaved(obj); toast.success(t('actions.toast.imported') || 'Imported'); } } catch { toast.error(t('actions.toast.import_invalid') || 'Invalid JSON'); } }}>{t('lab.import')}</button>
           </div>
         </div>
       </div>

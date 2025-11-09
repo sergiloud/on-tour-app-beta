@@ -143,9 +143,9 @@ const SkeletonKPI: React.FC<{ label: string }> = ({ label }) => (
   <div className="kpi-item min-w-[88px]">
     {/* Expose label text for accessibility while keeping visual skeleton */}
     <span className="sr-only">{label}</span>
-    <div className="h-1.5 w-14 rounded bg-white/10 mb-1" aria-hidden />
-    <div className="h-3.5 w-16 rounded bg-white/15 mb-1 animate-pulse" aria-label={`${label} loading`} />
-    <div className="h-1.5 w-24 rounded-full bg-white/10 overflow-hidden">
+    <div className="h-1.5 w-14 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 mb-1" aria-hidden />
+    <div className="h-3.5 w-16 rounded bg-slate-300 dark:bg-white/15 mb-1 animate-pulse" aria-label={`${label} loading`} />
+    <div className="h-1.5 w-24 rounded-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 overflow-hidden">
       <div className="h-full w-1/3 bg-gradient-to-r from-white/25 to-white/10 animate-[pulse_1.2s_ease-in-out_infinite]" />
     </div>
   </div>

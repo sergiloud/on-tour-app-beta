@@ -114,7 +114,7 @@ const ConflictDetector: React.FC<Props> = ({ events, onResolveConflict }) => {
           <div className="text-xl">✓</div>
           <div>
             <p className="text-sm font-semibold text-green-300">No Conflicts</p>
-            <p className="text-xs text-white/60">Your calendar looks good. No scheduling issues detected.</p>
+            <p className="text-xs text-slate-400 dark:text-white/60">Your calendar looks good. No scheduling issues detected.</p>
           </div>
         </div>
       </motion.div>
@@ -129,16 +129,16 @@ const ConflictDetector: React.FC<Props> = ({ events, onResolveConflict }) => {
         animate={{ opacity: 1 }}
         className="grid grid-cols-3 gap-3"
       >
-        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-          <p className="text-xs text-white/60 mb-1">Total Issues</p>
-          <p className="text-lg font-bold text-white">{stats.total}</p>
+        <div className="p-3 rounded-lg bg-slate-100 dark:bg-white/5 border border-white/10">
+          <p className="text-xs text-slate-400 dark:text-white/60 mb-1">Total Issues</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-white">{stats.total}</p>
         </div>
         <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30">
-          <p className="text-xs text-white/60 mb-1">Critical</p>
+          <p className="text-xs text-slate-400 dark:text-white/60 mb-1">Critical</p>
           <p className="text-lg font-bold text-red-400">{stats.critical}</p>
         </div>
         <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-          <p className="text-xs text-white/60 mb-1">Warnings</p>
+          <p className="text-xs text-slate-400 dark:text-white/60 mb-1">Warnings</p>
           <p className="text-lg font-bold text-yellow-400">{stats.warnings}</p>
         </div>
       </motion.div>
@@ -161,8 +161,8 @@ const ConflictDetector: React.FC<Props> = ({ events, onResolveConflict }) => {
               {/* Conflict Header */}
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white">{conflict.suggestion}</p>
-                  <div className="flex gap-2 mt-1 text-xs text-white/60">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{conflict.suggestion}</p>
+                  <div className="flex gap-2 mt-1 text-xs text-slate-400 dark:text-white/60">
                     <span>
                       {conflict.event1.title} ({new Date(conflict.event1.startDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })})
                     </span>
@@ -227,7 +227,7 @@ const ConflictDetector: React.FC<Props> = ({ events, onResolveConflict }) => {
                       'ignore'
                     )
                   }
-                  className="flex-1 text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white font-medium transition-colors"
+                  className="flex-1 text-xs px-2 py-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10 text-white font-medium transition-colors"
                 >
                   Dismiss
                 </motion.button>

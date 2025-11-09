@@ -15,8 +15,8 @@ export const StatusBreakdown: React.FC = () => {
   <h3 className="widget-title">{t('finance.byStatus')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {[1,2,3].map(i => (
-            <div key={i} className="flex items-center justify-between px-3 py-2 rounded-md bg-white/5 border border-white/10 min-w-0 animate-pulse">
-              <div className="h-3 bg-white/10 rounded w-24" />
+            <div key={i} className="flex items-center justify-between px-3 py-2 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 min-w-0 animate-pulse">
+              <div className="h-3 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded w-24" />
               <div className="h-4 bg-white/20 rounded w-16" />
             </div>
           ))}
@@ -25,7 +25,7 @@ export const StatusBreakdown: React.FC = () => {
     );
   }
   const Item: React.FC<{ label: string; count: number; total: number; tone: string }>=({ label, count, total, tone })=> (
-    <div className="flex items-center justify-between px-3 py-2 rounded-md bg-white/5 border border-white/10 min-w-0">
+    <div className="flex items-center justify-between px-3 py-2 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 min-w-0">
       <span className="text-xs opacity-80 truncate">{label} <span className="opacity-60">({count})</span></span>
       <strong className={`text-sm whitespace-nowrap tabular-nums ${tone}`}>{fmtMoney ? fmtMoney(total) : fmtEuro(total)}</strong>
     </div>
@@ -39,12 +39,12 @@ export const StatusBreakdown: React.FC = () => {
           </div>
       </div>
         <div className="flex items-center gap-1 flex-wrap text-[11px]">
-          <button className={`px-2 py-0.5 rounded border bg-white/5 hover:bg-white/10 border-white/10`} onClick={()=> setSelectedStatuses(['confirmed','pending','offer'])} title={t('ah.filter.all')||'All'}>{t('ah.filter.all')||'All'}</button>
-          <button className={`px-2 py-0.5 rounded border bg-white/5 hover:bg-white/10 border-white/10`} onClick={()=> setSelectedStatuses([])} title={t('common.hide')||'None'}>{t('common.hide')||'None'}</button>
+          <button className={`px-2 py-0.5 rounded border bg-white/5 hover:bg-slate-200 dark:bg-white/10 border-white/10`} onClick={()=> setSelectedStatuses(['confirmed','pending','offer'])} title={t('ah.filter.all')||'All'}>{t('ah.filter.all')||'All'}</button>
+          <button className={`px-2 py-0.5 rounded border bg-white/5 hover:bg-slate-200 dark:bg-white/10 border-white/10`} onClick={()=> setSelectedStatuses([])} title={t('common.hide')||'None'}>{t('common.hide')||'None'}</button>
         {(['confirmed','pending','offer'] as const).map(st => {
           const count = st==='confirmed'? s.confirmed.count : st==='pending'? s.pending.count : s.offer.count;
           return (
-            <button key={st} className={`px-2 py-0.5 rounded border ${selectedStatuses.includes(st)?'bg-accent-500 text-black border-transparent':'bg-white/5 hover:bg-white/10 border-white/10'}`}
+            <button key={st} className={`px-2 py-0.5 rounded border ${selectedStatuses.includes(st)?'bg-accent-500 text-black border-transparent':'bg-white/5 hover:bg-slate-200 dark:bg-white/10 border-white/10'}`}
               onClick={()=> {
                 const next = selectedStatuses.includes(st) ? selectedStatuses.filter(x=> x!==st) : [...selectedStatuses, st];
                 setSelectedStatuses(next);

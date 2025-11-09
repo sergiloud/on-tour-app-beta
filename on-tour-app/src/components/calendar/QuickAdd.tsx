@@ -92,7 +92,7 @@ const QuickAdd: React.FC<Props> = ({ dateStr, selectedRange = [], onSave, onCanc
 
   return (
     <motion.div
-      className="absolute inset-x-2 md:inset-x-3 top-8 md:top-9 z-20 glass rounded-lg p-2.5 md:p-3 border border-white/20 shadow-2xl backdrop-blur-md"
+      className="absolute inset-x-2 md:inset-x-3 top-8 md:top-9 z-20 glass rounded-lg p-2.5 md:p-3 border border-slate-300 dark:border-white/20 shadow-2xl backdrop-blur-md"
       role="dialog"
       aria-label={t('calendar.quickAdd')||'Quick add show'}
       onClick={e=> e.stopPropagation()}
@@ -161,7 +161,7 @@ const SimpleMode: React.FC<{
       <input
         ref={ref}
         placeholder={t('calendar.quickAdd.placeholder')||'City CC Fee (optional)… e.g., Madrid ES 12000'}
-        className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/20 focus:border-accent-400 text-[10px] md:text-xs w-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-400/50"
+        className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-accent-400 text-[10px] md:text-xs w-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-400/50"
         value={value}
         onChange={e=> setValue(e.target.value)}
         onKeyDown={e=> { if(e.key==='Enter'){ e.preventDefault(); onSubmit(value); } if(e.key==='Escape'){ e.preventDefault(); onCancel(); } }}
@@ -173,7 +173,7 @@ const SimpleMode: React.FC<{
           {recents.map(r => (
             <motion.button
               key={r.city+'|'+r.country}
-              className="text-[9px] px-1 py-0.5 rounded-sm bg-white/10 border border-white/15 hover:bg-white/15 hover:border-white/20 font-medium transition-all duration-200"
+              className="text-[9px] px-1 py-0.5 rounded-sm bg-slate-200 dark:bg-white/10 border border-white/15 hover:bg-slate-300 dark:hover:bg-white/15 hover:border-slate-300 dark:border-white/20 font-medium transition-all duration-200"
               onClick={()=> onSubmit(`${r.city} ${r.country}`)}
               whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.2)' }}
               whileTap={{ scale: 0.95 }}
@@ -203,12 +203,12 @@ const AdvancedMode: React.FC<{
   const { currency } = useSettings();
   return (
     <div className="flex flex-col md:flex-row items-stretch md:items-center gap-1.5 md:gap-2">
-      <input ref={firstRef} placeholder={t('shows.editor.label.city')||'City'} className="px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 focus:border-accent-400 text-xs md:text-sm w-full md:w-[36%] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-400/50" value={city} onChange={e=> setCity(e.target.value)} onKeyDown={e=>{ if (e.key==='Enter'){ e.preventDefault(); onSubmit(); } if (e.key==='Escape'){ e.preventDefault(); onCancel(); } }} />
+      <input ref={firstRef} placeholder={t('shows.editor.label.city')||'City'} className="px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-accent-400 text-xs md:text-sm w-full md:w-[36%] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-400/50" value={city} onChange={e=> setCity(e.target.value)} onKeyDown={e=>{ if (e.key==='Enter'){ e.preventDefault(); onSubmit(); } if (e.key==='Escape'){ e.preventDefault(); onCancel(); } }} />
       <div className="w-full md:w-[28%] min-w-[140px]">
         <CountrySelect value={country} onChange={code=> setCountry(code)} data-field="quick-country" />
       </div>
       <div className="relative w-full md:w-[22%]">
-        <input type="number" min={0} placeholder={t('shows.editor.label.fee')||'Fee'} className="px-2.5 md:px-3 py-1.5 md:py-2 pr-8 md:pr-10 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 focus:border-accent-400 text-xs md:text-sm w-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-400/50" value={fee} onChange={e=> setFee(e.target.value)} onKeyDown={e=>{ if (e.key==='Enter'){ e.preventDefault(); onSubmit(); } if (e.key==='Escape'){ e.preventDefault(); onCancel(); } }} />
+        <input type="number" min={0} placeholder={t('shows.editor.label.fee')||'Fee'} className="px-2.5 md:px-3 py-1.5 md:py-2 pr-8 md:pr-10 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-accent-400 text-xs md:text-sm w-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-400/50" value={fee} onChange={e=> setFee(e.target.value)} onKeyDown={e=>{ if (e.key==='Enter'){ e.preventDefault(); onSubmit(); } if (e.key==='Escape'){ e.preventDefault(); onCancel(); } }} />
         <span className="absolute right-2.5 md:right-3 top-1/2 -translate-y-1/2 text-xs md:text-xs opacity-70 font-medium">{currency}</span>
       </div>
       <div className="flex gap-1.5 md:gap-2">
@@ -223,7 +223,7 @@ const AdvancedMode: React.FC<{
           {t('common.add')||'Add'}
         </motion.button>
         <motion.button
-          className="px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg bg-white/10 hover:bg-white/15 text-xs md:text-sm font-medium transition-all duration-200"
+          className="px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-xs md:text-sm font-medium transition-all duration-200"
           onClick={onCancel}
           whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.2)' }}
           whileTap={{ scale: 0.95 }}

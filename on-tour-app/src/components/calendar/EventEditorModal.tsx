@@ -90,14 +90,14 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
 
           <motion.div
             onClick={(e) => e.stopPropagation()}
-            className="relative rounded-xl border border-white/15 shadow-2xl w-full max-w-2xl bg-gradient-to-br from-white/5 via-white/3 to-transparent backdrop-blur-xl max-h-[90vh] overflow-y-auto"
+            className="relative rounded-xl border border-white/15 shadow-2xl w-full max-w-2xl bg-gradient-to-br from-slate-100 dark:from-white/5 via-white/3 to-transparent backdrop-blur-xl max-h-[90vh] overflow-y-auto"
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.25, type: 'spring', stiffness: 350, damping: 30 }}
           >
             {/* Header */}
-            <div className="sticky top-0 px-6 py-6 border-b border-white/10 flex items-start justify-between bg-gradient-to-b from-white/4 to-transparent backdrop-blur-sm">
+            <div className="sticky top-0 px-6 py-6 border-b border-slate-200 dark:border-white/10 flex items-start justify-between bg-gradient-to-b from-white/4 to-transparent backdrop-blur-sm">
               <div className="flex-1">
                 <h2 className="text-base font-bold text-white tracking-tight">Edit Event</h2>
                 <div className="flex items-center gap-2 mt-2">
@@ -105,7 +105,7 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
                     {eventTypeLabel}
                   </div>
                   {event && (
-                    <span className="text-xs text-white/60">
+                    <span className="text-xs text-slate-400 dark:text-white/60">
                       {event.kind === 'show' ? event.date : event.date}
                     </span>
                   )}
@@ -114,11 +114,11 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
               <motion.button
                 type="button"
                 onClick={onClose}
-                className="ml-4 p-1.5 rounded-md hover:bg-white/10 transition-colors flex-shrink-0"
+                className="ml-4 p-1.5 rounded-md hover:bg-slate-200 dark:bg-white/10 transition-colors flex-shrink-0"
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.92 }}
               >
-                <svg className="w-5 h-5 text-white/50 hover:text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-slate-300 dark:text-white/50 hover:text-slate-500 dark:text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </motion.button>
@@ -128,7 +128,7 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
             <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5">
               {/* Title */}
               <div className="flex flex-col gap-2">
-                <label htmlFor="title" className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                <label htmlFor="title" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
                   Event Name <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -139,20 +139,20 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={event?.kind === 'show' ? 'e.g., Barcelona, Madrid...' : 'e.g., Team Meeting, Bus Tour...'}
-                  className="px-4 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:bg-white/10 transition-all placeholder:text-white/30 text-white text-sm focus:outline-none"
+                  className="px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:bg-slate-200 dark:bg-white/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-white text-sm focus:outline-none"
                 />
                 <div className="flex justify-between">
-                  <span className="text-[10px] text-white/50">
+                  <span className="text-[10px] text-slate-300 dark:text-white/50">
                     {event?.kind === 'show' ? 'City or venue name' : 'Event title or name'}
                   </span>
-                  <span className="text-[10px] text-white/50">{title.length}/80</span>
+                  <span className="text-[10px] text-slate-300 dark:text-white/50">{title.length}/80</span>
                 </div>
               </div>
 
               {/* Description (only for non-show events) */}
               {event?.kind !== 'show' && (
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                  <label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
                     Description
                   </label>
                   <textarea
@@ -162,11 +162,11 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Add notes, details, or additional information about this event..."
                     rows={4}
-                    className="px-4 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:bg-white/10 transition-all placeholder:text-white/30 text-white text-sm focus:outline-none resize-none"
+                    className="px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:bg-slate-200 dark:bg-white/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-white text-sm focus:outline-none resize-none"
                   />
                   <div className="flex justify-between">
-                    <span className="text-[10px] text-white/50">Add any additional details about this event</span>
-                    <span className="text-[10px] text-white/50">{description.length}/500</span>
+                    <span className="text-[10px] text-slate-300 dark:text-white/50">Add any additional details about this event</span>
+                    <span className="text-[10px] text-slate-300 dark:text-white/50">{description.length}/500</span>
                   </div>
                 </div>
               )}
@@ -174,7 +174,7 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
               {/* Location (only for non-show events) */}
               {event?.kind !== 'show' && (
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="location" className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                  <label htmlFor="location" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
                     Location
                   </label>
                   <input
@@ -184,11 +184,11 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="e.g., Studio A, Grand Hall, Conference Room 3..."
-                    className="px-4 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:bg-white/10 transition-all placeholder:text-white/30 text-white text-sm focus:outline-none"
+                    className="px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:bg-slate-200 dark:bg-white/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-white text-sm focus:outline-none"
                   />
                   <div className="flex justify-between">
-                    <span className="text-[10px] text-white/50">Venue, room, or place where the event occurs</span>
-                    <span className="text-[10px] text-white/50">{location.length}/100</span>
+                    <span className="text-[10px] text-slate-300 dark:text-white/50">Venue, room, or place where the event occurs</span>
+                    <span className="text-[10px] text-slate-300 dark:text-white/50">{location.length}/100</span>
                   </div>
                 </div>
               )}
@@ -196,8 +196,8 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
               {/* Event Info */}
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50 mb-1">Date</p>
-                  <p className="text-sm text-white/80">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 dark:text-white/50 mb-1">Date</p>
+                  <p className="text-sm text-slate-600 dark:text-white/80">
                     {event && new Date(event.date).toLocaleDateString(undefined, {
                       weekday: 'short',
                       month: 'short',
@@ -208,14 +208,14 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
                 </div>
                 {event?.kind === 'show' && (
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50 mb-1">Status</p>
-                    <p className="text-sm text-white/80 capitalize">{(event as Show).status || 'pending'}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 dark:text-white/50 mb-1">Status</p>
+                    <p className="text-sm text-slate-600 dark:text-white/80 capitalize">{(event as Show).status || 'pending'}</p>
                   </div>
                 )}
                 {event?.kind !== 'show' && 'btnType' in event && (
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50 mb-1">Type</p>
-                    <p className="text-sm text-white/80 capitalize">{event.btnType || 'event'}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 dark:text-white/50 mb-1">Type</p>
+                    <p className="text-sm text-slate-600 dark:text-white/80 capitalize">{event.btnType || 'event'}</p>
                   </div>
                 )}
               </div>
@@ -226,7 +226,7 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
                   type="button"
                   onClick={onClose}
                   disabled={isSaving}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:bg-white/10 text-white text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:bg-slate-200 dark:bg-white/10 text-white text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

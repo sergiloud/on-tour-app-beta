@@ -83,7 +83,7 @@ const AirportAutocomplete: React.FC<Props> = ({ label, altLabel, value, placehol
       />
       <div id={liveId} className="sr-only" aria-live="polite">{announce}</div>
       {open && (
-        <ul role="listbox" id={listId} className="absolute top-full z-20 mt-1 w-full rounded border border-white/10 bg-black/70 backdrop-blur p-1 max-h-60 overflow-auto">
+        <ul role="listbox" id={listId} className="absolute top-full z-20 mt-1 w-full rounded border border-slate-200 dark:border-white/10 bg-black/70 backdrop-blur p-1 max-h-60 overflow-auto">
           {results.length===0 && (
             <li className="px-2 py-1 text-xs opacity-70" aria-disabled>{t('common.noResults')||'No results'}</li>
           )}

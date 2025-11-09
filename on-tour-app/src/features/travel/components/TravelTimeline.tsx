@@ -126,7 +126,7 @@ export const TravelTimeline: React.FC<TravelTimelineProps> = ({ onGapClick, onFl
           return (
             <div
               key={date}
-              className={`flex items-center gap-3 p-3 rounded-lg glass hover:bg-white/5 transition-all duration-200 ${dragOverDate === date
+              className={`flex items-center gap-3 p-3 rounded-lg glass hover:bg-slate-100 dark:hover:bg-white/5 transition-all duration-200 ${dragOverDate === date
                   ? 'ring-2 ring-accent-400 bg-accent-500/10 shadow-lg scale-[1.02]'
                   : successDate === date
                     ? 'ring-2 ring-green-400 bg-green-500/10 shadow-lg animate-success-flash'

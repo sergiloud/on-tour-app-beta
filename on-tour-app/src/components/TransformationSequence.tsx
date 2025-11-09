@@ -56,7 +56,7 @@ export const TransformationSequence = ({ className }: TransformationSequenceProp
         >
           <div className="w-full max-w-6xl mx-6">
             {/* Spreadsheet Header */}
-            <div className="flex items-center gap-3 border-b border-white/10 px-6 py-3 text-left text-xs uppercase tracking-[0.35em] text-white/50 mb-4">
+            <div className="flex items-center gap-3 border-b border-slate-200 dark:border-white/10 px-6 py-3 text-left text-xs uppercase tracking-[0.35em] text-slate-300 dark:text-white/50 mb-4">
               <motion.span style={{ scale: dateColumnScale }}>Date</motion.span>
               <motion.span style={{ scale: cityColumnScale }}>City</motion.span>
               <motion.span style={{ scale: venueColumnScale }}>Venue</motion.span>
@@ -78,46 +78,46 @@ export const TransformationSequence = ({ className }: TransformationSequenceProp
             {/* Spreadsheet Rows */}
             <div className="space-y-4">
               <motion.div
-                className="grid grid-cols-9 gap-3 px-6 py-4 rounded-lg border border-white/10 bg-black/40"
+                className="grid grid-cols-9 gap-3 px-6 py-4 rounded-lg border border-slate-200 dark:border-white/10 bg-black/40"
                 style={{ y: row1Y }}
               >
-                <span className="text-white/70">Apr 02</span>
-                <span className="text-white/70">Madrid</span>
-                <span className="text-white/70">WiZink Center</span>
-                <span className="text-white/70">Sonia (promoter)</span>
+                <span className="text-slate-500 dark:text-white/70">Apr 02</span>
+                <span className="text-slate-500 dark:text-white/70">Madrid</span>
+                <span className="text-slate-500 dark:text-white/70">WiZink Center</span>
+                <span className="text-slate-500 dark:text-white/70">Sonia (promoter)</span>
                 <span className="text-red-400">#REF!</span>
                 <span className="text-red-400">#VALUE!</span>
-                <span className="text-white/70">$42,500</span>
+                <span className="text-slate-500 dark:text-white/70">$42,500</span>
                 <span className="text-red-400">#REF!</span>
                 <span className="text-red-400 font-bold">-1,250.00</span>
               </motion.div>
 
               <motion.div
-                className="grid grid-cols-9 gap-3 px-6 py-4 rounded-lg border border-white/10 bg-black/40"
+                className="grid grid-cols-9 gap-3 px-6 py-4 rounded-lg border border-slate-200 dark:border-white/10 bg-black/40"
                 style={{ y: row2Y }}
               >
-                <span className="text-white/70">Apr 05</span>
-                <span className="text-white/70">Berlin</span>
-                <span className="text-white/70">Tempodrom</span>
-                <span className="text-white/70">Email??</span>
+                <span className="text-slate-500 dark:text-white/70">Apr 05</span>
+                <span className="text-slate-500 dark:text-white/70">Berlin</span>
+                <span className="text-slate-500 dark:text-white/70">Tempodrom</span>
+                <span className="text-slate-500 dark:text-white/70">Email??</span>
                 <span className="text-red-400">#REF!</span>
                 <span className="text-red-400">#VALUE!</span>
-                <span className="text-white/70">$39,000</span>
+                <span className="text-slate-500 dark:text-white/70">$39,000</span>
                 <span className="text-red-400">#REF!</span>
                 <span className="text-red-400 font-bold">-850.00</span>
               </motion.div>
 
               <motion.div
-                className="grid grid-cols-9 gap-3 px-6 py-4 rounded-lg border border-white/10 bg-black/40"
+                className="grid grid-cols-9 gap-3 px-6 py-4 rounded-lg border border-slate-200 dark:border-white/10 bg-black/40"
                 style={{ y: row3Y }}
               >
-                <span className="text-white/70">Apr 08</span>
-                <span className="text-white/70">Amsterdam</span>
-                <span className="text-white/70">AFAS Live</span>
-                <span className="text-white/70">Sheet 4 →</span>
+                <span className="text-slate-500 dark:text-white/70">Apr 08</span>
+                <span className="text-slate-500 dark:text-white/70">Amsterdam</span>
+                <span className="text-slate-500 dark:text-white/70">AFAS Live</span>
+                <span className="text-slate-500 dark:text-white/70">Sheet 4 →</span>
                 <span className="text-red-400">#REF!</span>
                 <span className="text-red-400">#VALUE!</span>
-                <span className="text-white/70">$41,200</span>
+                <span className="text-slate-500 dark:text-white/70">$41,200</span>
                 <span className="text-red-400">#REF!</span>
                 <span className="text-red-400 font-bold">-2,100.00</span>
               </motion.div>
@@ -145,27 +145,27 @@ export const TransformationSequence = ({ className }: TransformationSequenceProp
           <div className="w-full max-w-6xl mx-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Itinerary Card */}
             <motion.div
-              className="rounded-2xl border border-white/10 bg-gradient-to-br from-black/60 to-black/40 p-6 shadow-2xl"
+              className="rounded-2xl border border-slate-200 dark:border-white/10 bg-gradient-to-br from-black/60 to-black/40 p-6 shadow-2xl"
               initial={{ scale: 0.8, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.8 }}
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-3 h-3 rounded-full bg-[var(--color-accent-500)]" />
-                <span className="text-sm uppercase tracking-wide text-white/60">Tour Itinerary</span>
+                <span className="text-sm uppercase tracking-wide text-slate-400 dark:text-white/60">Tour Itinerary</span>
               </div>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-100 dark:bg-white/5">
                   <div>
-                    <p className="font-semibold text-white">Madrid • WiZink Center</p>
-                    <p className="text-sm text-white/60">Apr 02 • Soundcheck 16:00</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">Madrid • WiZink Center</p>
+                    <p className="text-sm text-slate-400 dark:text-white/60">Apr 02 • Soundcheck 16:00</p>
                   </div>
                   <span className="text-[var(--color-accent-500)]">✓ Confirmed</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-100 dark:bg-white/5">
                   <div>
-                    <p className="font-semibold text-white">Berlin • Tempodrom</p>
-                    <p className="text-sm text-white/60">Apr 05 • Routing locked</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">Berlin • Tempodrom</p>
+                    <p className="text-sm text-slate-400 dark:text-white/60">Apr 05 • Routing locked</p>
                   </div>
                   <span className="text-[var(--color-accent-500)]">✓ Confirmed</span>
                 </div>
@@ -174,13 +174,13 @@ export const TransformationSequence = ({ className }: TransformationSequenceProp
 
             {/* KPI Widget */}
             <motion.div
-              className="rounded-2xl border border-white/10 bg-gradient-to-br from-black/60 to-black/40 p-6 shadow-2xl"
+              className="rounded-2xl border border-slate-200 dark:border-white/10 bg-gradient-to-br from-black/60 to-black/40 p-6 shadow-2xl"
               initial={{ scale: 0.8, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm uppercase tracking-wide text-white/60">Projected Net</span>
+                <span className="text-sm uppercase tracking-wide text-slate-400 dark:text-white/60">Projected Net</span>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span className="text-xs text-emerald-400">Live</span>
@@ -192,49 +192,49 @@ export const TransformationSequence = ({ className }: TransformationSequenceProp
               </div>
               <div className="mt-4 grid grid-cols-2 gap-4 text-center">
                 <div>
-                  <p className="text-lg font-semibold text-white">$165,700</p>
-                  <p className="text-xs text-white/60">Total Revenue</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">$165,700</p>
+                  <p className="text-xs text-slate-400 dark:text-white/60">Total Revenue</p>
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-white">$38,050</p>
-                  <p className="text-xs text-white/60">Total Expenses</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">$38,050</p>
+                  <p className="text-xs text-slate-400 dark:text-white/60">Total Expenses</p>
                 </div>
               </div>
             </motion.div>
 
             {/* Contact Hub */}
             <motion.div
-              className="lg:col-span-2 rounded-2xl border border-white/10 bg-gradient-to-br from-black/60 to-black/40 p-6 shadow-2xl"
+              className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-gradient-to-br from-black/60 to-black/40 p-6 shadow-2xl"
               initial={{ scale: 0.8, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-3 h-3 rounded-full bg-[var(--color-accent-500)]" />
-                <span className="text-sm uppercase tracking-wide text-white/60">Contact Hub</span>
+                <span className="text-sm uppercase tracking-wide text-slate-400 dark:text-white/60">Contact Hub</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-4 p-3 rounded-lg bg-white/5">
+                <div className="flex items-center gap-4 p-3 rounded-lg bg-slate-100 dark:bg-white/5">
                   <div className="w-10 h-10 rounded-full bg-[var(--color-accent-500)] flex items-center justify-center text-black font-semibold">
                     S
                   </div>
                   <div>
-                    <p className="font-semibold text-white">Sonia Vega</p>
-                    <p className="text-sm text-white/60">Promoter • WiZink Center</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">Sonia Vega</p>
+                    <p className="text-sm text-slate-400 dark:text-white/60">Promoter • WiZink Center</p>
                   </div>
-                  <button className="ml-auto px-3 py-1 rounded border border-white/20 text-xs uppercase tracking-wide text-white/70 hover:bg-white/10">
+                  <button className="ml-auto px-3 py-1 rounded border border-slate-300 dark:border-white/20 text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 hover:bg-slate-200 dark:bg-white/10">
                     Call
                   </button>
                 </div>
-                <div className="flex items-center gap-4 p-3 rounded-lg bg-white/5">
+                <div className="flex items-center gap-4 p-3 rounded-lg bg-slate-100 dark:bg-white/5">
                   <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
                     A
                   </div>
                   <div>
-                    <p className="font-semibold text-white">Adam Reed</p>
-                    <p className="text-sm text-white/60">Agency Lead</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">Adam Reed</p>
+                    <p className="text-sm text-slate-400 dark:text-white/60">Agency Lead</p>
                   </div>
-                  <button className="ml-auto px-3 py-1 rounded border border-white/20 text-xs uppercase tracking-wide text-white/70 hover:bg-white/10">
+                  <button className="ml-auto px-3 py-1 rounded border border-slate-300 dark:border-white/20 text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 hover:bg-slate-200 dark:bg-white/10">
                     Message
                   </button>
                 </div>

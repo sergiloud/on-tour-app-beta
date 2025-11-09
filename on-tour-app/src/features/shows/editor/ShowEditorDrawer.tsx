@@ -97,13 +97,15 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     try { const v = localStorage.getItem('showEditor.lastTab'); if (v === 'details' || v === 'finance' || v === 'costs') return v as 'details' | 'finance' | 'costs'; } catch { /* ignore */ }
     return 'details';
   })();
-  const [tab, setTab] = useState<'details' | 'finance' | 'costs'>(initialTab);
+  const [tab, setTab] = useState<'overview' | 'finance' | 'costs'>(initialTab === 'details' ? 'overview' : initialTab);
   const restoredTabRef = useRef(false);
   const [ready, setReady] = useState(false);
   const firstFieldRef = useRef<HTMLInputElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const [showDiscard, setShowDiscard] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreMenuBtnRef = useRef<HTMLButtonElement>(null);
   const [dateConflict, setDateConflict] = useState<DateConflict | null>(null);
   // Accessibility announcements (refactored with explicit severity)
   const [announceMsg, setAnnounceMsg] = useState('');
@@ -238,7 +240,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     if (!open) return;
     if (prevInitialIdRef.current !== initial.id) {
       reset(initial);
-      setTab('details');
+      setTab('overview');
       prevInitialIdRef.current = initial.id;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -432,7 +434,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
   }
 
   // Simple cost aggregation for summary
-  const totalCosts = (draft.costs || []).reduce((s, c) => s + (c.amount || 0), 0);
+  const totalCosts = (draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0);
   const { currency: baseCurrency } = useSettings();
   const feeCurrency = (draft as any).feeCurrency as SupportedCurrency || baseCurrency as SupportedCurrency;
   const fee = Number(draft.fee) || 0;
@@ -459,7 +461,10 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
       lng: 0,
       fee: draft.fee || 0,
       feeCurrency: draft.feeCurrency || 'EUR',
-      status: draft.status || 'confirmed'
+      status: draft.status || 'confirmed',
+      __version: 1,
+      __modifiedAt: new Date().toISOString(),
+      __modifiedBy: ''
     };
     const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);
     const allAgencies = [...applicable.booking, ...applicable.management];
@@ -471,7 +476,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
   // Memoized cost grouping (subtotals) reused in Costs tab summary
   const costGroups = useMemo(() => {
     const arr = (draft.costs || []);
-    const groups = arr.reduce<Record<string, { total: number; count: number }>>((acc, c) => { const key = c.type || t('shows.costs.type') || 'Type'; const amt = c.amount || 0; if (!acc[key]) acc[key] = { total: 0, count: 0 }; acc[key].total += amt; acc[key].count += 1; return acc; }, {});
+    const groups = arr.reduce<Record<string, { total: number; count: number }>>((acc: Record<string, { total: number; count: number }>, c: any) => { const key = c.type || t('shows.costs.type') || 'Type'; const amt = c.amount || 0; if (!acc[key]) acc[key] = { total: 0, count: 0 }; acc[key].total += amt; acc[key].count += 1; return acc; }, {});
     return groups;
   }, [draft.costs, lang]);
   // Focus helper for cost fields
@@ -662,7 +667,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
   // Keyboard navigation for tabs (Arrow keys + Home/End)
   const handleTabKeyNav = useCallback((e: React.KeyboardEvent) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
-    const order: Array<typeof tab> = ['details', 'finance', 'costs'];
+    const order: Array<typeof tab> = ['overview', 'finance', 'costs'];
     const idx = order.indexOf(tab);
     let next = tab;
     const nextTab = (e.key === 'ArrowRight') ? order[(idx + 1) % order.length] :
@@ -746,7 +751,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
         );
         const currentIndex = focusables.indexOf(e.target as HTMLElement);
         if (currentIndex >= 0 && currentIndex < focusables.length - 1) {
-          focusables[currentIndex + 1].focus();
+          focusables[currentIndex + 1]?.focus();
         }
         return;
       }
@@ -756,6 +761,30 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, isValid, saving, showDiscard, showDelete, requestClose, attemptSave]);
 
+  // Close more menu when clicking outside or pressing Escape
+  useEffect(() => {
+    if (!showMoreMenu) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowMoreMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [showMoreMenu]);
+
   const portal = (
     <>
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300" onMouseDown={() => requestClose()} style={{ zIndex: 9999 }} aria-hidden={showDiscard || showDelete ? 'true' : undefined} />
@@ -764,7 +793,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
       <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 10000 }} onMouseDown={() => requestClose()}>
         <div
           ref={drawerRef}
-          className={`glass text-white flex flex-col rounded-2xl overscroll-contain border border-[var(--card-border,white/10)] w-full max-w-2xl max-h-[90vh] transform transition-all duration-300 shadow-2xl backdrop-blur-xl bg-gradient-to-br from-white/10 via-white/5 to-white/2 ${ready ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+          className={`glass text-white flex flex-col rounded-2xl overscroll-contain border border-[var(--card-border,white/10)] w-full max-w-3xl max-h-[90vh] transform transition-all duration-300 shadow-2xl backdrop-blur-xl bg-gradient-to-br from-white/10 via-white/5 to-white/2 ${ready ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
           role="dialog" aria-modal="true" aria-labelledby="show-editor-title" aria-describedby="show-editor-desc" style={{ boxShadow: 'var(--card-shadow, 0 25px 50px -12px rgb(0 0 0 / 0.25))' }}
           onMouseDown={e => e.stopPropagation()}
           onWheel={e => {
@@ -799,7 +828,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
           draft.status === 'offer' ? 'border-amber-500/70' :
           draft.status === 'postponed' ? 'border-orange-500/70' :
           draft.status === 'canceled' ? 'border-red-500/70' :
-          draft.status === 'archived' ? 'border-slate-500/70' :
+          draft.status === 'archived' ? 'border-white/50' :
           'border-white/25'
         } bg-gradient-to-r from-white/6 via-white/3 to-transparent backdrop-blur-sm`}>
           <div className="relative px-4 py-3 flex items-center justify-between gap-3">
@@ -812,7 +841,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 draft.status === 'offer' ? 'bg-amber-500/20 border-amber-500/50 shadow-lg shadow-amber-500/15' :
                 draft.status === 'postponed' ? 'bg-orange-500/20 border-orange-500/50 shadow-lg shadow-orange-500/15' :
                 draft.status === 'canceled' ? 'bg-red-500/20 border-red-500/50 shadow-lg shadow-red-500/15' :
-                draft.status === 'archived' ? 'bg-slate-500/20 border-slate-500/50 shadow-lg shadow-slate-500/15' :
+                draft.status === 'archived' ? 'bg-white/15 border-white/35 shadow-lg shadow-white/10' :
                 'bg-accent-500/20 border-accent-500/50 shadow-lg shadow-accent-500/15'
               }`}>
                 <svg className="w-4.5 h-4.5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -851,7 +880,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       draft.status === 'offer' ? 'bg-amber-500/25 border-amber-500/50 text-amber-200 shadow-md shadow-amber-500/10' :
                       draft.status === 'postponed' ? 'bg-orange-500/25 border-orange-500/50 text-orange-200 shadow-md shadow-orange-500/10' :
                       draft.status === 'canceled' ? 'bg-red-500/25 border-red-500/50 text-red-200 shadow-md shadow-red-500/10' :
-                      draft.status === 'archived' ? 'bg-slate-500/25 border-slate-500/50 text-slate-200 shadow-md shadow-slate-500/10' :
+                      draft.status === 'archived' ? 'bg-white/15 border-white/35 text-white/70 shadow-md shadow-white/10' :
                       'bg-white/15 border-white/25 text-white/80'
                     }`}>
                       {t(`shows.status.${draft.status}`) || draft.status}
@@ -895,9 +924,11 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
 
               {/* More Actions Menu - Premium */}
               {mode === 'edit' && (
-                <div className="relative group">
+                <div className="relative">
                   <button
+                    ref={moreMenuBtnRef}
                     type="button"
+                    onClick={() => setShowMoreMenu(!showMoreMenu)}
                     className="p-1.5 rounded-[8px] bg-white/8 hover:bg-white/15 border border-white/15 hover:border-white/30 text-white/70 hover:text-white/90 transition-all duration-150 focus-ring hover:shadow-md hover:shadow-white/10"
                     aria-label={t('common.more') || 'More actions'}
                     title={t('common.more') || 'More actions'}
@@ -909,61 +940,88 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     </svg>
                   </button>
 
-                  {/* Dropdown Menu - Premium */}
-                  <div className="absolute right-0 top-full mt-2 z-50 rounded-[10px] border border-white/20 bg-neutral-900/98 backdrop-blur-md shadow-2xl shadow-black/50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 py-1 w-44 overflow-hidden">
-                    {/* Duplicate */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        track(TE.SHOW_DUPLICATE, { id: initial.id });
-                        announce((t('shows.editor.duplicate.initiated') || 'Show duplicated') + ': ' + draft.city, 'polite');
-                        try {
-                          localStorage.setItem('showEditor.duplicateDraft', JSON.stringify({
-                            ...draft,
-                            id: undefined,
-                            date: undefined,
-                          }));
-                        } catch { }
-                        onRequestClose();
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-white/75 hover:text-white hover:bg-white/10 flex items-center gap-2.5 transition-colors duration-150 border-b border-white/5"
-                    >
-                      <svg className="w-3.5 h-3.5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      {t('shows.editor.duplicate') || 'Duplicate'}
-                    </button>
-
-                    {/* Archive */}
-                    {draft.status !== 'archived' && (
+                  {/* Dropdown Menu - Portal for proper z-index */}
+                  {showMoreMenu && moreMenuBtnRef.current && createPortal(
+                    <>
+                      {/* Backdrop blur overlay */}
+                      <div
+                        className="fixed inset-0 z-[99998]"
+                        style={{
+                          backdropFilter: 'blur(4px)',
+                          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                        }}
+                        onClick={() => setShowMoreMenu(false)}
+                      />
+                      {/* Menu */}
+                      <div
+                        className="fixed rounded-lg border border-white/25 bg-gradient-to-br from-white/10 via-white/5 to-white/2 backdrop-blur-md shadow-2xl shadow-black/50 py-1.5 w-48 overflow-hidden"
+                        style={{
+                          zIndex: 99999,
+                          left: `${moreMenuBtnRef.current.getBoundingClientRect().right - 176}px`,
+                          top: `${moreMenuBtnRef.current.getBoundingClientRect().bottom + 10}px`,
+                        }}
+                      >
+                      {/* Duplicate */}
                       <button
                         type="button"
                         onClick={() => {
-                          setDraft(d => ({ ...d, status: 'archived' } as any));
-                          track(TE.STATUS_UPDATE, { newStatus: 'archived' });
-                          announce((t('shows.editor.archived') || 'Show archived'), 'polite');
+                          track(TE.SHOW_DUPLICATE, { id: initial.id });
+                          announce((t('shows.editor.duplicate.initiated') || 'Show duplicated') + ': ' + draft.city, 'polite');
+                          try {
+                            localStorage.setItem('showEditor.duplicateDraft', JSON.stringify({
+                              ...draft,
+                              id: undefined,
+                              date: undefined,
+                            }));
+                          } catch { }
+                          setShowMoreMenu(false);
+                          onRequestClose();
                         }}
-                        className="w-full text-left px-3 py-2 text-xs font-medium text-white/75 hover:text-white hover:bg-white/10 flex items-center gap-2.5 transition-colors duration-150 border-b border-white/5"
+                        className="w-full text-left px-4 py-2.5 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors duration-150 border-b border-white/5"
                       >
-                        <svg className="w-3.5 h-3.5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9-4v4m4-4v4" />
+                        <svg className="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
-                        {t('shows.editor.archive') || 'Archive'}
+                        {t('shows.editor.duplicate') || 'Duplicate'}
                       </button>
-                    )}
 
-                    {/* Delete */}
-                    <button
-                      type="button"
-                      onClick={() => setShowDelete(true)}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-red-300/80 hover:text-red-200 hover:bg-red-500/15 flex items-center gap-2.5 transition-colors duration-150"
-                    >
-                      <svg className="w-3.5 h-3.5 text-red-400/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      {t('shows.dialog.delete') || 'Delete'}
-                    </button>
-                  </div>
+                      {/* Archive */}
+                      {draft.status !== 'archived' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDraft(d => ({ ...d, status: 'archived' } as any));
+                            track(TE.STATUS_PROMOTE, { from: draft.status, to: 'archived' });
+                            announce((t('shows.editor.archived') || 'Show archived'), 'polite');
+                            setShowMoreMenu(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 flex items-center gap-3 transition-colors duration-150 border-b border-white/5"
+                        >
+                          <svg className="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9-4v4m4-4v4" />
+                          </svg>
+                          {t('shows.editor.archive') || 'Archive'}
+                        </button>
+                      )}
+
+                      {/* Delete */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowDelete(true);
+                          setShowMoreMenu(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-300/90 hover:text-red-200 hover:bg-red-500/15 flex items-center gap-3 transition-colors duration-150"
+                      >
+                        <svg className="w-4 h-4 text-red-400/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        {t('shows.dialog.delete') || 'Delete'}
+                      </button>
+                      </div>
+                    </>,
+                    document.body
+                  )}
                 </div>
               )}
 
@@ -1065,11 +1123,11 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
         <div className="px-4 py-2 border-b border-white/15 bg-gradient-to-r from-white/2 via-white/1 to-transparent backdrop-blur-sm">
           {/* Tabs con iconos y indicadores mejorados */}
           <div className="inline-flex gap-0.5 p-1 rounded-[10px] border border-white/15 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-sm" role="tablist" aria-label={t('shows.editor.tabs') || 'Editor tabs'}>
-            {(['details', 'finance', 'costs'] as const).map(k => {
+            {(['overview', 'finance', 'costs'] as const).map(k => {
               const active = tab === k;
-              const labelKey = `shows.editor.tab.${k}`;
+              const labelKey = `shows.editor.tab.${k === 'overview' ? 'details' : k}`;
               const icons = {
-                details: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
+                overview: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
                 finance: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
                 costs: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
               };
@@ -1117,7 +1175,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
           </div>
         </div>
         {/* Body con mejor diseño y gradiente */}
-        <form className="flex-1 overflow-y-auto px-4 py-3 text-sm bg-gradient-to-b from-white/2 via-white/1 to-white/0.5 space-y-4" onSubmit={e => { e.preventDefault(); attemptSave(); }}>
+        <form className="flex-1 overflow-y-auto px-4 py-4 lg:px-6 lg:py-5 text-sm bg-gradient-to-b from-white/2 via-white/1 to-white/0.5 space-y-4" onSubmit={e => { e.preventDefault(); attemptSave(); }}>
           {/* Conflict Warning Banner */}
           {dateConflict && (
             <div className="px-3 py-2 rounded-md bg-amber-500/15 border border-amber-500/40 flex items-start gap-2.5 animate-fade-in">
@@ -1134,206 +1192,128 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
               </div>
             </div>
           )}
-          {tab === 'details' && (
-            <div id="panel-details" role="tabpanel" aria-labelledby="tab-details" className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
-              {/* Left Column (66%) - Primary Editing Fields */}
-              <div className="lg:col-span-2 space-y-3.5">
-                {/* Dynamic primary field group (A/B ordering) */}
-                {(() => {
-                  const fieldNodes: { key: string; node: React.ReactNode }[] = [
-                  {
-                    key: 'name', node: (
-                      <label key="name" className="flex flex-col gap-1.5">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-white/70">
-                          {t('shows.editor.label.name') || t('shows.table.name') || 'Show name'}
-                        </span>
-                        <input
-                          ref={firstFieldRef}
-                          data-field="name"
-                          className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-white/30 text-sm"
-                          value={(draft as any).name || ''}
-                          placeholder={t('shows.editor.placeholder.name') || 'Enter show name...'}
-                          onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
-                        />
-                      </label>
-                    )
-                  },
-                  {
-                    key: 'status', node: (
-                      <StatusSelector
-                        key="status"
-                        value={(draft as any).status || 'pending'}
-                        onChange={status => setDraft(d => ({ ...d, status } as any))}
-                        label={t('shows.editor.label.status') || 'Status'}
-                        help={t('shows.editor.status.hint') || 'Select show status'}
-                        disabled={false}
-                      />
-                    )
-                  },
-                  {
-                    key: 'currencyFee', node: (
-                      <div className="flex flex-col gap-1.5">
-                        <label className="flex flex-col gap-1.5">
-                          <span className="text-xs font-semibold uppercase tracking-wider text-white/70 flex items-center gap-2">
-                            {t('shows.editor.label.currency') || 'Currency'}
-                            <span className="text-[10px] lowercase tracking-normal opacity-50 font-normal">
-                              {t('shows.editor.help.currency') || 'Contract currency'}
-                            </span>
-                          </span>
-                          <select
-                            data-field="feeCurrency"
-                            className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
-                            value={feeCurrency}
-                            onChange={e => setDraft(d => ({ ...d, feeCurrency: e.target.value as any }))}
-                          >
-                            {['EUR', 'USD', 'GBP', 'AUD'].map(c => <option key={c} value={c}>{c}</option>)}
-                          </select>
-                        </label>
-                        {fee > 0 && feeCurrency !== baseCurrency && (
-                          <p className="text-[10px] opacity-70 leading-snug">
-                            {(t('shows.editor.fx.convertedFee') || '≈ {amount} {base}')
-                              .replace('{amount}', (convertedFee != null ? fmtMoney(Math.round(convertedFee)) : '?'))
-                              .replace('{base}', baseCurrency)}
-                            {effectiveRate && (
-                              <><br /><span className="inline-flex items-center gap-1">{t('shows.editor.fx.rateOn') || 'Rate'}: {effectiveRate.toFixed(3)}</span></>
-                            )}
-                          </p>
-                        )}
-                        {fee > 0 && feeCurrency !== baseCurrency && convertedFee == null && (
-                          <p className="text-[11px] text-amber-300">{t('shows.editor.fx.unavailable') || 'Rate unavailable'}</p>
-                        )}
-                      </div>
-                    )
-                  },
-                  {
-                    key: 'city', node: (
-                      <label key="city" className="flex flex-col gap-1.5">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-white/70">
-                          {t('shows.editor.label.city') || 'City'}
-                        </span>
-                        <div className="flex gap-1.5 items-center">
-                          <input
-                            list="city-suggestions"
-                            data-field="city"
-                            aria-required="true"
-                            aria-invalid={!!validation.city}
-                            aria-describedby={validation.city ? 'err-city' : undefined}
-                            className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-white/30 flex-1 text-sm"
-                            value={draft.city || ''}
-                            placeholder="Enter city name..."
-                            onChange={e => setDraft(d => ({ ...d, city: e.target.value }))}
-                            onBlur={e => { const v = e.target.value.trim(); if (v) recordCity(v); }}
-                          />
-                          {recentCities.length > 0 && (
-                            <div className="hidden md:flex items-center gap-0.5" aria-label={t('shows.editor.city.recent') || 'Recent cities'}>
-                              {recentCities.slice(0, 3).map(rc => (
-                                <button key={rc} type="button" className="px-1.5 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-[10px] transition-all" onClick={() => { setDraft(d => ({ ...d, city: rc })); recordCity(rc); }}>{rc}</button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <datalist id="city-suggestions">
-                          {recentCities.map(c => <option key={'city-' + c} value={c} />)}
-                        </datalist>
-                        {validation.city && <p id="err-city" className="text-[10px] text-red-400">{t(validation.city) || 'Required'}</p>}
-                      </label>
-                    )
-                  },
-                  {
-                    key: 'country', node: (
-                      <div key="country" className="flex flex-col gap-1.5">
-                        <label htmlFor="show-editor-country" className="text-xs font-semibold uppercase tracking-wider text-white/70">
-                          {t('shows.editor.label.country') || 'Country'}
-                        </label>
-                        <CountrySelect
-                          id="show-editor-country"
-                          aria-label={t('shows.editor.label.country') || 'Country'}
-                          data-field="country"
-                          aria-required="true"
-                          aria-invalid={!!validation.country}
-                          aria-describedby={validation.country ? 'err-country' : undefined}
-                          value={draft.country || ''}
-                          onChange={code => setDraft(d => ({ ...d, country: code }))}
-                        />
-                        {validation.country && <p id="err-country" className="text-[10px] text-red-400">{t(validation.country) || 'Required'}</p>}
-                      </div>
-                    )
-                  },
-                  {
-                    key: 'date', node: (
-                      <DatePickerAdvanced
-                        key="date"
-                        value={String(draft.date || '').slice(0, 10) || undefined}
-                        onChange={date => setDraft(d => ({ ...d, date }))}
-                        label={t('shows.editor.label.date') || 'Date'}
-                        help={t('shows.editor.help.date') || 'Select show date'}
-                        error={validation.date ? t(validation.date) || 'Required' : undefined}
-                        disabled={false}
-                      />
-                    )
-                  },
-                  {
-                    key: 'whtPct', node: (
-                      <label key="whtPct" className="flex flex-col gap-2 relative">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-white/70 flex flex-col gap-1">
-                          <span className="flex items-center gap-2">{t('shows.editor.label.wht') || 'WHT %'}</span>
-                          <span id="wht-help" className="text-[10px] lowercase tracking-normal opacity-50 font-normal leading-tight">
-                            {t('shows.editor.help.wht') || 'Local withholding %'}
-                          </span>
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <input
-                            data-field="whtPct"
-                            aria-invalid={!!validation.whtPct}
-                            aria-describedby={(validation.whtPct ? 'err-whtPct ' : '') + 'wht-help'}
-                            type="number"
-                            step={1}
-                            min={0}
-                            max={50}
-                            className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-white/30 w-full text-sm"
-                            value={draft.whtPct ?? ''}
-                            placeholder="0"
-                            onChange={e => setDraft(d => ({ ...d, whtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))}
-                          />
-                          {(() => {
-                            if (!draft.country) return null;
-                            const defaults: Record<string, number> = { ES: 15, FR: 15, DE: 15, MX: 10, BR: 15, US: 0 };
-                            const sug = defaults[draft.country];
-                            if (sug == null) return null;
-                            const isApplied = draft.whtPct === sug;
-                            const show = draft.whtPct == null || (!isApplied && draft.whtPct !== sug);
-                            if (!show) return null;
-                            return (
-                              <button
-                                type="button"
-                                onClick={() => { setDraft(d => ({ ...d, whtPct: sug })); announce((t('shows.editor.wht.suggest.applied') || 'WHT suggestion applied') + ': ' + sug + '%'); track(TE.WHT_SUGGEST_APPLY, { country: draft.country, pct: sug }); }}
-                                className={`px-2 py-1 rounded text-[11px] border ${isApplied ? 'border-green-500/40 text-green-300 bg-green-500/10' : 'border-accent-500/40 text-accent-200 bg-accent-500/10 hover:bg-accent-500/20'}`}
-                                aria-pressed={isApplied}
-                              >{sug}% {isApplied ? (t('shows.editor.wht.suggest.applied') || 'applied') : (t('shows.editor.wht.suggest') || 'suggest')}</button>
-                            );
-                          })()}
-                        </div>
-                        {validation.whtPct && <p id="err-whtPct" className="text-[11px] text-red-400">{t(validation.whtPct) || 'Out of range'}</p>}
-                      </label>
-                    )
-                  },
-                ];
-                const ordered = sortByFieldOrder(fieldNodes, fieldOrder);
-                // Ensure every mapped node has a stable key (wrap in Fragment so internal structure untouched)
-                return ordered.map(f => <React.Fragment key={f.key}>{f.node}</React.Fragment>);
-              })()}
-                {/* Venue merged conceptually with Name: keep field hidden for backward compatibility */}
+          {tab === 'overview' && (
+            <div id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" className="grid grid-cols-1 lg:grid-cols-10 gap-4 lg:gap-6 w-full">
+              {/* LEFT COLUMN (70%) - Primary Show Information */}
+              <div className="lg:col-span-7 space-y-3 lg:space-y-4">
+                {/* Show Name - Large & Prominent */}
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-white/70 flex items-center gap-2">
+                  <span className="text-sm font-bold uppercase tracking-wider text-white/80">
+                    {t('shows.editor.label.name') || t('shows.table.name') || 'Show name'}
+                  </span>
+                  <input
+                    ref={firstFieldRef}
+                    data-field="name"
+                    className="px-4 py-2.5 rounded-md bg-white/5 border border-white/15 hover:border-white/25 focus:border-accent-500 focus:bg-white/10 focus:shadow-lg focus:shadow-accent-500/15 focus:ring-1 focus:ring-accent-500/30 transition-all placeholder:text-white/40 text-base font-semibold"
+                    value={(draft as any).name || ''}
+                    placeholder={t('shows.editor.placeholder.name') || 'Enter show name...'}
+                    onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
+                  />
+                </label>
+
+                {/* Date & Time Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <DatePickerAdvanced
+                    value={String(draft.date || '').slice(0, 10) || undefined}
+                    onChange={date => setDraft(d => ({ ...d, date }))}
+                    label={t('shows.editor.label.date') || 'Date'}
+                    help={t('shows.editor.help.date') || 'Select show date'}
+                    error={validation.date ? t(validation.date) || 'Required' : undefined}
+                    disabled={false}
+                  />
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                      {t('shows.editor.label.time') || 'Time'}
+                    </span>
+                    <input
+                      type="time"
+                      data-field="startTime"
+                      className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-sm"
+                      value={(draft as any).startTime || ''}
+                      onChange={e => setDraft(d => ({ ...d, startTime: e.target.value }))}
+                    />
+                  </label>
+                </div>
+
+                {/* Location Section (City + Country grouped) */}
+                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-4 space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/60">{t('shows.editor.label.location') || 'Location'}</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                        {t('shows.editor.label.city') || 'City'}
+                      </span>
+                      <div className="flex gap-1.5 items-center">
+                        <input
+                          list="city-suggestions"
+                          data-field="city"
+                          aria-required="true"
+                          aria-invalid={!!validation.city}
+                          aria-describedby={validation.city ? 'err-city' : undefined}
+                          className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 flex-1 text-sm"
+                          value={draft.city || ''}
+                          placeholder="Enter city..."
+                          onChange={e => setDraft(d => ({ ...d, city: e.target.value }))}
+                          onBlur={e => { const v = e.target.value.trim(); if (v) recordCity(v); }}
+                        />
+                        {recentCities.length > 0 && (
+                          <div className="hidden sm:flex items-center gap-0.5" aria-label={t('shows.editor.city.recent') || 'Recent cities'}>
+                            {recentCities.slice(0, 2).map(rc => (
+                              <button key={rc} type="button" className="px-1 py-0.5 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft(d => ({ ...d, city: rc })); recordCity(rc); }}>{rc}</button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <datalist id="city-suggestions">
+                        {recentCities.map(c => <option key={'city-' + c} value={c} />)}
+                      </datalist>
+                      {validation.city && <p id="err-city" className="text-[10px] text-red-400">{t(validation.city) || 'Required'}</p>}
+                    </label>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="show-editor-country" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                        {t('shows.editor.label.country') || 'Country'}
+                      </label>
+                      <CountrySelect
+                        id="show-editor-country"
+                        aria-label={t('shows.editor.label.country') || 'Country'}
+                        data-field="country"
+                        aria-required="true"
+                        aria-invalid={!!validation.country}
+                        aria-describedby={validation.country ? 'err-country' : undefined}
+                        value={draft.country || ''}
+                        onChange={code => setDraft(d => ({ ...d, country: code }))}
+                      />
+                      {validation.country && <p id="err-country" className="text-[10px] text-red-400">{t(validation.country) || 'Required'}</p>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Promoter Field */}
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                    {t('shows.editor.label.promoter') || 'Promoter'}
+                  </span>
+                  <input
+                    data-field="promoter"
+                    className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
+                    value={(draft as any).promoter || ''}
+                    placeholder={t('shows.editor.placeholder.promoter') || 'Enter promoter name...'}
+                    onChange={e => setDraft(d => ({ ...d, promoter: e.target.value }))}
+                  />
+                </label>
+
+                {/* Venue */}
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70 flex items-center gap-2">
                     {t('shows.editor.label.venue') || 'Venue'}
                     <span className="text-[9px] lowercase tracking-normal opacity-50 font-normal">
-                      {t('shows.editor.help.venue') || 'Optional venue / room name'}
+                      {t('shows.editor.help.venue') || 'venue/room name'}
                     </span>
                   </span>
                   <input
                     list="venue-suggestions"
                     data-field="venue"
-                    className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-white/30 text-sm"
+                    className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
                     value={(draft as any).venue || ''}
                     placeholder={t('shows.editor.placeholder.venue') || 'Venue name'}
                     onChange={e => setDraft(d => ({ ...d, venue: e.target.value }))}
@@ -1341,8 +1321,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   />
                   {recentVenues.length > 0 && (
                     <div className="hidden md:flex items-center gap-0.5" aria-label={t('shows.editor.venue.recent') || 'Recent venues'}>
-                      {recentVenues.slice(0, 4).map(rv => (
-                        <button key={rv} type="button" className="px-1.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-[10px] border border-white/10 transition-all" onClick={() => { setDraft(d => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
+                      {recentVenues.slice(0, 3).map(rv => (
+                        <button key={rv} type="button" className="px-1.5 py-1 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft(d => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
                       ))}
                     </div>
                   )}
@@ -1350,77 +1330,12 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     {recentVenues.map(v => <option key={'venue-' + v} value={v} />)}
                   </datalist>
                 </label>
-                {/* Travel CTA (contextual) */}
-                {draft.date && draft.status !== 'canceled' && (() => {
-                  const iso = String(draft.date).slice(0, 10);
-                  const showDate = new Date(iso + 'T00:00:00');
-                  const now = new Date();
-                  const diffDays = Math.round((showDate.getTime() - now.getTime()) / 86400000);
-                  const within = diffDays <= 30;
-                  const tripExists = within && hasTripAroundDate?.(iso);
-                  const noAction = diffDays > 30;
-                  let msg: string;
-                  if (noAction) msg = t('shows.travel.noCta') || 'No travel action needed';
-                  else if (tripExists) msg = t('shows.travel.tripExists') || 'Trip already scheduled around this date';
-                  else msg = (draft.status === 'confirmed'
-                    ? (t('shows.travel.soonConfirmed') || 'Upcoming confirmed show — consider adding travel.')
-                    : (t('shows.travel.soonGeneric') || 'Upcoming show — consider planning travel.'));
-                  return (
-                    <div className="-mb-0.5 -mt-0.5 flex items-center gap-1.5 text-[10px]" data-travel-cta>
-                      <span className="px-1.5 py-0.5 rounded-sm bg-accent-500/15 border border-accent-500/30 text-accent-200 whitespace-nowrap">
-                        {t('shows.travel.quick') || 'Travel'}:
-                      </span>
-                      <span className="opacity-80 line-clamp-2 flex-1 min-w-0">{msg}</span>
-                      {!noAction && !tripExists && (
-                        <button
-                          type="button"
-                          className="ml-auto px-2 py-0.5 rounded-sm bg-accent-500 text-black hover:brightness-110 text-[9px] font-medium whitespace-nowrap"
-                          onClick={() => { track(TE.TRAVEL_CTA_CLICK, { type: 'plan', date: iso }); onPlanTravel?.(iso); }}
-                        >{t('shows.travel.plan') || 'Plan travel'}</button>
-                      )}
-                      {tripExists && (
-                        <button
-                          type="button"
-                          className="ml-auto px-2 py-0.5 rounded-sm bg-white/10 hover:bg-white/20 text-[9px] font-medium whitespace-nowrap"
-                          onClick={() => { track(TE.TRAVEL_CTA_CLICK, { type: 'openTrip', date: iso }); onOpenTrip?.(iso); }}
-                        >{t('shows.travel.title') || 'Location'}</button>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
 
-              {/* Right Column (33%) - Financial Dashboard & Notes */}
-              <div className="lg:col-span-1 space-y-3.5">
-                {/* Fee Field with Financial Dashboard */}
-                <FeeFieldAdvanced
-                  fee={draft.fee}
-                  onFeeChange={fee => setDraft(d => ({ ...d, fee }))}
-                  costs={totalCosts}
-                  whtPct={draft.whtPct}
-                  currency={feeCurrency}
-                  currencySymbol={fmtMoney(0).replace(/[0-9,\.\s-]/g, '').trim() || '$'}
-                  label={t('shows.editor.label.fee') || 'Fee'}
-                  help={t('shows.editor.help.fee') || 'Gross fee before deductions'}
-                  error={validation.fee ? t(validation.fee) || 'Required' : undefined}
-                  disabled={false}
-                  fmtMoney={fmtMoney}
-                  onOpenCostsTab={() => setTab('costs')}
-                  fxRate={draft.fxRateToBase}
-                  fxRateDate={draft.fxRateDate}
-                  fxRateSource={draft.fxRateSource}
-                  onFxRateChange={rate => setDraft(d => ({ ...d, fxRateToBase: rate }))}
-                  onFxRateDateChange={date => setDraft(d => ({ ...d, fxRateDate: date }))}
-                  onFxRateSourceChange={source => setDraft(d => ({ ...d, fxRateSource: source }))}
-                  baseCurrency="EUR"
-                />
-
-                {/* Notes Editor */}
+                {/* Notes - Large & Prominent */}
                 <NotesEditor
                   value={draft.notes}
                   onChange={notes => setDraft(d => ({ ...d, notes }))}
                   onAutoSave={notes => {
-                    // Auto-save triggered
                     track(TE.NOTES_AUTO_SAVE);
                   }}
                   label={t('shows.editor.label.notes') || 'Notes'}
@@ -1429,12 +1344,186 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   autoSaveDelay={2000}
                 />
               </div>
+
+              {/* RIGHT COLUMN (30%) - Metadata & Status */}
+              <div className="lg:col-span-3 space-y-3 lg:space-y-4">
+                {/* Status */}
+                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-3.5 space-y-2.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/60 block">
+                    {t('shows.editor.label.status') || 'Status'}
+                  </span>
+                  <StatusSelector
+                    value={(draft as any).status || 'pending'}
+                    onChange={status => setDraft(d => ({ ...d, status } as any))}
+                    label=""
+                    help=""
+                    disabled={false}
+                  />
+                </div>
+
+                {/* Currency & FX Conversion */}
+                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-4 space-y-3">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                      {t('shows.editor.label.currency') || 'Currency'}
+                    </span>
+                    <select
+                      data-field="feeCurrency"
+                      className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
+                      value={feeCurrency}
+                      onChange={e => setDraft(d => ({ ...d, feeCurrency: e.target.value as any }))}
+                    >
+                      {['EUR', 'USD', 'GBP', 'AUD'].map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </label>
+                  {fee > 0 && feeCurrency !== baseCurrency && (
+                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-1.5">
+                      <p className="text-[11px] text-slate-400 dark:text-white/60 font-semibold">
+                        {t('shows.editor.fx.convertedFee') || 'Converted to'} {baseCurrency}:
+                      </p>
+                      <p className="text-base font-bold text-accent-300">
+                        {convertedFee != null ? fmtMoney(Math.round(convertedFee)) : '?'}
+                      </p>
+                      {effectiveRate && (
+                        <p className="text-[10px] text-slate-300 dark:text-white/50">
+                          {t('shows.editor.fx.rateOn') || 'Rate'}: {effectiveRate.toFixed(4)}
+                        </p>
+                      )}
+                      {fee > 0 && feeCurrency !== baseCurrency && convertedFee == null && (
+                        <p className="text-[10px] text-amber-300">{t('shows.editor.fx.unavailable') || 'Rate unavailable'}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Agencies & Commissions */}
+                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-3 space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/60">
+                    {t('shows.editor.label.agencies') || 'Agencies'}
+                  </h4>
+                  <div className="space-y-2">
+                    {(() => {
+                      const mgmt = managementAgencies.find(a => a.name === draft.mgmtAgency);
+                      const booking = bookingAgencies.find(a => a.name === draft.bookingAgency);
+                      const mgmtDefault = mgmt?.commissionPct || 0;
+                      const bookingDefault = booking?.commissionPct || 0;
+                      return (
+                        <>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                              {t('shows.table.agency.mgmt') || 'Management'}
+                            </span>
+                            <select
+                              className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
+                              value={draft.mgmtAgency || ''}
+                              onChange={e => setDraft(d => ({ ...d, mgmtAgency: e.target.value || undefined }))}
+                            >
+                              <option value="">{t('common.none') || '—'}</option>
+                              {managementAgencies.map(a => (
+                                <option key={a.id} value={a.name}>{sanitizeName(a.name)}</option>
+                              ))}
+                            </select>
+                          </label>
+                          {draft.mgmtAgency && (
+                            <div className="flex items-center gap-1.5 text-[9px]">
+                              <span className="text-slate-400 dark:text-white/60">{mgmtDefault}%</span>
+                              <span className="px-1.5 py-0.5 rounded bg-accent-500/20 border border-accent-500/40 text-accent-300 font-semibold text-[8px]">Mgmt</span>
+                            </div>
+                          )}
+                          <label className="flex flex-col gap-1 pt-1">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                              {t('shows.table.agency.booking') || 'Booking'}
+                            </span>
+                            <select
+                              className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
+                              value={draft.bookingAgency || ''}
+                              onChange={e => setDraft(d => ({ ...d, bookingAgency: e.target.value || undefined }))}
+                            >
+                              <option value="">{t('common.none') || '—'}</option>
+                              {bookingAgencies.map(a => (
+                                <option key={a.id} value={a.name}>{sanitizeName(a.name)}</option>
+                              ))}
+                            </select>
+                          </label>
+                          {draft.bookingAgency && (
+                            <div className="flex items-center gap-1.5 text-[9px]">
+                              <span className="text-slate-400 dark:text-white/60">{bookingDefault}%</span>
+                              <span className="px-1.5 py-0.5 rounded bg-accent-500/20 border border-accent-500/40 text-accent-300 font-semibold text-[8px]">Booking</span>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* WHT & Additional Fields */}
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                    {t('shows.editor.label.wht') || 'WHT %'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      data-field="whtPct"
+                      aria-invalid={!!validation.whtPct}
+                      aria-describedby={(validation.whtPct ? 'err-whtPct ' : '') + 'wht-help'}
+                      type="number"
+                      step={1}
+                      min={0}
+                      max={50}
+                      className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-sm flex-1"
+                      value={draft.whtPct ?? ''}
+                      placeholder="0"
+                      onChange={e => setDraft(d => ({ ...d, whtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))}
+                    />
+                    {(() => {
+                      if (!draft.country) return null;
+                      const defaults: Record<string, number> = { ES: 15, FR: 15, DE: 15, MX: 10, BR: 15, US: 0 };
+                      const sug = defaults[draft.country];
+                      if (sug == null) return null;
+                      const isApplied = draft.whtPct === sug;
+                      const show = draft.whtPct == null || (!isApplied && draft.whtPct !== sug);
+                      if (!show) return null;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => { setDraft(d => ({ ...d, whtPct: sug })); announce((t('shows.editor.wht.suggest.applied') || 'WHT suggestion applied') + ': ' + sug + '%'); track(TE.WHT_SUGGEST_APPLY, { country: draft.country, pct: sug }); }}
+                          className={`px-2 py-1 rounded text-[10px] border whitespace-nowrap ${isApplied ? 'border-green-500/40 text-green-300 bg-green-500/10' : 'border-accent-500/40 text-accent-200 bg-accent-500/10 hover:bg-accent-500/20'}`}
+                          aria-pressed={isApplied}
+                        >{sug}%</button>
+                      );
+                    })()}
+                  </div>
+                  {validation.whtPct && <p id="err-whtPct" className="text-[10px] text-red-400">{t(validation.whtPct) || 'Out of range'}</p>}
+                </label>
+
+                {/* Travel CTA */}
+                {draft.date && draft.status !== 'canceled' && (() => {
+                  const iso = String(draft.date).slice(0, 10);
+                  const showDate = new Date(iso + 'T00:00:00');
+                  const now = new Date();
+                  const diffDays = Math.round((showDate.getTime() - now.getTime()) / 86400000);
+                  const within = diffDays <= 30;
+                  const tripExists = within && hasTripAroundDate?.(iso);
+                  const noAction = diffDays > 30;
+                  if (noAction) return null;
+                  return (
+                    <button
+                      type="button"
+                      className="w-full px-3 py-1.5 rounded-md bg-accent-500/20 border border-accent-500/40 text-accent-200 hover:bg-accent-500/30 text-xs font-medium transition-all"
+                      onClick={() => { track(TE.TRAVEL_CTA_CLICK, { type: 'plan', date: iso }); onPlanTravel?.(iso); }}
+                    >
+                      {tripExists ? (t('shows.travel.tripExists') || 'Trip exists') : (t('shows.travel.plan') || 'Plan')}
+                    </button>
+                  );
+                })()}
+              </div>
             </div>
           )}
           {tab === 'finance' && (
-            <div id="panel-finance" role="tabpanel" aria-labelledby="tab-finance" className="text-sm space-y-4 max-w-3xl mx-auto">
+            <div id="panel-finance" role="tabpanel" aria-labelledby="tab-finance" className="text-sm space-y-4 max-w-7xl mx-auto">
               <div className="glass rounded-md p-3 border border-white/10">
-                <div className="flex items-center gap-2 text-white/60 text-xs">
+                <div className="flex items-center gap-2 text-slate-400 dark:text-white/60 text-xs">
                   <svg className="w-3.5 h-3.5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -1454,7 +1543,10 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   lng: 0,
                   fee: feeVal,
                   feeCurrency: draft.feeCurrency || 'EUR',
-                  status: draft.status || 'confirmed'
+                  status: draft.status || 'confirmed',
+                  __version: 1,
+                  __modifiedAt: new Date().toISOString(),
+                  __modifiedBy: ''
                 };
                 const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);
                 const commVal = applicable.booking.length > 0 || applicable.management.length > 0
@@ -1464,7 +1556,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
 
                 const whtPctEff = draft.whtPct || 0;
                 const whtVal = feeVal * (whtPctEff / 100);
-                const costsVal = (draft.costs || []).reduce((s, c) => s + (c.amount || 0), 0);
+                const costsVal = (draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0);
                 const netVal = feeVal - whtVal - commVal - costsVal;
 
                 // For display purposes - show agency names if any applicable
@@ -1511,9 +1603,9 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 const bookingDefault = booking?.commissionPct || 0;
                 return <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('shows.editor.label.mgmt') || 'Mgmt Agency'}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">{t('shows.editor.label.mgmt') || 'Mgmt Agency'}</span>
                     <select
-                      className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
+                      className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
                       value={draft.mgmtAgency || ''}
                       onChange={e => setDraft(d => ({ ...d, mgmtAgency: e.target.value || undefined }))}
                     >
@@ -1524,9 +1616,9 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     </select>
                   </label>
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('shows.editor.label.booking') || 'Booking Agency'}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">{t('shows.editor.label.booking') || 'Booking Agency'}</span>
                     <select
-                      className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
+                      className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
                       value={draft.bookingAgency || ''}
                       onChange={e => setDraft(d => ({ ...d, bookingAgency: e.target.value || undefined }))}
                     >
@@ -1537,11 +1629,11 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     </select>
                   </label>
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-white/70 flex items-center gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70 flex items-center gap-1.5">
                       {t('shows.table.agency.mgmt') || 'Mgmt'} %
                       {draft.mgmtAgency && (
                         draft.mgmtPct == null ? (
-                          <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/20 text-[9px] font-normal normal-case tracking-normal" title={t('shows.editor.commission.default')?.replace('{pct}', String(mgmtDefault)) || `Default ${mgmtDefault}%`}>
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 text-[9px] font-normal normal-case tracking-normal" title={t('shows.editor.commission.default')?.replace('{pct}', String(mgmtDefault)) || `Default ${mgmtDefault}%`}>
                             {t('shows.editor.commission.default') ? t('shows.editor.commission.default')!.replace('{pct}', String(mgmtDefault)) : `Default ${mgmtDefault}%`}
                           </span>
                         ) : draft.mgmtPct !== mgmtDefault && (
@@ -1551,15 +1643,15 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                         )
                       )}
                     </span>
-                    <input aria-describedby={draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault ? 'mgmt-override-hint' : undefined} type="number" min={0} max={50} className={`px-3 py-1.5 rounded-md bg-white/5 border focus-ring transition-all text-sm ${(draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault) ? 'border-amber-400/60 bg-amber-500/5' : 'border-white/20 hover:border-white/30 focus:border-accent-500/50'}`} value={draft.mgmtPct ?? ''} onChange={e => setDraft(d => ({ ...d, mgmtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))} />
+                    <input aria-describedby={draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault ? 'mgmt-override-hint' : undefined} type="number" min={0} max={50} className={`px-3 py-1.5 rounded-md bg-white/5 border focus-ring transition-all text-sm ${(draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault) ? 'border-amber-400/60 bg-amber-500/5' : 'border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50'}`} value={draft.mgmtPct ?? ''} onChange={e => setDraft(d => ({ ...d, mgmtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))} />
                     {(draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault) && <span id="mgmt-override-hint" className="text-xs text-amber-200 font-medium">{t('shows.editor.commission.overriddenIndicator') || 'Commission overridden'} ({mgmtDefault}% → {draft.mgmtPct}%)</span>}
                   </label>
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-white/70 flex items-center gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70 flex items-center gap-1.5">
                       {t('shows.table.agency.booking') || 'Booking'} %
                       {draft.bookingAgency && (
                         draft.bookingPct == null ? (
-                          <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/20 text-[9px] font-normal normal-case tracking-normal" title={t('shows.editor.commission.default')?.replace('{pct}', String(bookingDefault)) || `Default ${bookingDefault}%`}>
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 text-[9px] font-normal normal-case tracking-normal" title={t('shows.editor.commission.default')?.replace('{pct}', String(bookingDefault)) || `Default ${bookingDefault}%`}>
                             {t('shows.editor.commission.default') ? t('shows.editor.commission.default')!.replace('{pct}', String(bookingDefault)) : `Default ${bookingDefault}%`}
                           </span>
                         ) : draft.bookingPct !== bookingDefault && (
@@ -1569,7 +1661,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                         )
                       )}
                     </span>
-                    <input aria-describedby={draft.bookingPct != null && draft.bookingPct !== bookingDefault ? 'booking-override-hint' : undefined} type="number" min={0} max={50} className={`px-3 py-1.5 rounded-md bg-white/5 border focus-ring transition-all text-sm ${(draft.bookingPct != null && draft.bookingPct !== bookingDefault) ? 'border-amber-400/60 bg-amber-500/5' : 'border-white/20 hover:border-white/30 focus:border-accent-500/50'}`} value={draft.bookingPct ?? ''} onChange={e => setDraft(d => ({ ...d, bookingPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))} />
+                    <input aria-describedby={draft.bookingPct != null && draft.bookingPct !== bookingDefault ? 'booking-override-hint' : undefined} type="number" min={0} max={50} className={`px-3 py-1.5 rounded-md bg-white/5 border focus-ring transition-all text-sm ${(draft.bookingPct != null && draft.bookingPct !== bookingDefault) ? 'border-amber-400/60 bg-amber-500/5' : 'border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50'}`} value={draft.bookingPct ?? ''} onChange={e => setDraft(d => ({ ...d, bookingPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))} />
                     {(draft.bookingPct != null && draft.bookingPct !== bookingDefault) && <span id="booking-override-hint" className="text-xs text-amber-200 font-medium">{t('shows.editor.commission.overriddenIndicator') || 'Commission overridden'} ({bookingDefault}% → {draft.bookingPct}%)</span>}
                   </label>
                 </div>;
@@ -1577,15 +1669,15 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
               {(() => {
                 const b = breakdownNet({ fee: draft.fee, whtPct: draft.whtPct, mgmtPct: draft.mgmtPct, bookingPct: draft.bookingPct, costs: draft.costs });
                 return (
-                  <div className="glass border border-white/10 rounded-[10px] p-3 space-y-2">
+                  <div className="glass border border-slate-200 dark:border-white/10 rounded-[10px] p-3 space-y-2">
                     <h4 className="font-semibold text-xs uppercase tracking-wider text-white/80">{t('shows.editor.finance.breakdown') || 'Financial Breakdown'}</h4>
                     <dl className="grid grid-cols-2 gap-y-1 text-[11px]">
-                      <dt className="text-white/60 font-medium">{t('shows.editor.summary.fee') || 'Fee'}</dt><dd className="text-right tabular-nums font-semibold text-white">{fmtMoney(b.fee)}</dd>
-                      <dt className="text-white/60 font-medium">{t('shows.editor.summary.wht') || 'WHT'}</dt><dd className="text-right tabular-nums font-semibold text-white">-{fmtMoney(Math.round(b.wht))}</dd>
-                      <dt className="text-white/60 font-medium">{t('shows.table.agency.mgmt') || 'Mgmt'} ({b.mgmt ? ((b.mgmt / b.fee * 100).toFixed(1) + '%') : '0%'})</dt><dd className="text-right tabular-nums font-semibold text-white">-{fmtMoney(Math.round(b.mgmt))}</dd>
-                      <dt className="text-white/60 font-medium">{t('shows.table.agency.booking') || 'Booking'} ({b.booking ? ((b.booking / b.fee * 100).toFixed(1) + '%') : '0%'})</dt><dd className="text-right tabular-nums font-semibold text-white">-{fmtMoney(Math.round(b.booking))}</dd>
-                      <dt className="text-white/60 font-medium">{t('shows.editor.summary.costs') || 'Costs'}</dt><dd className="text-right tabular-nums font-semibold text-white">-{fmtMoney(Math.round(b.totalCosts))}</dd>
-                      <dt className="font-bold pt-1 border-t border-white/10 mt-0.5 text-accent-300">{t('shows.editor.summary.net') || 'Est. Net'}</dt><dd className="text-right tabular-nums font-bold pt-1 border-t border-white/10 mt-0.5 flex items-center justify-end gap-1.5 text-accent-300">{fmtMoney(Math.round(b.net))}{b.fee > 0 && <span className="px-1.5 py-0.5 rounded-md bg-accent-500/30 border border-accent-500/50 text-accent-200 text-[9px] font-bold" title={t('shows.tooltip.margin') || 'Net divided by Fee (%)'}>{Math.round((b.net / b.fee) * 100)}%</span>}</dd>
+                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.fee') || 'Fee'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">{fmtMoney(b.fee)}</dd>
+                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.wht') || 'WHT'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(b.wht))}</dd>
+                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.table.agency.mgmt') || 'Mgmt'} ({b.mgmt ? ((b.mgmt / b.fee * 100).toFixed(1) + '%') : '0%'})</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(b.mgmt))}</dd>
+                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.table.agency.booking') || 'Booking'} ({b.booking ? ((b.booking / b.fee * 100).toFixed(1) + '%') : '0%'})</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(b.booking))}</dd>
+                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.costs') || 'Costs'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(b.totalCosts))}</dd>
+                      <dt className="font-bold pt-1 border-t border-slate-200 dark:border-white/10 mt-0.5 text-accent-300">{t('shows.editor.summary.net') || 'Est. Net'}</dt><dd className="text-right tabular-nums font-bold pt-1 border-t border-slate-200 dark:border-white/10 mt-0.5 flex items-center justify-end gap-1.5 text-accent-300">{fmtMoney(Math.round(b.net))}{b.fee > 0 && <span className="px-1.5 py-0.5 rounded-md bg-accent-500/30 border border-accent-500/50 text-accent-200 text-[9px] font-bold" title={t('shows.tooltip.margin') || 'Net divided by Fee (%)'}>{Math.round((b.net / b.fee) * 100)}%</span>}</dd>
                     </dl>
                   </div>
                 );
@@ -1594,26 +1686,26 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
           )}
           {tab === 'costs' && (
             <div className="space-y-3 text-sm max-w-4xl mx-auto" id="panel-costs" role="tabpanel" aria-labelledby="tab-costs">
-              <div className="flex flex-wrap items-center gap-1.5 sticky top-0 z-10 glass backdrop-blur px-3 py-1.5 -mx-1 border-b border-white/10 rounded-t-md">
+              <div className="flex flex-wrap items-center gap-1.5 sticky top-0 z-10 glass backdrop-blur px-3 py-1.5 -mx-1 border-b border-slate-200 dark:border-white/10 rounded-t-md">
                 <p className="text-xs font-semibold mr-auto flex items-center gap-1.5">
                   <span className="uppercase tracking-wider text-white/80">{t('shows.costs.desc') || 'Costs'}</span>
-                  <span className="text-white/50">({(draft.costs || []).length})</span>
+                  <span className="text-slate-300 dark:text-white/50">({(draft.costs || []).length})</span>
                   {(draft.costs && draft.costs.length > 0) && (
                     <span className="hidden sm:inline text-[9px] px-1.5 py-0.5 rounded-md bg-accent-500/20 border border-accent-500/30 tracking-wide font-bold text-accent-300">
-                      {fmtMoney((draft.costs || []).reduce((s, c) => s + (c.amount || 0), 0))}
+                      {fmtMoney((draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0))}
                     </span>
                   )}
                 </p>
                 {(draft.costs && draft.costs.length > 1) && (
                   <div className="flex items-center gap-1" aria-label={t('shows.editor.cost.sort') || 'Sort'}>
-                    <button type="button" className="px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-[10px] font-medium transition-all" onClick={() => { setDraft(d => ({ ...d, costs: [...(d.costs || [])].sort((a, b) => (a.type || '').localeCompare(b.type || '')) })); track(TE.COST_SORT, { by: 'type', direction: 'asc' }); }}>{t('shows.sort.type') || 'Type'}</button>
-                    <button type="button" className="px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-[10px] font-medium transition-all" onClick={() => { setDraft(d => ({ ...d, costs: [...(d.costs || [])].sort((a, b) => (b.amount || 0) - (a.amount || 0)) })); track(TE.COST_SORT, { by: 'amount', direction: 'desc' }); }}>{t('shows.sort.amount') || 'Amount'}</button>
+                    <button type="button" className="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-[10px] font-medium transition-all" onClick={() => { setDraft(d => ({ ...d, costs: [...(d.costs || [])].sort((a, b) => (a.type || '').localeCompare(b.type || '')) })); track(TE.COST_SORT, { by: 'type', direction: 'asc' }); }}>{t('shows.sort.type') || 'Type'}</button>
+                    <button type="button" className="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-[10px] font-medium transition-all" onClick={() => { setDraft(d => ({ ...d, costs: [...(d.costs || [])].sort((a, b) => (b.amount || 0) - (a.amount || 0)) })); track(TE.COST_SORT, { by: 'amount', direction: 'desc' }); }}>{t('shows.sort.amount') || 'Amount'}</button>
                   </div>
                 )}
                 {recentCostTypes.length > 0 && (
                   <div className="hidden md:flex items-center gap-0.5" aria-label={t('shows.editor.cost.recent') || 'Recent cost types'}>
                     {recentCostTypes.slice(0, 3).map(ct => (
-                      <button key={ct} type="button" className="px-1.5 py-0.5 rounded-sm bg-white/5 hover:bg-white/10 text-[9px] tracking-wide border border-white/10 transition-all" onClick={() => {
+                      <button key={ct} type="button" className="px-1.5 py-0.5 rounded-sm bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[9px] tracking-wide border border-slate-200 dark:border-white/10 transition-all" onClick={() => {
                         const id = crypto.randomUUID();
                         setDraft(d => ({ ...d, costs: [...(d.costs || []), { id, type: ct, amount: 0, desc: '' }] }));
                         manualCostAdds.current += 1;
@@ -1624,7 +1716,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     ))}
                   </div>
                 )}
-                <button type="button" onClick={() => { setShowBulk(true); track(TE.COST_BULK_OPEN); }} className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-[11px] focus-ring">{t('shows.editor.bulk.open') || 'Bulk add'}</button>
+                <button type="button" onClick={() => { setShowBulk(true); track(TE.COST_BULK_OPEN); }} className="px-2 py-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[11px] focus-ring">{t('shows.editor.bulk.open') || 'Bulk add'}</button>
                 {/* Cost Templates Popover */}
                 <div className="relative" data-cost-template-menu>
                   <button
@@ -1636,14 +1728,14 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     onKeyDown={e => {
                       if (e.key === 'ArrowDown' && !openTemplateMenu) { e.preventDefault(); setOpenTemplateMenu(true); requestAnimationFrame(() => document.getElementById('cost-template-item-0')?.focus()); }
                     }}
-                    className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 focus-ring"
+                    className="px-2 py-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 focus-ring"
                   >{t('shows.editor.cost.addTemplate') || 'Add template'}</button>
                   {openTemplateMenu && (
                     <div
                       id="cost-template-popover"
                       role="menu"
                       aria-label={t('shows.editor.cost.templateMenu') || 'Cost templates'}
-                      className="absolute z-20 mt-1 -left-4 sm:left-auto sm:right-0 w-56 rounded-md shadow-lg border border-white/10 backdrop-blur bg-neutral-900/95 p-1 flex flex-col focus-outline"
+                      className="absolute z-20 mt-1 -left-4 sm:left-auto sm:right-0 w-56 rounded-md shadow-lg border border-slate-200 dark:border-white/10 backdrop-blur bg-neutral-900/95 p-1 flex flex-col focus-outline"
                     >
                       {COST_TEMPLATES.map((tpl, idx) => (
                         <button
@@ -1651,7 +1743,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                           id={`cost-template-item-${idx}`}
                           type="button"
                           role="menuitem"
-                          className="text-left px-2 py-1 rounded text-[11px] hover:bg-white/10 focus:bg-white/10 focus:outline-none flex flex-col gap-0.5"
+                          className="text-left px-2 py-1 rounded text-[11px] hover:bg-slate-200 dark:bg-white/10 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 focus:outline-none flex flex-col gap-0.5"
                           onClick={() => { applyCostTemplate(tpl); }}
                           onKeyDown={e => {
                             if (e.key === 'Escape') { e.stopPropagation(); setOpenTemplateMenu(false); (e.currentTarget.closest('[data-cost-template-menu]') as HTMLElement)?.querySelector('button')?.focus(); }
@@ -1664,10 +1756,10 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                           <span className="opacity-60 line-clamp-2 leading-tight">{tpl.items.map(i => i.desc || i.type).join(', ')}</span>
                         </button>
                       ))}
-                      <div className="mt-1 pt-1 border-t border-white/10 flex">
+                      <div className="mt-1 pt-1 border-t border-slate-200 dark:border-white/10 flex">
                         <button
                           type="button"
-                          className="flex-1 text-[10px] uppercase tracking-wide px-2 py-1 rounded hover:bg-white/5 text-accent-300"
+                          className="flex-1 text-[10px] uppercase tracking-wide px-2 py-1 rounded hover:bg-slate-100 dark:bg-white/5 text-accent-300"
                           onClick={() => { setOpenTemplateMenu(false); track(TE.COST_TEMPLATE_DISMISS); }}
                         >{t('common.close') || 'Close'}</button>
                       </div>
@@ -1675,31 +1767,31 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   )}
                 </div>
                 {(draft.costs && draft.costs.length > 0) && (
-                  <button type="button" className="px-2 py-1 rounded bg-white/5 hover:bg-white/10" onClick={() => setDraft(d => ({ ...d, costs: [] }))}>{t('filters.clear') || 'Clear'}</button>
+                  <button type="button" className="px-2 py-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10" onClick={() => setDraft(d => ({ ...d, costs: [] }))}>{t('filters.clear') || 'Clear'}</button>
                 )}
               </div>
               {/* Subtotals sticky below toolbar */}
               {draft.costs && draft.costs.length > 0 && (() => {
                 const entries = Object.entries(costGroups).sort((a, b) => a[0].localeCompare(b[0]));
-                const total = entries.reduce((s, [, v]) => s + v.total, 0);
+                const total = entries.reduce((s: number, [, v]: [string, any]) => s + v.total, 0);
                 return (
-                  <div className="sticky top-[42px] z-10 bg-ink-900/85 backdrop-blur -mx-1 px-1.5 py-1 border-b border-white/5 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px]">
+                  <div className="sticky top-[42px] z-10 bg-ink-900/85 backdrop-blur -mx-1 px-1.5 py-1 border-b border-slate-100 dark:border-white/5 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px]">
                     <span className="uppercase tracking-wide opacity-60">{t('shows.editor.cost.subtotals') || 'Subtotals'}:</span>
-                    {entries.map(([k, v]) => <span key={k} className="whitespace-nowrap flex items-center gap-0.5">{k}: <strong className="tabular-nums">{fmtMoney(v.total)}</strong>{v.count > 1 && <span className="px-0.5 rounded bg-white/5 text-[8px] border border-white/10" aria-label={t('shows.editor.cost.items') || 'Items'} title={t('shows.editor.cost.items') || 'Items'}>{v.count}</span>}</span>)}
+                    {entries.map(([k, v]: [string, any]) => <span key={k} className="whitespace-nowrap flex items-center gap-0.5">{k}: <strong className="tabular-nums">{fmtMoney(v.total)}</strong>{v.count > 1 && <span className="px-0.5 rounded bg-slate-100 dark:bg-white/5 text-[8px] border border-white/10" aria-label={t('shows.editor.cost.items') || 'Items'} title={t('shows.editor.cost.items') || 'Items'}>{v.count}</span>}</span>)}
                     <span className="ml-auto whitespace-nowrap">{t('shows.editor.summary.costs') || 'Costs'}: <strong className="tabular-nums">{fmtMoney(total)}</strong></span>
                   </div>
                 );
               })()}
               <div className="grid gap-1.5 mt-0.5">
-                {(draft.costs || []).map((c, idx, arr) => {
+                {(draft.costs || []).map((c: any, idx: number, arr: any[]) => {
                   const isFirst = idx === 0;
                   const isLast = idx === arr.length - 1;
                   return (
-                    <fieldset key={c.id} className="flex flex-col gap-1 sm:flex-row sm:items-center rounded-md glass p-2 border border-white/10 focus-within:border-accent-500/50 hover:border-white/20 transition-all group" aria-label={c.type || t('shows.costs.type') || 'Cost'}>
+                    <fieldset key={c.id} className="flex flex-col gap-1 sm:flex-row sm:items-center rounded-md glass p-2 border border-slate-200 dark:border-white/10 focus-within:border-accent-500/50 hover:border-slate-300 dark:hover:border-white/20 transition-all group" aria-label={c.type || t('shows.costs.type') || 'Cost'}>
                       <div className="flex flex-1 gap-1.5">
                         <input
                           list="cost-type-suggestions"
-                          className="px-3 py-1 rounded-md bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 flex-1 focus-ring transition-all text-xs"
+                          className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 flex-1 focus-ring transition-all text-xs"
                           placeholder={t('shows.costs.type') || 'Type'}
                           value={c.type || ''}
                           data-cost-id={c.id}
@@ -1711,7 +1803,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                         />
                         <input
                           type="number"
-                          className="px-3 py-1 rounded-md bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 w-24 text-right focus-ring tabular-nums transition-all text-xs font-semibold"
+                          className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 w-24 text-right focus-ring tabular-nums transition-all text-xs font-semibold"
                           placeholder={t('shows.costs.amount') || 'Amount'}
                           value={c.amount ?? 0}
                           data-cost-id={c.id}
@@ -1723,7 +1815,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                         />
                       </div>
                       <input
-                        className="px-3 py-1 rounded-md bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 flex-1 focus-ring transition-all text-xs"
+                        className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 flex-1 focus-ring transition-all text-xs"
                         placeholder={t('shows.costs.desc') || 'Description'}
                         value={c.desc || ''}
                         data-cost-id={c.id}
@@ -1737,20 +1829,20 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                         <button
                           type="button"
                           aria-label={t('shows.editor.cost.duplicate') || 'Duplicate'}
-                          className="px-2 py-1 rounded-md bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20 text-[11px] font-medium transition-all"
+                          className="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-[11px] font-medium transition-all"
                           onClick={() => duplicateCost(c.id)}
                         >{t('shows.editor.cost.duplicate') || 'Dup'}</button>
                         <button
                           type="button"
                           aria-label={t('shows.editor.cost.moveUp') || 'Move up'}
-                          className="p-1 rounded-md bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20 disabled:opacity-40 transition-all"
+                          className="p-1 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 disabled:opacity-40 transition-all"
                           disabled={isFirst}
                           onClick={() => moveCost(c.id, 'up')}
                         ><ArrowUpIcon /></button>
                         <button
                           type="button"
                           aria-label={t('shows.editor.cost.moveDown') || 'Move down'}
-                          className="p-1 rounded-md bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20 disabled:opacity-40 transition-all"
+                          className="p-1 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 disabled:opacity-40 transition-all"
                           disabled={isLast}
                           onClick={() => moveCost(c.id, 'down')}
                         ><ArrowDownIcon /></button>
@@ -1798,14 +1890,14 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   <h2 id="bulk-title" tabIndex={-1} className="text-sm font-semibold">{t('shows.editor.bulk.title') || 'Bulk add costs'}</h2>
                   <p id="bulk-help" className="text-[9px] opacity-70 max-w-prose">{t('shows.editor.bulk.help') || 'Paste CSV or tab lines: Type, Amount, Description'}</p>
                 </div>
-                <button type="button" aria-label={t('common.close') || 'Close'} className="px-1 py-0.5 rounded bg-white/10 hover:bg-white/15 text-sm leading-none" onClick={() => setShowBulk(false)}>×</button>
+                <button type="button" aria-label={t('common.close') || 'Close'} className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-sm leading-none" onClick={() => setShowBulk(false)}>×</button>
               </div>
               <textarea
                 ref={bulkTextAreaRef}
                 value={bulkRaw}
                 onChange={e => setBulkRaw(e.target.value)}
                 placeholder={t('shows.editor.bulk.placeholder') || 'Type, Amount, Desc'}
-                className="w-full h-28 px-3 py-1.5 rounded-md bg-white/5 border border-white/15 focus-ring font-mono text-[10px] resize-vertical"
+                className="w-full h-28 px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-white/15 focus-ring font-mono text-[10px] resize-vertical"
               />
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-[10px]">
@@ -1815,7 +1907,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 {bulkParsed.length > 0 && (
                   <div className="max-h-48 overflow-auto rounded border border-white/10">
                     <table className="w-full text-[9px]">
-                      <thead className="bg-white/5 sticky top-0">
+                      <thead className="bg-slate-100 dark:bg-white/5 sticky top-0">
                         <tr>
                           <th className="text-left px-2 py-0.5 w-10 opacity-60">#</th>
                           <th className="text-left px-2 py-0.5 opacity-60">{t('shows.costs.type') || 'Type'}</th>
@@ -1838,7 +1930,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 )}
               </div>
               <div className="flex justify-end gap-1.5">
-                <button type="button" className="px-3 py-1 rounded text-sm bg-white/10 hover:bg-white/15" onClick={() => setShowBulk(false)}>{t('shows.editor.bulk.cancel') || 'Cancel'}</button>
+                <button type="button" className="px-3 py-1 rounded text-sm bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={() => setShowBulk(false)}>{t('shows.editor.bulk.cancel') || 'Cancel'}</button>
                 <button
                   type="button"
                   disabled={bulkParsed.length === 0}
@@ -1939,7 +2031,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
               <h4 id="discard-title" className="font-semibold text-sm">{t('shows.editor.discard.title') || 'Discard changes?'}</h4>
               <p id="discard-desc" className="opacity-80 text-xs">{t('shows.editor.discard.body') || 'You have unsaved changes. They will be lost.'}</p>
               <div className="flex justify-end gap-1.5">
-                <button className="px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 font-medium text-xs transition-all" onClick={() => { setShowDiscard(false); track(TE.DISCARD_CANCEL); }}>{t('shows.editor.discard.cancel') || 'Keep editing'}</button>
+                <button className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 font-medium text-xs transition-all" onClick={() => { setShowDiscard(false); track(TE.DISCARD_CANCEL); }}>{t('shows.editor.discard.cancel') || 'Keep editing'}</button>
                 <button className="px-3 py-1.5 rounded-md bg-red-600/90 hover:bg-red-600 border border-red-500/50 hover:border-red-400 hover:scale-[1.02] active:scale-[0.98] font-semibold text-xs transition-all" onClick={() => { setShowDiscard(false); track(TE.DISCARD_CONFIRM); discardSavedDraft(); onRequestClose(); const msg = t('shows.editor.toast.discarded') || 'Changes discarded'; announce(msg, 'polite'); toast.info(msg); }}>{t('shows.editor.discard.confirm') || 'Discard'}</button>
               </div>
             </div>
@@ -1951,7 +2043,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
               <h4 id="delete-title" className="font-semibold text-sm">{t('shows.editor.delete.confirmTitle') || 'Delete show?'}</h4>
               <p id="delete-desc" className="opacity-80 text-xs">{t('shows.editor.delete.confirmBody') || 'This action cannot be undone.'}</p>
               <div className="flex justify-end gap-1.5">
-                <button className="px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 font-medium text-xs transition-all" onClick={() => { setShowDelete(false); track(TE.DELETE_CANCEL); }}>{t('shows.editor.delete.cancel') || 'Cancel'}</button>
+                <button className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 font-medium text-xs transition-all" onClick={() => { setShowDelete(false); track(TE.DELETE_CANCEL); }}>{t('shows.editor.delete.cancel') || 'Cancel'}</button>
                 <button className="px-3 py-1.5 rounded-md bg-red-600/90 hover:bg-red-600 border border-red-500/50 hover:border-red-400 hover:scale-[1.02] active:scale-[0.98] font-semibold text-xs transition-all" onClick={() => {
                   track(TE.DELETE_CONFIRM);
                   setShowDelete(false);
@@ -2003,7 +2095,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
             <span className="leading-tight">{t('shows.editor.toast.deleted') || 'Deleted'}</span>
             <button
               type="button"
-              className="px-1.5 py-0.5 rounded-sm bg-white/10 hover:bg-white/20 font-medium text-[10px]"
+              className="px-1.5 py-0.5 rounded-sm bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 font-medium text-[10px]"
               onClick={() => {
                 setPendingDelete(p => {
                   if (p?.timer) clearTimeout(p.timer);

@@ -163,11 +163,11 @@ export const ChaosSection: React.FC<ChaosSectionProps> = ({ className = '' }) =>
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 1 }}
         >
-          <p className="text-lg text-white/80 mb-6">
+          <p className="text-lg text-slate-600 dark:text-white/80 mb-6">
             There's a better way. Keep scrolling to see the transformation.
           </p>
           <div className="animate-bounce">
-            <svg className="w-6 h-6 mx-auto text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 mx-auto text-slate-400 dark:text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </div>

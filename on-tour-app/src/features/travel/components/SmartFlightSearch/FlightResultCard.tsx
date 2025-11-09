@@ -47,7 +47,7 @@ export const FlightResultCard: React.FC<{ r: FlightResult; onAdd: (r: FlightResu
         {/* Visual Timeline */}
         <div className="mt-3 flex items-center gap-2">
           <span className="text-[11px] font-semibold tabular-nums">{fmtDuration(r.durationM)}</span>
-          <div className="flex-1 h-1.5 bg-white/10 rounded-full relative overflow-hidden">
+          <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full relative overflow-hidden">
              <div className="absolute h-full bg-white/20 w-full" />
             {/* stops markers */}
             {Array.from({ length: Math.max(0, r.stops) }).map((_,i)=> (
@@ -68,7 +68,7 @@ export const FlightResultCard: React.FC<{ r: FlightResult; onAdd: (r: FlightResu
         <div className="text-xs opacity-70 mb-2">{t('common.total')||'Total'}</div>
         <div className="flex gap-1 mt-1 justify-end">
           {onPin && (
-            <button onClick={()=> onPin(r)} className="text-[11px] px-2 py-1 rounded bg-white/10 hover:bg-white/15" aria-pressed={!!pinned}>
+            <button onClick={()=> onPin(r)} className="text-[11px] px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" aria-pressed={!!pinned}>
               {pinned ? (t('travel.unpin')||'Unpin') : (t('travel.pin')||'Pin')}
             </button>
           )}
@@ -79,7 +79,7 @@ export const FlightResultCard: React.FC<{ r: FlightResult; onAdd: (r: FlightResu
             >
               {t('travel.add_to_trip')||'Add to trip'}
             </GuardedAction>
-          {r.deepLink && <a href={r.deepLink} target="_blank" rel="noreferrer" className="text-[11px] px-2 py-1 rounded bg-white/10 hover:bg-white/15">{t('common.open')||'Open'}</a>}
+          {r.deepLink && <a href={r.deepLink} target="_blank" rel="noreferrer" className="text-[11px] px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15">{t('common.open')||'Open'}</a>}
         </div>
       </div>
     </div>

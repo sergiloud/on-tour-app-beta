@@ -38,7 +38,7 @@ const EventCreationSuccess: React.FC<Props> = ({ show, button, city, country, on
           exit={{ opacity: 0, y: 100, scale: 0.9 }}
           transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
         >
-          <div className={`glass rounded-lg border border-white/10 backdrop-blur-md p-4 md:p-5 shadow-xl bg-gradient-to-br ${colors.bg} ring-1 ${colors.ring}`}>
+          <div className={`glass rounded-lg border border-slate-200 dark:border-white/10 backdrop-blur-md p-4 md:p-5 shadow-xl bg-gradient-to-br ${colors.bg} ring-1 ${colors.ring}`}>
             <div className="flex items-center gap-3">
               {/* Success Icon */}
               <motion.div
@@ -66,7 +66,7 @@ const EventCreationSuccess: React.FC<Props> = ({ show, button, city, country, on
                   {button?.label || 'Event'} created
                 </p>
                 {city && country && (
-                  <p className="text-xs md:text-sm text-white/70 truncate mt-0.5">
+                  <p className="text-xs md:text-sm text-slate-500 dark:text-white/70 truncate mt-0.5">
                     {city}, {country}
                   </p>
                 )}
@@ -75,7 +75,7 @@ const EventCreationSuccess: React.FC<Props> = ({ show, button, city, country, on
               {/* Close Button */}
               <motion.button
                 onClick={onDismiss}
-                className="ml-2 flex-shrink-0 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                className="ml-2 flex-shrink-0 w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-500 dark:text-white/70 hover:text-white transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >

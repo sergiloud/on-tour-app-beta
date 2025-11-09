@@ -1,5 +1,5 @@
 // Shows page – definitive clean implementation with NATIVE drag & drop
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -201,8 +201,13 @@ const Shows: React.FC = () => {
 
   // virtualization
   const parentRef = useRef<HTMLDivElement>(null);
-  const enableVirtual = rows.length > 200;
-  const virtualizer = useVirtualizer({ count: rows.length, getScrollElement: () => parentRef.current, estimateSize: () => 44, overscan: 8 });
+  const enableVirtual = rows.length > 100; // Lowered threshold from 200
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 44,
+    overscan: 15 // Increased from 8 for smoother scrolling
+  });
   const virtualItems = enableVirtual ? virtualizer.getVirtualItems() : [];
   const topSpacer = enableVirtual && virtualItems[0] ? virtualItems[0].start : 0;
   const lastVirtualItem = virtualItems[virtualItems.length - 1];
@@ -313,10 +318,18 @@ const Shows: React.FC = () => {
   useEffect(() => { const addFlag = searchParams.get('add'); if (addFlag === '1') openAdd(); }, [searchParams]);
   useEffect(() => { const id = searchParams.get('edit'); if (!id) return; const f = shows.find(s => s.id === id); f ? openEdit(f) : navigate('/dashboard/shows', { replace: true }); }, [searchParams, shows]);
 
-  const clearFilters = () => { setQInput(''); setDateRange({ from: '', to: '' }); setRegion('all'); setFeeRange({}); setStatusOn({ confirmed: true, pending: true, offer: true, canceled: false, archived: true, postponed: true }); announce('Filters cleared'); trackEvent('shows.filter.clear'); };
+  const clearFilters = useCallback(() => {
+    setQInput('');
+    setDateRange({ from: '', to: '' });
+    setRegion('all');
+    setFeeRange({});
+    setStatusOn({ confirmed: true, pending: true, offer: true, canceled: false, archived: true, postponed: true });
+    announce('Filters cleared');
+    trackEvent('shows.filter.clear');
+  }, []);
 
   // Native HTML5 Drag & Drop handlers (MUCH faster than @dnd-kit)
-  const handleNativeDragStart = (show: Show) => (e: React.DragEvent) => {
+  const handleNativeDragStart = useCallback((show: Show) => (e: React.DragEvent) => {
     setDraggedShow(show);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', show.id);
@@ -329,19 +342,19 @@ const Shows: React.FC = () => {
       e.dataTransfer.setDragImage(dragImage, 0, 0);
       setTimeout(() => document.body.removeChild(dragImage), 0);
     }
-  };
+  }, []);
 
-  const handleNativeDragOver = (status: string) => (e: React.DragEvent) => {
+  const handleNativeDragOver = useCallback((status: string) => (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setDropTargetStatus(status);
-  };
+  }, []);
 
-  const handleNativeDragLeave = () => {
+  const handleNativeDragLeave = useCallback(() => {
     setDropTargetStatus(null);
-  };
+  }, []);
 
-  const handleNativeDrop = (newStatus: Show['status']) => (e: React.DragEvent) => {
+  const handleNativeDrop = useCallback((newStatus: Show['status']) => (e: React.DragEvent) => {
     e.preventDefault();
     setDropTargetStatus(null);
 
@@ -354,12 +367,12 @@ const Shows: React.FC = () => {
     }
 
     setDraggedShow(null);
-  };
+  }, [draggedShow, update, toast]);
 
-  const handleNativeDragEnd = () => {
+  const handleNativeDragEnd = useCallback(() => {
     setDraggedShow(null);
     setDropTargetStatus(null);
-  };
+  }, []);
 
   return (
     <>
@@ -385,11 +398,11 @@ const Shows: React.FC = () => {
                   <span className="text-sm font-bold text-accent-500">{selected.size}</span>
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-white">
+                  <h2 className="text-xl font-semibold text-theme-primary">
                     {selected.size} {t('shows.selected') || 'selected'}
                   </h2>
                   <button
-                    className="text-xs text-white/60 hover:text-accent-500 transition-colors"
+                    className="text-xs text-theme-secondary hover:text-accent-500 transition-colors"
                     onClick={() => setSelected(new Set())}
                   >
                     {t('common.clear') || 'Clear selection'}
@@ -404,8 +417,8 @@ const Shows: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{t('shows.title') || 'Shows'}</h2>
-                  <p className="text-sm text-white/50">{filtered.length} {filtered.length === 1 ? (t('shows.count.singular') || 'show') : (t('shows.count.plural') || 'shows')}</p>
+                  <h2 className="text-2xl font-bold text-theme-primary">{t('shows.title') || 'Shows'}</h2>
+                  <p className="text-sm text-slate-300 dark:text-white/50">{filtered.length} {filtered.length === 1 ? (t('shows.count.singular') || 'show') : (t('shows.count.plural') || 'shows')}</p>
                 </div>
                 {!can('shows:write') && (
                   <span className="px-2 py-1 text-xs rounded-lg bg-amber-500/10 text-amber-400 border border-amber-400/20 flex items-center gap-1">
@@ -432,9 +445,9 @@ const Shows: React.FC = () => {
                   </svg>
                   {t('shows.bulk.confirm') || 'Confirm'}
                 </motion.button>
-                <div className="flex items-center gap-2 glass px-3 py-2 rounded-lg border border-white/10">
-                  <label className="text-xs text-white/70">{t('shows.bulk.setStatus') || 'Status'}:</label>
-                  <select className="bg-white/10 rounded px-2 py-1 text-xs border border-white/10 focus:border-accent-500/50 focus:outline-none" value={bulkStatus} onChange={e => setBulkStatus(e.target.value as any)}>
+                <div className="flex items-center gap-2 glass px-3 py-2 rounded-lg border border-theme">
+                  <label className="text-xs text-theme-secondary">{t('shows.bulk.setStatus') || 'Status'}:</label>
+                  <select className="bg-interactive-hover rounded px-2 py-1 text-xs border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:outline-none" value={bulkStatus} onChange={e => setBulkStatus(e.target.value as any)}>
                     <option value="offer">offer</option>
                     <option value="pending">pending</option>
                     <option value="confirmed">confirmed</option>
@@ -454,7 +467,7 @@ const Shows: React.FC = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-sm"
+                  className="px-4 py-2 rounded-lg bg-interactive-hover hover:bg-slate-300 dark:bg-white/15 text-sm"
                   onClick={() => exportCsv(true)}
                 >
                   <svg className="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,7 +493,7 @@ const Shows: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setFiltersPanelOpen(true)}
-                  className="px-4 py-2.5 rounded-lg glass border border-white/10 hover:border-accent-500/30 text-sm flex items-center gap-2 transition-all"
+                  className="px-4 py-2.5 rounded-lg glass border border-slate-200 dark:border-white/10 hover:border-accent-500/30 text-sm flex items-center gap-2 transition-all"
                   aria-label={t('shows.filters.openPanel') || 'Open filters'}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -489,7 +502,7 @@ const Shows: React.FC = () => {
                   {t('shows.filters.title') || 'Filters'}
                 </motion.button>
                 <div className="relative flex-1 min-w-[200px] max-w-xs">
-                  <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 dark:text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
@@ -497,12 +510,12 @@ const Shows: React.FC = () => {
                     value={qInput}
                     onChange={e => setQInput(e.target.value)}
                     placeholder={t('shows.search.placeholder') || 'Search city/country'}
-                    className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 focus:border-accent-500/50 focus:outline-none text-sm transition-all"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-interactive border border-slate-200 dark:border-white/10 hover:border-theme-strong focus:border-accent-500/50 focus:outline-none text-sm transition-all"
                   />
                   {qInput && (
                     <button
                       onClick={() => setQInput('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/80 transition-colors"
                       aria-label="Clear search"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -520,7 +533,7 @@ const Shows: React.FC = () => {
                   )}
                 </div>
                 <ViewToggle view={view} setView={setView} />
-                <AnimatedButton onClick={() => setExportOpen(o => !o)} className="px-4 py-2.5 rounded-lg glass border border-white/10 hover:border-white/20 text-sm flex items-center gap-2">
+                <AnimatedButton onClick={() => setExportOpen(o => !o)} className="px-4 py-2.5 rounded-lg glass border border-slate-200 dark:border-white/10 hover:border-theme-strong text-sm flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
@@ -542,8 +555,8 @@ const Shows: React.FC = () => {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <button className="px-2 py-1 rounded bg-white/10 hover:bg-white/15" onClick={() => exportCsv(selected.size > 0)} disabled={exporting}>CSV</button>
-                      <button className="px-2 py-1 rounded bg-white/10 hover:bg-white/15" onClick={() => exportXlsx(selected.size > 0)} disabled={exporting}>XLSX</button>
+                      <button className="px-2 py-1 rounded bg-interactive-hover hover:bg-white/15" onClick={() => exportCsv(selected.size > 0)} disabled={exporting}>CSV</button>
+                      <button className="px-2 py-1 rounded bg-interactive-hover hover:bg-white/15" onClick={() => exportXlsx(selected.size > 0)} disabled={exporting}>XLSX</button>
                       <button className="ml-auto text-[11px] underline" onClick={() => setExportOpen(false)}>{t('common.close') || 'Close'}</button>
                     </div>
                   </div>
@@ -561,14 +574,14 @@ const Shows: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-white/80">{t('shows.stats.overview') || 'Overview'}</h3>
+              <h3 className="text-sm font-semibold text-slate-600 dark:text-white/80">{t('shows.stats.overview') || 'Overview'}</h3>
               <span className="px-2 py-0.5 rounded-full bg-accent-500/20 text-accent-400 text-xs font-medium">
                 {filtered.length} {filtered.length === 1 ? 'show' : 'shows'}
               </span>
             </div>
             <button
               onClick={() => setStatsVisible(!statsVisible)}
-              className="text-xs text-white/60 hover:text-accent-500 transition-colors flex items-center gap-1.5"
+              className="text-xs text-theme-secondary hover:text-accent-500 transition-colors flex items-center gap-1.5"
             >
               {statsVisible ? (
                 <>
@@ -600,7 +613,7 @@ const Shows: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4" aria-live="polite">
                   <motion.div
                     whileHover={{ scale: 1.02, y: -2 }}
-                    className="glass rounded-xl p-4 border border-white/10 hover:border-accent-500/30 transition-all"
+                    className="glass rounded-xl p-4 border border-slate-200 dark:border-white/10 hover:border-accent-500/30 transition-all"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center">
@@ -609,8 +622,8 @@ const Shows: React.FC = () => {
                         </svg>
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-white tabular-nums">{filtered.length}</div>
-                    <div className="text-xs text-white/50 mt-1">{t('shows.stats.filtered') || 'Filtered Shows'}</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{filtered.length}</div>
+                    <div className="text-xs text-slate-300 dark:text-white/50 mt-1">{t('shows.stats.filtered') || 'Filtered Shows'}</div>
                     {shows.length > 0 && filtered.length === 0 && (
                       <div className="text-xs text-amber-400 mt-2 flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -623,7 +636,7 @@ const Shows: React.FC = () => {
 
                   <motion.div
                     whileHover={{ scale: 1.02, y: -2 }}
-                    className="glass rounded-xl p-4 border border-white/10 hover:border-green-500/30 transition-all"
+                    className="glass rounded-xl p-4 border border-slate-200 dark:border-white/10 hover:border-green-500/30 transition-all"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center">
@@ -633,15 +646,15 @@ const Shows: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-green-400 tabular-nums">{fmtMoney(totalFee)}</div>
-                    <div className="text-xs text-white/50 mt-1">{t('shows.stats.totalFees') || 'Total Fees'}</div>
+                    <div className="text-xs text-slate-300 dark:text-white/50 mt-1">{t('shows.stats.totalFees') || 'Total Fees'}</div>
                     {avgFee > 0 && (
-                      <div className="text-xs text-white/40 mt-1">Avg: {fmtMoney(avgFee)}</div>
+                      <div className="text-xs text-slate-400 dark:text-white/40 mt-1">Avg: {fmtMoney(avgFee)}</div>
                     )}
                   </motion.div>
 
                   <motion.div
                     whileHover={{ scale: 1.02, y: -2 }}
-                    className="glass rounded-xl p-4 border border-white/10 hover:border-accent-500/30 transition-all"
+                    className="glass rounded-xl p-4 border border-slate-200 dark:border-white/10 hover:border-accent-500/30 transition-all"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-500/20 to-accent-600/10 flex items-center justify-center">
@@ -651,13 +664,13 @@ const Shows: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-accent-400 tabular-nums">{fmtMoney(totalNet)}</div>
-                    <div className="text-xs text-white/50 mt-1">{t('shows.stats.estNet') || 'Estimated Net'}</div>
-                    <div className="text-xs text-white/40 mt-1">After all deductions</div>
+                    <div className="text-xs text-slate-300 dark:text-white/50 mt-1">{t('shows.stats.estNet') || 'Estimated Net'}</div>
+                    <div className="text-xs text-slate-400 dark:text-white/40 mt-1">After all deductions</div>
                   </motion.div>
 
                   <motion.div
                     whileHover={{ scale: 1.02, y: -2 }}
-                    className="glass rounded-xl p-4 border border-white/10 hover:border-purple-500/30 transition-all"
+                    className="glass rounded-xl p-4 border border-slate-200 dark:border-white/10 hover:border-purple-500/30 transition-all"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center">
@@ -667,7 +680,7 @@ const Shows: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-purple-400 tabular-nums">{avgMarginPct}%</div>
-                    <div className="text-xs text-white/50 mt-1">{t('shows.stats.avgMargin') || 'Avg Margin'}</div>
+                    <div className="text-xs text-slate-300 dark:text-white/50 mt-1">{t('shows.stats.avgMargin') || 'Avg Margin'}</div>
                     <div className={`text-xs mt-1 flex items-center gap-1 ${avgMarginPct >= 70 ? 'text-green-400' : avgMarginPct >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
                       {avgMarginPct >= 70 ? '🔥 Excellent' : avgMarginPct >= 50 ? '⚠️ Good' : '⚡ Low'}
                     </div>
@@ -675,7 +688,7 @@ const Shows: React.FC = () => {
 
                   <motion.div
                     whileHover={{ scale: 1.02, y: -2 }}
-                    className="glass rounded-xl p-4 border border-white/10 hover:border-amber-500/30 transition-all"
+                    className="glass rounded-xl p-4 border border-slate-200 dark:border-white/10 hover:border-amber-500/30 transition-all"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center">
@@ -685,8 +698,8 @@ const Shows: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-amber-400 tabular-nums">{avgWht}%</div>
-                    <div className="text-xs text-white/50 mt-1">{t('shows.stats.avgWht') || 'Avg WHT'}</div>
-                    <div className="text-xs text-white/40 mt-1">Withholding tax</div>
+                    <div className="text-xs text-slate-300 dark:text-white/50 mt-1">{t('shows.stats.avgWht') || 'Avg WHT'}</div>
+                    <div className="text-xs text-slate-400 dark:text-white/40 mt-1">Withholding tax</div>
                   </motion.div>
                 </div>
               </motion.div>
@@ -699,14 +712,14 @@ const Shows: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`glass rounded-xl px-5 py-3 flex items-center gap-6 border border-white/10 mb-6 ${totalsPinned ? 'sticky top-2 z-20 shadow-xl' : ''}`}
+            className={`glass rounded-xl px-5 py-3 flex items-center gap-6 border border-slate-200 dark:border-white/10 mb-6 ${totalsPinned ? 'sticky top-2 z-20 shadow-xl' : ''}`}
           >
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-white/60 uppercase tracking-wider">{t('shows.summary.avgFee') || 'Avg Fee'}</span>
+              <span className="text-xs font-medium text-theme-secondary uppercase tracking-wider">{t('shows.summary.avgFee') || 'Avg Fee'}</span>
               <span className="text-sm font-bold tabular-nums">{fmtMoney(avgFee)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-white/60 uppercase tracking-wider">{t('shows.summary.avgMargin') || 'Avg Margin'}</span>
+              <span className="text-xs font-medium text-theme-secondary uppercase tracking-wider">{t('shows.summary.avgMargin') || 'Avg Margin'}</span>
               <span className="text-sm font-bold tabular-nums">{avgMarginPct}%</span>
             </div>
             <div className="ml-auto flex items-center gap-2">
@@ -714,7 +727,7 @@ const Shows: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="button"
-                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-medium flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-lg bg-interactive-hover hover:bg-slate-300 dark:bg-white/15 border border-slate-200 dark:border-white/10 text-xs font-medium flex items-center gap-1.5"
                 onClick={() => setTotalsPinned(p => !p)}
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -726,7 +739,7 @@ const Shows: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="button"
-                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-medium"
+                className="px-3 py-1.5 rounded-lg bg-interactive-hover hover:bg-slate-300 dark:bg-white/15 border border-slate-200 dark:border-white/10 text-xs font-medium"
                 onClick={() => setTotalsVisible(false)}
               >
                 {t('common.hide') || 'Hide'}
@@ -737,10 +750,10 @@ const Shows: React.FC = () => {
 
         {/* Table / Board */}
         {view === 'list' ? (
-          <div className={`glass rounded-xl border border-white/10 relative overflow-hidden ${enableVirtual ? 'max-h-[70vh]' : ''}`} ref={parentRef}>
+          <div className={`glass rounded-xl border border-slate-200 dark:border-white/10 relative overflow-hidden ${enableVirtual ? 'max-h-[70vh]' : ''}`} ref={parentRef}>
             <div className={enableVirtual ? 'overflow-y-auto max-h-[70vh]' : ''}>
               <table className="w-full text-sm">
-                <thead className="text-left sticky top-0 z-10 backdrop-blur-xl bg-ink-900/80 border-b border-white/10">
+                <thead className="text-left sticky top-0 z-10 backdrop-blur-xl bg-surface-card/80 border-b border-theme">
                   <tr>
                     <th scope="col" className="px-4 py-3">
                       <input
@@ -748,30 +761,30 @@ const Shows: React.FC = () => {
                         type="checkbox"
                         checked={allVisibleSelected}
                         onChange={() => { const all = allVisibleSelected; if (all) { setSelected(new Set()); setLastClickedIndex(null); } else { setSelected(new Set(visibleRows.filter(r => r != null).map(r => r.s.id))); setLastClickedIndex(null); } }}
-                        className="rounded border-white/20 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                        className="rounded border-theme-strong bg-interactive hover:bg-interactive-hover transition-colors cursor-pointer"
                       />
                     </th>
                     <ThSort label={t('shows.table.date') || 'Date'} active={sort.key === 'date'} dir={sort.dir} onClick={() => setSort(s => ({ key: 'date', dir: s.key === 'date' && s.dir === 'desc' ? 'asc' : 'desc' }))} />
-                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/70">{t('shows.table.name') || 'Name'}</th>
-                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/70">{t('shows.table.city') || 'City'}</th>
-                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/70">{t('shows.table.country') || 'Country'}</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-theme-secondary">{t('shows.table.name') || 'Name'}</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-theme-secondary">{t('shows.table.city') || 'City'}</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-theme-secondary">{t('shows.table.country') || 'Country'}</th>
                     <ThSort label={t('shows.table.fee') || 'Fee'} numeric active={sort.key === 'fee'} dir={sort.dir} onClick={() => setSort(s => ({ key: 'fee', dir: s.key === 'fee' && s.dir === 'desc' ? 'asc' : 'desc' }))} />
-                    {whtVisible && <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/70">{t('shows.columns.wht') || 'WHT %'} <button onClick={() => setWhtVisible(false)} className="ml-1.5 text-[10px] px-1 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors" aria-label={t('shows.wht.hide') || 'Hide WHT column'}>×</button></th>}
+                    {whtVisible && <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-theme-secondary">{t('shows.columns.wht') || 'WHT %'} <button onClick={() => setWhtVisible(false)} className="ml-1.5 text-[10px] px-1 py-0.5 rounded bg-interactive-hover hover:bg-white/20 transition-colors" aria-label={t('shows.wht.hide') || 'Hide WHT column'}>×</button></th>}
                     <ThSort label={t('shows.table.net') || 'Net'} numeric active={sort.key === 'net'} dir={sort.dir} onClick={() => setSort(s => ({ key: 'net', dir: s.key === 'net' && s.dir === 'desc' ? 'asc' : 'desc' }))} />
-                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/70">{t('shows.table.margin') || 'Margin %'}</th>
-                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white/70">{t('shows.table.status') || 'Status'}</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-theme-secondary">{t('shows.table.margin') || 'Margin %'}</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-theme-secondary">{t('shows.table.status') || 'Status'}</th>
                   </tr>
                   {/* Totals Row */}
                   <tr className="bg-accent-500/5 border-b border-accent-500/10">
-                    <th scope="row" className="px-4 py-3 text-xs font-medium text-white/60">{t('shows.table.totals') || 'Totals'}</th>
-                    <td className="px-4 py-3 text-xs text-white/70 font-medium">{rows.length} {t('shows.items') || 'items'}</td>
+                    <th scope="row" className="px-4 py-3 text-xs font-medium text-theme-secondary">{t('shows.table.totals') || 'Totals'}</th>
+                    <td className="px-4 py-3 text-xs text-theme-secondary font-medium">{rows.length} {t('shows.items') || 'items'}</td>
                     <td className="px-4 py-3"></td>
                     <td className="px-4 py-3"></td>
                     <td className="px-4 py-3"></td>
                     <td className="px-4 py-3 text-right tabular-nums text-sm font-bold text-accent-500">{fmtMoney(totalFee)}</td>
-                    {whtVisible && <td className="px-4 py-3 text-right tabular-nums text-xs text-white/60">{avgWht}%</td>}
+                    {whtVisible && <td className="px-4 py-3 text-right tabular-nums text-xs text-theme-secondary">{avgWht}%</td>}
                     <td className="px-4 py-3 text-right tabular-nums text-sm font-bold text-accent-500">{fmtMoney(totalNet)}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-xs text-white/60">{avgMarginPct}%</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-xs text-theme-secondary">{avgMarginPct}%</td>
                     <td className="px-4 py-3"></td>
                   </tr>
                 </thead>
@@ -798,7 +811,7 @@ const Shows: React.FC = () => {
                           }
                           openEdit(s);
                         }}
-                        className="border-b border-white/5 hover:bg-accent-500/5 hover:border-accent-500/20 transition-all cursor-pointer group"
+                        className="border-b border-slate-100 dark:border-white/5 hover:bg-accent-500/5 hover:border-accent-500/20 transition-all cursor-pointer group"
                       >
                         <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                           <input
@@ -807,23 +820,23 @@ const Shows: React.FC = () => {
                             checked={selected.has(s.id)}
                             readOnly
                             onClick={(e) => { e.preventDefault(); toggleSelectOne(s.id, index, e.shiftKey); }}
-                            className="rounded border-white/20 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group-hover:border-accent-500/40"
+                            className="rounded border-theme-strong bg-interactive hover:bg-interactive-hover transition-colors cursor-pointer group-hover:border-accent-500/40"
                           />
                         </td>
                         <td className="px-4 py-3.5 whitespace-nowrap font-medium" title={s.date} aria-label={(() => {
                           const today = new Date(); const showD = new Date(s.date); const diffDays = Math.round((showD.getTime() - today.getTime()) / 86400000); if (diffDays === 0) return t('common.today') || 'Today'; if (diffDays === 1) return t('common.tomorrow') || 'Tomorrow'; if (diffDays > 1) return (t('shows.relative.inDays') || 'In {n} days').replace('{n}', String(diffDays)); if (diffDays === -1) return t('shows.relative.yesterday') || 'Yesterday'; return (t('shows.relative.daysAgo') || '{n} days ago').replace('{n}', String(Math.abs(diffDays)));
                         })()}>
-                          <span className="text-white/90 group-hover:text-accent-500 transition-colors">{s.date.slice(0, 10)}</span>
+                          <span className="text-theme-primary group-hover:text-accent-500 transition-colors">{s.date.slice(0, 10)}</span>
                         </td>
                         <td className="px-4 py-3.5 max-w-[200px]">
-                          <div className="truncate font-medium text-white/90 group-hover:text-white transition-colors" title={s.name || (s as any).venue || ''}>
+                          <div className="truncate font-medium text-theme-primary group-hover:text-white transition-colors" title={s.name || (s as any).venue || ''}>
                             {s.name || (s as any).venue || <span className="opacity-40">—</span>}
                           </div>
                         </td>
-                        <td className="px-4 py-3.5 text-white/80">{s.city}</td>
-                        <td className="px-4 py-3.5 text-white/70">{countryLabel(s.country, lang)}</td>
+                        <td className="px-4 py-3.5 text-slate-600 dark:text-white/80">{s.city}</td>
+                        <td className="px-4 py-3.5 text-theme-secondary">{countryLabel(s.country, lang)}</td>
                         <td className="px-4 py-3.5 text-right tabular-nums font-semibold">{fmtMoney(s.fee)}</td>
-                        {whtVisible && <td className="px-4 py-3.5 text-right tabular-nums text-white/70 text-sm">{(s as any).whtPct ?? 0}%</td>}
+                        {whtVisible && <td className="px-4 py-3.5 text-right tabular-nums text-theme-secondary text-sm">{(s as any).whtPct ?? 0}%</td>}
                         <td className="px-4 py-3.5 text-right tabular-nums">
                           <span
                             className="inline-block px-2.5 py-1 rounded-lg bg-accent-500/10 border border-accent-500/25 text-accent-400 tabular-nums font-bold group-hover:bg-accent-500/20 group-hover:border-accent-500/40 transition-all"
@@ -963,12 +976,12 @@ const Shows: React.FC = () => {
 
                           {/* Message */}
                           <div className="space-y-2">
-                            <h3 className="text-lg font-semibold text-white">
+                            <h3 className="text-lg font-semibold text-theme-primary">
                               {shows.length === 0
                                 ? (t('shows.empty.noShows') || 'No shows yet')
                                 : (t('shows.empty.noResults') || 'No shows match your filters')}
                             </h3>
-                            <p className="text-sm text-white/50 max-w-md mx-auto">
+                            <p className="text-sm text-slate-300 dark:text-white/50 max-w-md mx-auto">
                               {shows.length === 0
                                 ? (t('shows.empty.noShows.desc') || 'Start by adding your first show to track your tours and finances.')
                                 : (t('shows.empty.noResults.desc') || 'Try adjusting your filters or search terms to find what you\'re looking for.')}
@@ -983,7 +996,7 @@ const Shows: React.FC = () => {
                                 whileTap={{ scale: 0.95 }}
                                 type="button"
                                 onClick={clearFilters}
-                                className="px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-sm font-medium flex items-center gap-2 transition-all"
+                                className="px-4 py-2.5 rounded-lg bg-interactive-hover hover:bg-slate-300 dark:bg-white/15 text-sm font-medium flex items-center gap-2 transition-all"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1017,12 +1030,12 @@ const Shows: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-3">
-                <h3 className="text-sm font-semibold text-white/80">{t('shows.board.title') || 'Board View'}</h3>
+                <h3 className="text-sm font-semibold text-slate-600 dark:text-white/80">{t('shows.board.title') || 'Board View'}</h3>
                 <span className="px-2 py-0.5 rounded-full bg-accent-500/20 text-accent-400 text-xs font-medium">
                   {rows.length} {t('shows.items') || 'shows'}
                 </span>
               </div>
-              <div className="text-xs text-white/50 flex items-center gap-2">
+              <div className="text-xs text-slate-300 dark:text-white/50 flex items-center gap-2">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                 </svg>
@@ -1099,10 +1112,10 @@ const Shows: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-              className="fixed inset-y-0 left-0 z-50 w-full sm:w-96 lg:w-80 glass border-r border-white/10 shadow-2xl"
+              className="fixed inset-y-0 left-0 z-50 w-full sm:w-96 lg:w-80 glass border-r border-slate-200 dark:border-white/10 shadow-2xl"
             >
               <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gradient-to-r from-accent-500/10 to-blue-500/10">
+                <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-accent-500/10 to-blue-500/10">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-accent-500/20 flex items-center justify-center">
                       <svg className="w-4 h-4 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1113,7 +1126,7 @@ const Shows: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setFiltersPanelOpen(false)}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                    className="p-2 rounded-lg hover:bg-interactive-hover transition-colors"
                     aria-label={t('common.close') || 'Close'}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1124,7 +1137,7 @@ const Shows: React.FC = () => {
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                   {/* Status filters */}
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 text-white/80">{t('shows.filters.statusGroup') || 'Status'}</h4>
+                    <h4 className="text-sm font-semibold mb-3 text-slate-600 dark:text-white/80">{t('shows.filters.statusGroup') || 'Status'}</h4>
                     <div className="flex flex-wrap gap-2">
                       {(['confirmed', 'pending', 'offer', 'canceled', 'archived', 'postponed'] as const).map(st => {
                         const count = statusCounts[st] || 0;
@@ -1140,7 +1153,7 @@ const Shows: React.FC = () => {
 
                   {/* Quick Filters */}
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 text-white/80">{t('shows.filters.quickFilters') || 'Quick Filters'}</h4>
+                    <h4 className="text-sm font-semibold mb-3 text-slate-600 dark:text-white/80">{t('shows.filters.quickFilters') || 'Quick Filters'}</h4>
                     <div className="flex flex-wrap gap-2">
                       <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -1148,7 +1161,7 @@ const Shows: React.FC = () => {
                         onClick={() => setQuickFilter('all')}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${quickFilter === 'all'
                           ? 'bg-accent-500 text-black shadow-lg'
-                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                          : 'bg-interactive text-theme-secondary hover:bg-interactive-hover'
                           }`}
                       >
                         <svg className="w-3.5 h-3.5 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1162,7 +1175,7 @@ const Shows: React.FC = () => {
                         onClick={() => setQuickFilter('upcoming')}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${quickFilter === 'upcoming'
                           ? 'bg-blue-500 text-white shadow-lg'
-                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                          : 'bg-interactive text-theme-secondary hover:bg-interactive-hover'
                           }`}
                       >
                         <svg className="w-3.5 h-3.5 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1176,7 +1189,7 @@ const Shows: React.FC = () => {
                         onClick={() => setQuickFilter('thisMonth')}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${quickFilter === 'thisMonth'
                           ? 'bg-purple-500 text-white shadow-lg'
-                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                          : 'bg-interactive text-theme-secondary hover:bg-interactive-hover'
                           }`}
                       >
                         <svg className="w-3.5 h-3.5 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1190,7 +1203,7 @@ const Shows: React.FC = () => {
                         onClick={() => setQuickFilter('highValue')}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${quickFilter === 'highValue'
                           ? 'bg-amber-500 text-black shadow-lg'
-                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                          : 'bg-interactive text-theme-secondary hover:bg-interactive-hover'
                           }`}
                       >
                         <svg className="w-3.5 h-3.5 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1203,16 +1216,16 @@ const Shows: React.FC = () => {
 
                   {/* Date range */}
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 text-white/80">{t('shows.filters.dateRange') || 'Date Range'}</h4>
+                    <h4 className="text-sm font-semibold mb-3 text-slate-600 dark:text-white/80">{t('shows.filters.dateRange') || 'Date Range'}</h4>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <label className="text-xs text-white/70 flex-1">
+                        <label className="text-xs text-theme-secondary flex-1">
                           <span className="block mb-2 font-medium">{t('shows.filters.from') || 'From'}</span>
-                          <input type="date" value={dateRange.from} onChange={e => setDateRange(r => ({ ...r, from: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:outline-none transition-all" />
+                          <input type="date" value={dateRange.from} onChange={e => setDateRange(r => ({ ...r, from: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg bg-interactive border border-theme-strong hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:outline-none transition-all" />
                         </label>
-                        <label className="text-xs text-white/70 flex-1">
+                        <label className="text-xs text-theme-secondary flex-1">
                           <span className="block mb-2 font-medium">{t('shows.filters.to') || 'To'}</span>
-                          <input type="date" value={dateRange.to} onChange={e => setDateRange(r => ({ ...r, to: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:outline-none transition-all" />
+                          <input type="date" value={dateRange.to} onChange={e => setDateRange(r => ({ ...r, to: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg bg-interactive border border-theme-strong hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:outline-none transition-all" />
                         </label>
                       </div>
                       <DatePresets onApply={(from, to) => setDateRange({ from, to })} />
@@ -1221,8 +1234,8 @@ const Shows: React.FC = () => {
 
                   {/* Region */}
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 text-white/80">{t('shows.filters.region') || 'Region'}</h4>
-                    <select value={region} onChange={e => setRegion(e.target.value as any)} className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:outline-none cursor-pointer transition-all">
+                    <h4 className="text-sm font-semibold mb-3 text-slate-600 dark:text-white/80">{t('shows.filters.region') || 'Region'}</h4>
+                    <select value={region} onChange={e => setRegion(e.target.value as any)} className="w-full px-4 py-2.5 rounded-lg bg-interactive border border-theme-strong hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:outline-none cursor-pointer transition-all">
                       <option value="all">All Regions</option>
                       <option value="AMER">AMER</option>
                       <option value="EMEA">EMEA</option>
@@ -1232,30 +1245,30 @@ const Shows: React.FC = () => {
 
                   {/* Fee range */}
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 text-white/80">{t('shows.filters.feeRange') || 'Fee Range'}</h4>
+                    <h4 className="text-sm font-semibold mb-3 text-slate-600 dark:text-white/80">{t('shows.filters.feeRange') || 'Fee Range'}</h4>
                     <div className="flex items-center gap-3">
-                      <label className="text-xs text-white/70 flex-1">
+                      <label className="text-xs text-theme-secondary flex-1">
                         <span className="block mb-2 font-medium">{t('shows.filters.feeMin') || 'Min Fee'}</span>
-                        <input type="number" value={feeRange.min ?? ''} placeholder="0" onChange={e => setFeeRange(fr => ({ ...fr, min: e.target.value === '' ? undefined : Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:outline-none placeholder:text-white/30 transition-all" />
+                        <input type="number" value={feeRange.min ?? ''} placeholder="0" onChange={e => setFeeRange(fr => ({ ...fr, min: e.target.value === '' ? undefined : Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-lg bg-interactive border border-theme-strong hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 transition-all" />
                       </label>
-                      <label className="text-xs text-white/70 flex-1">
+                      <label className="text-xs text-theme-secondary flex-1">
                         <span className="block mb-2 font-medium">{t('shows.filters.feeMax') || 'Max Fee'}</span>
-                        <input type="number" value={feeRange.max ?? ''} placeholder="∞" onChange={e => setFeeRange(fr => ({ ...fr, max: e.target.value === '' ? undefined : Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:outline-none placeholder:text-white/30 transition-all" />
+                        <input type="number" value={feeRange.max ?? ''} placeholder="∞" onChange={e => setFeeRange(fr => ({ ...fr, max: e.target.value === '' ? undefined : Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-lg bg-interactive border border-theme-strong hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 transition-all" />
                       </label>
                     </div>
                   </div>
 
                   {/* View toggle */}
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 text-white/80">{t('shows.view.title') || 'View'}</h4>
+                    <h4 className="text-sm font-semibold mb-3 text-slate-600 dark:text-white/80">{t('shows.view.title') || 'View'}</h4>
                     <ViewToggle view={view} setView={setView} />
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-6 border-t border-white/10 space-y-2">
+                  <div className="pt-6 border-t border-slate-200 dark:border-white/10 space-y-2">
                     <button
                       onClick={clearFilters}
-                      className="w-full px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20 text-sm font-medium transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg bg-interactive-hover hover:bg-slate-300 dark:bg-white/15 border border-slate-200 dark:border-white/10 hover:border-theme-strong text-sm font-medium transition-all"
                     >
                       {t('filters.clear') || 'Clear All Filters'}
                     </button>
@@ -1323,19 +1336,19 @@ const BoardColumn = React.memo<{
 
   return (
     <div
-      className={`glass rounded-xl border bg-gradient-to-br ${statusColors[status] || 'from-white/10 to-white/5 border-white/20'} p-4 flex flex-col min-h-[400px] transition-all ${isOver ? 'ring-2 ring-accent-500 scale-[1.01]' : ''}`}
+      className={`glass rounded-xl border bg-gradient-to-br ${statusColors[status] || 'from-white/10 to-slate-50 dark:to-white/5 border-theme-strong'} p-4 flex flex-col min-h-[400px] transition-all ${isOver ? 'ring-2 ring-accent-500 scale-[1.01]' : ''}`}
       onDragOver={onDragOver(status)}
       onDragLeave={onDragLeave}
       onDrop={onDrop(status as DemoShow['status'])}
       role="region"
       aria-label={`${status} ${t('shows.board.header.count') || 'Shows'}: ${stat.count}. ${t('shows.board.header.net') || 'Net'}: ${fmtMoney(stat.net)}`}
     >
-      <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/10">
+      <div className="flex items-center justify-between mb-3 pb-3 border-b border-theme">
         <div className="flex items-center gap-2">
           <h4 className={`text-sm font-bold uppercase tracking-wider ${headerColors[status] || 'text-white'}`}>
             {status}
           </h4>
-          <span className="px-2 py-0.5 rounded-full bg-white/10 text-xs font-semibold text-white/70">
+          <span className="px-2 py-0.5 rounded-full bg-interactive-hover text-xs font-semibold text-theme-secondary">
             {stat.count}
           </span>
         </div>
@@ -1359,7 +1372,7 @@ const BoardColumn = React.memo<{
         ))}
         <GuardedAction
           scope="shows:write"
-          className="w-full py-3 rounded-lg border-2 border-dashed border-white/20 hover:border-accent-500/50 hover:bg-accent-500/10 text-white/50 hover:text-accent-500 text-xs font-medium transition-all flex items-center justify-center gap-2 group"
+          className="w-full py-3 rounded-lg border-2 border-dashed border-theme-strong hover:border-accent-500/50 hover:bg-accent-500/10 text-slate-300 dark:text-white/50 hover:text-accent-500 text-xs font-medium transition-all flex items-center justify-center gap-2 group"
           onClick={onAddShow}
         >
           <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1409,7 +1422,7 @@ const NativeShowCard: React.FC<{
         onDragStart(e);
       }}
       onDragEnd={() => setIsDragging(false)}
-      className={`w-full text-left rounded-lg border border-white/20 bg-white/5 px-3 py-2.5 flex flex-col gap-2 shadow-sm transition-all ${isDragging ? 'opacity-50 scale-95' : 'cursor-grab hover:bg-white/10 hover:border-white/30 hover:scale-[1.02]'
+      className={`w-full text-left rounded-lg border border-theme-strong bg-interactive px-3 py-2.5 flex flex-col gap-2 shadow-sm transition-all ${isDragging ? 'opacity-50 scale-95' : 'cursor-grab hover:bg-interactive-hover hover:border-slate-400 dark:hover:border-white/30 hover:scale-[1.02]'
         }`}
       onClick={onClick}
       role="button"
@@ -1417,26 +1430,26 @@ const NativeShowCard: React.FC<{
       aria-label={`${primary}. ${rel}. Net ${fmtMoney(net)}${show.fee > 0 ? '. Margin ' + marginPct + '%' : ''}`}
     >
       {/* Header with date */}
-      <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/10">
+      <div className="flex items-center justify-between gap-2 pb-2 border-b border-theme">
         <div className="flex items-center gap-1.5">
-          <svg className="w-3.5 h-3.5 text-white/40 group-hover:text-accent-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 text-slate-400 dark:text-white/40 group-hover:text-accent-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-200 font-medium whitespace-nowrap" title={show.date}>
             {rel}
           </span>
         </div>
-        <span className="inline-block px-1.5 py-0.5 rounded-md bg-white/10 text-[9px] font-semibold tracking-wider uppercase text-white/60">
+        <span className="inline-block px-1.5 py-0.5 rounded-md bg-interactive-hover text-[9px] font-semibold tracking-wider uppercase text-theme-secondary">
           {show.country}
         </span>
       </div>
 
       {/* Title and venue */}
       <div className="space-y-1">
-        <div className="text-xs font-semibold truncate text-white/90 group-hover:text-white transition-colors">
+        <div className="text-xs font-semibold truncate text-theme-primary group-hover:text-white transition-colors">
           {primary}
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] text-white/60">
+        <div className="flex items-center gap-1.5 text-[10px] text-theme-secondary">
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1444,16 +1457,16 @@ const NativeShowCard: React.FC<{
           <span className="truncate">{show.city}</span>
         </div>
         {secondaryVenue && (
-          <div className="text-[10px] text-white/50 truncate italic">
+          <div className="text-[10px] text-slate-300 dark:text-white/50 truncate italic">
             {secondaryVenue}
           </div>
         )}
       </div>
 
       {/* Financial info */}
-      <div className="flex items-center justify-between pt-2 border-t border-white/10">
+      <div className="flex items-center justify-between pt-2 border-t border-theme">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[9px] uppercase tracking-wider text-white/50 font-medium">Net</span>
+          <span className="text-[9px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-medium">Net</span>
           <span className="text-xs tabular-nums font-bold text-accent-400 group-hover:text-accent-300 transition-colors">
             {fmtMoney(net)}
           </span>
@@ -1461,7 +1474,7 @@ const NativeShowCard: React.FC<{
         {show.fee > 0 && (
           <div className="flex items-center gap-1.5">
             <div className="text-right">
-              <div className="text-[9px] uppercase tracking-wider text-white/50 font-medium">Margin</div>
+              <div className="text-[9px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-medium">Margin</div>
               <div className="text-xs font-bold">{fmtMoney(show.fee)}</div>
             </div>
             <div className="px-2 py-1 rounded-md bg-accent-500/20 border border-accent-500/30">
@@ -1481,10 +1494,10 @@ const SummaryCard: React.FC<{ label: string; children: React.ReactNode }> = ({ l
   <motion.div
     whileHover={{ scale: 1.02, y: -4 }}
     transition={{ duration: 0.2 }}
-    className="glass rounded-xl p-6 border border-white/10 hover:border-accent-500/30 hover:shadow-lg hover:shadow-accent-500/10 transition-all group"
+    className="glass rounded-xl p-6 border border-slate-200 dark:border-white/10 hover:border-accent-500/30 hover:shadow-lg hover:shadow-accent-500/10 transition-all group"
   >
-    <div className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-3 group-hover:text-accent-400 transition-colors">{label}</div>
-    <div className="text-3xl font-bold tabular-nums text-white group-hover:text-accent-300 transition-colors">{children}</div>
+    <div className="text-xs font-semibold uppercase tracking-wider text-slate-300 dark:text-white/50 mb-3 group-hover:text-accent-400 transition-colors">{label}</div>
+    <div className="text-3xl font-bold tabular-nums text-slate-900 dark:text-white group-hover:text-accent-300 transition-colors">{children}</div>
   </motion.div>
 );
 
@@ -1510,9 +1523,9 @@ const ThSort: React.FC<{ label: string; active: boolean; dir: 'asc' | 'desc'; on
 };
 
 const ViewToggle: React.FC<{ view: ViewMode; setView: (v: ViewMode) => void }> = ({ view, setView }) => (
-  <div className="inline-flex glass border border-white/10 rounded-lg overflow-hidden text-xs">
+  <div className="inline-flex glass border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden text-xs">
     <button
-      className={`px-4 py-2 font-medium transition-all flex items-center gap-2 ${view === 'list' ? 'bg-accent-500/20 text-accent-400 border-r border-accent-500/30' : 'text-white/60 hover:text-white/90 hover:bg-white/5'}`}
+      className={`px-4 py-2 font-medium transition-all flex items-center gap-2 ${view === 'list' ? 'bg-accent-500/20 text-accent-400 border-r border-accent-500/30' : 'text-theme-secondary hover:text-theme-primary hover:bg-interactive'}`}
       onClick={() => setView('list')}
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1521,7 +1534,7 @@ const ViewToggle: React.FC<{ view: ViewMode; setView: (v: ViewMode) => void }> =
       {t('shows.view.list') || 'List'}
     </button>
     <button
-      className={`px-4 py-2 font-medium transition-all flex items-center gap-2 ${view === 'board' ? 'bg-accent-500/20 text-accent-400' : 'text-white/60 hover:text-white/90 hover:bg-white/5'}`}
+      className={`px-4 py-2 font-medium transition-all flex items-center gap-2 ${view === 'board' ? 'bg-accent-500/20 text-accent-400' : 'text-theme-secondary hover:text-theme-primary hover:bg-interactive'}`}
       onClick={() => setView('board')}
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1553,7 +1566,7 @@ const RowActionsMenu: React.FC<{ show: Show; onEdit: () => void; onPromote: () =
   const promoteEnabled = (show.status === 'offer' || show.status === 'pending');
   return (
     <div className="relative" data-row-menu="true">
-      <button ref={btnRef} type="button" aria-haspopup="menu" aria-expanded={open} aria-label={t('shows.row.menu') || 'Row actions'} className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 focus-ring text-xs" onClick={() => setOpen(o => !o)}>⋯</button>
+      <button ref={btnRef} type="button" aria-haspopup="menu" aria-expanded={open} aria-label={t('shows.row.menu') || 'Row actions'} className="px-2 py-1 rounded bg-interactive hover:bg-interactive-hover focus-ring text-xs" onClick={() => setOpen(o => !o)}>⋯</button>
       <AnimatePresence>
         {open && (
           <motion.div
@@ -1567,12 +1580,12 @@ const RowActionsMenu: React.FC<{ show: Show; onEdit: () => void; onPromote: () =
             aria-label={t('shows.row.menu') || 'Row actions'}
             onKeyDown={onMenuKeyDown}
           >
-            <button role="menuitem" tabIndex={0} className="w-full text-left px-3 py-1 hover:bg-white/10" onClick={() => { onEdit(); setOpen(false); }}>{t('shows.action.edit') || 'Edit'}</button>
-            <button role="menuitem" tabIndex={-1} disabled={!promoteEnabled} className="w-full text-left px-3 py-1 hover:bg-white/10 disabled:opacity-40" onClick={() => { if (!promoteEnabled) return; onPromote(); setOpen(false); }}>{t('shows.action.promote') || 'Promote'}</button>
-            <button role="menuitem" tabIndex={-1} className="w-full text-left px-3 py-1 hover:bg-white/10" onClick={() => { onDuplicate(); setOpen(false); }}>{t('shows.action.duplicate') || 'Duplicate'}</button>
-            {show.status !== 'archived' && <button role="menuitem" tabIndex={-1} className="w-full text-left px-3 py-1 hover:bg-white/10" onClick={() => { onArchive(); setOpen(false); }}>{t('shows.action.archive') || 'Archive'}</button>}
-            {show.status === 'archived' && <button role="menuitem" tabIndex={-1} className="w-full text-left px-3 py-1 hover:bg-white/10" onClick={() => { onRestore(); setOpen(false); }}>{t('shows.action.restore') || 'Restore'}</button>}
-            <div className="h-px my-1 bg-white/10" />
+            <button role="menuitem" tabIndex={0} className="w-full text-left px-3 py-1 hover:bg-interactive-hover" onClick={() => { onEdit(); setOpen(false); }}>{t('shows.action.edit') || 'Edit'}</button>
+            <button role="menuitem" tabIndex={-1} disabled={!promoteEnabled} className="w-full text-left px-3 py-1 hover:bg-interactive-hover disabled:opacity-40" onClick={() => { if (!promoteEnabled) return; onPromote(); setOpen(false); }}>{t('shows.action.promote') || 'Promote'}</button>
+            <button role="menuitem" tabIndex={-1} className="w-full text-left px-3 py-1 hover:bg-interactive-hover" onClick={() => { onDuplicate(); setOpen(false); }}>{t('shows.action.duplicate') || 'Duplicate'}</button>
+            {show.status !== 'archived' && <button role="menuitem" tabIndex={-1} className="w-full text-left px-3 py-1 hover:bg-interactive-hover" onClick={() => { onArchive(); setOpen(false); }}>{t('shows.action.archive') || 'Archive'}</button>}
+            {show.status === 'archived' && <button role="menuitem" tabIndex={-1} className="w-full text-left px-3 py-1 hover:bg-interactive-hover" onClick={() => { onRestore(); setOpen(false); }}>{t('shows.action.restore') || 'Restore'}</button>}
+            <div className="h-px my-1 bg-interactive-hover" />
             <button role="menuitem" tabIndex={-1} className="w-full text-left px-3 py-1 hover:bg-rose-600/30 text-rose-200" onClick={() => { onDelete(); setOpen(false); }}>{t('shows.action.delete') || 'Delete'}</button>
           </motion.div>
         )}
@@ -1604,12 +1617,12 @@ const DatePresets: React.FC<{ onApply: (from: string, to: string) => void }> = (
   };
   return (
     <div className="relative" ref={ref}>
-      <button type="button" className="px-2 py-1 rounded bg-white/10 hover:bg-white/15 text-[11px]" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(o => !o)}>{t('shows.date.presets') || 'Presets'}</button>
+      <button type="button" className="px-2 py-1 rounded bg-interactive-hover hover:bg-slate-300 dark:bg-white/15 text-[11px]" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(o => !o)}>{t('shows.date.presets') || 'Presets'}</button>
       {open && (
         <div role="dialog" aria-label={t('shows.date.presets') || 'Date presets'} className="absolute top-full right-0 mt-1 glass rounded border border-white/12 p-2 z-30 w-40 text-[11px] space-y-1">
-          <button className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={applyThisMonth}>{t('shows.date.thisMonth') || 'This Month'}</button>
-          <button className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={applyNextMonth}>{t('shows.date.nextMonth') || 'Next Month'}</button>
-          <button className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={() => { onApply('', ''); setOpen(false); }}>{t('filters.clear') || 'Clear'}</button>
+          <button className="w-full text-left px-2 py-1 rounded hover:bg-interactive-hover" onClick={applyThisMonth}>{t('shows.date.thisMonth') || 'This Month'}</button>
+          <button className="w-full text-left px-2 py-1 rounded hover:bg-interactive-hover" onClick={applyNextMonth}>{t('shows.date.nextMonth') || 'Next Month'}</button>
+          <button className="w-full text-left px-2 py-1 rounded hover:bg-interactive-hover" onClick={() => { onApply('', ''); setOpen(false); }}>{t('filters.clear') || 'Clear'}</button>
         </div>
       )}
     </div>

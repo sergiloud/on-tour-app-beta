@@ -42,14 +42,14 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
   const setSortKey = (key: SortKey) => setSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'key' ? 'asc' : 'desc' });
 
   return (
-    <div className="bg-dark-800/50 rounded-lg border border-white/10 overflow-hidden">
+    <div className="bg-dark-800/50 rounded-lg border border-slate-200 dark:border-white/10 overflow-hidden">
       {/* Header */}
-      <div className="px-8 py-4 border-b border-white/10 bg-dark-900/50">
+      <div className="px-8 py-4 border-b border-slate-200 dark:border-white/10 bg-dark-900/50">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-medium text-white/40 uppercase tracking-wider">
+          <h3 className="text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">
             Pivot Analysis
           </h3>
-          <div className="text-xs text-white/30">
+          <div className="text-xs text-slate-200 dark:text-white/30">
             {totals.count} shows • {fmtMoney(totals.net)} net
           </div>
         </div>
@@ -60,7 +60,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
               onClick={() => setDim(d)}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${dim === d
                 ? 'bg-accent-500/20 text-accent-400 border border-accent-500/30'
-                : 'bg-white/5 text-white/60 border border-white/5 hover:bg-white/10 hover:text-white/80'
+                : 'bg-white/5 text-slate-400 dark:text-white/60 border border-slate-100 dark:border-white/5 hover:bg-slate-200 dark:bg-white/10 hover:text-slate-600 dark:text-white/80'
                 }`}
             >
               {d}
@@ -76,7 +76,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
             <tr className="border-b border-white/5">
               <th className="text-left px-6 py-3" aria-sort={sort.key === 'key' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                 <button
-                  className="flex items-center gap-2 text-xs font-medium text-white/40 uppercase tracking-wider hover:text-white/60 transition-colors"
+                  className="flex items-center gap-2 text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider hover:text-slate-400 dark:text-white/60 transition-colors"
                   onClick={() => setSortKey('key')}
                 >
                   {dim}
@@ -87,7 +87,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
               </th>
               <th className="text-right px-6 py-3" aria-sort={sort.key === 'income' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                 <button
-                  className="flex items-center gap-2 ml-auto text-xs font-medium text-white/40 uppercase tracking-wider hover:text-white/60 transition-colors"
+                  className="flex items-center gap-2 ml-auto text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider hover:text-slate-400 dark:text-white/60 transition-colors"
                   onClick={() => setSortKey('income')}
                 >
                   Revenue
@@ -98,7 +98,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
               </th>
               <th className="text-right px-6 py-3" aria-sort={sort.key === 'expenses' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                 <button
-                  className="flex items-center gap-2 ml-auto text-xs font-medium text-white/40 uppercase tracking-wider hover:text-white/60 transition-colors group"
+                  className="flex items-center gap-2 ml-auto text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider hover:text-slate-400 dark:text-white/60 transition-colors group"
                   onClick={() => setSortKey('expenses')}
                   title="Includes show expenses and agency commissions"
                 >
@@ -113,7 +113,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
               </th>
               <th className="text-right px-6 py-3" aria-sort={sort.key === 'net' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                 <button
-                  className="flex items-center gap-2 ml-auto text-xs font-medium text-white/40 uppercase tracking-wider hover:text-white/60 transition-colors"
+                  className="flex items-center gap-2 ml-auto text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider hover:text-slate-400 dark:text-white/60 transition-colors"
                   onClick={() => setSortKey('net')}
                 >
                   Net Profit
@@ -124,7 +124,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
               </th>
               <th className="text-right px-6 py-3" aria-sort={sort.key === 'gm' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                 <button
-                  className="flex items-center gap-2 ml-auto text-xs font-medium text-white/40 uppercase tracking-wider hover:text-white/60 transition-colors"
+                  className="flex items-center gap-2 ml-auto text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider hover:text-slate-400 dark:text-white/60 transition-colors"
                   onClick={() => setSortKey('gm')}
                 >
                   Margin
@@ -135,7 +135,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
               </th>
               <th className="text-right px-6 py-3" aria-sort={sort.key === 'count' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                 <button
-                  className="flex items-center gap-2 ml-auto text-xs font-medium text-white/40 uppercase tracking-wider hover:text-white/60 transition-colors"
+                  className="flex items-center gap-2 ml-auto text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider hover:text-slate-400 dark:text-white/60 transition-colors"
                   onClick={() => setSortKey('count')}
                 >
                   Shows
@@ -145,7 +145,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
                 </button>
               </th>
               <th className="text-center px-6 py-3">
-                <span className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                <span className="text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">
                   Actions
                 </span>
               </th>
@@ -155,16 +155,16 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
             {data.map((r, idx) => (
               <tr
                 key={r.key}
-                className={`border-t border-white/5 hover:bg-white/5 transition-colors ${idx % 2 === 0 ? 'bg-dark-800/30' : ''
+                className={`border-t border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors ${idx % 2 === 0 ? 'bg-dark-800/30' : ''
                   }`}
               >
-                <td className="px-6 py-4 text-white/90 font-light">
+                <td className="px-6 py-4 text-slate-700 dark:text-slate-700 dark:text-white/90 font-light">
                   {r.key || '—'}
                 </td>
-                <td className="px-6 py-4 text-right tabular-nums text-white/90 font-light">
+                <td className="px-6 py-4 text-right tabular-nums text-slate-700 dark:text-slate-700 dark:text-white/90 font-light">
                   {fmtMoney(r.income)}
                 </td>
-                <td className="px-6 py-4 text-right tabular-nums text-white/70 font-light">
+                <td className="px-6 py-4 text-right tabular-nums text-slate-500 dark:text-white/70 font-light">
                   {fmtMoney(r.expenses)}
                 </td>
                 <td className="px-6 py-4 text-right tabular-nums text-white font-medium">
@@ -175,12 +175,12 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
                     {Math.round((r as any).gm * 100)}%
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right tabular-nums text-white/60 text-xs">
+                <td className="px-6 py-4 text-right tabular-nums text-slate-400 dark:text-white/60 text-xs">
                   {r.count}
                 </td>
                 <td className="px-6 py-4 text-center">
                   <button
-                    className="px-3 py-1.5 rounded text-xs font-medium bg-white/10 hover:bg-white/15 border border-white/10 transition-colors"
+                    className="px-3 py-1.5 rounded text-xs font-medium bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 border border-slate-200 dark:border-white/10 transition-colors"
                     onClick={() => onViewInPL?.(dim, r.key)}
                   >
                     View in P&L
@@ -191,13 +191,13 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
           </tbody>
           <tfoot className="sticky bottom-0 bg-dark-900 border-t-2 border-white/10">
             <tr>
-              <td className="px-6 py-4 text-xs font-medium text-white/40 uppercase tracking-wider">
+              <td className="px-6 py-4 text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">
                 Total
               </td>
               <td className="px-6 py-4 text-right tabular-nums text-white font-medium">
                 {fmtMoney(totals.income)}
               </td>
-              <td className="px-6 py-4 text-right tabular-nums text-white/70 font-medium">
+              <td className="px-6 py-4 text-right tabular-nums text-slate-500 dark:text-white/70 font-medium">
                 {fmtMoney(totals.expenses)}
               </td>
               <td className="px-6 py-4 text-right tabular-nums text-white font-bold">
@@ -206,7 +206,7 @@ const PLPivot: React.FC<Props> = ({ onViewInPL }) => {
               <td className="px-6 py-4 text-right tabular-nums text-accent-400 font-medium">
                 {totals.income ? Math.round((totals.net / totals.income) * 100) : 0}%
               </td>
-              <td className="px-6 py-4 text-right tabular-nums text-white/60 text-xs">
+              <td className="px-6 py-4 text-right tabular-nums text-slate-400 dark:text-white/60 text-xs">
                 {totals.count}
               </td>
               <td></td>

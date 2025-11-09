@@ -32,13 +32,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value as any)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             >
                 {LANGUAGES.map((language) => (
                     <option
                         key={language.code}
                         value={language.code}
-                        className="bg-gray-900 text-white"
+                        className="bg-gray-900 text-slate-900 dark:text-white"
                     >
                         {language.flag} {language.nativeName}
                     </option>
@@ -62,14 +62,14 @@ export const CompactLanguageSelector: React.FC<{ className?: string }> = ({
         <select
             value={lang}
             onChange={(e) => setLang(e.target.value as any)}
-            className={`bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-sm text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${className}`}
+            className={`bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1 text-sm text-white hover:bg-slate-200 dark:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${className}`}
             aria-label="Select language"
         >
             {LANGUAGES.map((language) => (
                 <option
                     key={language.code}
                     value={language.code}
-                    className="bg-gray-900 text-white"
+                    className="bg-gray-900 text-slate-900 dark:text-white"
                 >
                     {language.flag} {language.code.toUpperCase()}
                 </option>
@@ -95,7 +95,7 @@ export const LanguageSelectorMenu: React.FC<{ className?: string }> = ({
                     onClick={() => setLang(language.code)}
                     className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${lang === language.code
                             ? 'bg-blue-500/20 text-blue-300 font-medium'
-                            : 'hover:bg-white/5 text-white/70'
+                            : 'hover:bg-slate-100 dark:hover:bg-white/5 text-white/70'
                         }`}
                 >
                     <span className="mr-2">{language.flag}</span>

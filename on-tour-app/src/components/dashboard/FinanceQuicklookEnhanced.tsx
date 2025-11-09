@@ -151,8 +151,8 @@ const FinanceQuicklookEnhanced: React.FC = () => {
 
                     {/* Previous Month Change Badge */}
                     {marginPrev !== 0 && (
-                        <div className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg">
-                            <div className="text-[10px] text-white/60 uppercase">Δ Prev</div>
+                        <div className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg">
+                            <div className="text-[10px] text-slate-400 dark:text-white/60 uppercase">Δ Prev</div>
                             <div className={`text-sm font-semibold ${marginPrev > 0 ? 'text-green-300' : 'text-red-300'}`}>
                                 {marginPrev > 0 ? '+' : ''}{marginPrev.toFixed(1)}%
                             </div>
@@ -161,7 +161,7 @@ const FinanceQuicklookEnhanced: React.FC = () => {
 
                     {/* Targets Dropdown (placeholder) */}
                     <button
-                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm transition-colors"
+                        className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-sm transition-colors"
                         title="Edit Targets"
                     >
                         🎯 Targets
@@ -170,7 +170,7 @@ const FinanceQuicklookEnhanced: React.FC = () => {
                     {/* Open Full Link */}
                     <Link
                         to="/finance"
-                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm transition-colors"
+                        className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-sm transition-colors"
                     >
                         Open Full →
                     </Link>
@@ -182,21 +182,21 @@ const FinanceQuicklookEnhanced: React.FC = () => {
                 <div className="px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs">
                     <div className="flex items-center gap-4">
                         <span className="text-blue-400 font-semibold">Performance:</span>
-                        <span className="text-white/80">
+                        <span className="text-slate-600 dark:text-white/80">
                             Method: <span className="font-mono text-blue-300">{metrics.method}</span>
                         </span>
                         {metrics.workerTime !== undefined && (
-                            <span className="text-white/80">
+                            <span className="text-slate-600 dark:text-white/80">
                                 Worker: <span className="font-mono text-green-300">{metrics.workerTime.toFixed(2)}ms</span>
                             </span>
                         )}
                         {metrics.syncTime !== undefined && (
-                            <span className="text-white/80">
+                            <span className="text-slate-600 dark:text-white/80">
                                 Sync: <span className="font-mono text-yellow-300">{metrics.syncTime.toFixed(2)}ms</span>
                             </span>
                         )}
                         {metrics.speedup !== undefined && (
-                            <span className="text-white/80">
+                            <span className="text-slate-600 dark:text-white/80">
                                 Speedup: <span className="font-mono text-green-300">{metrics.speedup.toFixed(1)}x</span>
                             </span>
                         )}
@@ -216,4 +216,4 @@ const FinanceQuicklookEnhanced: React.FC = () => {
     );
 };
 
-export default FinanceQuicklookEnhanced;
+export default React.memo(FinanceQuicklookEnhanced);

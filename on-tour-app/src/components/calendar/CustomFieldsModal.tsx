@@ -104,21 +104,21 @@ const CustomFieldsModal: React.FC<Props> = ({
         onClick={onClose}
       />
       <motion.div
-        className="relative glass rounded-xl p-6 w-[600px] max-h-[80vh] border border-white/20 shadow-2xl overflow-y-auto"
+        className="relative glass rounded-xl p-6 w-[600px] max-h-[80vh] border border-slate-300 dark:border-white/20 shadow-2xl overflow-y-auto"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-white">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             Custom Fields: {eventTypeName}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+            className="p-1 rounded-lg hover:bg-slate-200 dark:bg-white/10 transition-colors"
             aria-label="Close"
           >
-            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-slate-400 dark:text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -130,7 +130,7 @@ const CustomFieldsModal: React.FC<Props> = ({
             {fields.length === 0 ? (
               <motion.p
                 key="empty"
-                className="text-center text-white/50 py-8"
+                className="text-center text-slate-300 dark:text-white/50 py-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -144,7 +144,7 @@ const CustomFieldsModal: React.FC<Props> = ({
                   className={`p-3 rounded border transition-all ${
                     editingFieldId === field.id
                       ? 'border-cyan-500 bg-cyan-500/10'
-                      : 'border-white/10 bg-white/5 hover:bg-white/10'
+                      : 'border-slate-200 dark:border-white/10 bg-white/5 hover:bg-white/10'
                   }`}
                   layout
                 >
@@ -157,8 +157,8 @@ const CustomFieldsModal: React.FC<Props> = ({
                       }}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-white">{field.name}</span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-white/10 text-white/70">
+                        <span className="font-medium text-slate-900 dark:text-white">{field.name}</span>
+                        <span className="text-xs px-2 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-white/70">
                           {field.type}
                         </span>
                         {field.required && (
@@ -168,7 +168,7 @@ const CustomFieldsModal: React.FC<Props> = ({
                         )}
                       </div>
                       {field.placeholder && (
-                        <p className="text-xs text-white/50 mt-1">Placeholder: {field.placeholder}</p>
+                        <p className="text-xs text-slate-300 dark:text-white/50 mt-1">Placeholder: {field.placeholder}</p>
                       )}
                     </div>
                     <button
@@ -192,30 +192,30 @@ const CustomFieldsModal: React.FC<Props> = ({
               exit={{ opacity: 0, y: -10 }}
             >
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-white">Edit Field</h3>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Edit Field</h3>
                 <button
                   onClick={() => setEditingFieldId(null)}
-                  className="text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="text-xs px-2 py-1 rounded bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-white transition-colors"
                 >
                   Done
                 </button>
               </div>
 
               <div>
-                <label className="text-xs text-white/70 font-medium mb-1 block">Field Name</label>
+                <label className="text-xs text-slate-500 dark:text-white/70 font-medium mb-1 block">Field Name</label>
                 <input
                   type="text"
                   value={editingField.name}
                   onChange={(e) =>
                     setEditingField({ ...editingField, name: e.target.value })
                   }
-                  className="w-full px-2 py-1 rounded bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-2 py-1 rounded bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   placeholder="e.g., Flight Number"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-white/70 font-medium mb-1 block">Field Type</label>
+                <label className="text-xs text-slate-500 dark:text-white/70 font-medium mb-1 block">Field Type</label>
                 <select
                   value={editingField.type}
                   onChange={(e) =>
@@ -224,7 +224,7 @@ const CustomFieldsModal: React.FC<Props> = ({
                       type: e.target.value as CustomFieldType,
                     })
                   }
-                  className="w-full px-2 py-1 rounded bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-2 py-1 rounded bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 >
                   <option value="text">Text</option>
                   <option value="number">Number</option>
@@ -236,7 +236,7 @@ const CustomFieldsModal: React.FC<Props> = ({
 
               {editingField.type === 'select' && (
                 <div>
-                  <label className="text-xs text-white/70 font-medium mb-1 block">
+                  <label className="text-xs text-slate-500 dark:text-white/70 font-medium mb-1 block">
                     Options (comma-separated)
                   </label>
                   <input
@@ -251,21 +251,21 @@ const CustomFieldsModal: React.FC<Props> = ({
                           .filter(Boolean),
                       })
                     }
-                    className="w-full px-2 py-1 rounded bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-2 py-1 rounded bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     placeholder="e.g., Option 1, Option 2, Option 3"
                   />
                 </div>
               )}
 
               <div>
-                <label className="text-xs text-white/70 font-medium mb-1 block">Placeholder</label>
+                <label className="text-xs text-slate-500 dark:text-white/70 font-medium mb-1 block">Placeholder</label>
                 <input
                   type="text"
                   value={editingField.placeholder || ''}
                   onChange={(e) =>
                     setEditingField({ ...editingField, placeholder: e.target.value })
                   }
-                  className="w-full px-2 py-1 rounded bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-2 py-1 rounded bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   placeholder="Placeholder text"
                 />
               </div>
@@ -279,7 +279,7 @@ const CustomFieldsModal: React.FC<Props> = ({
                   }
                   className="w-4 h-4 rounded"
                 />
-                <span className="text-xs text-white">Required field</span>
+                <span className="text-xs text-slate-900 dark:text-white">Required field</span>
               </label>
 
               <button

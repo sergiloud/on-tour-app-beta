@@ -78,7 +78,7 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       <motion.div
-        className={`relative rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30
+        className={`relative rounded-xl border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30
           backdrop-blur-md shadow-2xl w-full max-w-md p-6`}
       >
         {/* Header */}
@@ -86,26 +86,26 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
           <div className="flex items-center gap-3">
             <div className={`w-3 h-8 rounded-full bg-gradient-to-b ${colorMap[event.color || 'accent']}`} />
             <div>
-              <h3 className="text-lg font-semibold text-white">{event.title}</h3>
-              <p className="text-xs text-white/50">{event.kind === 'show' ? '🎤 Show' : '✈️ Travel'}</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{event.title}</h3>
+              <p className="text-xs text-slate-300 dark:text-white/50">{event.kind === 'show' ? '🎤 Show' : '✈️ Travel'}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-white/50 hover:text-white transition"
+            className="text-slate-300 dark:text-white/50 hover:text-white transition"
           >
             ✕
           </button>
         </div>
 
         {/* Duration Info */}
-        <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
+        <div className="mb-4 p-3 rounded-lg bg-slate-100 dark:bg-white/5 border border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-medium text-white/70 uppercase">Duration</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-white/70 uppercase">Duration</p>
             <p className="text-sm font-bold text-accent-300">{newDuration} {newDuration === 1 ? 'day' : 'days'}</p>
           </div>
           {duration > 1 && (
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-slate-300 dark:text-white/40">
               Originally: {duration} days
             </p>
           )}
@@ -115,7 +115,7 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
         <div className="space-y-3 mb-6">
           {/* Start Date */}
           <div>
-            <label className="text-xs font-medium text-white/70 uppercase mb-2 block">
+            <label className="text-xs font-medium text-slate-500 dark:text-white/70 uppercase mb-2 block">
               Start Date
             </label>
             <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
                 whileTap={{ scale: 0.95 }}
                 onClick={handleShrinkStart}
                 disabled={startDate >= endDate}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/15 disabled:opacity-30 transition"
+                className="p-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 disabled:opacity-30 transition"
               >
                 ←
               </motion.button>
@@ -139,7 +139,7 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleExtendStart}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/15 transition"
+                className="p-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 transition"
               >
                 →
               </motion.button>
@@ -148,7 +148,7 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
 
           {/* End Date */}
           <div>
-            <label className="text-xs font-medium text-white/70 uppercase mb-2 block">
+            <label className="text-xs font-medium text-slate-500 dark:text-white/70 uppercase mb-2 block">
               End Date
             </label>
             <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
                 whileTap={{ scale: 0.95 }}
                 onClick={handleShrinkEnd}
                 disabled={endDate <= startDate}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/15 disabled:opacity-30 transition"
+                className="p-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 disabled:opacity-30 transition"
               >
                 ←
               </motion.button>
@@ -172,7 +172,7 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleExtendEnd}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/15 transition"
+                className="p-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 transition"
               >
                 →
               </motion.button>
@@ -184,7 +184,7 @@ export const MultiDayEventEditor: React.FC<MultiDayEventEditorProps> = ({
         <motion.button
           onClick={() => setExpanded(!expanded)}
           className="w-full flex items-center justify-between p-2 rounded-lg bg-white/5
-            hover:bg-white/10 transition text-xs text-white/70 mb-4"
+            hover:bg-slate-200 dark:bg-white/10 transition text-xs text-slate-500 dark:text-white/70 mb-4"
         >
           <span>More Options</span>
           <motion.div
@@ -299,9 +299,9 @@ export const MultiDayEventBar: React.FC<MultiDayEventBarProps> = ({
         whileTap={{ scale: 0.98 }}
         className="flex items-center gap-1.5"
       >
-        <span className="text-xs font-semibold truncate text-white">{event.title}</span>
+        <span className="text-xs font-semibold truncate text-slate-900 dark:text-white">{event.title}</span>
         {isMultiDay && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 text-white/80 whitespace-nowrap">
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 text-slate-600 dark:text-white/80 whitespace-nowrap">
             Multi
           </span>
         )}

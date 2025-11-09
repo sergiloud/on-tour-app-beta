@@ -28,7 +28,7 @@ const KpiItem: React.FC<{
     whileHover={{ scale: 1.01 }}
   >
     <Card
-      className={`p-5 border border-white/10 rounded-lg bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 flex flex-col gap-2 ${
+      className={`p-5 border border-slate-200 dark:border-white/10 rounded-lg bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 flex flex-col gap-2 ${
         tone === 'pos' ? 'border-emerald-500/30 outline outline-1 outline-emerald-500/20' : ''
       } ${tone === 'neg' ? 'border-rose-500/30 outline outline-1 outline-rose-500/20' : ''}`}
       aria-label={aria || `${label}: ${value}`}
@@ -40,7 +40,7 @@ const KpiItem: React.FC<{
           {label}
         </div>
       </div>
-      <div className="text-xl font-bold tabular-nums text-white">{value}</div>
+      <div className="text-xl font-bold tabular-nums text-slate-900 dark:text-white">{value}</div>
       {delta && (
         <motion.div
           className={`flex items-center gap-1 text-xs font-medium ${

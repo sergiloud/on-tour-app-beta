@@ -321,7 +321,7 @@ const OnboardingPage: React.FC = () => {
             <span className="text-sm font-medium">Step {step} of 3</span>
             <span className="text-sm opacity-60">{Math.round((step / 3) * 100)}% Complete</span>
           </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-2 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-accent-500 to-blue-500"
               initial={{ width: 0 }}
@@ -336,7 +336,7 @@ const OnboardingPage: React.FC = () => {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="glass p-8 rounded-2xl border border-white/10 shadow-2xl"
+          className="glass p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl"
           style={{
             boxShadow: '0 0 60px rgba(0, 0, 0, 0.3), 0 0 100px rgba(191, 255, 0, 0.1)'
           }}
@@ -367,22 +367,22 @@ const OnboardingPage: React.FC = () => {
                   </p>
 
                   <div className="grid grid-cols-2 gap-4 text-left">
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10">
                       <CheckCircle className="w-6 h-6 text-accent-500 mb-2" />
                       <h3 className="font-semibold mb-1">Complete Profile</h3>
                       <p className="text-sm opacity-60">Set up your personal info</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10">
                       <Building2 className="w-6 h-6 text-accent-500 mb-2" />
                       <h3 className="font-semibold mb-1">Business Setup</h3>
                       <p className="text-sm opacity-60">Choose your account type</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10">
                       <Globe className="w-6 h-6 text-accent-500 mb-2" />
                       <h3 className="font-semibold mb-1">Regional Settings</h3>
                       <p className="text-sm opacity-60">Currency & timezone</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10">
                       <Zap className="w-6 h-6 text-accent-500 mb-2" />
                       <h3 className="font-semibold mb-1">App Preferences</h3>
                       <p className="text-sm opacity-60">Customize your experience</p>
@@ -443,7 +443,7 @@ const OnboardingPage: React.FC = () => {
                         value={data.fullName}
                         onChange={(e) => updateData('fullName', e.target.value)}
                         placeholder={t('placeholder.name')}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                       />
                     </div>
                   </div>
@@ -463,7 +463,7 @@ const OnboardingPage: React.FC = () => {
                         value={data.email}
                         onChange={(e) => updateData('email', e.target.value)}
                         placeholder="john@example.com"
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                       />
                     </div>
                   </div>
@@ -483,7 +483,7 @@ const OnboardingPage: React.FC = () => {
                         value={data.phone}
                         onChange={(e) => updateData('phone', e.target.value)}
                         placeholder="+1 (555) 000-0000"
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                       />
                     </div>
                   </div>
@@ -499,7 +499,7 @@ const OnboardingPage: React.FC = () => {
                       onChange={(e) => updateData('bio', e.target.value)}
                       placeholder="Tell us a bit about yourself and what you do..."
                       rows={3}
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none resize-none"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none resize-none"
                     />
                   </div>
                 </div>
@@ -529,7 +529,7 @@ const OnboardingPage: React.FC = () => {
                         onClick={() => updateData('businessType', type.id)}
                         className={`w-full p-5 rounded-xl border-2 transition-all text-left ${data.businessType === type.id
                           ? 'border-accent-500 bg-accent-500/10'
-                          : 'border-white/10 bg-white/5 hover:bg-white/10'
+                          : 'border-slate-200 dark:border-white/10 bg-white/5 hover:bg-white/10'
                           }`}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -580,7 +580,7 @@ const OnboardingPage: React.FC = () => {
                             data.businessType === 'agency' ? 'e.g., Creative Artists Agency' :
                               'e.g., Madison Square Garden'
                         }
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                       />
                     </div>
                   </motion.div>
@@ -616,7 +616,7 @@ const OnboardingPage: React.FC = () => {
                         id="country"
                         value={data.country}
                         onChange={(e) => handleCountryChange(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none appearance-none"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none appearance-none"
                       >
                         <option value="">Select a country</option>
                         {countries.map(country => (
@@ -638,7 +638,7 @@ const OnboardingPage: React.FC = () => {
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                           <Clock className="w-5 h-5 opacity-40" />
                         </div>
-                        <div className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 opacity-70">
+                        <div className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 opacity-70">
                           {data.timezone}
                         </div>
                       </div>
@@ -659,7 +659,7 @@ const OnboardingPage: React.FC = () => {
                         id="currency"
                         value={data.currency}
                         onChange={(e) => updateData('currency', e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none appearance-none"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none appearance-none"
                       >
                         <option value="">Select a currency</option>
                         {currencies.map(curr => (
@@ -702,7 +702,7 @@ const OnboardingPage: React.FC = () => {
                         id="language"
                         value={data.language}
                         onChange={(e) => updateData('language', e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none appearance-none"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none appearance-none"
                       >
                         <option value="en">English</option>
                         <option value="es">Español</option>
@@ -720,7 +720,7 @@ const OnboardingPage: React.FC = () => {
                       Notification Preferences
                     </label>
                     <div className="space-y-3">
-                      <label className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
+                      <label className="flex items-center justify-between p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 cursor-pointer hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors">
                         <div className="flex items-center gap-3">
                           <Mail className="w-5 h-5 opacity-60" />
                           <div>
@@ -732,11 +732,11 @@ const OnboardingPage: React.FC = () => {
                           type="checkbox"
                           checked={data.notifications.email}
                           onChange={(e) => updateData('notifications', { ...data.notifications, email: e.target.checked })}
-                          className="w-5 h-5 rounded border-white/20 bg-white/5 text-accent-500 focus:ring-accent-500/50"
+                          className="w-5 h-5 rounded border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 text-accent-500 focus:ring-accent-500/50"
                         />
                       </label>
 
-                      <label className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
+                      <label className="flex items-center justify-between p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 cursor-pointer hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors">
                         <div className="flex items-center gap-3">
                           <Bell className="w-5 h-5 opacity-60" />
                           <div>
@@ -748,11 +748,11 @@ const OnboardingPage: React.FC = () => {
                           type="checkbox"
                           checked={data.notifications.push}
                           onChange={(e) => updateData('notifications', { ...data.notifications, push: e.target.checked })}
-                          className="w-5 h-5 rounded border-white/20 bg-white/5 text-accent-500 focus:ring-accent-500/50"
+                          className="w-5 h-5 rounded border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 text-accent-500 focus:ring-accent-500/50"
                         />
                       </label>
 
-                      <label className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
+                      <label className="flex items-center justify-between p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 cursor-pointer hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors">
                         <div className="flex items-center gap-3">
                           <Phone className="w-5 h-5 opacity-60" />
                           <div>
@@ -764,7 +764,7 @@ const OnboardingPage: React.FC = () => {
                           type="checkbox"
                           checked={data.notifications.sms}
                           onChange={(e) => updateData('notifications', { ...data.notifications, sms: e.target.checked })}
-                          className="w-5 h-5 rounded border-white/20 bg-white/5 text-accent-500 focus:ring-accent-500/50"
+                          className="w-5 h-5 rounded border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 text-accent-500 focus:ring-accent-500/50"
                         />
                       </label>
                     </div>
@@ -782,7 +782,7 @@ const OnboardingPage: React.FC = () => {
                           onClick={() => updateData('theme', theme)}
                           className={`p-4 rounded-xl border-2 transition-all ${data.theme === theme
                             ? 'border-accent-500 bg-accent-500/10'
-                            : 'border-white/10 bg-white/5 hover:bg-white/10'
+                            : 'border-slate-200 dark:border-white/10 bg-white/5 hover:bg-white/10'
                             }`}
                         >
                           <Palette className="w-6 h-6 mx-auto mb-2 opacity-60" />
@@ -819,7 +819,7 @@ const OnboardingPage: React.FC = () => {
 
                 <div className="space-y-4">
                   {/* Profile Summary */}
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10">
                     <div className="flex items-center gap-3 mb-3">
                       <User className="w-5 h-5 text-accent-500" />
                       <h3 className="font-semibold">Profile</h3>
@@ -832,7 +832,7 @@ const OnboardingPage: React.FC = () => {
                   </div>
 
                   {/* Business Summary */}
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10">
                     <div className="flex items-center gap-3 mb-3">
                       <Building2 className="w-5 h-5 text-accent-500" />
                       <h3 className="font-semibold">Business</h3>
@@ -849,7 +849,7 @@ const OnboardingPage: React.FC = () => {
                   </div>
 
                   {/* Regional Summary */}
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10">
                     <div className="flex items-center gap-3 mb-3">
                       <Globe className="w-5 h-5 text-accent-500" />
                       <h3 className="font-semibold">Regional Settings</h3>
@@ -871,7 +871,7 @@ const OnboardingPage: React.FC = () => {
                   </div>
 
                   {/* Preferences Summary */}
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10">
                     <div className="flex items-center gap-3 mb-3">
                       <Zap className="w-5 h-5 text-accent-500" />
                       <h3 className="font-semibold">Preferences</h3>
@@ -902,7 +902,7 @@ const OnboardingPage: React.FC = () => {
                   onClick={handleBack}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Back

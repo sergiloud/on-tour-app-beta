@@ -107,9 +107,20 @@ export const DatePickerAdvanced: React.FC<DatePickerAdvancedProps> = ({
         setIsOpen(false);
       }
     };
+
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscKey);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleEscKey);
+      };
     }
     return undefined;
   }, [isOpen]);
@@ -128,7 +139,7 @@ export const DatePickerAdvanced: React.FC<DatePickerAdvancedProps> = ({
   return (
     <div ref={containerRef} className="flex flex-col gap-2 relative">
       {label && (
-        <label className="text-xs font-semibold uppercase tracking-wider text-white/70">
+        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
           {label}
         </label>
       )}
@@ -139,16 +150,16 @@ export const DatePickerAdvanced: React.FC<DatePickerAdvancedProps> = ({
           type="button"
           disabled={disabled}
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-white text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-white text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span className="text-white/70 text-sm">
+          <span className="text-slate-500 dark:text-white/70 text-sm">
             {rangeStart && rangeEnd
               ? `${rangeStart} to ${rangeEnd}`
               : rangeStart
               ? `${rangeStart} to (Shift+click end)`
               : displayValue || 'Select date...'}
           </span>
-          <svg className="w-3.5 h-3.5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 text-slate-300 dark:text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -160,13 +171,13 @@ export const DatePickerAdvanced: React.FC<DatePickerAdvancedProps> = ({
 
         {/* Mini Calendar Dropdown */}
         {isOpen && (
-          <div className="absolute top-full left-0 mt-1.5 z-50 bg-gradient-to-br from-white/10 via-white/5 to-white/2 border border-white/20 rounded-md shadow-2xl backdrop-blur-xl p-3 w-72">
+          <div className="absolute top-full left-0 mt-1.5 z-50 bg-gradient-to-br from-white/25 via-white/15 to-white/10 border border-white/30 rounded-md shadow-2xl backdrop-blur-xl p-3 w-72">
             {/* Month Navigation */}
             <div className="flex items-center justify-between mb-2.5">
               <button
                 type="button"
                 onClick={prevMonth}
-                className="p-1.5 rounded hover:bg-white/10 transition-colors text-white/70 hover:text-white"
+                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors text-slate-500 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -181,7 +192,7 @@ export const DatePickerAdvanced: React.FC<DatePickerAdvancedProps> = ({
               <button
                 type="button"
                 onClick={nextMonth}
-                className="p-1.5 rounded hover:bg-white/10 transition-colors text-white/70 hover:text-white"
+                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors text-slate-500 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -197,7 +208,7 @@ export const DatePickerAdvanced: React.FC<DatePickerAdvancedProps> = ({
             {/* Week Days Header */}
             <div className="grid grid-cols-7 gap-0.5 mb-1.5">
               {weekDays.map(day => (
-                <div key={day} className="text-center text-[9px] font-semibold text-white/60 py-0.5">
+                <div key={day} className="text-center text-[9px] font-semibold text-slate-400 dark:text-white/60 py-0.5">
                   {day}
                 </div>
               ))}
@@ -245,7 +256,7 @@ export const DatePickerAdvanced: React.FC<DatePickerAdvancedProps> = ({
                         ? 'bg-white/20 text-white border border-accent-400/50'
                         : isDisabledDate
                         ? 'text-white/20 cursor-not-allowed'
-                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        : 'text-slate-500 dark:text-white/70 hover:bg-slate-200 dark:bg-white/10 hover:text-white'
                     }`}
                   >
                     {day}
@@ -272,7 +283,7 @@ export const DatePickerAdvanced: React.FC<DatePickerAdvancedProps> = ({
       </div>
 
       {/* Help text and errors */}
-      {help && <p className="text-[11px] text-white/60">{help}</p>}
+      {help && <p className="text-[11px] text-slate-400 dark:text-white/60">{help}</p>}
       {error && <p className="text-[11px] text-red-400">{error}</p>}
     </div>
   );

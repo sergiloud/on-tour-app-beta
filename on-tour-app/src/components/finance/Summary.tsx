@@ -89,30 +89,30 @@ const Summary: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300">
+      <div className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
         <div className="bg-gradient-to-r from-transparent via-white/5 to-transparent px-6 py-5 lg:py-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             {/* Title */}
             <div className="flex items-center gap-4">
               <div className="w-1 h-10 rounded-full bg-gradient-to-b from-accent-500 to-blue-500" />
               <div>
-                <h2 className="text-xl lg:text-2xl font-semibold tracking-tight text-white">
+                <h2 className="text-xl lg:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
                   {t('finance.summary.title') || 'Financial Summary'}
                 </h2>
-                <p className="text-xs lg:text-sm text-white/60 mt-1">
+                <p className="text-xs lg:text-sm text-slate-400 dark:text-white/60 mt-1">
                   {t('finance.summary.subtitle') || 'Overview of key financial metrics'}
                 </p>
               </div>
             </div>
 
             {/* Period Selector */}
-            <div className="flex items-center gap-2 bg-white/5 rounded-lg p-1 border border-white/10">
+            <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 rounded-lg p-1 border border-white/10">
               <button
                 onClick={() => handlePeriodChange('month')}
                 className={`px-4 py-2 text-sm font-medium rounded transition-all duration-300 ${
                   selectedPeriod === 'month'
                     ? 'bg-accent-500/20 text-accent-300 border border-accent-400/30'
-                    : 'text-white/70 hover:text-white/90'
+                    : 'text-slate-500 dark:text-white/70 hover:text-slate-700 dark:text-white/90'
                 }`}
                 aria-label={t('common.month') || 'Month'}
                 aria-pressed={selectedPeriod === 'month'}
@@ -124,7 +124,7 @@ const Summary: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded transition-all duration-300 ${
                   selectedPeriod === 'year'
                     ? 'bg-accent-500/20 text-accent-300 border border-accent-400/30'
-                    : 'text-white/70 hover:text-white/90'
+                    : 'text-slate-500 dark:text-white/70 hover:text-slate-700 dark:text-white/90'
                 }`}
                 aria-label={t('common.year') || 'Year'}
                 aria-pressed={selectedPeriod === 'year'}
@@ -143,26 +143,26 @@ const Summary: React.FC = () => {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
       >
         {/* Net Profit */}
-        <Card className="glass border border-white/10 p-6 flex flex-col gap-3 hover:border-white/20 transition-all duration-300">
+        <Card className="glass border border-slate-200 dark:border-white/10 p-6 flex flex-col gap-3 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-white/60">
               {selectedPeriod === 'month' ? (t('finance.kpi.mtdNet') || 'MTD Net') : (t('finance.kpi.ytdNet') || 'YTD Net')}
             </span>
             <DollarSign className="w-4 h-4 text-accent-400 opacity-60" />
           </div>
           <div className="space-y-2">
-            <div className="text-2xl lg:text-3xl font-bold tabular-nums text-white">
+            <div className="text-2xl lg:text-3xl font-bold tabular-nums text-slate-900 dark:text-white">
               {fmtMoney(selectedPeriod === 'month' ? mtdNet : ytdNet)}
             </div>
             {selectedPeriod === 'month' && mtdDeltaPct !== null ? (
-              <div className="flex items-center gap-2 text-xs text-white/70">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/70">
                 {getTrendIcon(mtdDeltaPct > 0)}
                 <span className={mtdDeltaPct > 0 ? 'text-emerald-400' : 'text-rose-400'}>
                   {mtdDeltaPct > 0 ? '+' : ''}{mtdDeltaPct}% {t('common.vsLastMonth') || 'vs last month'}
                 </span>
               </div>
             ) : selectedPeriod === 'year' && ytdDeltaPct !== null ? (
-              <div className="flex items-center gap-2 text-xs text-white/70">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/70">
                 {getTrendIcon(ytdDeltaPct > 0)}
                 <span className={ytdDeltaPct > 0 ? 'text-emerald-400' : 'text-rose-400'}>
                   {ytdDeltaPct > 0 ? '+' : ''}{ytdDeltaPct}% {t('common.vsLastYear') || 'vs last year'}
@@ -173,36 +173,36 @@ const Summary: React.FC = () => {
         </Card>
 
         {/* Revenue */}
-        <Card className="glass border border-white/10 p-6 flex flex-col gap-3 hover:border-white/20 transition-all duration-300">
+        <Card className="glass border border-slate-200 dark:border-white/10 p-6 flex flex-col gap-3 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-white/60">
               {selectedPeriod === 'month' ? t('finance.kpi.monthlyRevenue') || 'Revenue' : t('finance.kpi.annualRevenue') || 'Annual Revenue'}
             </span>
             <BarChart3 className="w-4 h-4 text-blue-400 opacity-60" />
           </div>
           <div className="space-y-2">
-            <div className="text-2xl lg:text-3xl font-bold tabular-nums text-white">
+            <div className="text-2xl lg:text-3xl font-bold tabular-nums text-slate-900 dark:text-white">
               {fmtMoney(selectedPeriod === 'month' ? snapshot.month.income : snapshot.year.income)}
             </div>
-            <div className="text-xs text-white/60">
+            <div className="text-xs text-slate-400 dark:text-white/60">
               {t('finance.summary.totalIncome') || 'Total Income'}
             </div>
           </div>
         </Card>
 
         {/* Expenses */}
-        <Card className="glass border border-white/10 p-6 flex flex-col gap-3 hover:border-white/20 transition-all duration-300">
+        <Card className="glass border border-slate-200 dark:border-white/10 p-6 flex flex-col gap-3 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-white/60">
               {selectedPeriod === 'month' ? t('finance.kpi.monthlyExpenses') || 'Expenses' : t('finance.kpi.annualExpenses') || 'Annual Expenses'}
             </span>
             <PieChart className="w-4 h-4 text-orange-400 opacity-60" />
           </div>
           <div className="space-y-2">
-            <div className="text-2xl lg:text-3xl font-bold tabular-nums text-white">
+            <div className="text-2xl lg:text-3xl font-bold tabular-nums text-slate-900 dark:text-white">
               {fmtMoney(selectedPeriod === 'month' ? snapshot.month.expenses : snapshot.year.expenses)}
             </div>
-            <div className="text-xs text-white/60">
+            <div className="text-xs text-slate-400 dark:text-white/60">
               {t('finance.summary.totalExpenses') || 'Total Expenses'}
             </div>
           </div>
@@ -217,21 +217,21 @@ const Summary: React.FC = () => {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {/* Forecast */}
-        <Card className="glass border border-white/10 p-4 flex flex-col gap-2 hover:border-white/20 transition-all duration-300">
+        <Card className="glass border border-slate-200 dark:border-white/10 p-4 flex flex-col gap-2 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
           <div className="flex items-center gap-2">
             <TrendingUpIcon className="w-3.5 h-3.5 text-accent-400 opacity-60" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-white/60">
               {t('finance.kpi.forecastEom') || 'Forecast EOM'}
             </span>
           </div>
-          <div className="text-lg lg:text-xl font-bold tabular-nums text-white">
+          <div className="text-lg lg:text-xl font-bold tabular-nums text-slate-900 dark:text-white">
             {fmtMoney(forecast)}
           </div>
         </Card>
 
         {/* Delta vs Target */}
         <Card
-          className={`glass border p-4 flex flex-col gap-2 hover:border-white/20 transition-all duration-300 ${
+          className={`glass border p-4 flex flex-col gap-2 hover:border-slate-300 dark:border-white/20 transition-all duration-300 ${
             deltaPct > 0
               ? 'border-emerald-500/30 bg-emerald-500/5'
               : deltaPct < 0
@@ -241,7 +241,7 @@ const Summary: React.FC = () => {
         >
           <div className="flex items-center gap-2">
             <Target className="w-3.5 h-3.5 opacity-60" style={{ color: deltaPct > 0 ? '#10b981' : deltaPct < 0 ? '#f43f5e' : '#9ca3af' }} />
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-white/60">
               {t('finance.kpi.deltaTarget') || 'Δ vs Target'}
             </span>
           </div>
@@ -253,27 +253,27 @@ const Summary: React.FC = () => {
         </Card>
 
         {/* Gross Margin */}
-        <Card className="glass border border-white/10 p-4 flex flex-col gap-2 hover:border-white/20 transition-all duration-300">
+        <Card className="glass border border-slate-200 dark:border-white/10 p-4 flex flex-col gap-2 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
           <div className="flex items-center gap-2">
             <PieChart className="w-3.5 h-3.5 text-blue-400 opacity-60" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-white/60">
               {t('finance.kpi.gm') || 'Gross Margin'}
             </span>
           </div>
-          <div className="text-lg lg:text-xl font-bold tabular-nums text-white">
+          <div className="text-lg lg:text-xl font-bold tabular-nums text-slate-900 dark:text-white">
             {gmPct}%
           </div>
         </Card>
 
         {/* DSO */}
-        <Card className="glass border border-white/10 p-4 flex flex-col gap-2 hover:border-white/20 transition-all duration-300">
+        <Card className="glass border border-slate-200 dark:border-white/10 p-4 flex flex-col gap-2 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
           <div className="flex items-center gap-2">
             <Clock className="w-3.5 h-3.5 text-amber-400 opacity-60" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-white/60">
               {t('finance.kpi.dso') || 'Days Sales Out'}
             </span>
           </div>
-          <div className="text-lg lg:text-xl font-bold tabular-nums text-white">
+          <div className="text-lg lg:text-xl font-bold tabular-nums text-slate-900 dark:text-white">
             {dsoDays}d
           </div>
         </Card>
@@ -284,17 +284,17 @@ const Summary: React.FC = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="glass rounded-xl border border-white/10 backdrop-blur-sm p-6 hover:border-white/20 transition-all duration-300"
+        className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm p-6 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300"
       >
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-lg bg-accent-500/10 border border-accent-400/30">
             <BarChart3 className="w-5 h-5 text-accent-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-white mb-2">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
               {t('finance.summary.keyInsights') || 'Key Insights'}
             </h3>
-            <p className="text-sm text-white/70 leading-relaxed">
+            <p className="text-sm text-slate-500 dark:text-white/70 leading-relaxed">
               {selectedPeriod === 'month'
                 ? `${t('finance.summary.monthInsight') || 'Your MTD net is'} ${fmtMoney(mtdNet)}. ${
                     deltaPct >= 0

@@ -33,28 +33,28 @@ export const SettlementIntelligence: React.FC = () => {
     return (
         <div className="space-y-6">
             {/* Settlement Pipeline - Clean Data Grid */}
-            <div className="bg-dark-800/50 rounded-lg border border-white/10 overflow-hidden">
+            <div className="bg-dark-800/50 rounded-lg border border-slate-200 dark:border-white/10 overflow-hidden">
                 {/* Header */}
-                <div className="px-8 py-4 border-b border-white/10 bg-dark-900/50">
+                <div className="px-8 py-4 border-b border-slate-200 dark:border-white/10 bg-dark-900/50">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                        <h3 className="text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">
                             Settlement Pipeline
                         </h3>
-                        <div className="text-xs text-white/30">
+                        <div className="text-xs text-slate-200 dark:text-white/30">
                             {totalShows} total shows
                         </div>
                     </div>
                 </div>
 
                 {/* Data Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-slate-100 dark:bg-white/5">
                     {/* Confirmed */}
                     <div className="p-8 bg-dark-800 hover:bg-dark-800/70 transition-colors">
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-3">
                                     <CheckCircle className="w-4 h-4 text-green-400" />
-                                    <span className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                                    <span className="text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">
                                         Confirmed
                                     </span>
                                 </div>
@@ -63,7 +63,7 @@ export const SettlementIntelligence: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="text-xs text-white/30">
+                        <div className="text-xs text-slate-200 dark:text-white/30">
                             {confirmedShows.length} show{confirmedShows.length !== 1 ? 's' : ''}
                         </div>
                     </div>
@@ -74,7 +74,7 @@ export const SettlementIntelligence: React.FC = () => {
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Clock className="w-4 h-4 text-blue-400" />
-                                    <span className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                                    <span className="text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">
                                         Pending
                                     </span>
                                 </div>
@@ -83,7 +83,7 @@ export const SettlementIntelligence: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="text-xs text-white/30">
+                        <div className="text-xs text-slate-200 dark:text-white/30">
                             {pendingShows.length} show{pendingShows.length !== 1 ? 's' : ''}
                         </div>
                     </div>
@@ -91,14 +91,14 @@ export const SettlementIntelligence: React.FC = () => {
                     {/* Progress */}
                     <div className="p-8 bg-dark-900 hover:bg-dark-900/70 transition-colors">
                         <div className="mb-3">
-                            <span className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                            <span className="text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">
                                 Completion
                             </span>
                         </div>
                         <div className="text-3xl font-light text-accent-400 tabular-nums mb-4">
                             {settledPercentage}%
                         </div>
-                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-accent-500 to-green-500 transition-all duration-300"
                                 style={{ width: `${settledPercentage}%` }}
@@ -119,7 +119,7 @@ export const SettlementIntelligence: React.FC = () => {
                             <div className="text-sm font-medium text-amber-400 mb-1">
                                 Tax Withholding Alert
                             </div>
-                            <div className="text-sm text-white/60">
+                            <div className="text-sm text-slate-400 dark:text-white/60">
                                 {whtShows.length} show{whtShows.length !== 1 ? 's' : ''} with withholding tax requirements
                             </div>
                         </div>

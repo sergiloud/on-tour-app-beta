@@ -38,7 +38,7 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ onClose }) => {
         whileHover={{ scale: 1.08, y: -1 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleOpen}
-        className="px-2.5 md:px-3 py-1.5 md:py-1.5 rounded-lg bg-white/8 border border-white/15 hover:border-white/30 hover:bg-white/12 text-white/70 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5"
+        className="px-2.5 md:px-3 py-1.5 md:py-1.5 rounded-lg bg-white/8 border border-white/15 hover:border-slate-400 dark:hover:border-white/30 hover:bg-white/12 text-slate-500 dark:text-white/70 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5"
         title={`${t('calendar.shortcuts') || 'Keyboard Shortcuts'} (?) · ${t('calendar.shortcut.help') || 'Press ? to toggle'}`}
         aria-label={t('calendar.shortcuts') || 'Keyboard Shortcuts'}
       >
@@ -69,31 +69,31 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ onClose }) => {
             {/* Modal */}
             <motion.div
               onClick={(e) => e.stopPropagation()}
-              className="relative glass rounded-2xl border border-white/10 shadow-2xl backdrop-blur-md w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-white/8 via-white/4 to-white/2"
+              className="relative glass rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl backdrop-blur-md w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-slate-100 dark:from-white/8 via-white/4 to-white/2"
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ duration: 0.3, type: 'spring', stiffness: 300 }}
             >
               {/* Header */}
-              <div className="sticky top-0 px-5 md:px-6 pt-5 md:pt-6 pb-4 md:pb-5 border-b border-white/5 flex items-center justify-between gap-3 bg-gradient-to-b from-white/6 to-transparent z-10">
+              <div className="sticky top-0 px-5 md:px-6 pt-5 md:pt-6 pb-4 md:pb-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between gap-3 bg-gradient-to-b from-slate-100 dark:from-white/6 to-transparent z-10">
                 <div>
                   <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
                     <span>⌨️</span>
                     {t('calendar.shortcuts') || 'Keyboard Shortcuts'}
                   </h2>
-                  <p className="text-xs text-white/50 mt-1">
+                  <p className="text-xs text-slate-300 dark:text-white/50 mt-1">
                     {t('calendar.shortcut.hint') || 'Master these shortcuts to navigate faster'}
                   </p>
                 </div>
                 <motion.button
                   type="button"
                   onClick={handleClose}
-                  className="p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 dark:bg-white/10 transition-colors flex-shrink-0"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-slate-400 dark:text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </motion.button>
@@ -115,14 +115,14 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ onClose }) => {
                         {shortcut.keys.map((key, kIdx) => (
                           <kbd
                             key={kIdx}
-                            className="px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-white/80 text-[10px] md:text-xs font-semibold group-hover:bg-white/20 group-hover:border-white/40 transition-all"
+                            className="px-2 py-1 rounded-lg bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-slate-600 dark:text-white/80 text-[10px] md:text-xs font-semibold group-hover:bg-white/20 group-hover:border-white/40 transition-all"
                           >
                             {key}
                           </kbd>
                         ))}
                       </div>
                       {/* Description */}
-                      <p className="text-xs md:text-sm text-white/70 group-hover:text-white/90 transition-colors mt-0.5">
+                      <p className="text-xs md:text-sm text-slate-500 dark:text-white/70 group-hover:text-slate-700 dark:text-white/90 transition-colors mt-0.5">
                         {shortcut.desc}
                       </p>
                     </motion.div>
@@ -140,21 +140,21 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ onClose }) => {
                     <span>💡</span>
                     Tips
                   </h3>
-                  <ul className="space-y-2 text-xs md:text-sm text-white/70">
+                  <ul className="space-y-2 text-xs md:text-sm text-slate-500 dark:text-white/70">
                     <li>
-                      <span className="font-medium text-white/80">Drag & Drop:</span>
+                      <span className="font-medium text-slate-600 dark:text-white/80">Drag & Drop:</span>
                       {' '} Drag events to other dates, or outside the grid to delete
                     </li>
                     <li>
-                      <span className="font-medium text-white/80">Quick Add:</span>
+                      <span className="font-medium text-slate-600 dark:text-white/80">Quick Add:</span>
                       {' '} Use the colored buttons below the toolbar to create events
                     </li>
                     <li>
-                      <span className="font-medium text-white/80">Multi-Select:</span>
+                      <span className="font-medium text-slate-600 dark:text-white/80">Multi-Select:</span>
                       {' '} Hold Ctrl/Cmd while dragging to copy instead of move
                     </li>
                     <li>
-                      <span className="font-medium text-white/80">Mobile:</span>
+                      <span className="font-medium text-slate-600 dark:text-white/80">Mobile:</span>
                       {' '} Try swiping or using touch gestures
                     </li>
                   </ul>
@@ -162,9 +162,9 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ onClose }) => {
               </div>
 
               {/* Footer */}
-              <div className="sticky bottom-0 px-5 md:px-6 py-3 md:py-4 border-t border-white/5 bg-gradient-to-t from-white/3 to-transparent flex items-center justify-between gap-2">
-                <p className="text-xs text-white/50">
-                  Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white/70">?</kbd> anytime to toggle help
+              <div className="sticky bottom-0 px-5 md:px-6 py-3 md:py-4 border-t border-slate-100 dark:border-white/5 bg-gradient-to-t from-slate-50 dark:from-white/3 to-transparent flex items-center justify-between gap-2">
+                <p className="text-xs text-slate-300 dark:text-white/50">
+                  Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/70">?</kbd> anytime to toggle help
                 </p>
                 <motion.button
                   type="button"

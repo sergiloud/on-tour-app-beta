@@ -321,14 +321,14 @@ const FinanceV5: React.FC = () => {
                 <div className="sticky top-20 space-y-5">
 
                     {/* Header - Más limpio y profesional */}
-                    <div className="glass rounded-2xl border border-white/10 backdrop-blur-md overflow-hidden shadow-xl">
+                    <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md overflow-hidden shadow-xl">
                         <div className="relative">
                             {/* Gradient accent bar */}
                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-500 via-blue-500 to-purple-500" />
 
                             <div className="p-8 pb-6">
                                 <h2 className="text-xl font-semibold text-white mb-2 tracking-tight">Financial Analytics</h2>
-                                <p className="text-xs text-white/50 font-medium tracking-wide uppercase">
+                                <p className="text-xs text-slate-300 dark:text-white/50 font-medium tracking-wide uppercase">
                                     Executive Dashboard
                                 </p>
                             </div>
@@ -336,12 +336,12 @@ const FinanceV5: React.FC = () => {
                             {currentSection && (
                                 <div className="px-8 pb-6 border-t border-white/5">
                                     <div className="mt-4 flex items-center justify-between">
-                                        <span className="text-xs text-white/40 uppercase tracking-wider font-medium">Active View</span>
+                                        <span className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider font-medium">Active View</span>
                                         <div className="flex items-center gap-2">
                                             <div className={`p-1.5 rounded-lg bg-gradient-to-br ${currentSection.color} shadow-lg`}>
-                                                <currentSection.icon className="w-3.5 h-3.5 text-white" />
+                                                <currentSection.icon className="w-3.5 h-3.5 text-slate-900 dark:text-white" />
                                             </div>
-                                            <span className="text-sm font-semibold text-white">{currentSection.label}</span>
+                                            <span className="text-sm font-semibold text-slate-900 dark:text-white">{currentSection.label}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -361,7 +361,7 @@ const FinanceV5: React.FC = () => {
                                     onClick={() => handleSectionChange(section.id)}
                                     className={`w-full group relative overflow-hidden rounded-xl border transition-all duration-300 ${isActive
                                         ? 'border-accent-400/60 bg-gradient-to-br from-accent-500/20 to-blue-500/10 shadow-xl shadow-accent-500/20'
-                                        : 'border-white/10 glass hover:border-white/20 hover:bg-white/5 hover:shadow-lg'
+                                        : 'border-slate-200 dark:border-white/10 glass hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-100 dark:hover:bg-white/5 hover:shadow-lg'
                                         }`}
                                 >
                                     {/* Active indicator bar */}
@@ -375,13 +375,13 @@ const FinanceV5: React.FC = () => {
                                             <div className="relative">
                                                 <div className={`p-2.5 rounded-xl bg-gradient-to-br ${section.color} transition-all duration-300 shadow-lg ${isActive ? 'opacity-100 scale-105' : 'opacity-70 group-hover:opacity-90 group-hover:scale-100'
                                                     }`}>
-                                                    <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-white/70 group-hover:text-white'
+                                                    <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-slate-500 dark:text-white/70 group-hover:text-white'
                                                         }`} />
                                                 </div>
                                                 {/* Section number badge */}
                                                 <div className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${isActive
                                                     ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/50'
-                                                    : 'bg-white/10 text-white/40 group-hover:bg-white/20'
+                                                    : 'bg-slate-200 dark:bg-white/10 text-slate-400 dark:text-white/40 group-hover:bg-white/20'
                                                     }`}>
                                                     {index + 1}
                                                 </div>
@@ -389,11 +389,11 @@ const FinanceV5: React.FC = () => {
 
                                             {/* Labels */}
                                             <div className="flex-1 min-w-0">
-                                                <div className={`text-sm font-semibold tracking-tight transition-colors mb-0.5 ${isActive ? 'text-white' : 'text-white/80 group-hover:text-white'
+                                                <div className={`text-sm font-semibold tracking-tight transition-colors mb-0.5 ${isActive ? 'text-white' : 'text-slate-600 dark:text-white/80 group-hover:text-white'
                                                     }`}>
                                                     {section.label}
                                                 </div>
-                                                <div className={`text-[11px] transition-colors truncate ${isActive ? 'text-white/60' : 'text-white/40 group-hover:text-white/50'
+                                                <div className={`text-[11px] transition-colors truncate ${isActive ? 'text-white/60' : 'text-slate-400 dark:text-white/40 group-hover:text-white/50'
                                                     }`}>
                                                     {section.description}
                                                 </div>
@@ -402,7 +402,7 @@ const FinanceV5: React.FC = () => {
                                             {/* Arrow */}
                                             <ChevronRight className={`w-4 h-4 transition-all duration-300 flex-shrink-0 ${isActive
                                                 ? 'text-accent-400 translate-x-1 opacity-100'
-                                                : 'text-white/20 group-hover:text-white/40 group-hover:translate-x-0.5 opacity-60'
+                                                : 'text-white/20 group-hover:text-slate-400 dark:text-white/40 group-hover:translate-x-0.5 opacity-60'
                                                 }`} />
                                         </div>
 
@@ -429,20 +429,20 @@ const FinanceV5: React.FC = () => {
                     </div>
 
                     {/* Professional Tools Panel */}
-                    <div className="glass rounded-2xl border border-white/10 backdrop-blur-md overflow-hidden shadow-xl">
-                        <div className="px-6 py-4 border-b border-white/5 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+                    <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md overflow-hidden shadow-xl">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-transparent via-white/5 to-transparent">
                             <div className="flex items-center gap-2.5">
                                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-accent-500/20 to-blue-500/20">
                                     <Zap className="w-3.5 h-3.5 text-accent-400" />
                                 </div>
-                                <div className="text-xs text-white/50 uppercase tracking-wider font-semibold">
+                                <div className="text-xs text-slate-300 dark:text-white/50 uppercase tracking-wider font-semibold">
                                     Export Tools
                                 </div>
                             </div>
                         </div>
                         <div className="p-4 space-y-2">
                             <button
-                                className="w-full px-4 py-3 rounded-xl text-xs font-semibold glass border border-white/10 hover:border-emerald-500/40 hover:bg-gradient-to-br hover:from-emerald-500/10 hover:to-transparent transition-all disabled:opacity-40 text-left group shadow-sm hover:shadow-lg"
+                                className="w-full px-4 py-3 rounded-xl text-xs font-semibold glass border border-slate-200 dark:border-white/10 hover:border-emerald-500/40 hover:bg-gradient-to-br hover:from-emerald-500/10 hover:to-transparent transition-all disabled:opacity-40 text-left group shadow-sm hover:shadow-lg"
                                 disabled={!can('finance:export')}
                                 onClick={handleExportCSV}
                             >
@@ -451,14 +451,14 @@ const FinanceV5: React.FC = () => {
                                         <Download className="w-3.5 h-3.5 text-emerald-400" />
                                     </div>
                                     <div className="flex-1">
-                                        <div className="text-white group-hover:text-white transition-colors">Export CSV</div>
-                                        <div className="text-[10px] text-white/40 uppercase tracking-wider">Comma-separated</div>
+                                        <div className="text-slate-900 dark:text-white group-hover:text-white transition-colors">Export CSV</div>
+                                        <div className="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-wider">Comma-separated</div>
                                     </div>
                                     <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                                 </div>
                             </button>
                             <button
-                                className="w-full px-4 py-3 rounded-xl text-xs font-semibold glass border border-white/10 hover:border-blue-500/40 hover:bg-gradient-to-br hover:from-blue-500/10 hover:to-transparent transition-all disabled:opacity-40 text-left group shadow-sm hover:shadow-lg"
+                                className="w-full px-4 py-3 rounded-xl text-xs font-semibold glass border border-slate-200 dark:border-white/10 hover:border-blue-500/40 hover:bg-gradient-to-br hover:from-blue-500/10 hover:to-transparent transition-all disabled:opacity-40 text-left group shadow-sm hover:shadow-lg"
                                 disabled={!can('finance:export')}
                                 onClick={handleExportXLSX}
                             >
@@ -467,8 +467,8 @@ const FinanceV5: React.FC = () => {
                                         <Download className="w-3.5 h-3.5 text-blue-400" />
                                     </div>
                                     <div className="flex-1">
-                                        <div className="text-white group-hover:text-white transition-colors">Export Excel</div>
-                                        <div className="text-[10px] text-white/40 uppercase tracking-wider">Spreadsheet format</div>
+                                        <div className="text-slate-900 dark:text-white group-hover:text-white transition-colors">Export Excel</div>
+                                        <div className="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-wider">Spreadsheet format</div>
                                     </div>
                                     <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                                 </div>
@@ -477,15 +477,15 @@ const FinanceV5: React.FC = () => {
                     </div>
 
                     {/* Period Selector - Professional */}
-                    <div className="glass rounded-2xl border border-white/10 backdrop-blur-md overflow-hidden shadow-xl">
-                        <div className="px-6 py-4 border-b border-white/5 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+                    <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md overflow-hidden shadow-xl">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-transparent via-white/5 to-transparent">
                             <div className="flex items-center gap-2.5">
                                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
                                     <svg className="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
-                                <div className="text-xs text-white/50 uppercase tracking-wider font-semibold">
+                                <div className="text-xs text-slate-300 dark:text-white/50 uppercase tracking-wider font-semibold">
                                     Reporting Period
                                 </div>
                             </div>
@@ -496,14 +496,14 @@ const FinanceV5: React.FC = () => {
                     </div>
 
                     {/* Keyboard Shortcuts Hint */}
-                    <div className="glass rounded-xl border border-white/10 backdrop-blur-sm p-4">
-                        <div className="text-[10px] text-white/30 uppercase tracking-wider mb-2 font-semibold">
+                    <div className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm p-4">
+                        <div className="text-[10px] text-slate-300 dark:text-white/30 uppercase tracking-wider mb-2 font-semibold">
                             Keyboard Shortcuts
                         </div>
-                        <div className="text-xs text-white/50 space-y-1">
+                        <div className="text-xs text-slate-300 dark:text-white/50 space-y-1">
                             <div className="flex items-center gap-2">
-                                <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-white/60">⌘</kbd>
-                                <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-white/60">1-7</kbd>
+                                <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[10px] font-mono text-slate-400 dark:text-white/60">⌘</kbd>
+                                <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[10px] font-mono text-slate-400 dark:text-white/60">1-7</kbd>
                                 <span className="text-[11px]">Navigate sections</span>
                             </div>
                         </div>
@@ -516,27 +516,27 @@ const FinanceV5: React.FC = () => {
                 <div className="space-y-10 pb-24">
 
                     {/* Professional Breadcrumb */}
-                    <div className="glass rounded-2xl border border-white/10 backdrop-blur-md shadow-xl overflow-hidden">
+                    <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-xl overflow-hidden">
                         <div className="px-8 py-5 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="p-2 rounded-xl bg-gradient-to-br from-accent-500/20 to-blue-500/20 shadow-lg">
                                     {currentSection && <currentSection.icon className="w-5 h-5 text-accent-400" />}
                                 </div>
                                 <div className="flex items-center gap-3 text-sm">
-                                    <span className="text-white/40 font-medium">Financial Analytics</span>
-                                    <ChevronRight className="w-4 h-4 text-white/20" />
-                                    <span className="text-white font-semibold tracking-tight">{currentSection?.label}</span>
+                                    <span className="text-slate-400 dark:text-white/40 font-medium">Financial Analytics</span>
+                                    <ChevronRight className="w-4 h-4 text-slate-200 dark:text-white/20" />
+                                    <span className="text-slate-900 dark:text-white font-semibold tracking-tight">{currentSection?.label}</span>
                                     {currentSection?.description && (
                                         <>
-                                            <span className="text-white/20">·</span>
-                                            <span className="text-white/40 text-xs">{currentSection.description}</span>
+                                            <span className="text-slate-200 dark:text-white/20">·</span>
+                                            <span className="text-slate-400 dark:text-white/40 text-xs">{currentSection.description}</span>
                                         </>
                                     )}
                                 </div>
                             </div>
                             {plFilter && (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-white/40 uppercase tracking-wider font-medium">Filter:</span>
+                                    <span className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider font-medium">Filter:</span>
                                     <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-br from-accent-500/20 to-blue-500/10 text-accent-300 border border-accent-500/30 shadow-lg">
                                         {plFilter.kind}: {plFilter.value}
                                     </span>
@@ -550,49 +550,49 @@ const FinanceV5: React.FC = () => {
                         <div className="space-y-8 animate-in fade-in duration-700 slide-in-from-bottom-4">
 
                             {/* Compact Executive Summary - Different from other sections */}
-                            <div className="glass rounded-3xl border border-white/10 backdrop-blur-md overflow-hidden shadow-2xl">
-                                <div className="px-10 py-8 border-b border-white/5 bg-gradient-to-r from-accent-500/10 via-blue-500/5 to-purple-500/10">
-                                    <h3 className="text-2xl font-semibold text-white mb-2 tracking-tight">Executive Summary</h3>
-                                    <p className="text-sm text-white/50">High-level financial overview at a glance</p>
+                            <div className="glass rounded-3xl border border-slate-200 dark:border-white/10 backdrop-blur-md overflow-hidden shadow-2xl">
+                                <div className="px-10 py-8 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-accent-500/10 via-blue-500/5 to-purple-500/10">
+                                    <h3 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2 tracking-tight">Executive Summary</h3>
+                                    <p className="text-sm text-slate-300 dark:text-white/50">High-level financial overview at a glance</p>
                                 </div>
 
                                 {/* Compact 4-column metrics */}
-                                <div className="grid grid-cols-4 divide-x divide-white/5">
-                                    <div className="p-8 text-center hover:bg-white/5 transition-colors">
-                                        <div className="text-xs text-white/40 uppercase tracking-wider mb-3 font-semibold">Revenue</div>
+                                <div className="grid grid-cols-4 divide-x divide-slate-200 dark:divide-white/5">
+                                    <div className="p-8 text-center hover:bg-slate-100 dark:bg-white/5 transition-colors">
+                                        <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-semibold">Revenue</div>
                                         <div className="text-3xl font-bold text-emerald-400 tabular-nums mb-2">{fmtCompact(stats.totalRevenue)}</div>
-                                        <div className="text-xs text-white/50">{stats.showCount} events</div>
+                                        <div className="text-xs text-slate-300 dark:text-white/50">{stats.showCount} events</div>
                                     </div>
-                                    <div className="p-8 text-center hover:bg-white/5 transition-colors">
-                                        <div className="text-xs text-white/40 uppercase tracking-wider mb-3 font-semibold">Costs</div>
+                                    <div className="p-8 text-center hover:bg-slate-100 dark:bg-white/5 transition-colors">
+                                        <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-semibold">Costs</div>
                                         <div className="text-3xl font-bold text-orange-400 tabular-nums mb-2">{fmtCompact(stats.totalCosts)}</div>
-                                        <div className="text-xs text-white/50">{((stats.totalCosts / stats.totalRevenue) * 100).toFixed(0)}% ratio</div>
+                                        <div className="text-xs text-slate-300 dark:text-white/50">{((stats.totalCosts / stats.totalRevenue) * 100).toFixed(0)}% ratio</div>
                                     </div>
-                                    <div className="p-8 text-center hover:bg-white/5 transition-colors">
-                                        <div className="text-xs text-white/40 uppercase tracking-wider mb-3 font-semibold">Net Profit</div>
+                                    <div className="p-8 text-center hover:bg-slate-100 dark:bg-white/5 transition-colors">
+                                        <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-semibold">Net Profit</div>
                                         <div className="text-3xl font-bold text-accent-400 tabular-nums mb-2">{fmtCompact(stats.totalNet)}</div>
                                         <div className={`text-xs font-bold ${stats.margin > 70 ? 'text-emerald-400' : stats.margin > 50 ? 'text-accent-300' : 'text-orange-400'}`}>
                                             {stats.margin.toFixed(1)}% margin
                                         </div>
                                     </div>
-                                    <div className="p-8 text-center hover:bg-white/5 transition-colors">
-                                        <div className="text-xs text-white/40 uppercase tracking-wider mb-3 font-semibold">Pipeline</div>
+                                    <div className="p-8 text-center hover:bg-slate-100 dark:bg-white/5 transition-colors">
+                                        <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-semibold">Pipeline</div>
                                         <div className="text-3xl font-bold text-blue-400 tabular-nums mb-2">{fmtCompact(stats.upcomingRevenue)}</div>
-                                        <div className="text-xs text-white/50">{stats.upcoming} upcoming</div>
+                                        <div className="text-xs text-slate-300 dark:text-white/50">{stats.upcoming} upcoming</div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Quick Regional Snapshot - Horizontal Cards */}
                             {stats.byRegion.length > 0 && (
-                                <div className="glass rounded-3xl border border-white/10 backdrop-blur-md overflow-hidden shadow-xl">
-                                    <div className="px-10 py-6 border-b border-white/5 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+                                <div className="glass rounded-3xl border border-slate-200 dark:border-white/10 backdrop-blur-md overflow-hidden shadow-xl">
+                                    <div className="px-10 py-6 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-transparent via-white/5 to-transparent">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <h3 className="text-lg font-semibold text-white mb-1">Regional Snapshot</h3>
-                                                <p className="text-xs text-white/40">Top performing regions</p>
+                                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Regional Snapshot</h3>
+                                                <p className="text-xs text-slate-300 dark:text-white/40">Top performing regions</p>
                                             </div>
-                                            <div className="text-xs text-white/30 uppercase tracking-wider font-semibold">
+                                            <div className="text-xs text-slate-300 dark:text-white/30 uppercase tracking-wider font-semibold">
                                                 {stats.byRegion.length} Active Regions
                                             </div>
                                         </div>
@@ -602,15 +602,15 @@ const FinanceV5: React.FC = () => {
                                             {stats.byRegion.map((region, index) => (
                                                 <div
                                                     key={region.region}
-                                                    className="flex items-center gap-6 p-5 rounded-xl glass border border-white/5 hover:border-white/10 hover:bg-white/5 transition-all group"
+                                                    className="flex items-center gap-6 p-5 rounded-xl glass border border-slate-100 dark:border-white/5 hover:border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/5 transition-all group"
                                                 >
                                                     <div className="flex items-center gap-4 flex-1">
-                                                        <div className="text-2xl font-bold text-white/30 tabular-nums w-8">
+                                                        <div className="text-2xl font-bold text-slate-300 dark:text-white/30 tabular-nums w-8">
                                                             #{index + 1}
                                                         </div>
                                                         <div className="flex-1">
-                                                            <div className="text-sm font-semibold text-white mb-1">{region.region}</div>
-                                                            <div className="text-xs text-white/40">{region.shows} events</div>
+                                                            <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">{region.region}</div>
+                                                            <div className="text-xs text-slate-300 dark:text-white/40">{region.shows} events</div>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
@@ -641,15 +641,15 @@ const FinanceV5: React.FC = () => {
                                 {/* Navigate to Performance */}
                                 <button
                                     onClick={() => handleSectionChange('performance')}
-                                    className="group glass rounded-2xl border border-white/10 backdrop-blur-md p-8 hover:border-emerald-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/20 text-left"
+                                    className="group glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md p-8 hover:border-emerald-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/20 text-left"
                                 >
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 group-hover:scale-110 transition-transform">
                                             <BarChart3 className="w-6 h-6 text-emerald-400" />
                                         </div>
                                         <div className="flex-1">
-                                            <div className="text-sm font-semibold text-white mb-1">Performance Analysis</div>
-                                            <div className="text-xs text-white/40">Margin breakdown</div>
+                                            <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Performance Analysis</div>
+                                            <div className="text-xs text-slate-300 dark:text-white/40">Margin breakdown</div>
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                                     </div>
@@ -658,15 +658,15 @@ const FinanceV5: React.FC = () => {
                                 {/* Navigate to Trends */}
                                 <button
                                     onClick={() => handleSectionChange('trends')}
-                                    className="group glass rounded-2xl border border-white/10 backdrop-blur-md p-8 hover:border-cyan-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 text-left"
+                                    className="group glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md p-8 hover:border-cyan-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 text-left"
                                 >
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/20 group-hover:scale-110 transition-transform">
                                             <TrendingUp className="w-6 h-6 text-cyan-400" />
                                         </div>
                                         <div className="flex-1">
-                                            <div className="text-sm font-semibold text-white mb-1">Trends & Growth</div>
-                                            <div className="text-xs text-white/40">Year-over-year</div>
+                                            <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Trends & Growth</div>
+                                            <div className="text-xs text-slate-300 dark:text-white/40">Year-over-year</div>
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
                                     </div>
@@ -675,15 +675,15 @@ const FinanceV5: React.FC = () => {
                                 {/* Navigate to Statement */}
                                 <button
                                     onClick={() => handleSectionChange('pl')}
-                                    className="group glass rounded-2xl border border-white/10 backdrop-blur-md p-8 hover:border-blue-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 text-left"
+                                    className="group glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md p-8 hover:border-blue-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 text-left"
                                 >
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 group-hover:scale-110 transition-transform">
                                             <Table className="w-6 h-6 text-blue-400" />
                                         </div>
                                         <div className="flex-1">
-                                            <div className="text-sm font-semibold text-white mb-1">P&L Statement</div>
-                                            <div className="text-xs text-white/40">Detailed records</div>
+                                            <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">P&L Statement</div>
+                                            <div className="text-xs text-slate-300 dark:text-white/40">Detailed records</div>
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                                     </div>
@@ -695,13 +695,13 @@ const FinanceV5: React.FC = () => {
                     {/* Performance Section */}
                     {activeSection === 'performance' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-500">
-                            <div className="glass rounded-2xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-emerald-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/10">
-                                <div className="px-10 py-8 border-b border-white/10 bg-gradient-to-r from-transparent via-emerald-500/5 to-transparent">
+                            <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-emerald-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/10">
+                                <div className="px-10 py-8 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-emerald-500/5 to-transparent">
                                     <div className="flex items-center gap-3 mb-2">
                                         <BarChart3 className="w-5 h-5 text-emerald-400" />
-                                        <h3 className="text-lg font-semibold text-white">Performance Analysis</h3>
+                                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Performance Analysis</h3>
                                     </div>
-                                    <p className="text-xs text-white/50">Margin breakdown and profitability metrics</p>
+                                    <p className="text-xs text-slate-300 dark:text-white/50">Margin breakdown and profitability metrics</p>
                                 </div>
                                 <div className="p-10">
                                     <MarginBreakdown onSelect={(kind, value) => navigateToPL({ kind, value })} />
@@ -713,13 +713,13 @@ const FinanceV5: React.FC = () => {
                     {/* Pivot Section */}
                     {activeSection === 'pivot' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-500">
-                            <div className="glass rounded-2xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-purple-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/10">
-                                <div className="px-10 py-8 border-b border-white/10 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent">
+                            <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-purple-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/10">
+                                <div className="px-10 py-8 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent">
                                     <div className="flex items-center gap-3 mb-2">
                                         <PieChart className="w-5 h-5 text-purple-400" />
-                                        <h3 className="text-lg font-semibold text-white">Pivot Analysis</h3>
+                                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Pivot Analysis</h3>
                                     </div>
-                                    <p className="text-xs text-white/50">Multi-dimensional data breakdown</p>
+                                    <p className="text-xs text-slate-300 dark:text-white/50">Multi-dimensional data breakdown</p>
                                 </div>
                                 <div className="p-10">
                                     <PLPivot onViewInPL={(kind, value) => navigateToPL({ kind, value })} />
@@ -731,13 +731,13 @@ const FinanceV5: React.FC = () => {
                     {/* AR Section */}
                     {activeSection === 'ar' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-500">
-                            <div className="glass rounded-2xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-orange-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-orange-500/10">
-                                <div className="px-10 py-8 border-b border-white/10 bg-gradient-to-r from-transparent via-orange-500/5 to-transparent">
+                            <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-orange-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-orange-500/10">
+                                <div className="px-10 py-8 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-orange-500/5 to-transparent">
                                     <div className="flex items-center gap-3 mb-2">
                                         <Clock className="w-5 h-5 text-orange-400" />
-                                        <h3 className="text-lg font-semibold text-white">Cash Flow & AR Management</h3>
+                                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Cash Flow & AR Management</h3>
                                     </div>
-                                    <p className="text-xs text-white/50">Accounts receivable and aging analysis</p>
+                                    <p className="text-xs text-slate-300 dark:text-white/50">Accounts receivable and aging analysis</p>
                                 </div>
                                 <div className="p-10">
                                     <PipelineAR onViewBucket={(bucket) => navigateToPL({ kind: 'Aging', value: bucket })} />
@@ -749,13 +749,13 @@ const FinanceV5: React.FC = () => {
                     {/* Trends Section */}
                     {activeSection === 'trends' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-500">
-                            <div className="glass rounded-2xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-cyan-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/10">
-                                <div className="px-10 py-8 border-b border-white/10 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent">
+                            <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-cyan-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/10">
+                                <div className="px-10 py-8 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent">
                                     <div className="flex items-center gap-3 mb-2">
                                         <TrendingUp className="w-5 h-5 text-cyan-400" />
-                                        <h3 className="text-lg font-semibold text-white">Trends & Growth</h3>
+                                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Trends & Growth</h3>
                                     </div>
-                                    <p className="text-xs text-white/50">Year-over-year analysis and forecasting</p>
+                                    <p className="text-xs text-slate-300 dark:text-white/50">Year-over-year analysis and forecasting</p>
                                 </div>
                                 <div className="p-10">
                                     <TrendsAnalysis />
@@ -767,15 +767,15 @@ const FinanceV5: React.FC = () => {
                     {/* P&L Section */}
                     {activeSection === 'pl' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-500">
-                            <div className="glass rounded-2xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-blue-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10">
-                                <div className="px-10 py-8 border-b border-white/10 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent">
+                            <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-blue-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10">
+                                <div className="px-10 py-8 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <div className="flex items-center gap-3 mb-2">
                                                 <Table className="w-5 h-5 text-blue-400" />
-                                                <h3 className="text-lg font-semibold text-white">Profit & Loss Detail</h3>
+                                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Profit & Loss Detail</h3>
                                             </div>
-                                            <p className="text-xs text-white/50">Complete financial records</p>
+                                            <p className="text-xs text-slate-300 dark:text-white/50">Complete financial records</p>
                                         </div>
                                         {plFilter && (
                                             <span className="px-3 py-2 rounded-lg text-xs font-medium bg-accent-500/20 text-accent-300 border border-accent-500/30 flex items-center gap-2">
@@ -795,13 +795,13 @@ const FinanceV5: React.FC = () => {
                     {/* Expenses Section */}
                     {activeSection === 'expenses' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-500">
-                            <div className="glass rounded-2xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-red-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-red-500/10">
-                                <div className="px-10 py-8 border-b border-white/10 bg-gradient-to-r from-transparent via-red-500/5 to-transparent">
+                            <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-red-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-red-500/10">
+                                <div className="px-10 py-8 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-red-500/5 to-transparent">
                                     <div className="flex items-center gap-3 mb-2">
                                         <Receipt className="w-5 h-5 text-red-400" />
-                                        <h3 className="text-lg font-semibold text-white">Expense Management</h3>
+                                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Expense Management</h3>
                                     </div>
-                                    <p className="text-xs text-white/50">Track and categorize operational costs</p>
+                                    <p className="text-xs text-slate-300 dark:text-white/50">Track and categorize operational costs</p>
                                 </div>
                                 <div className="p-10">
                                     <ExpenseManager />

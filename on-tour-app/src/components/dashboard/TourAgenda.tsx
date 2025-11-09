@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Clock, DollarSign, Zap, TrendingUp, MapIcon, AlertCircle, RefreshCw } from 'lucide-react';
+import {
+  Calendar,
+  MapPin,
+  Clock,
+  DollarSign,
+  Zap,
+  TrendingUp,
+  MapIcon,
+  AlertCircle,
+  RefreshCw
+} from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { Link } from 'react-router-dom';
 import { useMissionControl } from '../../context/MissionControlContext';
@@ -43,58 +53,58 @@ const TourAgendaComponent: React.FC = () => {
     // Loading State
     if (isLoading) {
         return (
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm">
+            <div className="relative overflow-hidden rounded-xl border border-theme bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm">
                 <div className="p-5 space-y-4">
                     {/* Header skeleton */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-1 h-6 bg-gradient-to-b from-accent-500/50 to-blue-500/50 rounded-full animate-pulse" />
                             <div>
-                                <div className="h-5 w-32 bg-white/10 rounded animate-pulse" />
-                                <div className="h-3 w-40 bg-white/5 rounded mt-1 animate-pulse" />
+                                <div className="h-5 w-32 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                                <div className="h-3 w-40 bg-interactive rounded mt-1 animate-pulse" />
                             </div>
                         </div>
-                        <div className="h-7 w-20 bg-white/10 rounded animate-pulse" />
+                        <div className="h-7 w-20 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                     </div>
 
                     {/* Stats skeleton */}
-                    <div className="p-4 border border-white/10 rounded-xl bg-white/5">
+                    <div className="p-4 border border-theme rounded-xl bg-interactive">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-6">
                                 <div className="space-y-2">
-                                    <div className="h-3 w-24 bg-white/10 rounded animate-pulse" />
-                                    <div className="h-7 w-16 bg-white/10 rounded animate-pulse" />
+                                    <div className="h-3 w-24 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                                    <div className="h-7 w-16 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                                 </div>
-                                <div className="h-10 w-px bg-white/10" />
+                                <div className="h-10 w-px bg-slate-200 dark:bg-white/10" />
                                 <div className="space-y-2">
-                                    <div className="h-3 w-24 bg-white/10 rounded animate-pulse" />
-                                    <div className="h-5 w-20 bg-white/10 rounded animate-pulse" />
+                                    <div className="h-3 w-24 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                                    <div className="h-5 w-20 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <div className="h-7 w-24 bg-white/10 rounded animate-pulse" />
-                                <div className="h-7 w-20 bg-white/10 rounded animate-pulse" />
+                                <div className="h-7 w-24 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                                <div className="h-7 w-20 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                             </div>
                         </div>
                     </div>
 
                     {/* Action buttons skeleton */}
                     <div className="flex gap-2">
-                        <div className="flex-1 h-9 bg-white/10 rounded-lg animate-pulse" />
-                        <div className="flex-1 h-9 bg-white/10 rounded-lg animate-pulse" />
+                        <div className="flex-1 h-9 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-lg animate-pulse" />
+                        <div className="flex-1 h-9 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-lg animate-pulse" />
                     </div>
 
                     {/* Agenda items skeleton */}
                     <div className="space-y-3">
                         {[1, 2, 3].map(i => (
-                            <div key={i} className="border border-white/10 rounded-lg overflow-hidden">
-                                <div className="px-4 py-2.5 bg-white/5 flex items-center justify-between">
-                                    <div className="h-4 w-32 bg-white/10 rounded animate-pulse" />
-                                    <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+                            <div key={i} className="border border-theme rounded-lg overflow-hidden">
+                                <div className="px-4 py-2.5 bg-interactive flex items-center justify-between">
+                                    <div className="h-4 w-32 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                                    <div className="h-4 w-16 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                                 </div>
                                 <div className="p-3 space-y-2">
-                                    <div className="h-4 w-full bg-white/10 rounded animate-pulse" />
-                                    <div className="h-3 w-3/4 bg-white/5 rounded animate-pulse" />
+                                    <div className="h-4 w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                                    <div className="h-3 w-3/4 bg-interactive rounded animate-pulse" />
                                 </div>
                             </div>
                         ))}
@@ -127,7 +137,7 @@ const TourAgendaComponent: React.FC = () => {
     // Empty State (no upcoming shows)
     if (data.shows30 === 0) {
         return (
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm">
+            <div className="relative overflow-hidden rounded-xl border border-theme bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm">
                 <div className="absolute inset-0 bg-gradient-to-br from-accent-500/5 via-transparent to-transparent pointer-events-none" />
                 <div className="relative p-8 text-center">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent-500/20 to-blue-500/20 flex items-center justify-center">
@@ -149,7 +159,7 @@ const TourAgendaComponent: React.FC = () => {
     }
 
     return (
-        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:shadow-lg hover:shadow-accent-500/5">
+        <div className="relative overflow-hidden rounded-xl border border-theme bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:border-slate-300 dark:border-white/20 hover:shadow-lg hover:shadow-accent-500/5">
             {/* Live region for screen readers */}
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
                 Tour Agenda: {data.shows30} shows in next 30 days, {data.confirmed} confirmed, {data.pending} pending, {data.offers} offers
@@ -170,7 +180,7 @@ const TourAgendaComponent: React.FC = () => {
                     </div>
                     <Link
                         to="/dashboard/shows"
-                        className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-accent-500/20 border border-white/10 hover:border-accent-500/30 transition-all duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-accent-500/50"
+                        className="text-xs px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-accent-500/20 border border-theme hover:border-accent-500/30 transition-all duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-accent-500/50"
                         onMouseEnter={() => prefetchByPath('/dashboard/shows')}
                         aria-label="View all shows"
                     >
@@ -179,31 +189,27 @@ const TourAgendaComponent: React.FC = () => {
                 </div>
 
                 {/* Summary Stats - Compact row elegante */}
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="group flex items-center justify-between p-4 border border-white/10 rounded-xl bg-gradient-to-r from-white/5 to-white/10 hover:border-accent-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-accent-500/10"
-                >
+                <div className="group flex items-center justify-between p-4 border border-theme rounded-xl bg-gradient-to-r from-slate-100 dark:from-white/5 to-white/10 hover:border-accent-500/30 transition-fast hover:shadow-lg hover:shadow-accent-500/10">
                     <div className="flex items-center gap-6">
-                        <div className="transition-transform duration-300 group-hover:scale-105">
+                        <div className="transition-transform-fast group-hover:scale-105">
                             <div className="text-xs opacity-60 mb-1 font-medium">Next 30 days</div>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-2xl font-bold bg-gradient-to-br from-white to-white/80 bg-clip-text text-transparent">{data.shows30}</span>
                                 <span className="text-xs opacity-60">shows</span>
                             </div>
                         </div>
-                        <div className="h-10 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-                        <div className="transition-transform duration-300 group-hover:scale-105">
+                        <div className="h-10 w-px bg-gradient-to-b from-transparent via-slate-300 dark:via-white/20 to-transparent" />
+                        <div className="transition-transform-fast group-hover:scale-105">
                             <div className="text-xs opacity-60 mb-1 font-medium">Projected</div>
                             <div className="text-lg font-bold bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent">{fmtMoney(data.revenue30)}</div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                        <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/30 font-semibold hover:bg-green-500/30 transition-all duration-300 cursor-default">{data.confirmed} confirmed</span>
-                        {data.pending > 0 && <span className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold hover:bg-amber-500/30 transition-all duration-300 cursor-default">{data.pending} pending</span>}
-                        {data.offers > 0 && <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold hover:bg-amber-500/30 transition-all duration-300 cursor-default">{data.offers} offers</span>}
+                        <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/30 font-semibold hover:bg-green-500/30 transition-fast cursor-default">{data.confirmed} confirmed</span>
+                        {data.pending > 0 && <span className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold hover:bg-amber-500/30 transition-fast cursor-default">{data.pending} pending</span>}
+                        {data.offers > 0 && <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold hover:bg-amber-500/30 transition-fast cursor-default">{data.offers} offers</span>}
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Quick actions - Touch-friendly (min 44px) */}
                 <div className="flex gap-2">
@@ -218,7 +224,7 @@ const TourAgendaComponent: React.FC = () => {
                     </button>
                     <Link
                         to="/dashboard/shows"
-                        className="flex-1 px-3 py-3 md:py-2 min-h-[44px] md:min-h-0 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 hover:border-white/20 transition-all duration-300 flex items-center justify-center gap-2 font-medium text-xs hover:shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/50"
+                        className="flex-1 px-3 py-3 md:py-2 min-h-[44px] md:min-h-0 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 border border-theme hover:border-slate-300 dark:border-white/20 transition-all duration-300 flex items-center justify-center gap-2 font-medium text-xs hover:shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/50"
                         onMouseEnter={() => prefetchByPath('/dashboard/shows')}
                         aria-label="View all shows in calendar"
                     >
@@ -231,7 +237,7 @@ const TourAgendaComponent: React.FC = () => {
                 <div className="space-y-3 max-h-96 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                     {data.agenda.length === 0 ? (
                         <div className="text-center py-12 px-4">
-                            <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
+                            <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-interactive flex items-center justify-center">
                                 <Clock className="w-7 h-7 opacity-50" />
                             </div>
                             <div className="text-sm font-medium mb-1">All Clear!</div>
@@ -239,14 +245,11 @@ const TourAgendaComponent: React.FC = () => {
                         </div>
                     ) : (
                         data.agenda.map((day, dayIndex) => (
-                            <motion.div
+                            <div
                                 key={day.day}
-                                className="group border border-white/10 rounded-lg overflow-hidden hover:border-white/20 transition-colors"
-                                initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: dayIndex * 0.05, duration: 0.3 }}
+                                className="group border border-theme rounded-lg overflow-hidden hover:border-slate-300 dark:border-white/20 transition-colors-fast"
                             >
-                                <div className="px-4 py-2.5 bg-gradient-to-r from-white/5 to-transparent flex items-center justify-between">
+                                <div className="px-4 py-2.5 bg-gradient-to-r from-slate-100 dark:from-white/5 to-transparent flex items-center justify-between">
                                     <span className="font-semibold text-sm">
                                         {(() => {
                                             const date = new Date(day.day + 'T00:00:00');
@@ -255,9 +258,9 @@ const TourAgendaComponent: React.FC = () => {
                                                 : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                                         })()}
                                     </span>
-                                    <span className="text-xs px-2 py-0.5 rounded-md bg-white/10 font-medium">{day.rel}</span>
+                                    <span className="text-xs px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 font-medium">{day.rel}</span>
                                 </div>
-                                <ul className="divide-y divide-white/5">
+                                <ul className="divide-y divide-slate-200 dark:divide-white/5">
                                     {day.shows
                                         .filter((show) => {
                                             // Deduplicate multi-day events: only show on their start date
@@ -276,7 +279,7 @@ const TourAgendaComponent: React.FC = () => {
                                         .map((show) => (
                                         <li
                                             key={show.id}
-                                            className={`p-3 hover:bg-white/8 transition-all duration-200 cursor-pointer focus-within:bg-white/5 focus-within:ring-2 focus-within:ring-inset group/item border-l-2 bg-gradient-to-r ${
+                                            className={`p-3 hover:bg-white/8 transition-all duration-200 cursor-pointer focus-within:bg-interactive focus-within:ring-2 focus-within:ring-inset group/item border-l-2 bg-gradient-to-r ${
                                                 (show as any).color === 'green'
                                                     ? 'border-l-green-500/40 from-green-500/5 to-transparent focus-within:ring-green-500/30'
                                                     : (show as any).color === 'blue'
@@ -310,7 +313,7 @@ const TourAgendaComponent: React.FC = () => {
                                                             (show as any).color === 'yellow' ? 'bg-gradient-to-b from-yellow-500 to-yellow-600' :
                                                             (show as any).color === 'red' ? 'bg-gradient-to-b from-red-500 to-red-600' :
                                                             (show as any).color === 'purple' ? 'bg-gradient-to-b from-purple-500 to-purple-600' :
-                                                            'bg-gradient-to-b from-white/30 to-white/20'
+                                                            'bg-gradient-to-b from-slate-400 to-slate-300 dark:from-white/30 dark:to-white/20'
                                                         }`} />
                                                     )}
 
@@ -361,7 +364,7 @@ const TourAgendaComponent: React.FC = () => {
                                                           if (invalidCities.includes(cityLower)) return null;
 
                                                           return (
-                                                            <div className="flex items-center gap-1.5 mb-1.5 text-xs text-white/60 group-hover/item:text-white/70 transition-colors">
+                                                            <div className="flex items-center gap-1.5 mb-1.5 text-xs text-slate-400 dark:text-white/60 group-hover/item:text-slate-500 dark:text-white/70 transition-colors">
                                                               <MapPin className="w-3 h-3 flex-shrink-0" />
                                                               <span className="truncate">
                                                                 {btnType === 'travel' && departure
@@ -375,7 +378,7 @@ const TourAgendaComponent: React.FC = () => {
 
                                                         {/* Venue - optional */}
                                                         {show.venue && show.venue !== 'TBA' && (
-                                                            <div className="flex items-center gap-1.5 text-xs text-white/50 mb-1 truncate group-hover/item:text-white/60 transition-colors">
+                                                            <div className="flex items-center gap-1.5 text-xs text-slate-300 dark:text-white/50 mb-1 truncate group-hover/item:text-slate-400 dark:text-white/60 transition-colors">
                                                                 <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                                                 </svg>
@@ -385,7 +388,7 @@ const TourAgendaComponent: React.FC = () => {
 
                                                         {/* Date range - optional */}
                                                         {(show as any).endDate && (show as any).endDate !== show.date && (
-                                                            <div className="flex items-center gap-1.5 text-xs text-white/40 mb-1 group-hover/item:text-white/50 transition-colors">
+                                                            <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-white/40 mb-1 group-hover/item:text-slate-300 dark:text-white/50 transition-colors">
                                                                 <Clock className="w-3 h-3 flex-shrink-0" />
                                                                 <span>
                                                                     {new Date(show.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date((show as any).endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -395,7 +398,7 @@ const TourAgendaComponent: React.FC = () => {
 
                                                         {/* Description - optional */}
                                                         {(show as any).description && (show as any).description.trim().length > 0 && (
-                                                            <div className="text-xs text-white/60 mt-2 line-clamp-2 group-hover/item:text-white/70 transition-colors">
+                                                            <div className="text-xs text-slate-400 dark:text-white/60 mt-2 line-clamp-2 group-hover/item:text-slate-500 dark:text-white/70 transition-colors">
                                                                 <span className="opacity-50 font-medium">Note: </span>{(show as any).description}
                                                             </div>
                                                         )}
@@ -413,7 +416,7 @@ const TourAgendaComponent: React.FC = () => {
                                                           if (!trimmedLoc || trimmedLoc.length === 0) return null;
 
                                                           return (
-                                                            <div className="flex items-center gap-1.5 text-xs text-white/50 mt-1.5 group-hover/item:text-white/60 transition-colors">
+                                                            <div className="flex items-center gap-1.5 text-xs text-slate-300 dark:text-white/50 mt-1.5 group-hover/item:text-slate-400 dark:text-white/60 transition-colors">
                                                               <MapPin className="w-3 h-3 flex-shrink-0" />
                                                               <span className="truncate font-medium">{trimmedLoc}</span>
                                                             </div>
@@ -430,7 +433,7 @@ const TourAgendaComponent: React.FC = () => {
                                                           // Only show placeholder if it's a non-show event without any extra details
                                                           if ((show as any).btnType && (show as any).btnType !== 'show' && !hasDescription && !hasValidLocation && !hasVenue && !hasDateRange) {
                                                             return (
-                                                              <div className="mt-2 text-xs text-white/30 italic">
+                                                              <div className="mt-2 text-xs text-slate-300 dark:text-white/30 italic">
                                                                 No additional details
                                                               </div>
                                                             );
@@ -441,7 +444,7 @@ const TourAgendaComponent: React.FC = () => {
                                                 </div>                                                {/* Right: Fee */}
                                                 <div className="text-right flex-shrink-0 pt-0.5">
                                                     {(!((show as any).btnType) || (show as any).btnType === 'show') && (
-                                                        <div className="font-bold text-sm group-hover/item:text-white transition-colors bg-gradient-to-r from-white/90 to-white/70 bg-clip-text text-transparent">
+                                                        <div className="font-bold text-sm group-hover/item:text-white transition-colors bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white/90 dark:to-white/70 bg-clip-text text-transparent">
                                                             {fmtMoney(show.fee)}
                                                         </div>
                                                     )}
@@ -450,7 +453,7 @@ const TourAgendaComponent: React.FC = () => {
                                         </li>
                                     ))}
                                 </ul>
-                            </motion.div>
+                            </div>
                         ))
                     )}
                 </div>

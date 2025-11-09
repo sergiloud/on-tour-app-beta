@@ -104,14 +104,14 @@ const TravelFlightModal: React.FC<Props> = ({ open, onClose, initialData, onSave
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <h2 className="text-base font-semibold text-white">
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-white">
                     {initialData ? 'Edit Travel' : 'New Travel'}
                   </h2>
-                  <p className="text-xs text-white/60 mt-0.5">Travel & Flight Information</p>
+                  <p className="text-xs text-slate-400 dark:text-white/60 mt-0.5">Travel & Flight Information</p>
                 </motion.div>
                 <motion.button
                   onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white flex-shrink-0"
+                  className="p-2 rounded-lg hover:bg-slate-200 dark:bg-white/10 transition-colors text-slate-400 dark:text-white/60 hover:text-white flex-shrink-0"
                   aria-label="Close dialog"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
@@ -131,28 +131,28 @@ const TravelFlightModal: React.FC<Props> = ({ open, onClose, initialData, onSave
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <h3 className="text-xs font-semibold text-white/80 uppercase tracking-wide opacity-70">Trip Details</h3>
+                  <h3 className="text-xs font-semibold text-slate-600 dark:text-white/80 uppercase tracking-wide opacity-70">Trip Details</h3>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Departure Date *</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Departure Date *</label>
                       <input
                         ref={firstFieldRef}
                         type="date"
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         required
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Return Date *</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Return Date *</label>
                       <input
                         type="date"
                         value={formData.dateEnd || ''}
                         onChange={(e) => setFormData({ ...formData, dateEnd: e.target.value })}
-                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
-                          errors.dateEnd ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50' : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
+                          errors.dateEnd ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50' : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                         }`}
                         required
                       />
@@ -162,28 +162,28 @@ const TravelFlightModal: React.FC<Props> = ({ open, onClose, initialData, onSave
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Origin *</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Origin *</label>
                       <input
                         type="text"
                         value={formData.origin}
                         onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
                         placeholder="Madrid"
-                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
-                          errors.origin ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50' : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
+                          errors.origin ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50' : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                         }`}
                         required
                       />
                       {errors.origin && <p className="text-xs text-rose-400/80 mt-1">{errors.origin}</p>}
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Destination *</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Destination *</label>
                       <input
                         type="text"
                         value={formData.destination}
                         onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                         placeholder="Barcelona"
-                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
-                          errors.destination ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50' : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
+                          errors.destination ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50' : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                         }`}
                         required
                       />
@@ -192,11 +192,11 @@ const TravelFlightModal: React.FC<Props> = ({ open, onClose, initialData, onSave
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Travel Mode</label>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Travel Mode</label>
                     <select
                       value={formData.travelMode || 'flight'}
                       onChange={(e) => setFormData({ ...formData, travelMode: e.target.value as any })}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                     >
                       <option value="flight">Flight</option>
                       <option value="train">Train</option>
@@ -215,88 +215,88 @@ const TravelFlightModal: React.FC<Props> = ({ open, onClose, initialData, onSave
                     exit={{ opacity: 0, y: -5 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <h3 className="text-xs font-semibold text-white/80 uppercase tracking-wide opacity-70">Flight Information</h3>
+                    <h3 className="text-xs font-semibold text-slate-600 dark:text-white/80 uppercase tracking-wide opacity-70">Flight Information</h3>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Confirmation Code</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Confirmation Code</label>
                         <input
                           type="text"
                           value={formData.confirmationCode || ''}
                           onChange={(e) => setFormData({ ...formData, confirmationCode: e.target.value.toUpperCase() })}
                           placeholder="ABC123"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors uppercase"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors uppercase"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Flight Number</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Flight Number</label>
                         <input
                           type="text"
                           value={formData.flightNumber || ''}
                           onChange={(e) => setFormData({ ...formData, flightNumber: e.target.value })}
                           placeholder="IB6840"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Airline</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Airline</label>
                         <input
                           type="text"
                           value={formData.airline || ''}
                           onChange={(e) => setFormData({ ...formData, airline: e.target.value })}
                           placeholder="Iberia"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Seat</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Seat</label>
                         <input
                           type="text"
                           value={formData.seat || ''}
                           onChange={(e) => setFormData({ ...formData, seat: e.target.value })}
                           placeholder="12A"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Departure Time</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Departure Time</label>
                         <input
                           type="time"
                           value={formData.departureTime || ''}
                           onChange={(e) => setFormData({ ...formData, departureTime: e.target.value })}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Arrival Time</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Arrival Time</label>
                         <input
                           type="time"
                           value={formData.arrivalTime || ''}
                           onChange={(e) => setFormData({ ...formData, arrivalTime: e.target.value })}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Departure Terminal</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Departure Terminal</label>
                         <input
                           type="text"
                           value={formData.departureTerminal || ''}
                           onChange={(e) => setFormData({ ...formData, departureTerminal: e.target.value })}
                           placeholder="T1"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">Arrival Terminal</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">Arrival Terminal</label>
                         <input
                           type="text"
                           value={formData.arrivalTerminal || ''}
                           onChange={(e) => setFormData({ ...formData, arrivalTerminal: e.target.value })}
                           placeholder="T2"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                     </div>
@@ -305,12 +305,12 @@ const TravelFlightModal: React.FC<Props> = ({ open, onClose, initialData, onSave
 
                 {/* Notes Section */}
                 <div className="space-y-2 pt-3 border-t border-white/10">
-                  <label className="text-xs font-semibold text-white/80 block uppercase tracking-wide opacity-70">Notes</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-white/80 block uppercase tracking-wide opacity-70">Notes</label>
                   <textarea
                     value={formData.notes || ''}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     placeholder="Additional travel information, notes, or special requests..."
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors resize-none"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors resize-none"
                     rows={3}
                   />
                 </div>
@@ -324,7 +324,7 @@ const TravelFlightModal: React.FC<Props> = ({ open, onClose, initialData, onSave
                 <motion.button
                   type="button"
                   onClick={onClose}
-                  className="px-3 py-2 rounded text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 bg-transparent border border-white/10 transition-all"
+                  className="px-3 py-2 rounded text-sm font-medium text-slate-500 dark:text-white/70 hover:text-white hover:bg-slate-100 dark:bg-white/5 bg-transparent border border-slate-200 dark:border-white/10 transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -333,7 +333,7 @@ const TravelFlightModal: React.FC<Props> = ({ open, onClose, initialData, onSave
                 <motion.button
                   type="submit"
                   onClick={handleSubmit}
-                  className="px-3 py-2 rounded text-sm font-medium text-white bg-white/10 hover:bg-white/15 border border-white/10 transition-all"
+                  className="px-3 py-2 rounded text-sm font-medium text-white bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10 transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

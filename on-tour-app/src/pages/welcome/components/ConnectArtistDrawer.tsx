@@ -1,14 +1,26 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { ORG_ARTIST_DANNY, addOrGetLink, listLinks } from '../../../lib/tenants';
+import { addOrGetLink, listLinks, listMembers } from '../../../lib/tenants';
 import { useOrg } from '../../../context/OrgContext';
 import { t } from '../../../lib/i18n';
 import { Events } from '../../../lib/telemetry';
 
-export const ConnectArtistDrawer: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+export const ConnectArtistDrawer: React.FC<{ open: boolean; onClose: () => void; artistOrgId?: string }> = ({ open, onClose, artistOrgId }) => {
   const { orgId, org } = useOrg();
   const titleRef = useRef<HTMLHeadingElement>(null);
   useEffect(()=>{ if (open) setTimeout(()=> titleRef.current?.focus(), 0); }, [open]);
-  const existing = useMemo(()=> (orgId ? listLinks(orgId) : []).find(l => l.artistOrgId === ORG_ARTIST_DANNY), [orgId]);
+
+  // Get artist name dynamically
+  const artistName = useMemo(() => {
+    if (!artistOrgId) return 'Artist';
+    const artistMembers = listMembers(artistOrgId);
+    return artistMembers.length > 0 ? (artistMembers[0]?.user.name || 'Artist') : 'Artist';
+  }, [artistOrgId]);
+
+  const existing = useMemo(()=> {
+    if (!orgId || !artistOrgId) return undefined;
+    return listLinks(orgId).find(l => l.artistOrgId === artistOrgId);
+  }, [orgId, artistOrgId]);
+
   if (!open) return null;
 
   return (
@@ -20,7 +32,7 @@ export const ConnectArtistDrawer: React.FC<{ open: boolean; onClose: () => void 
           <p className="text-sm opacity-80 mt-2">{t('welcome.connect.artist.onlyAgency') || 'Only agencies can link to artists in this demo.'}</p>
         ) : existing ? (
           <div className="mt-3 text-sm">
-            <p className="opacity-85">{t('welcome.connect.artist.already') || 'Already connected with Danny Avila.'}</p>
+            <p className="opacity-85">{(t('welcome.connect.artist.already') || 'Already connected with {artist}.').replace('{artist}', artistName)}</p>
             <p className="text-xs opacity-70 mt-1">{t('welcome.connect.artist.scopesHint') || 'You can adjust scopes from Organization → Links later.'}</p>
             <div className="mt-4 text-right">
               <button className="px-3 py-1.5 rounded bg-accent-500 text-black text-sm shadow-glow" onClick={onClose}>{t('common.done') || 'Done'}</button>
@@ -28,16 +40,18 @@ export const ConnectArtistDrawer: React.FC<{ open: boolean; onClose: () => void 
           </div>
         ) : (
           <div className="mt-3 text-sm">
-            <p className="opacity-85">{t('welcome.connect.artist.prompt') || 'Link your agency to artist Danny Avila to manage shows, travel and reports.'}</p>
+            <p className="opacity-85">{(t('welcome.connect.artist.prompt') || 'Link your agency to artist {artist} to manage shows, travel and reports.').replace('{artist}', artistName)}</p>
             <div className="mt-4 flex items-center justify-end gap-2">
               <button className="btn-ghost" onClick={onClose}>{t('common.cancel') || 'Cancel'}</button>
               <button
                 className="px-3 py-1.5 rounded bg-accent-500 text-black text-sm shadow-glow"
                 onClick={()=>{
-                  try { addOrGetLink(orgId, ORG_ARTIST_DANNY); Events.welcomeCta('link'); } catch {}
+                  if (artistOrgId) {
+                    try { addOrGetLink(orgId, artistOrgId); Events.welcomeCta('link'); } catch {}
+                  }
                   onClose();
                 }}
-              >{t('welcome.connect.artist.cta') || 'Connect with Danny'}</button>
+              >{(t('welcome.connect.artist.cta') || 'Connect with {artist}').replace('{artist}', artistName.split(' ')[0] || 'artist')}</button>
             </div>
           </div>
         )}

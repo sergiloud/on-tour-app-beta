@@ -79,7 +79,7 @@ const Story: React.FC = () => {
         <h2 className="text-sm font-semibold">{t('story.title')}</h2>
         <div className="flex items-center gap-2 text-xs">
           <button
-            className="px-2 py-1 rounded bg-white/10 hover:bg-white/20"
+            className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20"
             onClick={() => { trackEvent('story.toggle', { next: !playing }); setPlaying(p => !p); }}
             aria-pressed={playing}
           >{playing ? t('story.pause') : t('story.play')}</button>
@@ -110,7 +110,7 @@ const Story: React.FC = () => {
               onChange={(e) => { const next = Number(e.target.value); setIdx(next); trackEvent('story.scrub', { idx: next, month: monthlySeries.months[next] }); }}
               className="w-full"
             />
-            <ul className="max-h-56 overflow-y-auto text-xs divide-y divide-white/5">
+            <ul className="max-h-56 overflow-y-auto text-xs divide-y divide-slate-200 dark:divide-white/5">
               {monthlySeries.months.map((m, k) => {
                 const active = k === idx;
                 const net = monthlySeries.net[k] ?? 0;

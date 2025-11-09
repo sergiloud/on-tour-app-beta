@@ -140,9 +140,9 @@ const TrendsAnalysis: React.FC = () => {
             {/* YoY Growth Cards */}
             {yoyMetrics && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="glass rounded-xl border border-white/10 p-5">
+                    <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-5">
                         <div className="flex items-center justify-between mb-3">
-                            <div className="text-xs text-white/40 uppercase tracking-wide">Revenue Growth YoY</div>
+                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wide">Revenue Growth YoY</div>
                             {parseFloat(yoyMetrics.revenueGrowth) >= 0 ? (
                                 <TrendingUp className="w-4 h-4 text-green-400" />
                             ) : (
@@ -155,9 +155,9 @@ const TrendsAnalysis: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="glass rounded-xl border border-white/10 p-5">
+                    <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-5">
                         <div className="flex items-center justify-between mb-3">
-                            <div className="text-xs text-white/40 uppercase tracking-wide">Expense Growth YoY</div>
+                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wide">Expense Growth YoY</div>
                             {parseFloat(yoyMetrics.expenseGrowth) <= 0 ? (
                                 <TrendingDown className="w-4 h-4 text-green-400" />
                             ) : (
@@ -170,9 +170,9 @@ const TrendsAnalysis: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="glass rounded-xl border border-white/10 p-5">
+                    <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-5">
                         <div className="flex items-center justify-between mb-3">
-                            <div className="text-xs text-white/40 uppercase tracking-wide">Net Profit Growth YoY</div>
+                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wide">Net Profit Growth YoY</div>
                             {parseFloat(yoyMetrics.netGrowth) >= 0 ? (
                                 <TrendingUp className="w-4 h-4 text-green-400" />
                             ) : (
@@ -198,8 +198,8 @@ const TrendsAnalysis: React.FC = () => {
                         {peakTrough?.peak ? (
                             <div className="flex items-end justify-between">
                                 <div>
-                                    <div className="text-xs text-white/40 mb-1">{peakTrough.peak.monthLabel}</div>
-                                    <div className="text-2xl font-light text-white tabular-nums">
+                                    <div className="text-xs text-slate-400 dark:text-white/40 mb-1">{peakTrough.peak.monthLabel}</div>
+                                    <div className="text-2xl font-light text-slate-900 dark:text-white tabular-nums">
                                         {fmtMoney(peakTrough.peak.revenue)}
                                     </div>
                                     <div className="text-xs text-emerald-400 mt-1">
@@ -208,7 +208,7 @@ const TrendsAnalysis: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-sm text-white/40">No data available</div>
+                            <div className="text-sm text-slate-300 dark:text-white/40">No data available</div>
                         )}
                     </div>
 
@@ -220,8 +220,8 @@ const TrendsAnalysis: React.FC = () => {
                         {peakTrough?.trough ? (
                             <div className="flex items-end justify-between">
                                 <div>
-                                    <div className="text-xs text-white/40 mb-1">{peakTrough.trough.monthLabel}</div>
-                                    <div className="text-2xl font-light text-white tabular-nums">
+                                    <div className="text-xs text-slate-400 dark:text-white/40 mb-1">{peakTrough.trough.monthLabel}</div>
+                                    <div className="text-2xl font-light text-slate-900 dark:text-white tabular-nums">
                                         {fmtMoney(peakTrough.trough.revenue)}
                                     </div>
                                     <div className="text-xs text-orange-400 mt-1">
@@ -230,21 +230,21 @@ const TrendsAnalysis: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-sm text-white/40">No data available</div>
+                            <div className="text-sm text-slate-300 dark:text-white/40">No data available</div>
                         )}
                     </div>
                 </div>
             )}
 
             {/* Monthly Trend Chart */}
-            <div className="glass rounded-xl border border-white/10 overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/10 bg-dark-900/50">
+            <div className="glass rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-dark-900/50">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-sm font-semibold text-white mb-1">12-Month Performance Trend</h3>
-                            <p className="text-xs text-white/50">Revenue, expenses, and net profit over time</p>
+                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">12-Month Performance Trend</h3>
+                            <p className="text-xs text-slate-300 dark:text-white/50">Revenue, expenses, and net profit over time</p>
                         </div>
-                        <BarChart2 className="w-5 h-5 text-white/30" />
+                        <BarChart2 className="w-5 h-5 text-slate-200 dark:text-white/30" />
                     </div>
                 </div>
 
@@ -259,7 +259,7 @@ const TrendsAnalysis: React.FC = () => {
                             return (
                                 <div key={month.month} className="space-y-2">
                                     <div className="flex items-center justify-between text-xs">
-                                        <span className="text-white/60 font-medium w-16">{month.monthLabel}</span>
+                                        <span className="text-slate-400 dark:text-white/60 font-medium w-16">{month.monthLabel}</span>
                                         <div className="flex items-center gap-4 text-[10px]">
                                             <span className="text-blue-400">{fmtMoney(month.revenue)}</span>
                                             <span className="text-orange-400">{fmtMoney(month.expenses)}</span>
@@ -296,15 +296,15 @@ const TrendsAnalysis: React.FC = () => {
                     <div className="flex items-center justify-center gap-6 mt-6 pt-4 border-t border-white/5">
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-400" />
-                            <span className="text-xs text-white/50">Revenue</span>
+                            <span className="text-xs text-slate-300 dark:text-white/50">Revenue</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-green-400" />
-                            <span className="text-xs text-white/50">Net Profit</span>
+                            <span className="text-xs text-slate-300 dark:text-white/50">Net Profit</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-400" />
-                            <span className="text-xs text-white/50">Expenses</span>
+                            <span className="text-xs text-slate-300 dark:text-white/50">Expenses</span>
                         </div>
                     </div>
                 </div>
@@ -312,15 +312,15 @@ const TrendsAnalysis: React.FC = () => {
 
             {/* Moving Average Card */}
             {movingAverage.length > 0 && (
-                <div className="glass rounded-xl border border-white/10 p-6">
+                <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-6">
                     <div className="flex items-center gap-2 mb-4">
-                        <Calendar className="w-4 h-4 text-white/40" />
-                        <h3 className="text-sm font-semibold text-white">3-Month Moving Average</h3>
+                        <Calendar className="w-4 h-4 text-slate-300 dark:text-white/40" />
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">3-Month Moving Average</h3>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {movingAverage.slice(-4).map(ma => (
-                            <div key={ma.month} className="bg-white/5 rounded-lg px-3 py-2.5 border border-white/10">
-                                <div className="text-[10px] text-white/40 mb-1 uppercase tracking-wide">{ma.month}</div>
+                            <div key={ma.month} className="bg-slate-100 dark:bg-white/5 rounded-lg px-3 py-2.5 border border-white/10">
+                                <div className="text-[10px] text-slate-400 dark:text-white/40 mb-1 uppercase tracking-wide">{ma.month}</div>
                                 <div className="text-sm font-light text-white tabular-nums">{fmtMoney(ma.avgRevenue)}</div>
                                 <div className="text-[10px] text-green-400 mt-0.5">Net: {fmtMoney(ma.avgNet)}</div>
                             </div>

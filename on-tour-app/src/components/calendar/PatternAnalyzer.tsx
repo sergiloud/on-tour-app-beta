@@ -139,20 +139,20 @@ const PatternAnalyzer: React.FC<Props> = ({ eventsData, onPredictionClick }) => 
             whileHover={{ scale: 1.05 }}
             className={`p-3 rounded-lg bg-gradient-to-br ${color} bg-opacity-10 border border-white/10`}
           >
-            <p className="text-xs text-white/60 mb-1">{label}</p>
-            <p className="text-lg font-bold text-white">{value}</p>
+            <p className="text-xs text-slate-400 dark:text-white/60 mb-1">{label}</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-white">{value}</p>
           </motion.div>
         ))}
       </motion.div>
 
       {/* Predictions */}
       <div className="space-y-3">
-        <p className="text-sm font-semibold text-white">AI Insights & Recommendations</p>
+        <p className="text-sm font-semibold text-slate-900 dark:text-white">AI Insights & Recommendations</p>
         {predictions.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="p-4 rounded-lg bg-white/5 border border-white/10 text-center text-white/60 text-sm"
+            className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-center text-slate-400 dark:text-white/60 text-sm"
           >
             Not enough data to generate predictions yet. Add more events to your calendar.
           </motion.div>
@@ -165,14 +165,14 @@ const PatternAnalyzer: React.FC<Props> = ({ eventsData, onPredictionClick }) => 
               transition={{ delay: idx * 0.1 }}
               whileHover={{ scale: 1.02 }}
               onClick={() => onPredictionClick?.(pred)}
-              className="p-4 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer transition-all hover:border-white/20"
+              className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:bg-white/10 cursor-pointer transition-all hover:border-white/20"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="text-2xl">{getIcon(pred.type)}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white capitalize">{pred.type.replace(/-/g, ' ')}</p>
-                  <p className="text-xs text-white/60 mt-1">{pred.description}</p>
-                  <p className="text-xs text-white/50 mt-2 italic">{pred.recommendation}</p>
+                  <p className="text-xs text-slate-400 dark:text-white/60 mt-1">{pred.description}</p>
+                  <p className="text-xs text-slate-300 dark:text-white/50 mt-2 italic">{pred.recommendation}</p>
                 </div>
                 <motion.div
                   initial={{ scale: 0 }}
@@ -189,7 +189,7 @@ const PatternAnalyzer: React.FC<Props> = ({ eventsData, onPredictionClick }) => 
 
       {/* Trend Chart (Simple) */}
       {eventsData.length > 0 && (
-        <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+        <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-white/10">
           <p className="text-sm font-semibold text-white mb-3">Activity Trend</p>
           <div className="flex items-end justify-between gap-1 h-24">
             {eventsData.slice(-14).map((day, idx) => {
@@ -207,7 +207,7 @@ const PatternAnalyzer: React.FC<Props> = ({ eventsData, onPredictionClick }) => 
               );
             })}
           </div>
-          <p className="text-xs text-white/50 mt-2 text-center">Last 14 days activity</p>
+          <p className="text-xs text-slate-300 dark:text-white/50 mt-2 text-center">Last 14 days activity</p>
         </div>
       )}
     </div>

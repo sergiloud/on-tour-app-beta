@@ -85,7 +85,7 @@ export const PWAInstallPrompt: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={handleDismiss}
-                                    className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs transition-all"
+                                    className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-xs transition-all"
                                 >
                                     Not now
                                 </button>
@@ -93,7 +93,7 @@ export const PWAInstallPrompt: React.FC = () => {
                         </div>
                         <button
                             onClick={handleDismiss}
-                            className="text-white/50 hover:text-white transition-colors"
+                            className="text-slate-300 dark:text-white/50 hover:text-white transition-colors"
                             aria-label="Close"
                         >
                             <X className="w-4 h-4" />
@@ -247,7 +247,7 @@ export const PWAUpdatePrompt: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={() => setShowUpdatePrompt(false)}
-                                    className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs transition-all"
+                                    className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-xs transition-all"
                                 >
                                     Later
                                 </button>
@@ -255,7 +255,7 @@ export const PWAUpdatePrompt: React.FC = () => {
                         </div>
                         <button
                             onClick={() => setShowUpdatePrompt(false)}
-                            className="text-white/50 hover:text-white transition-colors"
+                            className="text-slate-300 dark:text-white/50 hover:text-white transition-colors"
                             aria-label="Close"
                         >
                             <X className="w-4 h-4" />

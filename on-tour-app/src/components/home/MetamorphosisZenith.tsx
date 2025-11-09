@@ -208,7 +208,7 @@ export const MetamorphosisZenith: React.FC<MetamorphosisZenithProps> = ({
                 <span>Cannot calculate real profit margins accurately</span>
               </div>
             </div>
-            <div className="mt-6 bg-white/5 rounded-lg p-3">
+            <div className="mt-6 bg-slate-100 dark:bg-white/5 rounded-lg p-3">
               <div className="grid grid-cols-4 gap-1 text-xs sm:text-[10px] font-mono">
                 <div className="bg-red-300/20 text-red-900 p-1 rounded">#VALUE!</div>
                 <div className="bg-yellow-300/20 text-yellow-900 p-1 rounded">Madrid €12k</div>
@@ -236,7 +236,7 @@ export const MetamorphosisZenith: React.FC<MetamorphosisZenithProps> = ({
                 return (
                   <div
                     key={i}
-                    className={`h-6 flex items-center px-1 rounded-sm overflow-hidden border border-white/5 whitespace-nowrap ${noisy ? 'bg-red-300/30 text-ink-900 font-semibold' : clash ? 'bg-yellow-300/30 text-ink-900' : empty ? 'bg-transparent' : 'bg-white/5'} ${i===5 ? 'col-span-2' : ''}`}
+                    className={`h-6 flex items-center px-1 rounded-sm overflow-hidden border border-slate-100 dark:border-white/5 whitespace-nowrap ${noisy ? 'bg-red-300/30 text-ink-900 font-semibold' : clash ? 'bg-yellow-300/30 text-ink-900' : empty ? 'bg-transparent' : 'bg-white/5'} ${i===5 ? 'col-span-2' : ''}`}
                   >
                     {!empty && (noisy ? '##### # MISMATCH ####' : clash ? '!=?! cost drift' : 'Fee 12000… cuts')}
                   </div>
@@ -262,7 +262,7 @@ export const MetamorphosisZenith: React.FC<MetamorphosisZenithProps> = ({
                 <button
                   type="button"
                   onClick={() => { setDone(false); setReplayTick(t => t + 1); }}
-                  className={`absolute -bottom-10 left-0 text-xs sm:text-[11px] px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/15 border border-white/10 backdrop-blur-md transition ${done ? 'opacity-100' : 'opacity-0 pointer-events-none'} focus:outline-none focus:ring-2 focus:ring-accent-400`}
+                  className={`absolute -bottom-10 left-0 text-xs sm:text-[11px] px-3 py-1.5 rounded-md bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 border border-slate-200 dark:border-white/10 backdrop-blur-md transition ${done ? 'opacity-100' : 'opacity-0 pointer-events-none'} focus:outline-none focus:ring-2 focus:ring-accent-400`}
                   aria-label="Replay transformation"
                 >Replay</button>
               )}
@@ -282,7 +282,7 @@ export const MetamorphosisZenith: React.FC<MetamorphosisZenithProps> = ({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.4 }}
                   transition={{ delay: 0.2 + idx * 0.1, duration: 0.6 }}
-                  className="relative glass rounded-lg px-4 py-3 border border-white/10 overflow-hidden"
+                  className="relative glass rounded-lg px-4 py-3 border border-slate-200 dark:border-white/10 overflow-hidden"
                 >
                   <div className="text-sm font-semibold">{t.label}</div>
                   <div className="text-xs sm:text-[11px] opacity-70">{t.sub}</div>

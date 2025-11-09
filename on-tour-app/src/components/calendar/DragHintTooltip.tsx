@@ -48,7 +48,7 @@ const DragHintTooltip: React.FC<Props> = ({ visible: externalVisible }) => {
           exit={{ opacity: 0, y: 20, scale: 0.9 }}
           transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 25 }}
         >
-          <div className="glass rounded-lg border border-white/10 backdrop-blur-md p-3 md:p-4 shadow-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 ring-1 ring-blue-500/20">
+          <div className="glass rounded-lg border border-slate-200 dark:border-white/10 backdrop-blur-md p-3 md:p-4 shadow-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 ring-1 ring-blue-500/20">
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <motion.div
@@ -61,10 +61,10 @@ const DragHintTooltip: React.FC<Props> = ({ visible: externalVisible }) => {
                   </svg>
                 </motion.div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     {t('calendar.dragHint.title') || 'Drag buttons to create events'}
                   </p>
-                  <p className="text-xs text-white/70 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-white/70 mt-0.5">
                     {t('calendar.dragHint.description') || 'Drag any button above to a calendar date'}
                   </p>
                 </div>
@@ -74,7 +74,7 @@ const DragHintTooltip: React.FC<Props> = ({ visible: externalVisible }) => {
               <motion.button
                 type="button"
                 onClick={handleDismiss}
-                className="w-full px-2 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-white/70 hover:text-white transition-all"
+                className="w-full px-2 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-xs text-slate-500 dark:text-white/70 hover:text-white transition-all"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useShows } from '../../hooks/useShows';
 import { useEventSelection } from '../../hooks/useEventSelection';
 import type { Show } from '../../lib/shows';
@@ -141,12 +141,31 @@ const Calendar: React.FC = () => {
 
   const grid = useCalendarMatrix(year, month, weekStartsOn);
 
-  const changeMonth = (delta: number) => {
+  const changeMonth = useCallback((delta: number) => {
     const d = new Date(year, month - 1 + delta, 1);
     const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     setCursor(next);
     trackEvent('calendar.month.change', { month: next });
-  };
+  }, [year, month, setCursor]);
+
+  const goToday = useCallback(() => {
+    const d = new Date();
+    const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    setCursor(next);
+    setSelectedDay(toDateOnlyTz(d.toISOString(), tz));
+    trackEvent('calendar.today');
+  }, [setCursor, setSelectedDay, tz]);
+
+  const goTravel = useCallback((day: string) => {
+    const { origin, dest } = inferRouteForDate(day);
+    const q = new URLSearchParams();
+    q.set('date', day);
+    if (origin) q.set('origin', origin.toUpperCase());
+    if (dest) q.set('dest', dest.toUpperCase());
+    q.set('adults', '1'); q.set('bags', '1'); q.set('nonstop', '1'); q.set('cabin', 'E');
+    navigate(`/dashboard/travel?${q.toString()}`);
+    try { trackEvent('calendar.open.travel', { day, origin: origin || null, dest: dest || null }); } catch { }
+  }, [shows, navigate]);
 
   // Infer origin/dest for planning travel around a given date: origin = previous show city (or base), dest = show on/after date
   const inferRouteForDate = (day: string): { origin?: string; dest?: string } => {
@@ -165,18 +184,6 @@ const Calendar: React.FC = () => {
       return { origin, dest };
     } catch { return {}; }
   };
-
-  const goTravel = (day: string) => {
-    const { origin, dest } = inferRouteForDate(day);
-    const q = new URLSearchParams();
-    q.set('date', day);
-    if (origin) q.set('origin', origin.toUpperCase());
-    if (dest) q.set('dest', dest.toUpperCase());
-    q.set('adults', '1'); q.set('bags', '1'); q.set('nonstop', '1'); q.set('cabin', 'E');
-    navigate(`/dashboard/travel?${q.toString()}`);
-    try { trackEvent('calendar.open.travel', { day, origin: origin || null, dest: dest || null }); } catch { }
-  };
-  const goToday = () => { const d = new Date(); const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; setCursor(next); setSelectedDay(toDateOnlyTz(d.toISOString(), tz)); trackEvent('calendar.today'); };
 
   // Handle opening event editor modal
   const handleOpenEventEditor = (ev: CalEvent) => {
@@ -324,7 +331,7 @@ const Calendar: React.FC = () => {
   };
 
   // Bulk operations handlers
-  const handleBulkDelete = () => {
+  const handleBulkDelete = useCallback(() => {
     const selectedIds = getSelectedIds();
     selectedIds.forEach(id => {
       remove(id);
@@ -332,9 +339,9 @@ const Calendar: React.FC = () => {
     announce(`Deleted ${selectedIds.length} event${selectedIds.length !== 1 ? 's' : ''}`);
     trackEvent('calendar.bulk.delete', { count: selectedIds.length });
     clearSelection();
-  };
+  }, [getSelectedIds, remove, clearSelection]);
 
-  const handleBulkMove = (direction: 'forward' | 'backward', days: number) => {
+  const handleBulkMove = useCallback((direction: 'forward' | 'backward', days: number) => {
     const selectedIds = getSelectedIds();
     const delta = direction === 'forward' ? days : -days;
 
@@ -352,7 +359,7 @@ const Calendar: React.FC = () => {
     announce(`Moved ${selectedIds.length} event${selectedIds.length !== 1 ? 's' : ''} ${dirText} by ${days} day${days !== 1 ? 's' : ''}`);
     trackEvent('calendar.bulk.move', { count: selectedIds.length, direction, days });
     clearSelection();
-  };
+  }, [getSelectedIds, shows, update, clearSelection]);
 
   // prev/next per view
   const onPrev = () => {
@@ -418,34 +425,34 @@ const Calendar: React.FC = () => {
     }, [open]);
     if (!open) return null;
     return (
-      <div role="dialog" aria-labelledby="goto-title" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
+      <div role="dialog" aria-labelledby="goto-title" aria-modal="true" className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center">
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-        <div ref={dialogRef} className="relative glass rounded-xl p-6 w-[380px] border border-white/20 shadow-2xl">
+        <div ref={dialogRef} className="relative glass rounded-xl p-6 w-[380px] border border-slate-300 dark:border-white/20 shadow-2xl">
           <div className="flex items-center justify-between mb-4">
-            <div id="goto-title" className="text-lg font-semibold text-white">{t('calendar.goto') || 'Go to date'}</div>
-            <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" onClick={onClose} aria-label="Close">
-              <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div id="goto-title" className="text-lg font-semibold text-theme-primary">{t('calendar.goto') || 'Go to date'}</div>
+            <button className="p-1.5 rounded-lg hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors" onClick={onClose} aria-label="Close">
+              <svg className="w-5 h-5 text-slate-400 dark:text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-white/60 font-medium mb-2 block">Select date</label>
+              <label className="text-xs text-slate-400 dark:text-white/60 font-medium mb-2 block">Select date</label>
               <input
                 ref={ref}
                 type="date"
-                className="w-full rounded-lg bg-white/5 border border-white/10 hover:border-white/20 px-3 py-2.5 text-sm text-white focus:border-accent-500/50 focus:outline-none transition-colors"
+                className="w-full rounded-lg bg-interactive border border-theme hover:border-slate-300 dark:border-white/20 px-3 py-2.5 text-sm text-white focus:border-accent-500/50 focus:outline-none transition-colors"
                 value={val}
                 onChange={e => setVal(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { onGo(val); onClose(); } if (e.key === 'Escape') { onClose(); } }}
               />
             </div>
             <div className="flex items-center justify-between gap-2 pt-2">
-              <div className="text-xs text-white/50">{t('calendar.goto.hint') || 'Press Enter to go'}</div>
+              <div className="text-xs text-slate-300 dark:text-white/50">{t('calendar.goto.hint') || 'Press Enter to go'}</div>
               <div className="flex gap-2">
                 <button
-                  className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-sm font-medium transition-colors"
+                  className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-white text-sm font-medium transition-colors"
                   onClick={onClose}
                 >
                   {t('common.cancel') || 'Cancel'}

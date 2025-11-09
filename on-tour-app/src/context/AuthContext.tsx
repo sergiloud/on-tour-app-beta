@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { ensureDemoAuth, getCurrentUserId, getUserPrefs, getUserProfile, readAllPrefs, setCurrentUserId, upsertUserPrefs, upsertUserProfile, type UserPrefs, type UserProfile } from '../lib/demoAuth';
 import { ensureDemoTenants } from '../lib/tenants';
 import { activityTracker } from '../lib/activityTracker';
@@ -35,15 +35,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => { window.removeEventListener('profile:updated' as any, onProfile); window.removeEventListener('prefs:updated' as any, onPrefs); };
   }, [userId]);
 
-  const setUserId = (id: string) => {
+  const setUserId = useCallback((id: string) => {
     setCurrentUserId(id);
     setUserIdState(id);
     activityTracker.setUserId(id);
-  };
-  const updateProfile = (patch: Partial<UserProfile>) => { const next = { ...profile, ...patch } as UserProfile; setProfile(next); upsertUserProfile(next); };
-  const updatePrefs = (patch: Partial<UserPrefs>) => { const next = upsertUserPrefs(userId, patch); setPrefs(next); };
+  }, []);
 
-  const value = useMemo(()=> ({ userId, profile, prefs, setUserId, updateProfile, updatePrefs }), [userId, profile, prefs]);
+  const updateProfile = useCallback((patch: Partial<UserProfile>) => {
+    setProfile(prev => {
+      const next = { ...prev, ...patch } as UserProfile;
+      upsertUserProfile(next);
+      return next;
+    });
+  }, []);
+
+  const updatePrefs = useCallback((patch: Partial<UserPrefs>) => {
+    const next = upsertUserPrefs(userId, patch);
+    setPrefs(next);
+  }, [userId]);
+
+  const value = useMemo(()=> ({ userId, profile, prefs, setUserId, updateProfile, updatePrefs }), [userId, profile, prefs, setUserId, updateProfile, updatePrefs]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

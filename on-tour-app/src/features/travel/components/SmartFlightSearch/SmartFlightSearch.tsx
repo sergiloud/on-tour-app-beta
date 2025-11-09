@@ -346,19 +346,19 @@ const SmartFlightSearch = React.forwardRef<SmartFlightSearchHandle, SmartFlightS
               type="date"
               value={p.date || ''}
               onChange={e => setP(q => ({ ...q, date: e.target.value }))}
-              className="bg-white/5 rounded px-3 py-2"
+              className="bg-slate-100 dark:bg-white/5 rounded px-3 py-2"
               aria-invalid={errors.includes('return_before_depart')}
               aria-describedby={errors.length ? 'travel-errors' : undefined}
             />
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-xs opacity-70">{t('travel.adults') || 'Adults'}</span>
-            <input type="number" min={1} max={8} value={p.adults || 1} onChange={e => setP(q => ({ ...q, adults: Number(e.target.value) }))} className="bg-white/5 rounded px-3 py-2" />
+            <input type="number" min={1} max={8} value={p.adults || 1} onChange={e => setP(q => ({ ...q, adults: Number(e.target.value) }))} className="bg-slate-100 dark:bg-white/5 rounded px-3 py-2" />
           </label>
           {roundTrip && (
             <label className="flex flex-col gap-1 md:col-span-1">
               <span className="text-xs opacity-70">{t('travel.return') || 'Return'}</span>
-              <input type="date" value={p.retDate || ''} onChange={e => setP(q => ({ ...q, retDate: e.target.value }))} className="bg-white/5 rounded px-3 py-2" aria-invalid={errors.includes('return_before_depart')} aria-describedby={errors.length ? 'travel-errors' : undefined} />
+              <input type="date" value={p.retDate || ''} onChange={e => setP(q => ({ ...q, retDate: e.target.value }))} className="bg-slate-100 dark:bg-white/5 rounded px-3 py-2" aria-invalid={errors.includes('return_before_depart')} aria-describedby={errors.length ? 'travel-errors' : undefined} />
             </label>
           )}
         </div>
@@ -367,7 +367,7 @@ const SmartFlightSearch = React.forwardRef<SmartFlightSearchHandle, SmartFlightS
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <Button type="button" variant="ghost" size="sm" data-testid="swap-route" aria-label={t('travel.swap') || 'Swap'} onClick={() => setP(q => ({ ...q, origin: q.dest, dest: q.origin }))}>{t('travel.swap') || 'Swap'}</Button>
           <div className="inline-flex items-center gap-2">
-            <div role="group" aria-label="Trip type" className="inline-flex rounded-full bg-white/5 p-0.5">
+            <div role="group" aria-label="Trip type" className="inline-flex rounded-full bg-slate-100 dark:bg-white/5 p-0.5">
               <Button
                 type="button"
                 variant={roundTrip ? 'ghost' : 'primary'}
@@ -410,7 +410,7 @@ const SmartFlightSearch = React.forwardRef<SmartFlightSearchHandle, SmartFlightS
               <span className="text-xs opacity-70">{t('travel.nlp') || 'NLP'}</span>
               <input
                 type="text"
-                className="bg-white/5 rounded px-2 py-1"
+                className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1"
                 placeholder={t('travel.search.text.placeholder') || 'Ej: 2 adultos MAD a CDG mañana sin escalas'}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -489,12 +489,12 @@ const SmartFlightSearch = React.forwardRef<SmartFlightSearchHandle, SmartFlightS
                 <span>•</span>
                 <span>{t('travel.nonstop') || 'Nonstop'}</span>
               </button>
-              <label className="inline-flex items-center gap-1 bg-white/5 rounded px-2 py-1">
+              <label className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 rounded px-2 py-1">
                 <span role="img" aria-label="Bags">🧳</span>
                 <span>{t('travel.bags') || 'Bags'}</span>
                 <input type="number" min={0} max={4} value={p.bags || 0} onChange={e => setP(q => ({ ...q, bags: Number(e.target.value) }))} className="w-14 bg-transparent" />
               </label>
-              <label className="inline-flex items-center gap-1 bg-white/5 rounded px-2 py-1">
+              <label className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 rounded px-2 py-1">
                 <span role="img" aria-label="Cabin">💺</span>
                 <span>{t('travel.cabin') || 'Cabin'}</span>
                 <select value={(p.cabin as any) || 'E'} onChange={e => setP(q => ({ ...q, cabin: e.target.value as any }))} className="bg-transparent">
@@ -504,7 +504,7 @@ const SmartFlightSearch = React.forwardRef<SmartFlightSearchHandle, SmartFlightS
                   <option value="F">First</option>
                 </select>
               </label>
-              <label className="inline-flex items-center gap-1 bg-white/5 rounded px-2 py-1">
+              <label className="inline-flex items-center gap-1 bg-slate-100 dark:bg-white/5 rounded px-2 py-1">
                 <span>{t('travel.flex_window') || 'Flex window'}</span>
                 <input type="number" min={0} max={3} value={flexDays} onChange={(e) => {
                   const val = Math.max(0, Math.min(3, Number(e.target.value)));
@@ -534,7 +534,7 @@ const SmartFlightSearch = React.forwardRef<SmartFlightSearchHandle, SmartFlightS
           <div className="mt-2 text-xs" role="alert">
             <div className="font-semibold">{t('copy.manual.title') || 'Manual copy'}</div>
             <div className="opacity-80">{t('copy.manual.desc') || 'Copy the text below if clipboard is blocked.'}</div>
-            <div className="mt-1 p-2 rounded bg-white/5 select-all break-all">{window.location.href}</div>
+            <div className="mt-1 p-2 rounded bg-slate-100 dark:bg-white/5 select-all break-all">{window.location.href}</div>
           </div>
         )}
 
@@ -544,7 +544,7 @@ const SmartFlightSearch = React.forwardRef<SmartFlightSearchHandle, SmartFlightS
 
       {/* Multi-city builder (still part of controls) */}
       {multiOpen && (
-        <div className="mt-0 p-3 rounded bg-white/5 space-y-2" aria-label="Multi-city builder">
+        <div className="mt-0 p-3 rounded bg-slate-100 dark:bg-white/5 space-y-2" aria-label="Multi-city builder">
           <div className="text-xs font-semibold opacity-80">{t('travel.multicity') || 'Multi-city'}</div>
           <div className="space-y-2">
             {segments.map((s, i) => (
@@ -553,7 +553,7 @@ const SmartFlightSearch = React.forwardRef<SmartFlightSearchHandle, SmartFlightS
                 <AirportAutocomplete label={t('travel.to') || 'To'} value={s.to} placeholder="JFK" onChange={(v) => updateLeg(i, { to: v })} />
                 <label className="flex flex-col gap-1">
                   <span className="text-[11px] opacity-70">{t('common.date') || 'Date'}</span>
-                  <input type="date" value={s.date} onChange={e => updateLeg(i, { date: e.target.value })} className="bg-white/5 rounded px-2 py-1" />
+                  <input type="date" value={s.date} onChange={e => updateLeg(i, { date: e.target.value })} className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1" />
                 </label>
                 <div className="flex gap-2">
                   <Button type="button" size="sm" variant="ghost" onClick={() => moveLeg(i, -1)} aria-label={t('travel.multicity.move_up') || 'Move up'}><ArrowUpIcon /></Button>
@@ -624,7 +624,7 @@ const ShowAutocomplete: React.FC<{ label: string; onSelect: (s: Show) => void; }
       <div className="relative">
         <input
           type="text"
-          className="w-full bg-white/5 rounded px-3 py-2"
+          className="w-full bg-slate-100 dark:bg-white/5 rounded px-3 py-2"
           role="combobox"
           aria-expanded={open}
           aria-controls="show-ac-list"
@@ -649,7 +649,7 @@ const ShowAutocomplete: React.FC<{ label: string; onSelect: (s: Show) => void; }
                 key={s.id}
                 role="option"
                 aria-selected={idx === active}
-                className={`px-3 py-2 text-sm cursor-pointer hover:bg-white/10 ${idx === active ? 'bg-white/10' : ''}`}
+                className={`px-3 py-2 text-sm cursor-pointer hover:bg-slate-200 dark:bg-white/10 ${idx === active ? 'bg-white/10' : ''}`}
                 onMouseEnter={() => setActive(idx)}
                 onMouseDown={(e) => { e.preventDefault(); onSelect(s); setQ(`${s.city} — ${fmt(s.date)}`); setOpen(false); }}
               >
@@ -678,7 +678,7 @@ const RecentChips: React.FC<{
         <button
           key={`${r.origin}-${r.destination}-${r.departDate}-${r.returnDate || ''}-${idx}`}
           type="button"
-          className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 focus-ring"
+          className="px-2 py-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 focus-ring"
           onClick={() => onPick({ origin: r.origin, dest: r.destination, date: r.departDate, retDate: r.returnDate })}
           aria-label={`${r.origin} to ${r.destination} ${r.departDate}${r.returnDate ? ` to ${r.returnDate}` : ''}`}
         >

@@ -36,7 +36,7 @@ const FloatingElement = memo(({
   };
 }) => (
   <motion.div
-    className="absolute rounded-full backdrop-blur-xl bg-white/5 border border-white/10 will-change-transform"
+    className="absolute rounded-full backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 will-change-transform"
     style={{
       width: element.size,
       height: element.size,
@@ -145,7 +145,7 @@ export const TrustBar: React.FC<TrustBarProps> = ({
 
       {/* Dynamic glass reflection */}
       <motion.div
-        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-white/20 to-transparent"
         animate={{
           opacity: [0.3, 0.7, 0.3],
         }}
@@ -227,7 +227,7 @@ export const TrustBar: React.FC<TrustBarProps> = ({
         >
           {/* Glass morphism container */}
           <motion.div
-            className="inline-block backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12 shadow-2xl mb-12"
+            className="inline-block backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-12 shadow-2xl mb-12"
             whileHover={{
               boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
               backgroundColor: 'rgba(255, 255, 255, 0.08)'
@@ -333,7 +333,7 @@ export const TrustBar: React.FC<TrustBarProps> = ({
 
               {/* Secondary CTA with glass design */}
               <motion.button
-                className="relative group px-12 py-5 backdrop-blur-xl bg-white/10 border-2 border-white/20 text-white font-bold text-xl rounded-2xl transition-all duration-500 overflow-hidden"
+                className="relative group px-12 py-5 backdrop-blur-xl bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border-2 border-slate-300 dark:border-white/20 text-white font-bold text-xl rounded-2xl transition-all duration-500 overflow-hidden"
                 whileHover={{
                   scale: 1.05,
                   backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -390,7 +390,7 @@ export const TrustBar: React.FC<TrustBarProps> = ({
             ].map((badge, index) => (
               <motion.div
                 key={badge.text}
-                className="flex items-center gap-2 px-4 py-2 backdrop-blur-md bg-white/5 border border-white/10 rounded-full text-sm text-gray-300"
+                className="flex items-center gap-2 px-4 py-2 backdrop-blur-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full text-sm text-gray-300"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{
@@ -413,7 +413,7 @@ export const TrustBar: React.FC<TrustBarProps> = ({
 
           {/* Footer note with glass styling */}
           <motion.div
-            className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl px-8 py-6 max-w-2xl mx-auto"
+            className="backdrop-blur-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-8 py-6 max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.8 }}
@@ -448,9 +448,9 @@ export const TrustBar: React.FC<TrustBarProps> = ({
                 No credit card required
               </motion.span>
               {' • '}
-              <span className="text-white">14-day free trial</span>
+              <span className="text-slate-900 dark:text-white">14-day free trial</span>
               {' • '}
-              <span className="text-white">Cancel anytime</span>
+              <span className="text-slate-900 dark:text-white">Cancel anytime</span>
             </motion.p>
 
             {/* Subtle animated underline */}

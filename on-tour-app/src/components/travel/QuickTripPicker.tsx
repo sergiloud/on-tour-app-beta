@@ -33,7 +33,7 @@ export const QuickTripPicker: React.FC<Props> = ({ title, defaultTitle, onCancel
   };
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
       <div className="relative glass rounded-md p-4 w-[min(520px,92vw)]">
         <div className="text-sm font-semibold mb-2">{title || (t('travel.add_to_trip')||'Add to trip')}</div>
@@ -54,19 +54,19 @@ export const QuickTripPicker: React.FC<Props> = ({ title, defaultTitle, onCancel
                 <span className="opacity-80">{t('travel.trip.new')||'New Trip'}</span>
               </label>
               {selected==='new' && (
-                <input type="text" className="w-full bg-white/5 rounded px-2 py-1" value={newTitle} onChange={e=> setNewTitle(e.target.value)} />
+                <input type="text" className="w-full bg-slate-100 dark:bg-white/5 rounded px-2 py-1" value={newTitle} onChange={e=> setNewTitle(e.target.value)} />
               )}
             </div>
           ) : (
             <div className="space-y-1">
               <div className="text-xs opacity-70">{t('travel.trip.new')||'New Trip'}</div>
-              <input type="text" className="w-full bg-white/5 rounded px-2 py-1" value={newTitle} onChange={e=> setNewTitle(e.target.value)} />
+              <input type="text" className="w-full bg-slate-100 dark:bg-white/5 rounded px-2 py-1" value={newTitle} onChange={e=> setNewTitle(e.target.value)} />
             </div>
           )}
         </div>
         <div className="mt-3 flex justify-end gap-2 text-sm">
-          <button className="px-2 py-1 rounded bg-white/5 hover:bg-white/10" onClick={onCancel}>{t('common.cancel')||'Cancel'}</button>
-          <button className="px-2 py-1 rounded bg-white/10 hover:bg-white/15" onClick={confirm}>{t('common.add')||'Add'}</button>
+          <button className="px-2 py-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10" onClick={onCancel}>{t('common.cancel')||'Cancel'}</button>
+          <button className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={confirm}>{t('common.add')||'Add'}</button>
         </div>
       </div>
     </div>

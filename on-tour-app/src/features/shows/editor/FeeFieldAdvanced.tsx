@@ -98,7 +98,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
       {/* Label and Help */}
       {label && (
         <div className="flex items-center gap-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-white/70">
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
             {label}
           </label>
           {help && (
@@ -119,7 +119,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
           disabled={disabled}
           value={fee ?? ''}
           onChange={handleFeeChange}
-          className="w-full pl-6 pr-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-white placeholder:text-white/30 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          className="w-full pl-6 pr-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-white placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           placeholder={t('shows.editor.placeholder.fee') || 'Enter fee...'}
           min={0}
           step={1}
@@ -138,7 +138,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
           {/* FX Rate Display/Input */}
           <div className="flex items-center gap-1.5">
             <div className="flex-1">
-              <label className="text-[9px] uppercase tracking-wide text-white/60 font-medium block mb-0.5">
+              <label className="text-[9px] uppercase tracking-wide text-slate-400 dark:text-white/60 font-medium block mb-0.5">
                 {currency} → {baseCurrency}
               </label>
               <input
@@ -161,7 +161,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
                 step="0.0001"
                 min="0.0001"
                 max="99.9999"
-                className="w-full px-2 py-1 rounded-sm bg-white/5 border border-blue-500/30 hover:border-blue-500/50 focus:border-blue-400 focus:bg-white/10 text-xs text-white placeholder:text-white/30 transition-all"
+                className="w-full px-2 py-1 rounded-sm bg-slate-100 dark:bg-white/5 border border-blue-500/30 hover:border-blue-500/50 focus:border-blue-400 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-xs text-white placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 transition-all"
               />
             </div>
 
@@ -182,7 +182,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
 
           {/* FX Rate Date */}
           <div>
-            <label className="text-[9px] uppercase tracking-wide text-white/60 font-medium block mb-0.5">
+            <label className="text-[9px] uppercase tracking-wide text-slate-400 dark:text-white/60 font-medium block mb-0.5">
               {t('shows.editor.fxRate.date') || 'Rate Date'}
             </label>
             <input
@@ -197,7 +197,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
                   }
                 }
               }}
-              className="w-full px-2 py-1 rounded-sm bg-white/5 border border-blue-500/30 hover:border-blue-500/50 focus:border-blue-400 focus:bg-white/10 text-xs text-white placeholder:text-white/30 transition-all"
+              className="w-full px-2 py-1 rounded-sm bg-slate-100 dark:bg-white/5 border border-blue-500/30 hover:border-blue-500/50 focus:border-blue-400 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-xs text-white placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 transition-all"
             />
           </div>
 
@@ -207,7 +207,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
               <span className="px-1.5 py-0.5 rounded-full bg-blue-500/30 border border-blue-500/50 text-blue-200 font-medium">
                 {fxRateSource === 'locked' ? '🔒 Locked' : fxRateSource === 'today' ? '📅 Today' : '⚙️ System'}
               </span>
-              <span className="text-white/50">
+              <span className="text-slate-300 dark:text-white/50">
                 {fxRateDate ? new Date(fxRateDate + 'T00:00:00').toLocaleDateString() : 'No date set'}
               </span>
             </div>
@@ -217,7 +217,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
           {fxRate && fee && (
             <div className="pt-1 border-t border-blue-500/20 text-[9px] space-y-0.5">
               <div className="flex justify-between">
-                <span className="text-white/60">{fee} {currency} @</span>
+                <span className="text-slate-400 dark:text-white/60">{fee} {currency} @</span>
                 <span className="text-blue-200">{fxRate.toFixed(4)}</span>
               </div>
               <div className="flex justify-between font-semibold text-blue-100">
@@ -231,11 +231,11 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
 
       {/* Financial Breakdown Dashboard */}
       {calculations.fee > 0 && (
-        <div className={`bg-gradient-to-br ${getBgColor(calculations.profitMargin)} border border-white/10 rounded-md p-2.5 space-y-2.5`}>
+        <div className={`bg-gradient-to-br ${getBgColor(calculations.profitMargin)} border border-slate-200 dark:border-white/10 rounded-md p-2.5 space-y-2.5`}>
           {/* Top Row: Fee and Costs */}
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col gap-0.5">
-              <span className="text-[9px] uppercase tracking-wide text-white/50 font-semibold">
+              <span className="text-[9px] uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
                 {t('shows.editor.summary.fee') || 'Fee'}
               </span>
               <span className="text-sm font-bold text-white/80">
@@ -244,14 +244,14 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
             </div>
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center justify-between gap-1.5">
-                <span className="text-[9px] uppercase tracking-wide text-white/50 font-semibold">
+                <span className="text-[9px] uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
                   {t('shows.editor.summary.costs') || 'Costs'}
                 </span>
                 {onOpenCostsTab && calculations.costs > 0 && (
                   <button
                     type="button"
                     onClick={onOpenCostsTab}
-                    className="text-[8px] px-1.5 py-0.5 rounded-sm bg-white/10 hover:bg-white/20 text-accent-300 hover:text-accent-200 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                    className="text-[8px] px-1.5 py-0.5 rounded-sm bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-accent-300 hover:text-accent-200 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
                     title={t('shows.editor.costs.manage') || 'Manage costs'}
                   >
                     ✏️ Edit
@@ -265,12 +265,12 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-white/10"></div>
+          <div className="h-px bg-slate-200 dark:bg-white/10"></div>
 
           {/* Bottom Row: WHT and Net */}
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col gap-0.5">
-              <span className="text-[9px] uppercase tracking-wide text-white/50 font-semibold">
+              <span className="text-[9px] uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
                 {t('shows.editor.summary.wht') || 'WHT'} ({whtPct}%)
               </span>
               <span className="text-sm font-bold text-orange-300/80">
@@ -278,7 +278,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
               </span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-[9px] uppercase tracking-wide text-white/50 font-semibold">
+              <span className="text-[9px] uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
                 {t('shows.editor.summary.net') || 'Est. Net'}
               </span>
               <div className="flex items-center gap-1.5">
@@ -298,7 +298,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
 
           {/* Profit Margin Indicator */}
           <div className="flex items-center gap-2 pt-0.5">
-            <div className="flex-1 h-0.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="flex-1 h-0.5 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all duration-300 bg-gradient-to-r ${
                   calculations.profitMargin >= 60
@@ -316,7 +316,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
                 }}
               />
             </div>
-            <span className="text-[9px] text-white/60 font-medium min-w-fit">
+            <span className="text-[9px] text-slate-400 dark:text-white/60 font-medium min-w-fit">
               {calculations.profitMargin >= 0 ? 'Profitable' : 'At loss'}
             </span>
           </div>
@@ -325,7 +325,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
 
       {/* Empty state hint */}
       {!calculations.fee && (
-        <div className="text-[10px] text-white/50 italic">
+        <div className="text-[10px] text-slate-300 dark:text-white/50 italic">
           {t('shows.editor.fee.hint') || 'Enter fee amount to see financial breakdown'}
         </div>
       )}

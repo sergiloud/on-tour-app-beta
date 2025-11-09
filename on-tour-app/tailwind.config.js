@@ -24,7 +24,39 @@ export default {
       },
       colors: {
         ink: { 900: '#0b0f14', 800: '#12181f', 700: '#1b242d' },
-        accent: { 500: '#bfff00', 400: '#d4ff44' }
+        accent: { 500: '#bfff00', 400: '#d4ff44' },
+        // Theme-aware colors using CSS variables
+        'surface': {
+          card: 'var(--surface-card)',
+          'card-hover': 'var(--surface-card-hover)',
+          elevated: 'var(--surface-elevated)',
+        },
+        'primary-text': 'var(--text-primary)',
+        'secondary-text': 'var(--text-secondary)',
+        'muted-text': 'var(--text-muted)',
+        'heading-text': 'var(--text-heading)',
+        'on-accent': 'var(--text-on-accent)',
+        'border-main': 'var(--border-color)',
+        'border-subtle': 'var(--border-subtle)',
+        'border-strong': 'var(--border-strong)',
+        'interactive': {
+          base: 'var(--interactive-base)',
+          hover: 'var(--interactive-hover)',
+          active: 'var(--interactive-active)',
+        },
+        // Paleta Slate para Light theme (Tailwind native)
+        slate: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
+        }
       },
       backgroundImage: {
         'stripes-travel': 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(59, 130, 246, 0.1) 2px, rgba(59, 130, 246, 0.1) 4px)',
@@ -34,6 +66,10 @@ export default {
         'bounce-subtle': 'bounceSubtle 0.6s ease-in-out',
         'success-flash': 'successFlash 0.8s ease-out forwards',
         'shimmer': 'shimmer 2s ease-in-out infinite',
+        'fadeIn': 'fadeIn 0.2s ease-out',
+        'slideUp': 'slideUp 0.2s ease-out',
+        'slideDown': 'slideDown 0.2s ease-out',
+        'scaleIn': 'scaleIn 0.15s ease-out',
       },
       keyframes: {
         fadeInUp: {
@@ -53,11 +89,29 @@ export default {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
         },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideDown: {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
       },
     }
   },
   plugins: [
-    forms,
+    forms({
+      strategy: 'class', // Only apply form styles when using 'form-input' class
+    }),
     // Hide scrollbar while keeping functionality
     function ({ addUtilities }) {
       addUtilities({

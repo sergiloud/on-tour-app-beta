@@ -106,7 +106,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
           ))}
           {items.length===0 && <li className="px-2 py-3 text-sm opacity-70">{t('cmd.noResults')}</li>}
         </ul>
-        <div className="p-2 text-[11px] opacity-70 border-t border-white/10 flex items-center justify-between">
+        <div className="p-2 text-[11px] opacity-70 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
           <span>{t('cmd.footer.hint')}</span>
           <span className="flex items-center gap-3"><span>Cmd+K</span><span className="opacity-70">{t('cmd.footer.tip')} (press ?)</span></span>
         </div>

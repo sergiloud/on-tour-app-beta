@@ -12,7 +12,7 @@ import KpiCards from '../../components/finance/KpiCards';
 import { trackEvent } from '../../lib/telemetry';
 
 const Pill: React.FC<{ active?: boolean; onClick?: () => void; children: React.ReactNode }>=({ active, onClick, children })=> (
-  <button onClick={onClick} className={`px-2 py-1 rounded-md text-[11px] border ${active? 'bg-accent-500 text-black border-transparent':'bg-white/5 hover:bg-white/10 border-white/10'}`}>{children}</button>
+  <button onClick={onClick} className={`px-2 py-1 rounded-md text-[11px] border ${active? 'bg-accent-500 text-black border-transparent':'bg-interactive hover:bg-slate-200 dark:bg-white/10 border-theme'}`}>{children}</button>
 );
 
 const FinanceOverview: React.FC = () => {
@@ -32,14 +32,14 @@ const FinanceOverview: React.FC = () => {
           </label>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-2 py-1 rounded-md bg-white/5 text-[11px]">{currency}</span>
+          <span className="px-2 py-1 rounded-md bg-interactive text-[11px]">{currency}</span>
           <div className="flex items-center gap-1">
             <Pill active={region==='all'} onClick={()=> setRegion('all')}>{t('shows.filters.region.all')}</Pill>
             <Pill active={region==='EMEA'} onClick={()=> setRegion('EMEA')}>EMEA</Pill>
             <Pill active={region==='AMER'} onClick={()=> setRegion('AMER')}>AMER</Pill>
             <Pill active={region==='APAC'} onClick={()=> setRegion('APAC')}>APAC</Pill>
           </div>
-          <GuardedAction scope="finance:export" className="px-2 py-1 rounded bg-white/10 hover:bg-white/15 text-[11px]" onClick={()=> exportFinanceCsv(snapshot.shows as any, { masked: false, columns: ['date','city','country','fee','status','net'] })}>
+          <GuardedAction scope="finance:export" className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-[11px]" onClick={()=> exportFinanceCsv(snapshot.shows as any, { masked: false, columns: ['date','city','country','fee','status','net'] })}>
             {t('actions.exportCsv') || 'Export CSV'}
           </GuardedAction>
         </div>

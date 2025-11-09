@@ -50,10 +50,10 @@
   --transition-transform: transform var(--transition-medium);
 
   /* Z indices */
-  --z-overlay: 40;
-  --z-modal: 50;
-  --z-popover: 30;
-  --z-nav: 20;
+  --z-overlay: 9998;
+  --z-modal: 9999;
+  --z-popover: 9997;
+  --z-nav: 100;
 
   /* Typography scale */
   --text-xs: 12px;
@@ -91,37 +91,192 @@
 /* Theme switching via documentElement[data-theme] set by useTheme */
   :root {
     /* Amber badge tones - improved contrast on light theme */
-    --badge-amber-bg: rgba(245, 158, 11, 0.24); /* slightly deeper amber for contrast */
-    --badge-amber-text: #78350f; /* darker text for readability */
-  /* Base surfaces */
+    --badge-amber-bg: rgba(245, 158, 11, 0.24);
+    --badge-amber-text: #78350f;
+
+  /* Base surfaces (Dark theme defaults) */
   --surface-app: radial-gradient(circle at 20% 20%, #16202c 0%, #0b1118 55%, #05070a 100%);
   --surface-glow: linear-gradient(135deg, rgba(191,255,0,0.12) 0%, rgba(196,255,26,0.05) 40%, rgba(0,0,0,0) 70%);
+  --surface-card: #0b0f14;
+  --surface-card-hover: #111823;
+  --surface-elevated: rgba(255, 255, 255, 0.06);
+
+  /* Text colors (Dark theme defaults) */
   --text-primary: #eef3f5;
   --text-secondary: #9fb0c0;
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-heading: #ffffff;
+  --text-on-accent: #000000;
+
+  /* Bordes (Dark theme defaults) */
   --border-color: rgba(255,255,255,0.14);
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  /* Interactive states (Dark theme) */
+  --interactive-base: rgba(255, 255, 255, 0.05);
+  --interactive-hover: rgba(255, 255, 255, 0.1);
+  --interactive-active: rgba(255, 255, 255, 0.15);
+
+  /* Focus ring */
   --focus-ring: 0 0 0 2px #0b1118, 0 0 0 4px var(--color-accent-500);
+
+  /* Estado colors (Dark theme) */
+  --color-success: #10b981; /* green-500 */
+  --color-success-bg: rgba(16, 185, 129, 0.15);
+  --color-success-border: rgba(16, 185, 129, 0.3);
+
+  --color-warning: #f59e0b; /* amber-500 */
+  --color-warning-bg: rgba(245, 158, 11, 0.15);
+  --color-warning-border: rgba(245, 158, 11, 0.3);
+
+  --color-error: #ef4444; /* red-500 */
+  --color-error-bg: rgba(239, 68, 68, 0.15);
+  --color-error-border: rgba(239, 68, 68, 0.3);
+
+  --color-info: #3b82f6; /* blue-500 */
+  --color-info-bg: rgba(59, 130, 246, 0.15);
+  --color-info-border: rgba(59, 130, 246, 0.3);
+
+  /* Badges (Dark theme) */
+  --badge-default-bg: rgba(255, 255, 255, 0.05);
+  --badge-default-text: rgba(255, 255, 255, 0.7);
+  --badge-default-border: rgba(255, 255, 255, 0.1);
+
+  /* Shows/Events status badges (Dark theme) */
+  --badge-confirmed-bg: rgba(16, 185, 129, 0.15);
+  --badge-confirmed-text: #6ee7b7; /* green-300 */
+  --badge-confirmed-border: rgba(16, 185, 129, 0.3);
+
+  --badge-pending-bg: rgba(245, 158, 11, 0.15);
+  --badge-pending-text: #fcd34d; /* amber-300 */
+  --badge-pending-border: rgba(245, 158, 11, 0.3);
+
+  --badge-cancelled-bg: rgba(239, 68, 68, 0.15);
+  --badge-cancelled-text: #fca5a5; /* red-300 */
+  --badge-cancelled-border: rgba(239, 68, 68, 0.3);
+
+  /* Navigation & Sidebar (Dark theme) */
+  --nav-bg: rgba(11, 15, 20, 0.9);
+  --nav-border: rgba(255, 255, 255, 0.1);
+  --nav-item-hover: rgba(255, 255, 255, 0.05);
+  --nav-item-active: rgba(255, 255, 255, 0.1);
+  --nav-text: #9fb0c0;
+  --nav-text-active: #ffffff;
+
+  /* Input fields (Dark theme) */
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-border-focus: rgba(255, 255, 255, 0.2);
+  --input-text: #eef3f5;
+  --input-placeholder: rgba(255, 255, 255, 0.4);
+
+  /* Overlays & Modals (Dark theme) */
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --modal-bg: #0b0f14;
+  --modal-border: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme='light'] {
-  --surface-app: radial-gradient(circle at 25% 20%, #ffffff 0%, #f5f8fa 55%, #e9eff3 100%);
-  --surface-glow: linear-gradient(135deg, rgba(191,255,0,0.25) 0%, rgba(196,255,26,0.15) 35%, rgba(0,0,0,0) 70%);
-  --text-primary: #1a2128;
-  --text-secondary: #4a5867;
-  --border-color: rgba(0,0,0,0.12);
+  /* Base surfaces (Light theme) - Fondo gris claro, NO blanco puro */
+  --surface-app: #f8fafc; /* slate-50 - Reduce fatiga visual */
+  --surface-glow: linear-gradient(135deg, rgba(191,255,0,0.06) 0%, rgba(196,255,26,0.03) 35%, rgba(0,0,0,0) 70%);
+  --surface-card: #ffffff; /* Blanco PURO para cards que resalten sobre el fondo gris */
+  --surface-card-hover: #f8fafc; /* slate-50 en hover */
+  --surface-elevated: #ffffff;
+
+  /* Text colors (Light theme) - Jerarquía profesional con grises */
+  --text-primary: #475569; /* slate-600 - Texto normal cómodo de leer */
+  --text-secondary: #64748b; /* slate-500 - Texto secundario */
+  --text-muted: #94a3b8; /* slate-400 - Metadata, placeholders, labels */
+  --text-heading: #1e293b; /* slate-800 - Títulos oscuros y prominentes */
+  --text-on-accent: #000000; /* Negro sobre verde lima para máximo contraste */
+
+  /* Borders (Light theme) - Sutiles pero visibles */
+  --border-color: #e2e8f0; /* slate-200 - Bordes principales sutiles */
+  --border-subtle: #f1f5f9; /* slate-100 - Bordes muy sutiles */
+  --border-strong: #cbd5e1; /* slate-300 - Bordes más definidos */
+
+  /* Interactive states (Light theme) */
+  --interactive-base: #f1f5f9; /* slate-100 */
+  --interactive-hover: #e2e8f0; /* slate-200 */
+  --interactive-active: #cbd5e1; /* slate-300 */
+
+  /* Glass morphism adaptado - OPACIDAD AUMENTADA para legibilidad */
+  --glass-bg: rgba(255, 255, 255, 0.8); /* Más opaco que dark theme */
+  --glass-border: rgba(226, 232, 240, 0.8); /* slate-200 con alfa para definición */
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+
+  /* Sombras profesionales multicapa - Elevación física, NO glows */
+  --card-border: var(--border-color);
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); /* shadow-md */
+  --elevation-1: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); /* shadow-md */
+  --elevation-2: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-lg */
+  --elevation-3: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-xl */
+
+  /* Focus ring */
   --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px var(--color-accent-500);
-  /* Adjust glass for light readability */
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-border: rgba(0,0,0,0.12);
-  --glass-highlight: rgba(255,255,255,0.9);
-  /* Cards in light theme: slightly stronger shadow and border distinction */
-  --card-border: var(--glass-border);
-  --card-shadow: 0 4px 18px -4px rgba(0,0,0,0.18);
 
   /* Map tokens for light */
   --map-land: #eaf2f8;
   --map-water: #cfe9ff;
   --map-border: rgba(255,255,255,0.9);
   --map-border-province: rgba(255,255,255,0.85);
+
+  /* Estado colors (Light theme) */
+  --color-success: #10b981; /* green-500 */
+  --color-success-bg: #d1fae5; /* green-100 */
+  --color-success-border: #6ee7b7; /* green-300 */
+
+  --color-warning: #f59e0b; /* amber-500 */
+  --color-warning-bg: #fef3c7; /* amber-100 */
+  --color-warning-border: #fcd34d; /* amber-300 */
+
+  --color-error: #ef4444; /* red-500 */
+  --color-error-bg: #fee2e2; /* red-100 */
+  --color-error-border: #fca5a5; /* red-300 */
+
+  --color-info: #3b82f6; /* blue-500 */
+  --color-info-bg: #dbeafe; /* blue-100 */
+  --color-info-border: #93c5fd; /* blue-300 */
+
+  /* Badges (Light theme) */
+  --badge-default-bg: #f1f5f9; /* slate-100 */
+  --badge-default-text: #475569; /* slate-600 */
+  --badge-default-border: #cbd5e1; /* slate-300 */
+
+  /* Shows/Events status badges */
+  --badge-confirmed-bg: #dcfce7; /* green-100 */
+  --badge-confirmed-text: #166534; /* green-800 */
+  --badge-confirmed-border: #86efac; /* green-300 */
+
+  --badge-pending-bg: #fef3c7; /* amber-100 */
+  --badge-pending-text: #78350f; /* amber-900 */
+  --badge-pending-border: #fcd34d; /* amber-300 */
+
+  --badge-cancelled-bg: #fee2e2; /* red-100 */
+  --badge-cancelled-text: #991b1b; /* red-800 */
+  --badge-cancelled-border: #fca5a5; /* red-300 */
+
+  /* Navigation & Sidebar (Light theme) */
+  --nav-bg: rgba(255, 255, 255, 0.9);
+  --nav-border: #e2e8f0; /* slate-200 */
+  --nav-item-hover: #f1f5f9; /* slate-100 */
+  --nav-item-active: #e2e8f0; /* slate-200 */
+  --nav-text: #475569; /* slate-600 */
+  --nav-text-active: #1e293b; /* slate-800 */
+
+  /* Input fields (Light theme) */
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1; /* slate-300 */
+  --input-border-focus: #94a3b8; /* slate-400 */
+  --input-text: #334155; /* slate-700 */
+  --input-placeholder: #94a3b8; /* slate-400 */
+
+  /* Overlays & Modals (Light theme) */
+  --overlay-bg: rgba(15, 23, 42, 0.6); /* slate-900 with opacity */
+  --modal-bg: #ffffff;
+  --modal-border: #e2e8f0; /* slate-200 */
 }
 
   /* Mirroring helper: when rtl is active, flip start/end radii if needed */

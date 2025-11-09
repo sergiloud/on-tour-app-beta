@@ -144,7 +144,7 @@ const WeekTimelineCanvas: React.FC<WeekTimelineCanvasProps> = ({ grouped, result
         {days.map(date => (
           <div
             key={date}
-            className="rounded bg-white/5 p-2 min-h-[120px]"
+            className="rounded bg-slate-100 dark:bg-white/5 p-2 min-h-[120px]"
             onDrop={(e) => onDropOn(e, date)}
             onDragOver={onDragOver}
             aria-dropeffect="move"
@@ -160,12 +160,12 @@ const WeekTimelineCanvas: React.FC<WeekTimelineCanvasProps> = ({ grouped, result
                   <div className="mt-1 flex items-center justify-between">
                     <span className="text-[10px] opacity-60">{t('travel.drop.hint') || 'Drag to another day'}</span>
                     <div className="inline-flex gap-1">
-                      <button className="text-[10px] px-1 py-0.5 rounded bg-white/10" onClick={() => {
+                      <button className="text-[10px] px-1 py-0.5 rounded bg-slate-200 dark:bg-white/10" onClick={() => {
                         const idx = days.indexOf(date);
                         const prevDay = days[idx - 1];
                         if (idx > 0 && prevDay) placeOn(r.id, prevDay);
                       }} aria-label={t('travel.move.prev') || 'Move to previous day'}>◀︎</button>
-                      <button className="text-[10px] px-1 py-0.5 rounded bg-white/10" onClick={() => {
+                      <button className="text-[10px] px-1 py-0.5 rounded bg-slate-200 dark:bg-white/10" onClick={() => {
                         const idx = days.indexOf(date);
                         const nextDay = days[idx + 1];
                         if (idx < days.length - 1 && nextDay) placeOn(r.id, nextDay);

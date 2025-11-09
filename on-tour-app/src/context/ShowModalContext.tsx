@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
 import { DemoShow } from '../lib/shows';
 
 export type DraftShow = DemoShow & {
@@ -16,7 +16,7 @@ interface ShowModalContextType {
     draft: DraftShow | null;
     costs: any[];
     openAdd: () => void;
-    openEdit: (show: Show) => void;
+    openEdit: (show: DemoShow) => void;
     close: () => void;
     setDraft: (draft: DraftShow | null) => void;
     setCosts: (costs: any[]) => void;
@@ -30,7 +30,7 @@ export const ShowModalProvider: React.FC<{ children: ReactNode }> = ({ children 
     const [draft, setDraft] = useState<DraftShow | null>(null);
     const [costs, setCosts] = useState<any[]>([]);
 
-    const openAdd = () => {
+    const openAdd = useCallback(() => {
         setMode('add');
         setDraft({
             city: '',
@@ -44,33 +44,36 @@ export const ShowModalProvider: React.FC<{ children: ReactNode }> = ({ children 
         } as any);
         setCosts([]);
         setIsOpen(true);
-    };
+    }, []);
 
-    const openEdit = (show: Show) => {
+    const openEdit = useCallback((show: DemoShow) => {
         setMode('edit');
         setDraft({ ...(show as any) });
         setCosts(((show as any).costs) || []);
         setIsOpen(true);
-    };
+    }, []);
 
-    const close = () => {
+    const close = useCallback(() => {
         setIsOpen(false);
-    };
+    }, []);
+
+    const value = useMemo(
+        () => ({
+            isOpen,
+            mode,
+            draft,
+            costs,
+            openAdd,
+            openEdit,
+            close,
+            setDraft,
+            setCosts,
+        }),
+        [isOpen, mode, draft, costs, openAdd, openEdit, close]
+    );
 
     return (
-        <ShowModalContext.Provider
-            value={{
-                isOpen,
-                mode,
-                draft,
-                costs,
-                openAdd,
-                openEdit,
-                close,
-                setDraft,
-                setCosts,
-            }}
-        >
+        <ShowModalContext.Provider value={value}>
             {children}
         </ShowModalContext.Provider>
     );

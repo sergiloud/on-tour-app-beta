@@ -126,19 +126,19 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
             <div className="bg-ink-900 rounded-xl border border-accent-500/30 w-full max-w-6xl h-[90vh] flex flex-col">
                 {/* Compact Header */}
-                <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 bg-gradient-to-r from-ink-900 to-ink-800">
+                <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-ink-900 to-ink-800">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="text-base font-semibold text-white">
+                            <div className="text-base font-semibold text-slate-900 dark:text-white">
                                 {originAirport?.city || origin.toUpperCase()}
                             </div>
                             <Plane className="w-4 h-4 text-accent-400 rotate-90" />
-                            <div className="text-base font-semibold text-white">
+                            <div className="text-base font-semibold text-slate-900 dark:text-white">
                                 {destAirport?.city || dest.toUpperCase()}
                             </div>
                         </div>
-                        <div className="h-4 w-px bg-white/20" />
-                        <div className="text-sm text-white/60">
+                        <div className="h-4 w-px bg-slate-200 dark:bg-white/20" />
+                        <div className="text-sm text-slate-400 dark:text-white/60">
                             {date ? new Date(date).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric'
@@ -148,7 +148,7 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
 
                     <button
                         onClick={onClose}
-                        className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                        className="w-7 h-7 rounded-lg hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/70 hover:text-white transition-colors"
                     >
                         <X className="w-4 h-4" />
                     </button>
@@ -159,14 +159,14 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
                             <Loader2 className="w-10 h-10 text-accent-400 animate-spin mx-auto mb-3" />
-                            <p className="text-white font-medium mb-1">Searching flights...</p>
-                            <p className="text-white/50 text-sm">Finding best options</p>
+                            <p className="text-slate-900 dark:text-white font-medium mb-1">Searching flights...</p>
+                            <p className="text-slate-300 dark:text-white/50 text-sm">Finding best options</p>
                         </div>
                     </div>
                 ) : (
                     <>
                         {/* Filters & Insights Bar */}
-                        <div className="px-6 py-3 border-b border-white/5 bg-dark-800/30">
+                        <div className="px-6 py-3 border-b border-slate-100 dark:border-white/5 bg-dark-800/30">
                             <div className="flex items-center justify-between flex-wrap gap-3">
                                 {/* Quick Insights */}
                                 <div className="flex items-center gap-4 text-xs">
@@ -182,18 +182,18 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
                                             <span className="text-blue-400 font-medium">Fastest: {fastestFlight.duration}</span>
                                         </div>
                                     )}
-                                    <div className="text-white/50">{sortedAndFilteredFlights.length} flights</div>
+                                    <div className="text-slate-300 dark:text-white/50">{sortedAndFilteredFlights.length} flights</div>
                                 </div>
 
                                 {/* Filters */}
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1.5">
-                                        <FilterIcon className="w-3.5 h-3.5 text-white/50" />
+                                        <FilterIcon className="w-3.5 h-3.5 text-slate-300 dark:text-white/50" />
                                         <button
                                             onClick={() => setFilterStops('all')}
                                             className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${filterStops === 'all'
                                                 ? 'bg-accent-500/20 text-accent-400 border border-accent-500/30'
-                                                : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
+                                                : 'bg-white/5 text-slate-400 dark:text-white/60 hover:bg-slate-200 dark:bg-white/10 border border-white/10'
                                                 }`}
                                         >
                                             All
@@ -202,7 +202,7 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
                                             onClick={() => setFilterStops('direct')}
                                             className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${filterStops === 'direct'
                                                 ? 'bg-accent-500/20 text-accent-400 border border-accent-500/30'
-                                                : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
+                                                : 'bg-white/5 text-slate-400 dark:text-white/60 hover:bg-slate-200 dark:bg-white/10 border border-white/10'
                                                 }`}
                                         >
                                             Direct
@@ -211,19 +211,19 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
                                             onClick={() => setFilterStops('1stop')}
                                             className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${filterStops === '1stop'
                                                 ? 'bg-accent-500/20 text-accent-400 border border-accent-500/30'
-                                                : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
+                                                : 'bg-white/5 text-slate-400 dark:text-white/60 hover:bg-slate-200 dark:bg-white/10 border border-white/10'
                                                 }`}
                                         >
                                             1 Stop
                                         </button>
                                     </div>
 
-                                    <div className="h-4 w-px bg-white/20" />
+                                    <div className="h-4 w-px bg-slate-200 dark:bg-white/20" />
 
                                     <select
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                                        className="px-2.5 py-1 rounded text-xs bg-ink-800 border border-white/20 text-white focus:outline-none focus:border-accent-500"
+                                        className="px-2.5 py-1 rounded text-xs bg-ink-800 border border-slate-300 dark:border-white/20 text-white focus:outline-none focus:border-accent-500"
                                     >
                                         <option value="price">Cheapest</option>
                                         <option value="duration">Fastest</option>
@@ -254,30 +254,30 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
                                                 <div className="flex items-center gap-6 flex-1">
                                                     {/* Carrier */}
                                                     <div className="w-20">
-                                                        <div className="text-sm font-semibold text-white">{flight.carrier}</div>
-                                                        <div className="text-xs text-white/50">{flight.flightNumber}</div>
+                                                        <div className="text-sm font-semibold text-slate-900 dark:text-white">{flight.carrier}</div>
+                                                        <div className="text-xs text-slate-300 dark:text-white/50">{flight.flightNumber}</div>
                                                     </div>
 
                                                     {/* Route */}
                                                     <div className="flex items-center gap-4 flex-1 max-w-md">
                                                         <div className="text-right">
                                                             <div className="text-lg font-semibold text-white tabular-nums">{flight.departure}</div>
-                                                            <div className="text-xs text-white/50">{origin.toUpperCase()}</div>
+                                                            <div className="text-xs text-slate-300 dark:text-white/50">{origin.toUpperCase()}</div>
                                                         </div>
 
                                                         <div className="flex-1 flex flex-col items-center">
-                                                            <div className="text-xs text-white/40 mb-1">{flight.duration}</div>
-                                                            <div className="w-full relative h-0.5 bg-white/10">
-                                                                <Plane className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 text-white/60 rotate-90" />
+                                                            <div className="text-xs text-slate-400 dark:text-white/40 mb-1">{flight.duration}</div>
+                                                            <div className="w-full relative h-0.5 bg-slate-200 dark:bg-white/10">
+                                                                <Plane className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 dark:text-white/60 rotate-90" />
                                                             </div>
-                                                            <div className="text-xs text-white/40 mt-1">
+                                                            <div className="text-xs text-slate-400 dark:text-white/40 mt-1">
                                                                 {flight.stops === 0 ? 'Direct' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
                                                             </div>
                                                         </div>
 
                                                         <div className="text-left">
                                                             <div className="text-lg font-semibold text-white tabular-nums">{flight.arrival}</div>
-                                                            <div className="text-xs text-white/50">{dest.toUpperCase()}</div>
+                                                            <div className="text-xs text-slate-300 dark:text-white/50">{dest.toUpperCase()}</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -287,7 +287,7 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
                                                     {/* Features */}
                                                     <div className="flex flex-wrap gap-1 max-w-[120px]">
                                                         {flight.features.slice(0, 2).map((feature, i) => (
-                                                            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-white/60">
+                                                            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/60">
                                                                 {feature}
                                                             </span>
                                                         ))}
@@ -295,8 +295,8 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
 
                                                     {/* Price */}
                                                     <div className="text-right min-w-[100px]">
-                                                        <div className="text-xl font-bold text-white">€{flight.price}</div>
-                                                        <div className="text-[10px] text-white/40">{flight.available} seats left</div>
+                                                        <div className="text-xl font-bold text-slate-900 dark:text-white">€{flight.price}</div>
+                                                        <div className="text-[10px] text-slate-300 dark:text-white/40">{flight.available} seats left</div>
                                                     </div>
 
                                                     {/* Badges */}
@@ -321,25 +321,25 @@ export const FlightSearchResults: React.FC<FlightSearchResultsProps> = ({
                         </div>
 
                         {/* Compact Footer */}
-                        <div className="px-6 py-3 border-t border-white/10 bg-gradient-to-r from-ink-900 to-ink-800">
+                        <div className="px-6 py-3 border-t border-slate-200 dark:border-white/10 bg-gradient-to-r from-ink-900 to-ink-800">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={handleOpenGoogleFlights}
-                                        className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-colors text-xs flex items-center gap-1.5"
+                                        className="px-3 py-1.5 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-white border border-slate-200 dark:border-white/10 transition-colors text-xs flex items-center gap-1.5"
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" />
                                         <span>Google Flights</span>
                                     </button>
                                     <button
                                         onClick={handleOpenSkyscanner}
-                                        className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-colors text-xs flex items-center gap-1.5"
+                                        className="px-3 py-1.5 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-white border border-slate-200 dark:border-white/10 transition-colors text-xs flex items-center gap-1.5"
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" />
                                         <span>Skyscanner</span>
                                     </button>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-white/50">
+                                <div className="flex items-center gap-2 text-xs text-slate-300 dark:text-white/50">
                                     <Info className="w-3.5 h-3.5" />
                                     <span>Compare prices • Book directly with airlines</span>
                                 </div>

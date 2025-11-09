@@ -107,13 +107,13 @@ export const MultiSelectPanel: React.FC<{
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 glass rounded-xl border border-white/10 backdrop-blur-md p-4 shadow-2xl"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-md p-4 shadow-2xl"
         >
           <div className="flex items-center justify-between gap-4 flex-wrap">
             {/* Count */}
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-accent-400" />
-              <span className="text-sm font-semibold text-white">
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">
                 {selectedCount} {selectedCount === 1 ? 'event' : 'events'} selected
               </span>
             </div>
@@ -157,7 +157,7 @@ export const MultiSelectPanel: React.FC<{
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onClear}
-                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-xs font-medium transition-all"
+                className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-white/70 text-xs font-medium transition-all"
                 title="Clear selection"
               >
                 ✕

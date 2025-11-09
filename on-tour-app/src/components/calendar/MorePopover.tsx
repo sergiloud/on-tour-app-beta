@@ -77,7 +77,7 @@ const MorePopover: React.FC<Props> = ({ open, onClose, events, onOpen, onOpenDay
         />
         <motion.div
           ref={dialogRef}
-          className="relative glass rounded-xl p-3 md:p-4 w-[460px] max-w-[90vw] max-h-[80vh] border border-white/10 shadow-2xl backdrop-blur-md flex flex-col bg-gradient-to-br from-white/8 via-white/4 to-white/2"
+          className="relative glass rounded-xl p-3 md:p-4 w-[460px] max-w-[90vw] max-h-[80vh] border border-slate-200 dark:border-white/10 shadow-2xl backdrop-blur-md flex flex-col bg-gradient-to-br from-slate-100 dark:from-white/8 via-white/4 to-white/2"
           initial={{ opacity: 0, scale: 0.92, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 20 }}
@@ -88,7 +88,7 @@ const MorePopover: React.FC<Props> = ({ open, onClose, events, onOpen, onOpenDay
             <div id={titleId} className="text-xs font-medium flex items-center gap-1.5">
               <span>{t('calendar.more.title')||'More events'}</span>
               {dayLabel && <span className="text-[11px] opacity-70 font-normal">{dayLabel}</span>}
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 font-normal">{events.length} {(events.length===1?(t('calendar.event.one')||'event'):(t('calendar.event.many')||'events'))}</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-normal">{events.length} {(events.length===1?(t('calendar.event.one')||'event'):(t('calendar.event.many')||'events'))}</span>
             </div>
             <div className="mt-1.5 md:mt-2 flex flex-wrap gap-1.5 md:gap-2">
               <div className="flex items-center gap-1.5 text-[10px] md:text-xs">
@@ -98,7 +98,7 @@ const MorePopover: React.FC<Props> = ({ open, onClose, events, onOpen, onOpenDay
                     <motion.button
                       key={k}
                       onClick={()=> setKindFilter(k as any)}
-                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold transition-all duration-200 ${kindFilter===k? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
+                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold transition-all duration-200 ${kindFilter===k? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-slate-300 dark:border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
                       whileHover={{ scale: 1.05, y: -1 }}
                       whileTap={{ scale: 0.95 }}
                       transition={{ duration: 0.15, type: 'spring', stiffness: 300 }}
@@ -114,7 +114,7 @@ const MorePopover: React.FC<Props> = ({ open, onClose, events, onOpen, onOpenDay
                   <div className="flex gap-1 md:gap-1.5">
                     <motion.button
                       onClick={()=> setStatusFilter('all')}
-                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold transition-all duration-200 ${statusFilter==='all'? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
+                      className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold transition-all duration-200 ${statusFilter==='all'? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-slate-300 dark:border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
                       whileHover={{ scale: 1.05, y: -1 }}
                       whileTap={{ scale: 0.95 }}
                       transition={{ duration: 0.15, type: 'spring', stiffness: 300 }}
@@ -125,7 +125,7 @@ const MorePopover: React.FC<Props> = ({ open, onClose, events, onOpen, onOpenDay
                       <motion.button
                         key={s}
                         onClick={()=> setStatusFilter(s||'')}
-                        className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold capitalize transition-all duration-200 ${statusFilter===s? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
+                        className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg border text-[10px] md:text-xs font-semibold capitalize transition-all duration-200 ${statusFilter===s? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-accent-400 shadow-lg':'border-slate-300 dark:border-white/20 bg-white/6 hover:bg-white/12 hover:border-white/30'}`}
                         whileHover={{ scale: 1.05, y: -1 }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ duration: 0.15, type: 'spring', stiffness: 300 }}

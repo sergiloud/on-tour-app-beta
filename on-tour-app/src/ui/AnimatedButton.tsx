@@ -32,7 +32,7 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
 
   const bg = tone === 'primary'
     ? 'bg-gradient-to-br from-accent-400 via-accent-500 to-accent-600 text-ink-900'
-    : 'bg-white/5 text-white hover:bg-white/10';
+    : 'bg-slate-100 dark:bg-white/5 text-white hover:bg-white/10';
 
   return (
     <MotionButton

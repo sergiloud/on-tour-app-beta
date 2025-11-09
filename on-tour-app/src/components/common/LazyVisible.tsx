@@ -42,7 +42,7 @@ export const LazyVisible: React.FC<{ height?: number; children: React.ReactNode 
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
-            className="w-full h-full animate-pulse rounded-md bg-white/5"
+            className="w-full h-full animate-pulse rounded-md bg-slate-100 dark:bg-white/5"
           />
         ) : (
           <motion.div

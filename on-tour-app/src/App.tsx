@@ -39,19 +39,19 @@ export const App: React.FC = () => {
       requestIdleCallback(() => {
         prefetch.shows();
         prefetch.finance();
-      }, { timeout: 3000 });
+      }, { timeout: 2000 }); // Reducido de 3000 a 2000ms
 
       // Prefetch secondary routes later
       requestIdleCallback(() => {
         prefetch.travel();
         prefetch.calendar();
-      }, { timeout: 6000 });
+      }, { timeout: 5000 }); // Reducido de 6000 a 5000ms
     } else {
       // Fallback for browsers without requestIdleCallback
       setTimeout(() => {
         prefetch.shows();
         prefetch.finance();
-      }, 3000);
+      }, 2000); // Reducido de 3000 a 2000ms
     }
   }, []);
 

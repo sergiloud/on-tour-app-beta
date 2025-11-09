@@ -107,7 +107,7 @@ export const FeaturesSection: React.FC = () => {
                     <h2 className="section-title mb-6 text-glow">
                         {t('features.title')}
                     </h2>
-                    <p className="text-lg text-white/70 max-w-3xl mx-auto">
+                    <p className="text-lg text-slate-500 dark:text-white/70 max-w-3xl mx-auto">
                         {t('features.subtitle')}
                     </p>
                 </motion.div>
@@ -117,7 +117,7 @@ export const FeaturesSection: React.FC = () => {
                     {features.map((feature, index) => (
                         <motion.div
                             key={feature.id}
-                            className="glass rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300 group cursor-pointer"
+                            className="glass rounded-2xl overflow-hidden hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all duration-300 group cursor-pointer"
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
@@ -150,7 +150,7 @@ export const FeaturesSection: React.FC = () => {
                                 </h3>
 
                                 {/* Description */}
-                                <p className="text-white/70 text-sm leading-relaxed mb-4">
+                                <p className="text-slate-500 dark:text-white/70 text-sm leading-relaxed mb-4">
                                     {feature.description}
                                 </p>
 

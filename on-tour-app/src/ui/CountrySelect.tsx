@@ -207,7 +207,7 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
         aria-controls={open ? cid + '-list' : undefined}
         aria-activedescendant={open ? cid + '-opt-' + activeIndex : undefined}
         placeholder={t('shows.editor.label.country') || 'Country'}
-        className="px-3 py-2 pr-9 rounded bg-white/5 border border-white/12 focus-ring uppercase w-full"
+        className="px-3 py-1.5 pr-8 rounded-md bg-slate-100 dark:bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all uppercase w-full text-sm"
         value={open ? query : (value || '')}
         data-country-value={value || ''}
         onChange={e => { setQuery(e.target.value); setOpen(true); }}
@@ -226,16 +226,16 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
         {...rest}
       />
       {value && !open && (
-        <span className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-[11px] flex items-center gap-1 text-accent-200" aria-hidden="true">
+        <span className="absolute right-7 top-1/2 -translate-y-1/2 pointer-events-none text-[10px] flex items-center gap-0.5 text-slate-400 dark:text-white/60" aria-hidden="true">
           <span>{flagEmoji(value)}</span>
-          <span className="hidden sm:inline max-w-[4ch] truncate">{value}</span>
+          <span className="hidden sm:inline text-[9px] opacity-70">{value}</span>
         </span>
       )}
       {showClear && (
         <button
           type="button"
           aria-label={t('filters.clear') || 'Clear'}
-          className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 rounded hover:bg-white/10 flex items-center justify-center text-[10px]"
+          className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[10px]"
           onClick={clear}
         >×</button>
       )}

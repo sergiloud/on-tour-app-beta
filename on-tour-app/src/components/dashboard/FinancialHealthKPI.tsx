@@ -57,7 +57,7 @@ export const FinancialHealthKPI: React.FC<FinancialHealthKPIProps> = ({
       className={`p-6 rounded-xl border backdrop-blur-sm ${getStatusBg()}`}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
           {t('dashboard.kpi.financial.title') || 'Financial Health'}
         </h3>
         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor()} bg-current/10`}>
@@ -109,7 +109,7 @@ export const FinancialHealthKPI: React.FC<FinancialHealthKPIProps> = ({
 
       <div className="text-center">
         <div className="flex items-center justify-center gap-2">
-          <div className="text-xl font-semibold text-white">
+          <div className="text-xl font-semibold text-slate-900 dark:text-white">
             <AnimatedCounter
               value={amount}
               duration={1.5}

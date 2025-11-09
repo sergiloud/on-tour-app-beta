@@ -17,10 +17,10 @@ export const ThisMonth: React.FC = () => {
   <h3 className="widget-title">{t('finance.thisMonth')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
           {[1,2,3].map(i => (
-            <div key={i} className="glass rounded p-3 border border-white/10 min-w-0 overflow-hidden animate-pulse">
-              <div className="h-3 bg-white/10 rounded w-16" />
+            <div key={i} className="glass rounded p-3 border border-slate-200 dark:border-white/10 min-w-0 overflow-hidden animate-pulse">
+              <div className="h-3 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded w-16" />
               <div className="h-6 bg-white/20 rounded w-24 mt-2" />
-              <div className="h-2 bg-white/10 rounded w-full mt-3" />
+              <div className="h-2 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded w-full mt-3" />
             </div>
           ))}
         </div>
@@ -53,7 +53,7 @@ export const ThisMonth: React.FC = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-  <div className="glass rounded p-3 border border-white/10 min-w-0 overflow-hidden" title={`${t('finance.income')} target · ${fmtMoney(targets.incomeMonth)}`}> 
+  <div className="glass rounded p-3 border border-slate-200 dark:border-white/10 min-w-0 overflow-hidden" title={`${t('finance.income')} target · ${fmtMoney(targets.incomeMonth)}`}> 
           <div className="opacity-70 text-xs">{t('finance.income')}</div>
             <div className="flex items-center gap-2 flex-wrap min-w-0 justify-between">
       <strong className="tabular-nums">{mask(fmtMoney(income))}</strong>
@@ -72,7 +72,7 @@ export const ThisMonth: React.FC = () => {
           )}
           <ProgressBar className="mt-1" value={pct(income, targets.incomeMonth)} tone="emerald" height="xs" aria-label="Income progress" />
         </div>
-  <div className="glass rounded p-3 border border-white/10 min-w-0 overflow-hidden" title={`${t('finance.expenses')} target · ${fmtMoney(targets.expensesMonth)}`}> 
+  <div className="glass rounded p-3 border border-slate-200 dark:border-white/10 min-w-0 overflow-hidden" title={`${t('finance.expenses')} target · ${fmtMoney(targets.expensesMonth)}`}> 
           <div className="opacity-70 text-xs">{t('finance.expenses')}</div>
             <div className="flex items-center gap-2 flex-wrap min-w-0 justify-between">
       <strong className="tabular-nums">{mask(fmtMoney(expenses))}</strong>
@@ -86,7 +86,7 @@ export const ThisMonth: React.FC = () => {
           )}
           <ProgressBar className="mt-1" value={pct(expenses, targets.expensesMonth)} tone="rose" height="xs" aria-label="Expenses progress" />
         </div>
-  <div className="glass rounded p-3 border border-white/10 min-w-0 overflow-hidden" title={`${t('finance.net')} target · ${fmtMoney(targets.netMonth)}`}> 
+  <div className="glass rounded p-3 border border-slate-200 dark:border-white/10 min-w-0 overflow-hidden" title={`${t('finance.net')} target · ${fmtMoney(targets.netMonth)}`}> 
           <div className="opacity-70 text-xs">{t('finance.net')}</div>
             <div className="flex items-center gap-2 flex-wrap min-w-0 justify-between">
   <strong className="tabular-nums net-highlight">{mask(fmtMoney(net))}</strong>

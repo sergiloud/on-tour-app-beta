@@ -1,29 +1,40 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useOrg } from '../../../context/OrgContext';
 import { t } from '../../../lib/i18n';
-import { ORG_ARTIST_DANNY, listLinks, listMembers, listTeams } from '../../../lib/tenants';
+import { listLinks, listMembers, listTeams } from '../../../lib/tenants';
 
 export type ArtistQuickPanelProps = {
   open: boolean;
   onClose: () => void;
-  artistOrgId?: string;
+  artistOrgId: string;
 };
 
 const Chip: React.FC<{ label: string; kind?: 'ok'|'warn'|'info'; title?: string }> = ({ label, kind='info', title }) => (
   <span title={title} className={`px-1.5 py-0.5 rounded text-[10px] border ${kind==='ok'?'bg-emerald-500/15 text-emerald-300 border-emerald-400/20': kind==='warn'?'bg-amber-500/15 text-amber-200 border-amber-400/25':'bg-sky-500/15 text-sky-200 border-sky-400/25'}`}>{label}</span>
 );
 
-const ArtistQuickPanel: React.FC<ArtistQuickPanelProps> = ({ open, onClose, artistOrgId = ORG_ARTIST_DANNY }) => {
+const ArtistQuickPanel: React.FC<ArtistQuickPanelProps> = ({ open, onClose, artistOrgId }) => {
   const { orgId, org } = useOrg();
   const titleRef = useRef<HTMLHeadingElement>(null);
   useEffect(()=>{ if (open) setTimeout(()=> titleRef.current?.focus(), 0); }, [open]);
   const link = useMemo(()=> orgId ? listLinks(orgId).find(l => l.artistOrgId === artistOrgId) : undefined, [orgId, artistOrgId]);
+
+  // Get artist info dynamically
+  const artistInfo = useMemo(() => {
+    const artistMembers = listMembers(artistOrgId);
+    const artistName = artistMembers.length > 0 ? (artistMembers[0]?.user.name || 'Artist') : 'Artist';
+    const initial = artistName.charAt(0).toUpperCase();
+    return { name: artistName, initial };
+  }, [artistOrgId]);
+
   const managers = useMemo(()=>{
     if (!orgId) return [] as string[];
-    const team = listTeams(orgId).find(t => t.name === 'Danny Avila');
+    const artistTeams = listTeams(artistOrgId);
+    const team = artistTeams.length > 0 ? artistTeams[0] : null;
     const members = listMembers(orgId);
     return team ? team.members.map(id => members.find(m => m.user.id === id)?.user.name || id) : [];
-  }, [orgId]);
+  }, [orgId, artistOrgId]);
+
   if (!open) return null;
 
   return (
@@ -38,8 +49,8 @@ const ArtistQuickPanel: React.FC<ArtistQuickPanelProps> = ({ open, onClose, arti
             <div>
               <div className="text-xs opacity-70 mb-1">{t('welcome.artist.quickpanel.artist')||'Artist'}</div>
               <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-white/10 text-[12px] flex items-center justify-center" aria-hidden>D</span>
-                <span className="font-medium">Danny Avila</span>
+                <span className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[12px] flex items-center justify-center" aria-hidden>{artistInfo.initial}</span>
+                <span className="font-medium">{artistInfo.name}</span>
               </div>
             </div>
 
@@ -64,7 +75,7 @@ const ArtistQuickPanel: React.FC<ArtistQuickPanelProps> = ({ open, onClose, arti
                 <ul className="text-sm space-y-1.5" role="list">
                   {managers.map((name, i)=> (
                     <li key={i} role="listitem" className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-white/10 text-[11px] flex items-center justify-center" aria-hidden>{(name||' ').charAt(0).toUpperCase()}</span>
+                      <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[11px] flex items-center justify-center" aria-hidden>{(name||' ').charAt(0).toUpperCase()}</span>
                       <span>{name}</span>
                     </li>
                   ))}

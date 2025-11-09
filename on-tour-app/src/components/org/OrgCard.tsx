@@ -23,8 +23,8 @@ interface OrgCardProps extends MotionProps {
  * Usage:
  * ```tsx
  * <OrgCard hover>
- *   <h2 className="text-sm font-semibold text-white/90">Title</h2>
- *   <p className="text-xs text-white/70">Content</p>
+ *   <h2 className="text-sm font-semibold text-slate-700 dark:text-white/90">Title</h2>
+ *   <p className="text-xs text-slate-500 dark:text-white/70">Content</p>
  * </OrgCard>
  * ```
  */
@@ -41,8 +41,8 @@ export const OrgCard = React.forwardRef<
   ...motionProps
 }, ref) => {
   const baseClasses = clsx(
-    'glass rounded-lg border border-white/10 p-3 md:p-4 bg-gradient-to-r from-white/6 to-white/3',
-    hover && 'hover:border-white/20 transition-all duration-300',
+    'glass rounded-lg border border-slate-200 dark:border-white/10 p-3 md:p-4 bg-gradient-to-r from-slate-100 dark:from-white/6 to-white/3',
+    hover && 'hover:border-slate-300 dark:border-white/20 transition-all duration-300',
     onClick && 'cursor-pointer',
     className
   );

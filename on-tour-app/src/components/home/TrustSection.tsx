@@ -122,7 +122,7 @@ export const TrustSection: React.FC<TrustSectionProps> = ({ className = '' }) =>
                   "{testimonial.quote}"
                 </blockquote>
 
-                <div className="border-t border-white/10 pt-4 w-full">
+                <div className="border-t border-slate-200 dark:border-white/10 pt-4 w-full">
                   <div className="font-semibold text-sm">{testimonial.name}</div>
                   <div className="text-xs opacity-70" style={{ color: 'var(--text-secondary)' }}>
                     {testimonial.role}

@@ -92,25 +92,25 @@ export const NetTimeline: React.FC = () => {
       <div className="flex items-center justify-between mb-2">
         <h3 className="widget-title">{t('finance.net')} {t('finance.byMonth')}</h3>
         <div className="flex items-center gap-2">
-          <button className="text-[11px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/15" onClick={() => { setShowTable(v => !v); try { trackEvent('finance.timeline.viewToggle', { table: !showTable }); } catch { } }} aria-pressed={showTable}>
+          <button className="text-[11px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={() => { setShowTable(v => !v); try { trackEvent('finance.timeline.viewToggle', { table: !showTable }); } catch { } }} aria-pressed={showTable}>
             {showTable ? (t('charts.hideTable') || 'Hide table') : (t('charts.viewTable') || 'View data as table')}
           </button>
           <div className="hidden md:flex items-center gap-2">
             {comparePrev && comp && (
               <div className="hidden md:flex items-center gap-2 text-[10px] opacity-80" aria-label={t('charts.legend') || 'Legend'}>
                 <span className="inline-flex items-center gap-1"><span aria-hidden className="inline-block w-3 h-1 rounded bg-accent-300" />{t('common.current') || 'Current'}</span>
-                <span className="inline-flex items-center gap-1"><span aria-hidden className="inline-block w-3 h-1 rounded bg-white/50" />{t('common.compare') || 'Prev'}</span>
+                <span className="inline-flex items-center gap-1"><span aria-hidden className="inline-block w-3 h-1 rounded bg-slate-100 dark:bg-white/50" />{t('common.compare') || 'Prev'}</span>
               </div>
             )}
             <span className="text-[10px] opacity-70" id="ma-label">MA</span>
             <div role="group" aria-labelledby="ma-label" className="inline-flex items-center gap-2">
               {[0, 7, 30].map(opt => (
-                <button key={opt} className={`text-[11px] px-2 py-0.5 rounded ${ma === opt ? 'bg-accent-500 text-black' : 'bg-white/10 hover:bg-white/15'}`} onClick={() => { setMa(opt as 0 | 7 | 30); try { trackEvent('finance.timeline.ma.change', { ma: opt }); } catch { } }} aria-pressed={ma === opt}>{opt === 0 ? (t('common.off') || 'Off') : (opt + 'd')}</button>
+                <button key={opt} className={`text-[11px] px-2 py-0.5 rounded ${ma === opt ? 'bg-accent-500 text-black' : 'bg-slate-200 dark:bg-white/10 hover:bg-white/15'}`} onClick={() => { setMa(opt as 0 | 7 | 30); try { trackEvent('finance.timeline.ma.change', { ma: opt }); } catch { } }} aria-pressed={ma === opt}>{opt === 0 ? (t('common.off') || 'Off') : (opt + 'd')}</button>
               ))}
             </div>
             {zoomRange && (
               <>
-                <button className="text-[11px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/15" onClick={() => setZoomRange(null)} title={t('charts.resetZoom') || 'Reset zoom'}>
+                <button className="text-[11px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={() => setZoomRange(null)} title={t('charts.resetZoom') || 'Reset zoom'}>
                   {t('charts.resetZoom') || 'Reset zoom'}
                 </button>
                 <button className="text-[11px] px-2 py-0.5 rounded bg-accent-500/80 hover:bg-accent-500 text-black" onClick={() => {
@@ -155,7 +155,7 @@ export const NetTimeline: React.FC = () => {
         {t('finance.net')} {t('finance.byMonth')}: {data.length} {t('shows.items') || 'items'}. Max {fmtMoney(max)}.
       </p>
       {showTable ? (
-        <div className="max-h-40 overflow-auto border border-white/10 rounded">
+        <div className="max-h-40 overflow-auto border border-slate-200 dark:border-white/10 rounded">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left opacity-70">
@@ -314,7 +314,7 @@ export const NetTimeline: React.FC = () => {
         </React.Fragment>
       )}
       {tip && (
-        <div className="pointer-events-none absolute z-10 px-2 py-1 rounded-md bg-ink-900/90 border border-white/10 text-[10px]"
+        <div className="pointer-events-none absolute z-10 px-2 py-1 rounded-md bg-ink-900/90 border border-slate-200 dark:border-white/10 text-[10px]"
           style={{ left: tip.x, top: tip.y }}
           role="tooltip"
         >{tip.text}</div>

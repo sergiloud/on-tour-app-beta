@@ -70,7 +70,7 @@ export const KeyPerformanceKPI: React.FC<KeyPerformanceKPIProps> = ({
       className={`p-6 rounded-xl border backdrop-blur-sm ${getStatusBg()}`}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
         <div className="flex items-center gap-2">
           <span className={`text-lg ${getTrendColor()}`}>{getTrendIcon()}</span>
           <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor()} bg-current/10`}>
@@ -106,7 +106,7 @@ export const KeyPerformanceKPI: React.FC<KeyPerformanceKPIProps> = ({
             </span>
           </div>
 
-          <div className="w-full bg-white/10 rounded-full h-2">
+          <div className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full h-2">
             <motion.div
               className={`h-2 rounded-full ${getStatusColor().replace('text-', 'bg-')}`}
               initial={{ width: 0 }}

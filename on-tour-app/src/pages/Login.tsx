@@ -3,12 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { t } from '../lib/i18n';
-import { ORG_AGENCY_SHALIZI, ORG_ARTIST_DANNY, ORG_ARTIST_DANNY_V2, setCurrentOrgId } from '../lib/tenants';
+import { ORG_AGENCY_SHALIZI, ORG_ARTIST_DANNY, ORG_ARTIST_DANNY_V2, ORG_ARTIST_PROPHECY, setCurrentOrgId } from '../lib/tenants';
 import { trackEvent, Events } from '../lib/telemetry';
 import { setAuthed } from '../lib/demoAuth';
 import { loadDemoData } from '../lib/demoDataset';
 import { loadDemoExpenses } from '../lib/expenses';
 import { loadDemoAgencies } from '../lib/agencies';
+import { loadProphecyData } from '../lib/prophecyDataset';
+import { loadProphecyContacts } from '../lib/prophecyContactsDataset';
 import { DashboardTeaser } from '../components/home/DashboardTeaser';
 import { Button } from '../ui/Button';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle, Zap, Chrome, Apple } from 'lucide-react';
@@ -88,6 +90,7 @@ const Login: React.FC = () => {
     'demo@demo.com': { userId: 'user_demo', orgId: ORG_AGENCY_SHALIZI, displayName: 'Demo User' },
     // Real users
     'danny@djdannyavila.com': { userId: 'danny_avila', orgId: ORG_ARTIST_DANNY, displayName: 'Danny Avila' },
+    'booking@prophecyofficial.com': { userId: 'user_prophecy', orgId: ORG_ARTIST_PROPHECY, displayName: 'Prophecy' },
     // Username-based users
     'agency': { userId: 'user_agency', orgId: ORG_AGENCY_SHALIZI, displayName: 'Agency User' },
     'artist': { userId: 'user_artist', orgId: ORG_ARTIST_DANNY, displayName: 'Artist User' },
@@ -209,6 +212,54 @@ const Login: React.FC = () => {
 
       // NOTE: No carga demo data - será importado desde HTML
       console.log('[Login] Danny Avila 2 - Ready for HTML import');
+    } catch { }
+
+    dispatch({ type: 'SET_SUCCESS', payload: user });
+
+    setTimeout(() => {
+      dispatch({ type: 'START_FLUID_TRANSITION' });
+    }, ANIMATION_DELAYS.fluidTransition);
+
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
+    }, ANIMATION_DELAYS.authTransition);
+
+    // Navigate to dashboard after login (fast in dev, smooth in prod)
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, ANIMATION_DELAYS.navigationDelay);
+  }, [loginState.state, setUserId, updateProfile, navigate]);
+
+  // Demo login handler for Prophecy (Empty/Clean Version)
+  const handleProphecyLogin = React.useCallback(async () => {
+    if (loginState.state === 'loading') return;
+
+    dispatch({ type: 'START_LOADING' });
+    try { trackEvent('login.demo.prophecy', {}); } catch { }
+
+    // Simulate network delay for better UX (fast in dev, realistic in prod)
+    await new Promise(resolve => setTimeout(resolve, ANIMATION_DELAYS.demoSimulation));
+
+    const user = { userId: 'user_prophecy', orgId: ORG_ARTIST_PROPHECY, displayName: 'Prophecy' };
+    try {
+      setUserId(user.userId);
+      updateProfile?.({ id: user.userId, defaultOrgId: user.orgId });
+      setCurrentOrgId(user.orgId);
+      setAuthed(true);
+      secureStorage.setItem('demo:lastUser', user.userId);
+      secureStorage.setItem('demo:lastOrg', user.orgId);
+      trackEvent('login.demo.success', { userId: user.userId, orgId: user.orgId });
+      Events.loginSelect(user.userId, user.orgId);
+
+      // Load Prophecy demo data
+      console.log('[Login] Loading Prophecy tour data...');
+      const showsResult = loadProphecyData();
+      console.log(`[Login] Prophecy data loaded: ${showsResult.added} shows added, ${showsResult.total} total`);
+
+      // Load Prophecy CRM contacts
+      console.log('[Login] Loading Prophecy CRM contacts...');
+      const contactsResult = loadProphecyContacts();
+      console.log(`[Login] Prophecy contacts loaded: ${contactsResult.added} contacts added, ${contactsResult.total} total`);
     } catch { }
 
     dispatch({ type: 'SET_SUCCESS', payload: user });
@@ -449,7 +500,7 @@ const Login: React.FC = () => {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="glass p-8 rounded-2xl border border-white/10 shadow-2xl"
+          className="glass p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl"
           style={{
             boxShadow: '0 0 60px rgba(0, 0, 0, 0.3), 0 0 100px rgba(191, 255, 0, 0.1)'
           }}
@@ -501,7 +552,7 @@ const Login: React.FC = () => {
                   autoComplete="username"
                   autoFocus
                   placeholder="you@example.com or username"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                 />
               </div>
               {fieldErrors.usernameOrEmail && (
@@ -538,7 +589,7 @@ const Login: React.FC = () => {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-12 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                  className="w-full pl-12 pr-12 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                 />
                 <button
                   type="button"
@@ -574,7 +625,7 @@ const Login: React.FC = () => {
                   type="checkbox"
                   checked={remember}
                   onChange={e => setRemember(e.target.checked)}
-                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-accent-500 focus:ring-accent-500/50"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 text-accent-500 focus:ring-accent-500/50"
                 />
                 <span className="opacity-70">{t('login.remember') || 'Remember me'}</span>
               </label>
@@ -629,7 +680,7 @@ const Login: React.FC = () => {
                 <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-4 bg-slate-900/50 text-white/50 uppercase tracking-wider">
+                <span className="px-4 bg-slate-900/50 text-slate-300 dark:text-white/50 uppercase tracking-wider">
                   Or continue with
                 </span>
               </div>
@@ -695,6 +746,22 @@ const Login: React.FC = () => {
                 <Zap className="w-5 h-5" />
                 <span>Demo: Danny Avila 2 (HTML Import)</span>
               </motion.button>
+
+              <motion.button
+                onClick={handleProphecyLogin}
+                disabled={loginState.state === 'loading'}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex flex-col gap-1 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold shadow-lg transition-all disabled:opacity-50"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  <span>Demo: Prophecy</span>
+                </div>
+                <div className="text-xs font-normal opacity-90">
+                  Managed by Aitzol • A2G Management
+                </div>
+              </motion.button>
             </motion.div>
 
 
@@ -711,7 +778,7 @@ const Login: React.FC = () => {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-900/50 text-white/50">
+              <span className="px-4 bg-slate-900/50 text-slate-300 dark:text-white/50">
                 Don't have an account?
               </span>
             </div>
@@ -725,7 +792,7 @@ const Login: React.FC = () => {
           >
             <Link
               to="/register"
-              className="w-full py-3.5 rounded-xl border border-white/20 hover:border-accent-500/50 transition-all flex items-center justify-center gap-2 font-medium hover:bg-white/5"
+              className="w-full py-3.5 rounded-xl border border-slate-300 dark:border-white/20 hover:border-accent-500/50 transition-all flex items-center justify-center gap-2 font-medium hover:bg-slate-100 dark:bg-white/5"
             >
               <span>Create free account</span>
               <Zap className="w-4 h-4 text-accent-500" />
@@ -765,7 +832,7 @@ const Login: React.FC = () => {
         >
           <Link
             to="/"
-            className="text-sm text-white/50 hover:text-white/80 transition-colors inline-flex items-center gap-1"
+            className="text-sm text-slate-300 dark:text-white/50 hover:text-slate-600 dark:text-white/80 transition-colors inline-flex items-center gap-1"
           >
             ← Back to home
           </Link>
@@ -793,22 +860,22 @@ const Login: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-dark-900/90 backdrop-blur-xl border border-white/10 rounded-2xl max-w-md w-full p-8 shadow-2xl"
+              className="bg-dark-900/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl max-w-md w-full p-8 shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
               {resetState !== 'sent' ? (
                 <>
-                  <h2 className="text-2xl font-bold text-white mb-2">Reset Password</h2>
-                  <p className="text-white/60 mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Reset Password</h2>
+                  <p className="text-slate-400 dark:text-white/60 mb-6">
                     Enter your email address and we'll send you a link to reset your password.
                   </p>
 
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-white/70 mb-2">
+                    <label className="block text-sm font-medium text-slate-500 dark:text-white/70 mb-2">
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 dark:text-white/40" />
                       <input
                         type="email"
                         value={resetEmail}
@@ -817,7 +884,7 @@ const Login: React.FC = () => {
                           setResetError('');
                         }}
                         placeholder="your@email.com"
-                        className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-accent-500/50 focus:bg-white/10 transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all"
                         disabled={resetState === 'sending'}
                       />
                     </div>
@@ -839,7 +906,7 @@ const Login: React.FC = () => {
                         setResetError('');
                       }}
                       disabled={resetState === 'sending'}
-                      className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-white font-medium hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </button>
@@ -898,11 +965,11 @@ const Login: React.FC = () => {
                     >
                       <CheckCircle className="w-8 h-8 text-accent-500" />
                     </motion.div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Check Your Email</h2>
-                    <p className="text-white/60 mb-6">
-                      We've sent a password reset link to <strong className="text-white">{resetEmail}</strong>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Check Your Email</h2>
+                    <p className="text-slate-400 dark:text-white/60 mb-6">
+                      We've sent a password reset link to <strong className="text-slate-900 dark:text-white">{resetEmail}</strong>
                     </p>
-                    <p className="text-sm text-white/50 mb-8">
+                    <p className="text-sm text-slate-300 dark:text-white/50 mb-8">
                       Didn't receive the email? Check your spam folder or try again.
                     </p>
                   </div>

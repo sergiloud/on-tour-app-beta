@@ -290,14 +290,14 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-lg bg-gradient-to-br from-slate-900/30 to-slate-800/20 border border-white/10 p-4"
+      className="rounded-lg bg-gradient-to-br from-slate-900/30 to-slate-800/20 border border-slate-200 dark:border-white/10 p-4"
     >
       {/* Header */}
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between text-white/80 hover:text-white transition"
+        className="w-full flex items-center justify-between text-slate-600 dark:text-white/80 hover:text-white transition"
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">🔄</span>
@@ -344,14 +344,14 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     {syncStatus === 'syncing' && 'Syncing...'}
                     {syncStatus === 'synced' && '✓ Synced'}
                     {syncStatus === 'error' && '✕ Sync Error'}
                     {syncStatus === 'idle' && 'Ready to sync'}
                   </p>
                   {lastSync && (
-                    <p className="text-xs text-white/60 mt-1">
+                    <p className="text-xs text-slate-400 dark:text-white/60 mt-1">
                       {t('calendar.sync.lastSync') || 'Last synced'}: {lastSync.toLocaleTimeString()}
                     </p>
                   )}
@@ -372,7 +372,7 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
 
             {/* Connected Services */}
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-white/60 uppercase">{t('calendar.sync.services') || 'Calendar Services'}</p>
+              <p className="text-xs font-semibold text-slate-400 dark:text-white/60 uppercase">{t('calendar.sync.services') || 'Calendar Services'}</p>
 
               {services.map(({ id, name, icon, color, onConnect }) => {
                 const isConnected = connectedServices.has(id as SyncService);
@@ -384,7 +384,7 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
                     className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
                       isConnected
                         ? 'bg-accent-500/10 border-accent-500/30'
-                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                        : 'bg-white/5 border-slate-200 dark:border-white/10 hover:bg-white/10'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -392,8 +392,8 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
                         {icon}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-white">{name}</p>
-                        <p className="text-xs text-white/60">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{name}</p>
+                        <p className="text-xs text-slate-400 dark:text-white/60">
                           {isConnected ? '✓ Connected' : 'Sync events automatically'}
                         </p>
                       </div>
@@ -416,7 +416,7 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
 
             {/* Sync Frequency */}
             <div className="space-y-3 pt-4 border-t border-white/10">
-              <p className="text-xs font-semibold text-white/60 uppercase">{t('calendar.sync.frequency') || 'Sync Frequency'}</p>
+              <p className="text-xs font-semibold text-slate-400 dark:text-white/60 uppercase">{t('calendar.sync.frequency') || 'Sync Frequency'}</p>
               <div className="grid grid-cols-3 gap-2">
                 {(['realtime', 'hourly', 'daily'] as const).map((freq) => (
                   <motion.button
@@ -427,7 +427,7 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
                     className={`p-2 rounded-lg text-xs font-semibold transition-all ${
                       syncConfig.syncFrequency === freq
                         ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-black shadow-lg'
-                        : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
+                        : 'bg-white/5 border border-slate-200 dark:border-white/10 text-white hover:bg-white/10'
                     }`}
                   >
                     {freq === 'realtime' ? 'Real-time' : freq === 'hourly' ? 'Hourly' : 'Daily'}
@@ -448,8 +448,8 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
                 className="accent-accent-500"
               />
               <div>
-                <p className="text-sm font-semibold text-white">{t('calendar.sync.autoSync') || 'Auto-Sync Enabled'}</p>
-                <p className="text-xs text-white/60">{t('calendar.sync.autoSyncDesc') || 'Automatically sync with connected services'}</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{t('calendar.sync.autoSync') || 'Auto-Sync Enabled'}</p>
+                <p className="text-xs text-slate-400 dark:text-white/60">{t('calendar.sync.autoSyncDesc') || 'Automatically sync with connected services'}</p>
               </div>
             </motion.label>
 

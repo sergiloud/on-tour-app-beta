@@ -56,7 +56,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
     >
       {/* Search Bar */}
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 dark:text-white/50">
           <Search size={18} />
         </div>
         <input
@@ -65,7 +65,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-slate-900/40 border border-white/10
-            hover:border-white/20 text-white placeholder:text-white/40
+            hover:border-slate-300 dark:border-white/20 text-white placeholder:text-slate-400 dark:placeholder:text-white/40
             focus:border-accent-500/40 focus:ring-2 focus:ring-accent-500/20 transition"
         />
         {search && (
@@ -73,7 +73,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => handleSearchChange('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 dark:text-white/50 hover:text-white transition"
           >
             <X size={18} />
           </motion.button>
@@ -89,10 +89,10 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
           border transition ${
             expanded
               ? 'bg-accent-500/10 border-accent-500/30'
-              : 'bg-white/5 border-white/10 hover:border-white/20'
+              : 'bg-white/5 border-slate-200 dark:border-white/10 hover:border-white/20'
           }`}
       >
-        <div className="flex items-center gap-2 text-white/80">
+        <div className="flex items-center gap-2 text-slate-600 dark:text-white/80">
           <Filter size={18} />
           <span className="text-sm font-medium">Filters</span>
           {hasActiveFilters && (
@@ -105,7 +105,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
           animate={{ rotate: expanded ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <ChevronDown size={18} className="text-white/50" />
+          <ChevronDown size={18} className="text-slate-300 dark:text-white/50" />
         </motion.div>
       </motion.button>
 
@@ -121,7 +121,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
           >
             {/* Event Type Filter */}
             <div>
-              <label className="text-xs font-semibold text-white/70 uppercase mb-2 block">
+              <label className="text-xs font-semibold text-slate-500 dark:text-white/70 uppercase mb-2 block">
                 Event Type
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -137,7 +137,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
                       filters.kinds?.includes(option.key as any)
                         ? 'bg-accent-500/20 border border-accent-500/40 text-accent-300'
-                        : 'bg-white/5 border border-white/10 text-white/70 hover:border-white/20'
+                        : 'bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/70 hover:border-white/20'
                     }`}
                   >
                     {option.label}
@@ -148,7 +148,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
 
             {/* Status Filter */}
             <div>
-              <label className="text-xs font-semibold text-white/70 uppercase mb-2 block">
+              <label className="text-xs font-semibold text-slate-500 dark:text-white/70 uppercase mb-2 block">
                 Status
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -165,7 +165,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
                     className={`px-2 py-2 rounded-lg text-xs font-medium transition ${
                       filters.status?.includes(option.key)
                         ? `bg-${option.color}-500/20 border border-${option.color}-500/40 text-${option.color}-300`
-                        : 'bg-white/5 border border-white/10 text-white/70 hover:border-white/20'
+                        : 'bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/70 hover:border-white/20'
                     }`}
                   >
                     {option.label}
@@ -182,7 +182,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
               className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition ${
                 filters.pinned
                   ? 'bg-purple-500/20 border border-purple-500/40 text-purple-300'
-                  : 'bg-white/5 border border-white/10 text-white/70 hover:border-white/20'
+                  : 'bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/70 hover:border-white/20'
               }`}
             >
               📌 Pinned Events Only
@@ -195,7 +195,7 @@ export const AdvancedCalendarSearch: React.FC<AdvancedCalendarSearchProps> = ({
                 whileTap={{ scale: 0.98 }}
                 onClick={onClear}
                 className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10
-                  hover:border-red-500/30 text-white/70 hover:text-red-400 text-sm font-medium transition"
+                  hover:border-red-500/30 text-slate-500 dark:text-white/70 hover:text-red-400 text-sm font-medium transition"
               >
                 Clear All Filters
               </motion.button>

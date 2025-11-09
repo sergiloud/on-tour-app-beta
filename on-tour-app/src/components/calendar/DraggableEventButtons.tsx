@@ -95,25 +95,25 @@ const CreateEventButtonModal: React.FC<CreateEventButtonModalProps> = ({ onClose
 
         <motion.div
           onClick={(e) => e.stopPropagation()}
-          className="relative rounded-xl border border-white/15 shadow-2xl w-full max-w-2xl bg-gradient-to-br from-white/5 via-white/3 to-transparent backdrop-blur-xl max-h-[90vh] overflow-y-auto"
+          className="relative rounded-xl border border-white/15 shadow-2xl w-full max-w-2xl bg-gradient-to-br from-slate-100 dark:from-white/5 via-white/3 to-transparent backdrop-blur-xl max-h-[90vh] overflow-y-auto"
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.25, type: 'spring', stiffness: 350, damping: 30 }}
         >
-          <div className="sticky top-0 px-6 py-6 border-b border-white/10 flex items-start justify-between bg-gradient-to-b from-white/4 to-transparent backdrop-blur-sm">
+          <div className="sticky top-0 px-6 py-6 border-b border-slate-200 dark:border-white/10 flex items-start justify-between bg-gradient-to-b from-white/4 to-transparent backdrop-blur-sm">
             <div className="flex-1">
               <h2 className="text-base font-bold text-white tracking-tight">Create Event Button</h2>
-              <p className="text-xs text-white/60 mt-2 font-normal leading-relaxed">Set up a new event type for your calendar with custom name, color, and categorization</p>
+              <p className="text-xs text-slate-400 dark:text-white/60 mt-2 font-normal leading-relaxed">Set up a new event type for your calendar with custom name, color, and categorization</p>
             </div>
             <motion.button
               type="button"
               onClick={onClose}
-              className="ml-4 p-1.5 rounded-md hover:bg-white/10 transition-colors flex-shrink-0"
+              className="ml-4 p-1.5 rounded-md hover:bg-slate-200 dark:bg-white/10 transition-colors flex-shrink-0"
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.92 }}
             >
-              <svg className="w-5 h-5 text-white/50 hover:text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-slate-300 dark:text-white/50 hover:text-slate-500 dark:text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </motion.button>
@@ -122,7 +122,7 @@ const CreateEventButtonModal: React.FC<CreateEventButtonModalProps> = ({ onClose
           <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5">
             {/* Label */}
             <div className="flex flex-col gap-2">
-              <label htmlFor="label" className="text-xs font-semibold uppercase tracking-wider text-white/70">
+              <label htmlFor="label" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
                 Button Name <span className="text-red-400">*</span>
               </label>
               <input
@@ -133,17 +133,17 @@ const CreateEventButtonModal: React.FC<CreateEventButtonModalProps> = ({ onClose
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="e.g., Soundcheck, Bus Tour, Pre-Show..."
-                className="px-4 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:border-white/30 focus:border-accent-500/50 focus:bg-white/10 transition-all placeholder:text-white/30 text-white text-sm focus:outline-none"
+                className="px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:bg-slate-200 dark:bg-white/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-white text-sm focus:outline-none"
               />
               <div className="flex justify-between">
-                <span className="text-[10px] text-white/50">Give this event type a descriptive name</span>
-                <span className="text-[10px] text-white/50">{label.length}/40</span>
+                <span className="text-[10px] text-slate-300 dark:text-white/50">Give this event type a descriptive name</span>
+                <span className="text-[10px] text-slate-300 dark:text-white/50">{label.length}/40</span>
               </div>
             </div>
 
             {/* Type Selection */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-white/70">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
                 Event Type
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -154,8 +154,8 @@ const CreateEventButtonModal: React.FC<CreateEventButtonModalProps> = ({ onClose
                     onClick={() => setType(et.id as any)}
                     className={`px-3 py-2.5 rounded-lg border transition-all text-xs font-semibold ${
                       type === et.id
-                        ? 'bg-white/10 border-accent-500/40 text-white shadow-sm'
-                        : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/8 hover:border-white/30'
+                        ? 'bg-slate-200 dark:bg-white/10 border-accent-500/40 text-white shadow-sm'
+                        : 'bg-white/5 border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/70 hover:bg-white/8 hover:border-white/30'
                     }`}
                   >
                     {et.label}
@@ -166,7 +166,7 @@ const CreateEventButtonModal: React.FC<CreateEventButtonModalProps> = ({ onClose
 
             {/* Color Selection */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-white/70">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
                 Color
               </label>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
@@ -177,8 +177,8 @@ const CreateEventButtonModal: React.FC<CreateEventButtonModalProps> = ({ onClose
                     onClick={() => setColor(c)}
                     className={`py-2.5 rounded-lg border text-xs font-bold uppercase tracking-tight transition-all ${
                       color === c
-                        ? `bg-white/10 border-white/30 text-white shadow-sm`
-                        : 'bg-white/5 border-white/15 text-white/60 hover:bg-white/8 hover:border-white/25'
+                        ? `bg-slate-200 dark:bg-white/10 border-white/30 text-white shadow-sm`
+                        : 'bg-white/5 border-white/15 text-slate-400 dark:text-white/60 hover:bg-white/8 hover:border-white/25'
                     }`}
                   >
                     <div className={`inline-block w-2 h-2 rounded-full mr-1 ${colorClasses[c].bg} border ${colorClasses[c].border}`} />
@@ -190,7 +190,7 @@ const CreateEventButtonModal: React.FC<CreateEventButtonModalProps> = ({ onClose
 
             {/* Preview */}
             <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
-              <label className="text-xs font-semibold uppercase tracking-wider text-white/70">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
                 Preview
               </label>
               <div className={`px-4 py-3 rounded-lg border ${colorClasses[color].border} ${colorClasses[color].bg} ${colorClasses[color].text}`}>
@@ -203,7 +203,7 @@ const CreateEventButtonModal: React.FC<CreateEventButtonModalProps> = ({ onClose
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/20 hover:bg-white/8 hover:border-white/30 text-white text-sm font-medium transition-all"
+                className="flex-1 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 hover:bg-white/8 hover:border-slate-400 dark:hover:border-white/30 text-white text-sm font-medium transition-all"
               >
                 Cancel
               </button>
@@ -351,7 +351,7 @@ const DraggableEventButtons: React.FC<Props> = ({ buttons, onAddButton, onRemove
               whileHover={{ scale: 1.08, y: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowModal(true)}
-              className="px-3 md:px-3.5 py-1.5 md:py-2 rounded-lg border border-white/25 hover:border-white/40 bg-white/8 hover:bg-white/12 text-white/80 hover:text-white text-xs md:text-xs font-semibold transition-all inline-flex items-center gap-1.5 backdrop-blur-sm shadow-sm hover:shadow-md"
+              className="px-3 md:px-3.5 py-1.5 md:py-2 rounded-lg border border-white/25 hover:border-white/40 bg-white/8 hover:bg-white/12 text-slate-600 dark:text-white/80 hover:text-white text-xs md:text-xs font-semibold transition-all inline-flex items-center gap-1.5 backdrop-blur-sm shadow-sm hover:shadow-md"
               title="Add new event button"
               transition={{ duration: 0.15, type: 'spring', stiffness: 300 }}
             >

@@ -48,13 +48,13 @@ export function TestimonialsSection({ items }: TestimonialsSectionProps) {
         <motion.figure
           key={testimonial.id}
           role="listitem"
-          className="glass flex h-full flex-col justify-between rounded-2xl border border-white/5 bg-white/5 p-6"
+          className="glass flex h-full flex-col justify-between rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-100 dark:bg-white/5 p-6"
           variants={item(prefersReducedMotion)}
         >
-          <blockquote className="text-base text-white/90">
+          <blockquote className="text-base text-slate-700 dark:text-white/90">
             “{testimonial.quote}”
           </blockquote>
-          <figcaption className="mt-6 flex items-center gap-3 text-sm text-white/70">
+          <figcaption className="mt-6 flex items-center gap-3 text-sm text-slate-500 dark:text-white/70">
             {testimonial.avatarUrl ? (
               <OptimizedImage
                 src={testimonial.avatarUrl}
@@ -67,8 +67,8 @@ export function TestimonialsSection({ items }: TestimonialsSectionProps) {
               />
             ) : null}
             <div>
-              <span className="block font-medium text-white">{testimonial.author}</span>
-              <span className="block text-xs uppercase tracking-[0.2em] text-white/50">
+              <span className="block font-medium text-slate-900 dark:text-white">{testimonial.author}</span>
+              <span className="block text-xs uppercase tracking-[0.2em] text-slate-300 dark:text-white/50">
                 {testimonial.role}
               </span>
             </div>

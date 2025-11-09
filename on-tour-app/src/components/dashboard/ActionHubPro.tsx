@@ -1,6 +1,17 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Clock, TrendingUp, MapPin, DollarSign, Filter, CheckCircle, RefreshCw, Check, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  Clock,
+  TrendingUp,
+  MapPin,
+  DollarSign,
+  Filter,
+  CheckCircle,
+  RefreshCw,
+  Check,
+  X
+} from 'lucide-react';
 import { useMissionControl } from '../../context/MissionControlContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useSmartActions, type SmartAction } from '../../hooks/useSmartActions';
@@ -111,30 +122,30 @@ const ActionHubProComponent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm">
+      <div className="relative overflow-hidden rounded-xl border border-theme bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm">
         <div className="p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
-              <div className="h-5 w-32 bg-white/10 rounded animate-pulse" />
-              <div className="h-3 w-24 bg-white/5 rounded animate-pulse" />
+              <div className="h-5 w-32 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+              <div className="h-3 w-24 bg-interactive rounded animate-pulse" />
             </div>
-            <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+            <div className="h-4 w-16 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
           </div>
           <div className="flex gap-2">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-8 w-24 bg-white/10 rounded-md animate-pulse" />
+              <div key={i} className="h-8 w-24 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-md animate-pulse" />
             ))}
           </div>
-          <div className="border border-white/10 rounded-lg divide-y divide-white/5">
+          <div className="border border-theme rounded-lg divide-y divide-slate-200 dark:divide-white/5">
             {[1, 2, 3].map(i => (
               <div key={i} className="p-3 space-y-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-white/10 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 animate-pulse" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 w-48 bg-white/10 rounded animate-pulse" />
-                    <div className="h-3 w-64 bg-white/5 rounded animate-pulse" />
+                    <div className="h-4 w-48 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                    <div className="h-3 w-64 bg-interactive rounded animate-pulse" />
                   </div>
-                  <div className="h-7 w-16 bg-white/10 rounded animate-pulse" />
+                  <div className="h-7 w-16 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                 </div>
               </div>
             ))}
@@ -162,7 +173,7 @@ const ActionHubProComponent: React.FC = () => {
 
   if (categoryCounts.all === 0) {
     return (
-      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm">
+      <div className="relative overflow-hidden rounded-xl border border-theme bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm">
         <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent pointer-events-none" />
         <div className="relative p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
@@ -188,7 +199,7 @@ const ActionHubProComponent: React.FC = () => {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:border-white/20">
+    <div className="relative overflow-hidden rounded-xl border border-theme bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:border-white/20">
       <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-transparent pointer-events-none" />
       <div className="relative p-5 flex flex-col gap-4">
         <div className="flex items-center justify-between">
@@ -205,7 +216,7 @@ const ActionHubProComponent: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-2 py-1 text-xs rounded bg-white/10 border border-white/20 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-all cursor-pointer"
+              className="px-2 py-1 text-xs rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 hover:bg-slate-300 dark:bg-white/15 focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-all cursor-pointer"
               aria-label="Sort actions by"
             >
               <option value="priority">Sort: Priority</option>
@@ -227,7 +238,7 @@ const ActionHubProComponent: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => handleCategoryClick('all')} className={`px-4 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-medium transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 ${selectedCategory === 'all' ? 'bg-accent-500/20 text-accent-300 border border-accent-500/30 shadow-lg shadow-accent-500/10 focus:ring-accent-500/50' : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 focus:ring-white/50'}`} aria-label={`Filter all actions, ${categoryCounts.all} items`} aria-pressed={selectedCategory === 'all'}>
+          <button onClick={() => handleCategoryClick('all')} className={`px-4 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-medium transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 ${selectedCategory === 'all' ? 'bg-accent-500/20 text-accent-300 border border-accent-500/30 shadow-lg shadow-accent-500/10 focus:ring-accent-500/50' : 'bg-interactive border border-theme hover:bg-slate-200 dark:bg-white/10 hover:border-slate-300 dark:border-white/20 focus:ring-white/50'}`} aria-label={`Filter all actions, ${categoryCounts.all} items`} aria-pressed={selectedCategory === 'all'}>
             All ({categoryCounts.all})
           </button>
           {(Object.keys(CATEGORY_ICONS) as ActionCategory[]).map(cat => {
@@ -235,7 +246,7 @@ const ActionHubProComponent: React.FC = () => {
             const count = categoryCounts[cat];
             if (count === 0) return null;
             return (
-              <button key={cat} onClick={() => handleCategoryClick(cat)} className={`flex items-center gap-2 px-4 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-medium transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 ${selectedCategory === cat ? 'bg-white/15 border border-white/20 shadow-lg focus:ring-white/50' : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 focus:ring-white/50'}`} aria-label={`Filter ${cat} actions, ${count} items`} aria-pressed={selectedCategory === cat}>
+              <button key={cat} onClick={() => handleCategoryClick(cat)} className={`flex items-center gap-2 px-4 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-medium transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 ${selectedCategory === cat ? 'bg-slate-300 dark:bg-white/15 border border-slate-300 dark:border-white/20 shadow-lg focus:ring-white/50' : 'bg-interactive border border-theme hover:bg-slate-200 dark:bg-white/10 hover:border-slate-300 dark:border-white/20 focus:ring-white/50'}`} aria-label={`Filter ${cat} actions, ${count} items`} aria-pressed={selectedCategory === cat}>
                 <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                 <span className="capitalize">{cat}</span>
                 <span className="ml-1 opacity-60">({count})</span>
@@ -244,26 +255,23 @@ const ActionHubProComponent: React.FC = () => {
           })}
         </div>
 
-        <div className="border border-white/10 rounded-xl overflow-hidden bg-gradient-to-b from-white/5 to-transparent backdrop-blur-sm">
+        <div className="border border-theme rounded-xl overflow-hidden bg-gradient-to-b from-slate-100 dark:from-white/5 to-transparent backdrop-blur-sm">
           {filteredAndSortedActions.length === 0 ? (
             <div className="p-10 text-center">
-              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
+              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-white/10 to-slate-50 dark:to-white/5 flex items-center justify-center">
                 <Filter className="w-7 h-7 opacity-50" />
               </div>
               <div className="text-sm font-medium mb-1">No {selectedCategory !== 'all' ? selectedCategory : ''} actions</div>
               <div className="text-xs opacity-60">Try selecting a different category</div>
             </div>
           ) : (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-slate-200 dark:divide-white/5">
               {filteredAndSortedActions.map((action, index) => {
                 const config = PRIORITY_COLORS[action.priority];
                 const CategoryIcon = CATEGORY_ICONS[action.category];
                 return (
-                  <motion.div
+                  <div
                     key={action.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.03 }}
                     className={`group border-l-2 transition-all duration-300 hover:bg-white/8 relative overflow-hidden ${action.completed ? 'opacity-60' : ''} ${
                       action.priority === 'critical' ? 'border-l-red-500 hover:bg-red-500/5' :
                       action.priority === 'high' ? 'border-l-amber-500 hover:bg-amber-500/5' :
@@ -285,14 +293,14 @@ const ActionHubProComponent: React.FC = () => {
                           }`}
                         aria-label={action.completed ? 'Mark as incomplete' : 'Mark as complete'}
                       >
-                        {action.completed && <Check className="w-3.5 h-3.5 text-white" />}
+                        {action.completed && <Check className="w-3.5 h-3.5 text-theme-primary" />}
                       </button>
 
                       {/* Main Content */}
                       <div className="flex-1 min-w-0 py-0.5">
                         {/* Title + Priority Badge */}
                         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                          <h3 className="font-semibold text-sm truncate group-hover:text-white/90 transition-colors">{action.title}</h3>
+                          <h3 className="font-semibold text-sm truncate group-hover:text-slate-700 dark:text-slate-700 dark:text-white/90 transition-colors">{action.title}</h3>
                           <span className={`text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wide font-medium flex-shrink-0 ${
                             action.priority === 'critical' ? 'bg-red-500/20 text-red-300' :
                             action.priority === 'high' ? 'bg-amber-500/20 text-amber-300' :
@@ -302,10 +310,10 @@ const ActionHubProComponent: React.FC = () => {
                         </div>
 
                         {/* Description */}
-                        <p className="text-xs text-white/60 group-hover:text-white/70 transition-colors truncate mb-2">{action.description}</p>
+                        <p className="text-xs text-slate-400 dark:text-white/60 group-hover:text-slate-500 dark:text-white/70 transition-colors truncate mb-2">{action.description}</p>
 
                         {/* Meta Info */}
-                        <div className="flex items-center gap-3 text-xs text-white/50 group-hover:text-white/60 transition-colors flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-slate-300 dark:text-white/50 group-hover:text-slate-400 dark:text-white/60 transition-colors flex-wrap">
                           {action.city && (
                             <div className="flex items-center gap-1.5">
                               <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -345,7 +353,7 @@ const ActionHubProComponent: React.FC = () => {
                             e.stopPropagation();
                             handleActionClick(action);
                           }}
-                          className="px-3 py-1.5 min-h-[44px] md:min-h-0 rounded-lg bg-white/10 hover:bg-accent-500/20 hover:border-accent-500/30 border border-white/10 text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500/50 active:scale-95 whitespace-nowrap"
+                          className="px-3 py-1.5 min-h-[44px] md:min-h-0 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-accent-500/20 hover:border-accent-500/30 border border-theme text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500/50 active:scale-95 whitespace-nowrap"
                           aria-label={`${action.actionText} for ${action.city || action.title}`}
                           disabled={action.completed}
                         >
@@ -353,7 +361,7 @@ const ActionHubProComponent: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>

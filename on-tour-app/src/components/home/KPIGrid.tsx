@@ -148,16 +148,16 @@ export const KPIGrid: React.FC<KPIGridProps> = ({
         {items.map((item) => (
           <article
             key={item.id}
-            className="glass flex h-full flex-col justify-between rounded-2xl border border-white/5 bg-white/5 p-6 shadow-sm transition-transform duration-[var(--dur)] ease-[var(--ease)] hover:-translate-y-1 hover:shadow-[var(--elev-2)]"
+            className="glass flex h-full flex-col justify-between rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-100 dark:bg-white/5 p-6 shadow-sm transition-transform duration-[var(--dur)] ease-[var(--ease)] hover:-translate-y-1 hover:shadow-[var(--elev-2)]"
           >
             <div>
               <p className="text-sm uppercase tracking-[0.2em] text-accent-200">
                 {item.label}
               </p>
-              <p className="mt-4 text-4xl font-semibold text-white">{item.value}</p>
+              <p className="mt-4 text-4xl font-semibold text-slate-900 dark:text-white">{item.value}</p>
             </div>
             {item.description ? (
-              <p className="mt-6 text-sm text-white/70">{item.description}</p>
+              <p className="mt-6 text-sm text-slate-500 dark:text-white/70">{item.description}</p>
             ) : null}
           </article>
         ))}
@@ -236,7 +236,7 @@ export const KPIGrid: React.FC<KPIGridProps> = ({
                 key={f.title}
                 variants={itemVariants}
                 transition={{ duration: 0.7, ease: 'easeOut', delay: index * 0.1 }}
-                className={`relative glass p-6 flex flex-col gap-4 group cursor-pointer hover:shadow-[var(--elev-2)] transition-all duration-300 border border-white/5 hover:border-accent-400/30 transform hover:scale-[1.02] hover:-translate-y-1 bg-gradient-to-br from-white/5 to-transparent hover:from-accent-500/10 hover:to-accent-400/5 ${isActive ? 'ring-2 ring-accent-500 shadow-lg shadow-accent-500/30 scale-105' : ''} ${isDimmed ? 'saturate-50 opacity-70' : ''}`}
+                className={`relative glass p-6 flex flex-col gap-4 group cursor-pointer hover:shadow-[var(--elev-2)] transition-all duration-300 border border-slate-100 dark:border-white/5 hover:border-accent-400/30 transform hover:scale-[1.02] hover:-translate-y-1 bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent hover:from-accent-500/10 hover:to-accent-400/5 ${isActive ? 'ring-2 ring-accent-500 shadow-lg shadow-accent-500/30 scale-105' : ''} ${isDimmed ? 'saturate-50 opacity-70' : ''}`}
                 onMouseEnter={() => onFeatureHover?.(f.title)}
                 onMouseLeave={() => onFeatureHover?.(null)}
                 onFocus={() => onFeatureHover?.(f.title)}

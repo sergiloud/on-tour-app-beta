@@ -43,7 +43,7 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="p-6 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-pointer"
+      className="p-6 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-pointer"
       onClick={() => {
         // TODO: Navigate to shows section
         // console.log('Navigate to shows');
@@ -55,7 +55,7 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
             <span className="text-lg">🎤</span>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
               {t('dashboard.card.shows.title') || 'Shows'}
             </h3>
             <p className="text-sm text-slate-400">
@@ -64,7 +64,7 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
           </div>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-white">{totalShows}</div>
+          <div className="text-2xl font-bold text-slate-900 dark:text-white">{totalShows}</div>
           <div className="text-xs text-slate-400">
             {t('dashboard.card.shows.total') || 'Total'}
           </div>
@@ -73,7 +73,7 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
 
       <div className="space-y-4">
         <div>
-          <h4 className="text-sm font-medium text-white mb-3">
+          <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
             {t('dashboard.card.shows.upcoming') || 'Upcoming Shows'}
           </h4>
           <div className="space-y-2">
@@ -83,10 +83,10 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                className="flex items-center justify-between p-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-white truncate">
+                  <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
                     {sanitizeName(show.name)}
                   </div>
                   <div className="text-xs text-slate-400">
@@ -108,7 +108,7 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="px-3 py-1 text-xs font-medium bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+            className="px-3 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-full transition-colors"
           >
             {t('dashboard.card.viewAll') || 'View All'}
           </motion.button>

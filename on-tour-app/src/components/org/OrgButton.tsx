@@ -57,8 +57,8 @@ export const OrgButton = React.forwardRef<
   // Variant styles
   const variantClasses = {
     primary: 'bg-gradient-to-r from-accent-500/25 via-accent-500/15 to-accent-600/10 border border-accent-500/30 hover:border-accent-500/50 hover:from-accent-500/35 hover:via-accent-500/25 hover:to-accent-600/20 text-accent-200 shadow-lg shadow-accent-500/10',
-    secondary: 'bg-white/8 border border-white/15 hover:border-white/30 hover:bg-white/12 text-white/90',
-    ghost: 'bg-transparent border-0 text-white/90 hover:text-white/100',
+    secondary: 'bg-white/8 border border-white/15 hover:border-slate-400 dark:hover:border-white/30 hover:bg-white/12 text-slate-700 dark:text-white/90',
+    ghost: 'bg-transparent border-0 text-slate-700 dark:text-slate-700 dark:text-white/90 hover:text-white/100',
     danger: 'bg-red-500/15 border border-red-500/30 hover:border-red-500/50 hover:bg-red-500/25 text-red-200',
   };
 

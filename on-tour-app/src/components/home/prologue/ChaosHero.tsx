@@ -233,7 +233,7 @@ export const ChaosHero: React.FC = () => {
       >
         {/* Glass morphism container for title */}
         <motion.div
-          className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 mb-8"
+          className="backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-8 md:p-12 mb-8"
           style={{
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
           }}
@@ -257,7 +257,7 @@ export const ChaosHero: React.FC = () => {
           </motion.h1>
 
           <motion.p
-            className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-4xl mx-auto"
+            className="text-xl md:text-2xl text-slate-700 dark:text-slate-700 dark:text-white/90 mb-8 leading-relaxed max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
@@ -295,7 +295,7 @@ export const ChaosHero: React.FC = () => {
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       >
-        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-full p-3 shadow-lg">
+        <div className="backdrop-blur-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 rounded-full p-3 shadow-lg">
           <div className="w-6 h-10 border-2 border-white/40 rounded-full flex justify-center">
             <motion.div
               className="w-1 h-3 bg-white/60 rounded-full mt-2"

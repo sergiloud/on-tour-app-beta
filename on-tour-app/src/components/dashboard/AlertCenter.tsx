@@ -117,40 +117,40 @@ export const AlertCenter: React.FC<{ open: boolean; onClose: () => void; items: 
     <div role="dialog" aria-modal="true" aria-labelledby="alert-center-title" aria-describedby="alert-center-desc" className="fixed inset-0 z-[var(--z-modal)]">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div ref={dialogRef} className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[92vw] max-w-3xl glass rounded-xl border border-white/12 shadow-2xl overflow-hidden text-[12px]">
-        <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
+        <div className="px-3 py-2 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div id="alert-center-title" className="text-[14px] font-semibold">{t('alerts.title')}</div>
-            <span className="px-2 py-0.5 rounded bg-white/10 text-[11px]" id="alert-center-desc">{filtered.length} / {items.length} alerts</span>
+            <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[11px]" id="alert-center-desc">{filtered.length} / {items.length} alerts</span>
           </div>
           <div className="flex items-center gap-2 text-[12px]" aria-label="Filters and actions">
-            <input className="bg-white/5 rounded px-2 py-1" placeholder={t('common.search')+ '…'} value={q} onChange={e=> setQ(e.target.value)} />
-            <select className="bg-white/5 rounded px-2 py-1" value={kind} onChange={e=> setKind(e.target.value as any)}>
+            <input className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1" placeholder={t('common.search')+ '…'} value={q} onChange={e=> setQ(e.target.value)} />
+            <select className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1" value={kind} onChange={e=> setKind(e.target.value as any)}>
               <option value="all">All</option>
               <option value="risk">Risk</option>
               <option value="urgency">Urgency</option>
               <option value="opportunity">Opportunity</option>
               <option value="info">Info</option>
             </select>
-            <select className="bg-white/5 rounded px-2 py-1" value={severity} onChange={e=> setSeverity(e.target.value as any)}>
+            <select className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1" value={severity} onChange={e=> setSeverity(e.target.value as any)}>
               <option value="all">{t('alerts.anySeverity')}</option>
               <option value="high">High</option>
               <option value="med">Medium</option>
               <option value="low">Low</option>
             </select>
-            <select className="bg-white/5 rounded px-2 py-1" value={region} onChange={e=> setRegion(e.target.value as any)}>
+            <select className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1" value={region} onChange={e=> setRegion(e.target.value as any)}>
               <option value="all">{t('alerts.anyRegion')}</option>
               <option value="AMER">AMER</option>
               <option value="EMEA">EMEA</option>
               <option value="APAC">APAC</option>
             </select>
-            <select className="bg-white/5 rounded px-2 py-1" value={team} onChange={e=> setTeam(e.target.value as any)}>
+            <select className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1" value={team} onChange={e=> setTeam(e.target.value as any)}>
               <option value="all">{t('alerts.anyTeam')}</option>
               <option value="A">Team A</option>
               <option value="B">Team B</option>
             </select>
-            <button className="px-2 py-1 rounded bg-white/10 hover:bg-white/15" onClick={toCSV}>Export CSV</button>
-            <button className="px-2 py-1 rounded bg-white/10 hover:bg-white/15" onClick={toSlack}>{copiedSlack ? t('alerts.copied') : t('alerts.copySlack')}</button>
-            <button className="px-2 py-1 rounded bg-white/10 hover:bg-white/15" onClick={onClose} aria-label={t('common.close')}>{t('common.close')}</button>
+            <button className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={toCSV}>Export CSV</button>
+            <button className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={toSlack}>{copiedSlack ? t('alerts.copied') : t('alerts.copySlack')}</button>
+            <button className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={onClose} aria-label={t('common.close')}>{t('common.close')}</button>
           </div>
         </div>
         <div className="max-h-[70vh] overflow-auto p-3 grid gap-2">
@@ -160,7 +160,7 @@ export const AlertCenter: React.FC<{ open: boolean; onClose: () => void; items: 
                 <div className="text-[13px] font-medium">{redact(a.title)}</div>
                 <div className="text-[11px] opacity-70">{a.date} {a.meta ? `• ${redact(a.meta)}` : ''} {a._region ? `• ${a._region}` : ''} {a._team ? `• Team ${a._team}` : ''}</div>
               </div>
-              <span className="text-[11px] px-2 py-0.5 rounded bg-white/10 capitalize">{a.kind}</span>
+              <span className="text-[11px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 capitalize">{a.kind}</span>
             </Card>
           ))}
           {filtered.length===0 && <div className="text-[12px] opacity-70">{t('alerts.noAlerts')}</div>}

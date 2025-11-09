@@ -27,33 +27,44 @@ const K_VIEW_AS = 'demo:viewAs'; // { prevOrgId, artistOrgId } when agency is vi
 
 export const ORG_ARTIST_DANNY = 'org_artist_danny_avila';
 export const ORG_ARTIST_DANNY_V2 = 'org_artist_danny_avila_v2';
+export const ORG_ARTIST_PROPHECY = 'org_artist_prophecy';
 export const ORG_AGENCY_SHALIZI = 'org_agency_shalizi_group';
+export const ORG_AGENCY_A2G = 'org_agency_a2g_management';
 
 const SEED = {
   orgs: [
     { id: ORG_ARTIST_DANNY, type: 'artist', name: 'Danny Avila', seatLimit: 5, guestLimit: 5 },
     { id: ORG_ARTIST_DANNY_V2, type: 'artist', name: 'Danny Avila 2', seatLimit: 5, guestLimit: 5 },
+    { id: ORG_ARTIST_PROPHECY, type: 'artist', name: 'Prophecy', seatLimit: 5, guestLimit: 5 },
     { id: ORG_AGENCY_SHALIZI, type: 'agency', name: 'Shalizi Group', seatLimit: 5, guestLimit: 5 },
+    { id: ORG_AGENCY_A2G, type: 'agency', name: 'A2G Management', seatLimit: 5, guestLimit: 5 },
   ] as Org[],
   users: [
     { id: 'user_danny', name: 'Danny Avila' },
     { id: 'user_danny_v2', name: 'Danny Avila 2' },
+    { id: 'user_prophecy', name: 'Prophecy' },
     { id: 'user_adam', name: 'Adam' },
     { id: 'user_mike', name: 'Mike' },
     { id: 'user_sergio', name: 'Sergio' },
+    { id: 'user_aitzol', name: 'Aitzol' },
   ] as User[],
   memberships: [
     { orgId: ORG_ARTIST_DANNY, userId: 'user_danny', role: 'owner' },
     { orgId: ORG_ARTIST_DANNY, userId: 'user_mike', role: 'manager' },
     { orgId: ORG_ARTIST_DANNY, userId: 'user_sergio', role: 'manager' },
     { orgId: ORG_ARTIST_DANNY_V2, userId: 'user_danny_v2', role: 'owner' },
+    { orgId: ORG_ARTIST_PROPHECY, userId: 'user_prophecy', role: 'owner' },
+    { orgId: ORG_ARTIST_PROPHECY, userId: 'user_aitzol', role: 'manager' },
     { orgId: ORG_AGENCY_SHALIZI, userId: 'user_adam', role: 'manager' },
+    { orgId: ORG_AGENCY_A2G, userId: 'user_aitzol', role: 'owner' },
   ] as Membership[],
   teams: [
     { id: 'team_sg_danny', orgId: ORG_AGENCY_SHALIZI, name: 'Danny Avila', members: ['user_adam'] },
+    { id: 'team_a2g_prophecy', orgId: ORG_AGENCY_A2G, name: 'Prophecy', members: ['user_aitzol'] },
   ] as Team[],
   links: [
     { id: 'link_shalizi_to_danny', agencyOrgId: ORG_AGENCY_SHALIZI, artistOrgId: ORG_ARTIST_DANNY, status: 'active', scopes: { shows: 'write', travel: 'book', finance: 'read' } },
+    { id: 'link_a2g_to_prophecy', agencyOrgId: ORG_AGENCY_A2G, artistOrgId: ORG_ARTIST_PROPHECY, status: 'active', scopes: { shows: 'write', travel: 'book', finance: 'export' } },
   ] as Link[],
   currentOrg: ORG_ARTIST_DANNY,
 };

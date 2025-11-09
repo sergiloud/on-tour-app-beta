@@ -124,16 +124,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigateMonth('prev')}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-lg transition-colors"
           >
             ←
           </button>
-          <h2 className="text-xl font-semibold text-white">
+          <h2 className="text-xl font-semibold text-theme-primary">
             {formatMonthYear(currentDate)}
           </h2>
           <button
             onClick={() => navigateMonth('next')}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-lg transition-colors"
           >
             →
           </button>
@@ -169,8 +169,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.15, delay: index * 0.005 }}
-                className={`min-h-[120px] p-2 border border-white/10 rounded-lg ${
-                  day ? 'hover:bg-white/5 cursor-pointer' : ''
+                className={`min-h-[120px] p-2 border border-theme rounded-lg ${
+                  day ? 'hover:bg-interactive cursor-pointer' : ''
                 } ${isToday ? 'ring-2 ring-blue-500/50' : ''}`}
               >
                 {day && (
@@ -227,7 +227,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed z-50 bg-black/90 backdrop-blur-sm border border-white/20 rounded-lg p-4 shadow-xl"
+            className="fixed z-50 bg-black/90 backdrop-blur-sm border border-slate-300 dark:border-white/20 rounded-lg p-4 shadow-xl"
             style={{
               left: '50%',
               top: '50%',
@@ -243,15 +243,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-slate-400">Date:</span>
-                  <p className="text-white">{selectedEvent.date.toLocaleDateString()}</p>
+                  <p className="text-theme-primary">{selectedEvent.date.toLocaleDateString()}</p>
                 </div>
                 <div>
                   <span className="text-slate-400">Status:</span>
-                  <p className="text-white capitalize">{selectedEvent.show.status.replace('_', ' ')}</p>
+                  <p className="text-slate-900 dark:text-white capitalize">{selectedEvent.show.status.replace('_', ' ')}</p>
                 </div>
                 <div>
                   <span className="text-slate-400">Tickets:</span>
-                  <p className="text-white">{selectedEvent.show.ticketSalesPercentage}% sold</p>
+                  <p className="text-theme-primary">{selectedEvent.show.ticketSalesPercentage}% sold</p>
                 </div>
                 <div>
                   <span className="text-slate-400">Margin:</span>

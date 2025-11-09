@@ -169,16 +169,16 @@ const EventCreationModal: React.FC<Props> = ({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <h2 className="text-base font-semibold text-white">
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-white">
                     {eventTypeConfig[eventType].label}
                   </h2>
-                  <p className="text-xs text-white/60 mt-0.5">
+                  <p className="text-xs text-slate-400 dark:text-white/60 mt-0.5">
                     {eventTypeConfig[eventType].description}
                   </p>
                 </motion.div>
                 <motion.button
                   onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white flex-shrink-0"
+                  className="p-2 rounded-lg hover:bg-slate-200 dark:bg-white/10 transition-colors text-slate-400 dark:text-white/60 hover:text-white flex-shrink-0"
                   aria-label="Close dialog"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
@@ -193,7 +193,7 @@ const EventCreationModal: React.FC<Props> = ({
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
                 {/* Event Type Selector */}
                 <div>
-                  <label className="text-xs font-semibold text-white/80 mb-3 block uppercase tracking-wide opacity-70">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-3 block uppercase tracking-wide opacity-70">
                     Event Type
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
@@ -207,8 +207,8 @@ const EventCreationModal: React.FC<Props> = ({
                         }}
                         className={`px-3 py-2 rounded text-xs font-medium transition-all border ${
                           eventType === type
-                            ? 'bg-white/10 border-white/20 text-white'
-                            : 'bg-white/5 text-white/70 hover:bg-white/10 border-white/10'
+                            ? 'bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-white/20 text-white'
+                            : 'bg-white/5 text-slate-500 dark:text-white/70 hover:bg-slate-200 dark:bg-white/10 border-white/10'
                         }`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -221,7 +221,7 @@ const EventCreationModal: React.FC<Props> = ({
 
                 {/* Common Date Field */}
                 <div>
-                  <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                     Start Date
                   </label>
                   <input
@@ -229,7 +229,7 @@ const EventCreationModal: React.FC<Props> = ({
                     type="date"
                     value={data.date}
                     onChange={(e) => setData({ ...data, date: e.target.value })}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                   />
                 </div>
 
@@ -244,7 +244,7 @@ const EventCreationModal: React.FC<Props> = ({
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                           City *
                         </label>
                         <input
@@ -252,16 +252,16 @@ const EventCreationModal: React.FC<Props> = ({
                           value={data.city || ''}
                           onChange={(e) => setData({ ...data, city: e.target.value })}
                           placeholder="Madrid"
-                          className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
+                          className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
                             errors.city
                               ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50'
-                              : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                              : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                           }`}
                         />
                         {errors.city && <p className="text-xs text-rose-400/80 mt-1">{errors.city}</p>}
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                           Country *
                         </label>
                         <input
@@ -269,17 +269,17 @@ const EventCreationModal: React.FC<Props> = ({
                           value={data.country || ''}
                           onChange={(e) => setData({ ...data, country: e.target.value })}
                           placeholder="ES"
-                          className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
+                          className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
                             errors.country
                               ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50'
-                              : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                              : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                           }`}
                         />
                         {errors.country && <p className="text-xs text-rose-400/80 mt-1">{errors.country}</p>}
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         Venue
                       </label>
                       <input
@@ -287,18 +287,18 @@ const EventCreationModal: React.FC<Props> = ({
                         value={data.location || ''}
                         onChange={(e) => setData({ ...data, location: e.target.value })}
                         placeholder="e.g., Palau Sant Jordi"
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         Time
                       </label>
                       <input
                         type="time"
                         value={data.time || ''}
                         onChange={(e) => setData({ ...data, time: e.target.value })}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                       />
                     </div>
                   </motion.div>
@@ -315,18 +315,18 @@ const EventCreationModal: React.FC<Props> = ({
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                           Departure Date *
                         </label>
                         <input
                           type="date"
                           value={data.date}
                           onChange={(e) => setData({ ...data, date: e.target.value })}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                           Return Date *
                         </label>
                         <input
@@ -336,7 +336,7 @@ const EventCreationModal: React.FC<Props> = ({
                           className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm focus:outline-none transition-colors ${
                             errors.dateEnd
                               ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50'
-                              : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                              : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                           }`}
                         />
                         {errors.dateEnd && <p className="text-xs text-rose-400/80 mt-1">{errors.dateEnd}</p>}
@@ -344,7 +344,7 @@ const EventCreationModal: React.FC<Props> = ({
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                           Origin *
                         </label>
                         <input
@@ -352,16 +352,16 @@ const EventCreationModal: React.FC<Props> = ({
                           value={data.origin || ''}
                           onChange={(e) => setData({ ...data, origin: e.target.value })}
                           placeholder="Madrid"
-                          className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
+                          className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
                             errors.origin
                               ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50'
-                              : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                              : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                           }`}
                         />
                         {errors.origin && <p className="text-xs text-rose-400/80 mt-1">{errors.origin}</p>}
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                           Destination *
                         </label>
                         <input
@@ -369,23 +369,23 @@ const EventCreationModal: React.FC<Props> = ({
                           value={data.destination || ''}
                           onChange={(e) => setData({ ...data, destination: e.target.value })}
                           placeholder="Barcelona"
-                          className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
+                          className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
                             errors.destination
                               ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50'
-                              : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                              : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                           }`}
                         />
                         {errors.destination && <p className="text-xs text-rose-400/80 mt-1">{errors.destination}</p>}
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         Travel Mode
                       </label>
                       <select
                         value={data.travelMode || 'flight'}
                         onChange={(e) => setData({ ...data, travelMode: e.target.value as any })}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                       >
                         <option value="flight">Flight</option>
                         <option value="train">Train</option>
@@ -406,7 +406,7 @@ const EventCreationModal: React.FC<Props> = ({
                     transition={{ duration: 0.2 }}
                   >
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         Title *
                       </label>
                       <input
@@ -414,16 +414,16 @@ const EventCreationModal: React.FC<Props> = ({
                         value={data.title || ''}
                         onChange={(e) => setData({ ...data, title: e.target.value })}
                         placeholder="Event title"
-                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
+                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
                           errors.title
                             ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50'
-                            : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                            : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                         }`}
                       />
                       {errors.title && <p className="text-xs text-rose-400/80 mt-1">{errors.title}</p>}
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         Location *
                       </label>
                       <input
@@ -431,40 +431,40 @@ const EventCreationModal: React.FC<Props> = ({
                         value={data.location || ''}
                         onChange={(e) => setData({ ...data, location: e.target.value })}
                         placeholder="Address or venue"
-                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-white/40 focus:outline-none transition-colors ${
+                        className={`w-full px-3 py-2 bg-white/5 border rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none transition-colors ${
                           errors.location
                             ? 'border-rose-500/50 focus:bg-rose-500/5 focus:border-rose-500/50'
-                            : 'border-white/10 focus:bg-white/8 focus:border-white/20'
+                            : 'border-slate-200 dark:border-white/10 focus:bg-white/8 focus:border-white/20'
                         }`}
                       />
                       {errors.location && <p className="text-xs text-rose-400/80 mt-1">{errors.location}</p>}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                           Start Time
                         </label>
                         <input
                           type="time"
                           value={data.time || ''}
                           onChange={(e) => setData({ ...data, time: e.target.value })}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                           End Time
                         </label>
                         <input
                           type="time"
                           value={data.timeEnd || ''}
                           onChange={(e) => setData({ ...data, timeEnd: e.target.value })}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                          className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         Description
                       </label>
                       <textarea
@@ -472,7 +472,7 @@ const EventCreationModal: React.FC<Props> = ({
                         onChange={(e) => setData({ ...data, description: e.target.value })}
                         placeholder="Add notes..."
                         rows={3}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors resize-none"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors resize-none"
                       />
                     </div>
                   </motion.div>
@@ -488,7 +488,7 @@ const EventCreationModal: React.FC<Props> = ({
                     transition={{ duration: 0.2 }}
                   >
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         Title
                       </label>
                       <input
@@ -496,22 +496,22 @@ const EventCreationModal: React.FC<Props> = ({
                         value={data.title || ''}
                         onChange={(e) => setData({ ...data, title: e.target.value })}
                         placeholder="Break description"
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         End Date
                       </label>
                       <input
                         type="date"
                         value={data.dateEnd || ''}
                         onChange={(e) => setData({ ...data, dateEnd: e.target.value })}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-white/80 mb-2 block uppercase tracking-wide opacity-70">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-white/80 mb-2 block uppercase tracking-wide opacity-70">
                         Description
                       </label>
                       <textarea
@@ -519,7 +519,7 @@ const EventCreationModal: React.FC<Props> = ({
                         onChange={(e) => setData({ ...data, description: e.target.value })}
                         placeholder="Notes about this break..."
                         rows={2}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm placeholder:text-white/40 focus:outline-none focus:bg-white/8 focus:border-white/20 transition-colors resize-none"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:bg-white/8 focus:border-slate-300 dark:border-white/20 transition-colors resize-none"
                       />
                     </div>
                   </motion.div>
@@ -533,7 +533,7 @@ const EventCreationModal: React.FC<Props> = ({
               >
                 <motion.button
                   onClick={onClose}
-                  className="px-3 py-2 rounded text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 bg-transparent border border-white/10 transition-all"
+                  className="px-3 py-2 rounded text-sm font-medium text-slate-500 dark:text-white/70 hover:text-white hover:bg-slate-100 dark:bg-white/5 bg-transparent border border-slate-200 dark:border-white/10 transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -542,7 +542,7 @@ const EventCreationModal: React.FC<Props> = ({
                 <motion.button
                   onClick={handleSave}
                   disabled={false}
-                  className="px-3 py-2 rounded text-sm font-medium text-white bg-white/10 hover:bg-white/15 border border-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-2 rounded text-sm font-medium text-white bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

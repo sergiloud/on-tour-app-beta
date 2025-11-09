@@ -46,9 +46,9 @@ function set<T>(key: string, value: T) {
   try { secureStorage.setItem(key, value); } catch { }
 }
 
-const DEFAULT_USER = 'dannyavila';
+const DEFAULT_USER = 'default_user';
 import { ORG_ARTIST_DANNY } from './tenants';
-const DEFAULT_PROFILE: UserProfile = { id: DEFAULT_USER, name: 'Danny Avila', email: 'danny@example.com', notifyEmail: true, notifySlack: false, defaultOrgId: ORG_ARTIST_DANNY };
+const DEFAULT_PROFILE: UserProfile = { id: DEFAULT_USER, name: 'Demo User', email: 'user@example.com', notifyEmail: true, notifySlack: false, defaultOrgId: ORG_ARTIST_DANNY };
 const DEFAULT_PREFS: UserPrefs = {
   lang: 'en', theme: 'auto', highContrast: false, currency: 'EUR', unit: 'km', presentationMode: false,
   comparePrev: false, defaultRegion: 'all', defaultStatuses: ['confirmed', 'pending', 'offer']

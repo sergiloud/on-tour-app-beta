@@ -54,7 +54,7 @@ const FormField: React.FC<FormFieldProps> = ({
       )}
 
       {hint && !error && (
-        <p className="text-xs text-white/50">{hint}</p>
+        <p className="text-xs text-slate-300 dark:text-white/50">{hint}</p>
       )}
     </div>
   );

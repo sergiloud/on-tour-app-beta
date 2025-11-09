@@ -176,7 +176,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
     <motion.div
       initial={{ opacity: 0, y: -5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 mb-6"
+      className="bg-slate-100 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-xl p-4 mb-6"
     >
       {/* Main Filter Bar */}
       <div className="flex items-center gap-4 flex-wrap">
@@ -188,7 +188,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
               placeholder="Search shows, cities, venues..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 pl-10 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full px-4 py-2 pl-10 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
               🔍
@@ -201,7 +201,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             <option value="date">Sort by Date</option>
             <option value="name">Sort by Name</option>
@@ -254,7 +254,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-white/10 mt-4 pt-4 space-y-6">
+            <div className="border-t border-slate-200 dark:border-white/10 mt-4 pt-4 space-y-6">
               {/* Status Filters */}
               <div>
                 <h4 className="text-sm font-medium text-slate-300 mb-3">Status</h4>
@@ -273,7 +273,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         filters.status.includes(status.value as Show['status'])
                           ? `${status.color} text-white`
-                          : 'bg-white/10 text-slate-400 hover:bg-white/20'
+                          : 'bg-slate-200 dark:bg-white/10 text-slate-400 hover:bg-white/20'
                       }`}
                     >
                       {status.label}
@@ -297,8 +297,8 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                       onClick={() => togglePriorityFilter(priority.value as Show['priority'])}
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors border ${
                         filters.priority.includes(priority.value as Show['priority'])
-                          ? 'border-white/50 bg-white/10 text-white'
-                          : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'
+                          ? 'border-white/50 bg-slate-200 dark:bg-white/10 text-white'
+                          : 'border-slate-200 dark:border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'
                       }`}
                     >
                       {priority.label}
@@ -317,7 +317,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                       type="date"
                       value={filters.dateRange.start}
                       onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, start: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     />
                   </div>
                   <div>
@@ -326,7 +326,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                       type="date"
                       value={filters.dateRange.end}
                       onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, end: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     />
                   </div>
                 </div>

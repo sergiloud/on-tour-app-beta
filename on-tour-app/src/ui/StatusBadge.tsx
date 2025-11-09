@@ -8,7 +8,7 @@ const tone: Record<Status, string> = {
   pending: 'bg-amber-500/18 text-amber-200 border-amber-400/30',
   offer: 'bg-white/8 text-white/75 border-white/15',
   canceled: 'bg-rose-500/18 text-rose-200 border-rose-400/30',
-  archived: 'bg-white/4 text-white/50 border-white/12',
+  archived: 'bg-white/4 text-slate-300 dark:text-white/50 border-white/12',
   risk: 'bg-red-600/20 text-red-200 border-red-400/30',
   postponed: 'bg-indigo-500/18 text-indigo-200 border-indigo-400/30'
 };

@@ -15,7 +15,7 @@ export const OrgSwitcher: React.FC<{ open: boolean; onClose: () => void }> = ({ 
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[92vw] max-w-sm glass rounded-lg border border-white/15 shadow-2xl p-4">
         <h2 id="org-switch-title" className="text-base font-semibold mb-2">{t('nav.changeOrg')||'Change organization'}</h2>
-        <select ref={ref} className="w-full bg-white/10 rounded px-2 py-2" value={orgId} onChange={(e)=>{
+        <select ref={ref} className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded px-2 py-2" value={orgId} onChange={(e)=>{
           setCurrentOrgId(e.target.value);
           try { Events.welcomeCta('switchOrg'); } catch {}
           refresh();

@@ -190,12 +190,12 @@ export const CustomFieldEditor: React.FC<{
   };
 
   return (
-    <motion.div className="p-3 rounded-lg bg-white/5 border border-white/10 space-y-3">
+    <motion.div className="p-3 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-3">
       {!isEditing ? (
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-white">{field.label}</p>
-            <p className="text-xs text-white/50">{field.type}</p>
+            <p className="text-sm font-medium text-slate-900 dark:text-white">{field.label}</p>
+            <p className="text-xs text-slate-300 dark:text-white/50">{field.type}</p>
           </div>
           <div className="flex items-center gap-1">
             <motion.button
@@ -222,13 +222,13 @@ export const CustomFieldEditor: React.FC<{
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            className="w-full px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
+            className="w-full px-2 py-1.5 rounded-lg bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
             placeholder="Field label"
           />
           <select
             value={type}
             onChange={(e) => setType(e.target.value as CustomFieldType)}
-            className="w-full px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
+            className="w-full px-2 py-1.5 rounded-lg bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
           >
             <option value="text">Text</option>
             <option value="number">Number</option>
@@ -239,7 +239,7 @@ export const CustomFieldEditor: React.FC<{
             <option value="select">Select</option>
             <option value="checkbox">Checkbox</option>
           </select>
-          <label className="flex items-center gap-2 text-xs text-white/70">
+          <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/70">
             <input
               type="checkbox"
               checked={required}
@@ -261,7 +261,7 @@ export const CustomFieldEditor: React.FC<{
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsEditing(false)}
-              className="flex-1 px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-medium transition-all"
+              className="flex-1 px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10 text-white text-xs font-medium transition-all"
             >
               Cancel
             </motion.button>
@@ -324,9 +324,9 @@ export const CustomFieldManager: React.FC<{
   };
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
+    <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 space-y-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-white">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
           {t('calendar.customFields.title') || 'Custom Fields'}{' '}
           {selectedType && `for ${selectedType.name}`}
         </h3>
@@ -353,20 +353,20 @@ export const CustomFieldManager: React.FC<{
               type="text"
               value={newField.label || ''}
               onChange={(e) => setNewField({ ...newField, label: e.target.value })}
-              className="w-full px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
+              className="w-full px-2 py-1.5 rounded-lg bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
               placeholder="Field label (e.g., Flight Number)"
             />
             <input
               type="text"
               value={newField.name || ''}
               onChange={(e) => setNewField({ ...newField, name: e.target.value })}
-              className="w-full px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
+              className="w-full px-2 py-1.5 rounded-lg bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
               placeholder="Field name (e.g., flight_number)"
             />
             <select
               value={newField.type || 'text'}
               onChange={(e) => setNewField({ ...newField, type: e.target.value as CustomFieldType })}
-              className="w-full px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
+              className="w-full px-2 py-1.5 rounded-lg bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white text-sm focus:outline-none focus:border-accent-400"
             >
               <option value="text">Text</option>
               <option value="number">Number</option>
@@ -390,7 +390,7 @@ export const CustomFieldManager: React.FC<{
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowAddField(false)}
-                className="flex-1 px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-medium transition-all"
+                className="flex-1 px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10 text-white text-xs font-medium transition-all"
               >
                 Cancel
               </motion.button>
@@ -402,7 +402,7 @@ export const CustomFieldManager: React.FC<{
       {/* Existing Fields */}
       <div className="space-y-2">
         {fields.length === 0 ? (
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-slate-300 dark:text-white/50">
             {t('calendar.customFields.none') || 'No custom fields yet'}
           </p>
         ) : (

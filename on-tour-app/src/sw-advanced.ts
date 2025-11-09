@@ -30,18 +30,18 @@ declare const self: ServiceWorkerGlobalScope;
 // ========================================
 
 const CACHE_VERSIONS = {
-    appShell: 'app-shell-v1',
-    api: 'api-cache-v1',
-    assets: 'assets-cache-v1',
-    images: 'images-cache-v1',
-    fonts: 'fonts-cache-v1'
+    appShell: 'app-shell-v2', // Incrementado para force update
+    api: 'api-cache-v2',
+    assets: 'assets-cache-v2',
+    images: 'images-cache-v2',
+    fonts: 'fonts-cache-v2'
 };
 
 const CACHE_DURATIONS = {
-    appShell: 7 * 24 * 60 * 60, // 7 días
-    api: 5 * 60, // 5 minutos
-    assets: 30 * 24 * 60 * 60, // 30 días
-    images: 30 * 24 * 60 * 60, // 30 días
+    appShell: 30 * 24 * 60 * 60, // 30 días (increased from 7)
+    api: 10 * 60, // 10 minutos (increased from 5)
+    assets: 60 * 24 * 60 * 60, // 60 días (increased from 30)
+    images: 60 * 24 * 60 * 60, // 60 días (increased from 30)
     fonts: 365 * 24 * 60 * 60 // 1 año
 };
 
@@ -102,13 +102,13 @@ registerRoute(
     },
     new NetworkFirst({
         cacheName: CACHE_VERSIONS.api,
-        networkTimeoutSeconds: 5, // 5s timeout
+        networkTimeoutSeconds: 3, // 3s timeout (reduced from 5s)
         plugins: [
             new CacheableResponsePlugin({
                 statuses: [0, 200]
             }),
             new ExpirationPlugin({
-                maxEntries: 200,
+                maxEntries: 300, // Increased from 200
                 maxAgeSeconds: CACHE_DURATIONS.api,
                 purgeOnQuotaError: true
             })
@@ -130,7 +130,7 @@ registerRoute(
                 statuses: [0, 200]
             }),
             new ExpirationPlugin({
-                maxEntries: 300,
+                maxEntries: 500, // Increased from 300
                 maxAgeSeconds: CACHE_DURATIONS.images,
                 purgeOnQuotaError: true
             })

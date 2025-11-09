@@ -31,7 +31,7 @@ interface GlassOrb {
 const FloatingOrb = memo(({ orb, index }: { orb: GlassOrb; index: number }) => {
   return (
     <motion.div
-      className="absolute rounded-full backdrop-blur-xl bg-white/5 border border-white/10 will-change-transform"
+      className="absolute rounded-full backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 will-change-transform"
       style={{
         width: orb.size,
         height: orb.size,
@@ -180,7 +180,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
 
       {/* Main glass container with 3D effect */}
       <motion.div
-        className="relative w-full h-full backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
+        className="relative w-full h-full backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl"
         style={{
           rotateX,
           rotateY,
@@ -206,7 +206,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
 
         {/* Browser-like header with glass effect */}
         <motion.div
-          className="relative backdrop-blur-md bg-white/5 px-6 py-4 flex items-center gap-3 border-b border-white/10"
+          className="relative backdrop-blur-md bg-slate-100 dark:bg-white/5 px-6 py-4 flex items-center gap-3 border-b border-white/10"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -226,7 +226,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
             />
           </div>
           <motion.div
-            className="flex-1 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-gray-300 text-center shadow-inner"
+            className="flex-1 backdrop-blur-sm bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2 text-sm text-gray-300 text-center shadow-inner"
             whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
           >
             on-tour-app.com/{activeDemo}
@@ -261,7 +261,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                 key={feature.id}
                 className={`relative w-4 h-4 rounded-full backdrop-blur-md border transition-all duration-500 overflow-hidden ${activeDemo === feature.id
                   ? 'bg-accent-500/80 border-accent-400/50 shadow-lg shadow-accent-500/30'
-                  : 'bg-white/10 border-white/20 hover:bg-white/20'
+                  : 'bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-white/20 hover:bg-white/20'
                   }`}
                 whileHover={{
                   scale: 1.3,
@@ -341,7 +341,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                       }}
                     >
                       <motion.div
-                        className="relative backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 h-full shadow-lg"
+                        className="relative backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 h-full shadow-lg"
                         whileHover={{
                           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
                           backgroundColor: 'rgba(255, 255, 255, 0.08)'
@@ -375,7 +375,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                           {kpi.value}
                         </motion.div>
                         <motion.div
-                          className="text-xs text-gray-500 px-2 py-1 backdrop-blur-sm bg-white/5 border border-white/10 rounded-full inline-block"
+                          className="text-xs text-gray-500 px-2 py-1 backdrop-blur-sm bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full inline-block"
                           whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
                         >
                           {kpi.change} this week
@@ -383,7 +383,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
 
                         {/* Subtle glass highlight */}
                         <motion.div
-                          className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-white/10 to-transparent rounded-full blur-xl"
+                          className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-slate-100/20 to-transparent dark:from-white/10 dark:to-transparent rounded-full blur-xl"
                           animate={{
                             opacity: [0.3, 0.6, 0.3],
                           }}
@@ -401,7 +401,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
 
                 {/* Mini calendar preview with glass design */}
                 <motion.div
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 shadow-lg"
+                  className="backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-lg"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
@@ -427,7 +427,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                     ].map((show, index) => (
                       <motion.div
                         key={show.date}
-                        className="relative flex items-center justify-between p-4 backdrop-blur-sm bg-white/5 border border-white/10 rounded-xl group cursor-pointer overflow-hidden"
+                        className="relative flex items-center justify-between p-4 backdrop-blur-sm bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl group cursor-pointer overflow-hidden"
                         initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{
@@ -502,7 +502,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 <motion.div
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 h-full shadow-lg"
+                  className="backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 h-full shadow-lg"
                   whileHover={{
                     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
                     backgroundColor: 'rgba(255, 255, 255, 0.08)'
@@ -528,7 +528,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
                       <motion.div
                         key={day}
-                        className="text-center text-sm font-semibold text-gray-300 py-3 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg"
+                        className="text-center text-sm font-semibold text-gray-300 py-3 backdrop-blur-sm bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.5 + index * 0.05 }}
@@ -554,8 +554,8 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                           className={`aspect-square flex items-center justify-center text-sm rounded-xl cursor-pointer transition-all duration-300 backdrop-blur-sm border relative overflow-hidden ${hasShow
                             ? 'bg-accent-500/20 border-accent-400/30 text-accent-200 shadow-lg shadow-accent-500/20'
                             : isToday
-                              ? 'bg-white/10 border-white/20 text-white font-bold'
-                              : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
+                              ? 'bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-white/20 text-white font-bold'
+                              : 'bg-white/5 border-slate-200 dark:border-white/10 text-gray-300 hover:bg-slate-200 dark:bg-white/10 hover:border-white/20'
                             }`}
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
@@ -617,14 +617,14 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 <motion.div
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 h-full shadow-lg"
+                  className="backdrop-blur-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-8 h-full shadow-lg"
                   whileHover={{
                     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
                     backgroundColor: 'rgba(255, 255, 255, 0.08)'
                   }}
                 >
                   <motion.h3
-                    className="text-2xl font-bold text-white mb-8 flex items-center gap-3"
+                    className="text-2xl font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-3"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
@@ -652,7 +652,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                         ${liveData.revenue.toLocaleString()}
                       </motion.div>
                       <motion.div
-                        className="w-full backdrop-blur-sm bg-white/10 border border-white/20 rounded-full h-3 overflow-hidden"
+                        className="w-full backdrop-blur-sm bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 rounded-full h-3 overflow-hidden"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.6 }}
@@ -675,7 +675,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                       transition={{ delay: 1 }}
                     >
                       <motion.div
-                        className="text-center p-6 backdrop-blur-sm bg-white/5 border border-white/10 rounded-2xl"
+                        className="text-center p-6 backdrop-blur-sm bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl"
                         whileHover={{
                           scale: 1.05,
                           boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
@@ -693,7 +693,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                         </motion.div>
                         <div className="text-sm text-gray-400">Profit Margin</div>
                         <motion.div
-                          className="w-full bg-white/10 rounded-full h-1 mt-3 overflow-hidden"
+                          className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full h-1 mt-3 overflow-hidden"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: 1.2 }}
@@ -708,7 +708,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                       </motion.div>
 
                       <motion.div
-                        className="text-center p-6 backdrop-blur-sm bg-white/5 border border-white/10 rounded-2xl"
+                        className="text-center p-6 backdrop-blur-sm bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl"
                         whileHover={{
                           scale: 1.05,
                           boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)',
@@ -726,7 +726,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                         </motion.div>
                         <div className="text-sm text-gray-400">Avg per Show</div>
                         <motion.div
-                          className="w-full bg-white/10 rounded-full h-1 mt-3 overflow-hidden"
+                          className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full h-1 mt-3 overflow-hidden"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: 1.2 }}
@@ -757,7 +757,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                       ].map((expense, index) => (
                         <motion.div
                           key={expense.category}
-                          className="flex items-center justify-between p-4 backdrop-blur-sm bg-white/5 border border-white/10 rounded-xl"
+                          className="flex items-center justify-between p-4 backdrop-blur-sm bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 1.8 + index * 0.1 }}
@@ -771,7 +771,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                             <span className="text-gray-300">{expense.category}</span>
                           </div>
                           <div className="text-right">
-                            <div className="text-white font-semibold">${expense.amount.toLocaleString()}</div>
+                            <div className="text-slate-900 dark:text-white font-semibold">${expense.amount.toLocaleString()}</div>
                             <div className="text-sm text-gray-400">{expense.percentage}%</div>
                           </div>
                         </motion.div>
@@ -794,7 +794,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                 transition={{ duration: 0.3 }}
               >
                 <motion.div
-                  className="backdrop-blur-xl bg-white/10 border border-white/20 p-8 rounded-3xl max-w-md mx-4 shadow-2xl"
+                  className="backdrop-blur-xl bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 p-8 rounded-3xl max-w-md mx-4 shadow-2xl"
                   initial={{ scale: 0.8, opacity: 0, rotateX: -20 }}
                   animate={{ scale: 1, opacity: 1, rotateX: 0 }}
                   exit={{ scale: 0.8, opacity: 0, rotateX: 20 }}
@@ -802,7 +802,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
                   style={{ transformStyle: 'preserve-3d' }}
                 >
                   <motion.h4
-                    className="text-2xl font-bold text-white mb-4 flex items-center gap-3"
+                    className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-3"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}

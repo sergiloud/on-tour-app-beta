@@ -81,16 +81,16 @@ const ForecastPanel: React.FC = () => {
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">{t('finance.forecast')}</h3>
         <div className="flex items-center gap-2 text-[10px] opacity-80">
-          <button className="text-[11px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/15" onClick={()=> setShowTable(v=>!v)} aria-pressed={showTable}>
+          <button className="text-[11px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15" onClick={()=> setShowTable(v=>!v)} aria-pressed={showTable}>
             {showTable ? (t('charts.hideTable') || 'Hide table') : (t('charts.viewTable') || 'View data as table')}
           </button>
           <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-1 rounded bg-accent-400" />{t('finance.forecast.legend.actual')}</span>
           <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-1 rounded border border-white/50" />{t('finance.forecast.legend.p50')}</span>
-          <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-2 rounded bg-white/10 border border-white/10" />{t('finance.forecast.legend.band')}</span>
+          <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-2 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-white/10" />{t('finance.forecast.legend.band')}</span>
         </div>
       </div>
       {showTable ? (
-        <div className="mt-2 rounded-md border border-white/10 bg-white/5 overflow-hidden">
+        <div className="mt-2 rounded-md border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 overflow-hidden">
           <div className="max-h-48 overflow-auto">
             <table className="w-full text-xs">
               <thead>
@@ -117,7 +117,7 @@ const ForecastPanel: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="mt-2 rounded-md border border-white/10 bg-white/5 overflow-hidden">
+        <div className="mt-2 rounded-md border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 overflow-hidden">
           <svg viewBox="0 0 100 36" className="w-full h-28 block">
             {bandPoly && (
               <polygon points={bandPoly} fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.1)" strokeWidth={0.4} />

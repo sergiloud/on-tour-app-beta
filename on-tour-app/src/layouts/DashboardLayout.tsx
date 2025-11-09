@@ -10,7 +10,7 @@ import { useSettings } from '../context/SettingsContext';
 import { setLang as setLangI18n } from '../lib/i18n';
 import { MissionControlProvider } from '../context/MissionControlContext';
 import { t } from '../lib/i18n';
-import { ensureDemoTenants, getCurrentOrgId, getOrgName, setCurrentOrgId, ORG_ARTIST_DANNY, ORG_AGENCY_SHALIZI, isAgencyCurrent, isViewingAs, endViewAs, getViewAs, getOrgById } from '../lib/tenants';
+import { ensureDemoTenants, getCurrentOrgId, getOrgName, setCurrentOrgId, ORG_ARTIST_PROPHECY, ORG_AGENCY_A2G, isAgencyCurrent, isViewingAs, endViewAs, getViewAs, getOrgById, getOrgs } from '../lib/tenants';
 import { trackEvent, startViewVitals, Events } from '../lib/telemetry';
 import CommandPalette from '../components/common/CommandPalette';
 import ShortcutsOverlay from '../components/common/ShortcutsOverlay';
@@ -26,9 +26,16 @@ function useNavItems(collapsed: boolean) {
   if (org.type === 'agency') {
     return [
       ...commonStart,
-      { to: '/dashboard/org', labelKey: 'nav.overview' },
-      { to: '/dashboard/org/clients', labelKey: 'nav.clients' },
-      { to: '/dashboard/org/reports', labelKey: 'nav.reports' },
+      { to: '/dashboard/org', labelKey: 'nav.overview', section: 'org' },
+      { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
+      { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },
+      { to: '/dashboard/org/clients', labelKey: 'nav.clients', section: 'org' },
+      { to: '/dashboard/org/branding', labelKey: 'nav.branding', section: 'org' },
+      { to: '/dashboard/org/billing', labelKey: 'nav.billing', section: 'org' },
+      { to: '/dashboard/org/integrations', labelKey: 'nav.integrations', section: 'org' },
+      { to: '/dashboard/org/documents', labelKey: 'nav.documents', section: 'org' },
+      { to: '/dashboard/org/reports', labelKey: 'nav.reports', section: 'org' },
+      { to: '/dashboard/org/links', labelKey: 'nav.links', section: 'org' },
     ];
   }
   return [
@@ -38,6 +45,7 @@ function useNavItems(collapsed: boolean) {
     { to: '/dashboard/travel', labelKey: 'nav.travel' },
     { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
     { to: '/dashboard/finance', labelKey: 'nav.finance' },
+    { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
   ];
 }
 
@@ -102,7 +110,14 @@ export const DashboardLayout: React.FC = () => {
   }, [org?.id, org?.type, location.pathname, location.search, navigate, org]);
 
   // Demo: org selection and persistence
-  const [orgId, setOrgId] = useState<string>(() => { try { return getCurrentOrgId(); } catch { return ORG_ARTIST_DANNY; } });
+  const [orgId, setOrgId] = useState<string>(() => {
+    try {
+      const currentOrg = getCurrentOrgId();
+      return currentOrg || (profile?.defaultOrgId ?? '');
+    } catch {
+      return profile?.defaultOrgId ?? '';
+    }
+  });
   const { profile } = useAuth();
   useEffect(() => {
     try {
@@ -173,7 +188,7 @@ export const DashboardLayout: React.FC = () => {
         <a href="#dash-main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:rounded-md focus:bg-accent-500 focus:text-black">{t('common.skipToContent') || 'Skip to content'}</a>
         {/* Persistent View-As Banner */}
         {isViewingAs() && <ViewAsBanner />}
-        <aside className={`hidden md:flex flex-col border-r border-white/5 bg-ink-900/35 backdrop-blur-xl glass p-4 gap-5 transition-all duration-300 ${collapsed ? 'w-20' : 'w-60'} fixed top-0 bottom-0 left-0 overflow-y-auto`} aria-label="Dashboard navigation" aria-expanded={!collapsed}>
+        <aside className={`hidden md:flex flex-col border-r border-slate-100 dark:border-white/5 bg-ink-900/35 backdrop-blur-xl glass p-4 gap-5 transition-all duration-300 ${collapsed ? 'w-20' : 'w-60'} fixed top-0 bottom-0 left-0 overflow-y-auto`} aria-label="Dashboard navigation" aria-expanded={!collapsed}>
           <div className="flex items-center justify-between gap-2">
             <div className="font-bold tracking-tight text-accent-500 text-sm truncate" aria-hidden={collapsed}>{collapsed ? 'OT' : 'OnTour'}</div>
             <div className="flex items-center gap-1 ml-auto">
@@ -196,7 +211,7 @@ export const DashboardLayout: React.FC = () => {
                 onMouseEnter={() => prefetchByPath(item.to)}
                 onFocus={() => prefetchByPath(item.to)}
               >
-                <span className="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] uppercase">{firstGrapheme(t(item.labelKey))}</span>
+                <span className="w-5 h-5 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[10px] uppercase">{firstGrapheme(t(item.labelKey))}</span>
                 {!collapsed && <span>{t(item.labelKey)}</span>}
               </NavLink>
             ))}
@@ -207,30 +222,45 @@ export const DashboardLayout: React.FC = () => {
           </div>
         </aside>
         <div className="flex-1 flex flex-col min-w-0 md:ml-[var(--sidebar-width,15rem)]" style={{ '--sidebar-width': collapsed ? '5rem' : '15rem' } as any}>
-          <header className="px-3 md:px-5 py-3 md:py-3.5 flex items-center justify-between border-b border-white/5 backdrop-blur-xl bg-ink-900/25">
+          <header className="px-3 md:px-5 py-3 md:py-3.5 flex items-center justify-between border-b border-slate-100 dark:border-white/5 backdrop-blur-xl bg-ink-900/25">
             <h1 className="text-base md:text-lg font-semibold tracking-tight">{t('nav.dashboard')}</h1>
             <div className="flex items-center gap-3.5 text-[11px] md:text-xs opacity-85">
-              {/* Only show team selector for demo accounts */}
-              {(orgId === ORG_ARTIST_DANNY || orgId === ORG_AGENCY_SHALIZI) && (
-                <>
-                  <span className="flex items-center gap-2">
-                    <span>{t('layout.team')}: {getOrgName(orgId)}</span>
-                    {isAgencyCurrent() && (
-                      <span className="px-1.5 py-0.5 text-[10px] rounded bg-amber-500/20 text-amber-300 border border-amber-400/30" title={t('access.readOnly.tooltip') || 'Finance exports disabled for agency demo'}>{t('access.readOnly') || 'read-only'}</span>
-                    )}
+              {/* Show org selector if user has multiple orgs */}
+              {(() => {
+                const userOrgs = getOrgs();
+                const showOrgSelector = userOrgs.length > 1;
+
+                return showOrgSelector && (
+                  <>
+                    <span className="flex items-center gap-2">
+                      <span>{t('layout.team')}: {getOrgName(orgId)}</span>
+                      {isAgencyCurrent() && (
+                        <span className="px-1.5 py-0.5 text-[10px] rounded bg-amber-500/20 text-amber-300 border border-amber-400/30" title={t('access.readOnly.tooltip') || 'Finance exports disabled for agency demo'}>{t('access.readOnly') || 'read-only'}</span>
+                      )}
+                    </span>
+                    {/* Organization switcher */}
+                    <select
+                      id="org-switcher"
+                      aria-label={t('layout.tenant') || 'Tenant'}
+                      className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded px-2 py-1 text-[11px] hover:border-slate-300 dark:hover:border-white/20 motion-safe:transition-colors"
+                      value={orgId}
+                      onChange={(e) => setOrgId(e.target.value)}
+                    >
+                      {userOrgs.map(org => (
+                        <option key={org.id} value={org.id}>{org.name}</option>
+                      ))}
+                    </select>
+                  </>
+                );
+              })()}
+              {/* Prophecy account info */}
+              {orgId === ORG_ARTIST_PROPHECY && (
+                <span className="flex items-center gap-2">
+                  <span>{t('layout.team')}: {getOrgName(orgId)}</span>
+                  <span className="px-2 py-0.5 text-[10px] rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    Managed by A2G Management
                   </span>
-                  {/* Optional simple tenant switcher for demo */}
-                  <select
-                    id="org-switcher"
-                    aria-label={t('layout.tenant') || 'Tenant'}
-                    className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] hover:border-white/20 motion-safe:transition-colors"
-                    value={orgId}
-                    onChange={(e) => setOrgId(e.target.value)}
-                  >
-                    <option value={ORG_ARTIST_DANNY}>Danny Avila</option>
-                    <option value={ORG_AGENCY_SHALIZI}>Shalizi Group</option>
-                  </select>
-                </>
+                </span>
               )}
               {/* Quick Search Hint */}
               <button
@@ -239,14 +269,14 @@ export const DashboardLayout: React.FC = () => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
                   trackEvent('commandPalette.clickHint');
                 }}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all group"
                 title="Quick search (CMD+K)"
               >
-                <svg className="w-3.5 h-3.5 text-white/60 group-hover:text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-slate-400 dark:text-white/60 group-hover:text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span className="text-[10px] text-white/50 group-hover:text-white/70">Search</span>
-                <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[9px] text-white/40 font-mono">⌘K</kbd>
+                <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-slate-500 dark:text-white/70">Search</span>
+                <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[9px] text-slate-400 dark:text-white/40 font-mono">⌘K</kbd>
               </button>
               <UserMenu />
               {/* Language and High-contrast toggles moved to Preferences */}
@@ -273,7 +303,7 @@ export const DashboardLayout: React.FC = () => {
             </AnimatePresence>
           </main>
           {/* Mobile bottom bar navigation - Enhanced with icons and active states */}
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[21] border-t border-white/10 bg-ink-900/95 backdrop-blur-xl shadow-2xl" role="navigation" aria-label="Primary mobile navigation">
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[21] border-t border-slate-200 dark:border-white/10 bg-ink-900/95 backdrop-blur-xl shadow-2xl" role="navigation" aria-label="Primary mobile navigation">
             <ul className="grid grid-cols-5 gap-0" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.25rem)' } as any}>
               {org?.type === 'agency' ? (
                 <>
@@ -312,7 +342,7 @@ export const DashboardLayout: React.FC = () => {
                   </li>
                   <li>
                     <button
-                      className="w-full flex flex-col items-center gap-1 py-2.5 min-h-[44px] text-white/60 active:scale-95 transition-all"
+                      className="w-full flex flex-col items-center gap-1 py-2.5 min-h-[44px] text-slate-400 dark:text-white/60 active:scale-95 transition-all"
                       onClick={() => setCmdOpen(true)}
                       aria-label="More options"
                     >
@@ -369,7 +399,7 @@ export const DashboardLayout: React.FC = () => {
                   </li>
                   <li>
                     <button
-                      className="w-full flex flex-col items-center gap-1 py-2.5 min-h-[44px] text-white/60 active:scale-95 transition-all"
+                      className="w-full flex flex-col items-center gap-1 py-2.5 min-h-[44px] text-slate-400 dark:text-white/60 active:scale-95 transition-all"
                       onClick={() => setCmdOpen(true)}
                       aria-label="More options"
                     >

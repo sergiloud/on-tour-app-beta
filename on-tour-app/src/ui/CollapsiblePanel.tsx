@@ -35,7 +35,7 @@ export const CollapsiblePanel: React.FC<Props> = ({ id, title, children, classNa
           {actions}
           <button
             type="button"
-            className="text-[11px] px-2 py-1 rounded-md bg-white/10 hover:bg-white/20"
+            className="text-[11px] px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20"
             aria-expanded={!collapsed}
             aria-controls={`panel-${id}-content`}
             onClick={toggle}

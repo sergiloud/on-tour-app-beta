@@ -5,15 +5,26 @@ interface SkeletonProps {
   className?: string;
 }
 
+// Base skeleton with GPU-accelerated CSS animation
 export const Skeleton: React.FC<SkeletonProps> = ({ className = '' }) => (
-  <div className={`animate-pulse bg-white/10 rounded ${className}`} />
+  <div className={`skeleton-shimmer bg-slate-200 dark:bg-white/10 rounded will-animate ${className}`} />
 );
+
+// GPU-optimized fade-in for skeletons
+const skeletonVariant = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: { duration: 0.15, ease: [0.16, 1, 0.3, 1] as const }
+  }
+};
 
 export const KPISkeleton: React.FC = () => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="p-6 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm"
+    variants={skeletonVariant}
+    initial="initial"
+    animate="animate"
+    className="min-h-[160px] p-6 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 backdrop-blur-sm will-animate"
   >
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-3">
@@ -38,9 +49,10 @@ export const KPISkeleton: React.FC = () => (
 
 export const SummaryCardSkeleton: React.FC = () => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="p-6 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm"
+    variants={skeletonVariant}
+    initial="initial"
+    animate="animate"
+    className="min-h-[220px] p-6 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 backdrop-blur-sm will-animate"
   >
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-3">
@@ -67,14 +79,14 @@ export const SummaryCardSkeleton: React.FC = () => (
 
 export const DashboardSkeleton: React.FC = () => (
   <div className="space-y-6">
-    {/* KPI Row */}
+    {/* KPI Row - min-height to prevent layout shift */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <KPISkeleton />
       <KPISkeleton />
       <KPISkeleton />
     </div>
 
-    {/* Summary Cards Row */}
+    {/* Summary Cards Row - min-height to prevent layout shift */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <SummaryCardSkeleton />
       <SummaryCardSkeleton />
@@ -83,9 +95,10 @@ export const DashboardSkeleton: React.FC = () => (
 
     {/* Activity Feed Skeleton */}
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="p-6 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm"
+      variants={skeletonVariant}
+      initial="initial"
+      animate="animate"
+      className="min-h-[200px] p-6 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 backdrop-blur-sm will-animate"
     >
       <div className="flex items-center gap-3 mb-4">
         <Skeleton className="w-10 h-10 rounded-lg" />

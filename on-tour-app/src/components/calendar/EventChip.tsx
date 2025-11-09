@@ -191,7 +191,7 @@ const EventChipComponent: React.ForwardRefRenderFunction<HTMLButtonElement, Prop
 
         {/* Second row: span label (only for multi-day) */}
         {spanLabel && (
-          <span className="text-[7px] uppercase tracking-tight text-white/60 font-semibold leading-tight" aria-hidden>
+          <span className="text-[7px] uppercase tracking-tight text-slate-400 dark:text-white/60 font-semibold leading-tight" aria-hidden>
             {spanLabel}
           </span>
         )}

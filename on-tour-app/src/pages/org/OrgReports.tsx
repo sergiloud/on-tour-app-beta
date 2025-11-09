@@ -24,16 +24,16 @@ const OrgReports: React.FC = () => {
   return (
     <div className="px-4 sm:px-6 flex flex-col gap-4 lg:gap-5 pb-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:shadow-md hover:shadow-accent-500/5">
-        <div className="relative px-6 pt-5 pb-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+      <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md hover:shadow-accent-500/5">
+        <div className="relative px-6 pt-5 pb-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1 h-6 rounded-full bg-gradient-to-b from-accent-500 to-blue-500" />
               <div>
-                <h1 className="text-lg font-semibold tracking-tight text-white">
+                <h1 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
                   {t('org.reports.title') || 'Reports'}
                 </h1>
-                <p className="text-xs text-white/60 mt-1">View and export your analytics</p>
+                <p className="text-xs text-slate-400 dark:text-white/60 mt-1">View and export your analytics</p>
               </div>
             </div>
 
@@ -51,55 +51,55 @@ const OrgReports: React.FC = () => {
       </div>
 
       {/* Reports Table */}
-      <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300">
+      <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-6 py-3 text-left text-xs font-semibold text-white/70 tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-white/70 tracking-wider">
                   {t('common.name') || 'Name'}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-white/70 tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-white/70 tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-white/70 tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-white/70 tracking-wider">
                   Items
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-white/70 tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500 dark:text-white/70 tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/10">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/10">
               {rows.map((report, idx) => (
                 <motion.tr
                   key={report.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="hover:bg-white/5 transition-colors"
+                  className="hover:bg-slate-100 dark:bg-white/5 transition-colors"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-accent-500/10 flex items-center justify-center flex-shrink-0">
                         <BarChart3 className="w-4 h-4 text-accent-500" />
                       </div>
-                      <span className="text-sm font-medium text-white">{report.name}</span>
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">{report.name}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-white/70">{report.date}</span>
+                    <span className="text-sm text-slate-500 dark:text-white/70">{report.date}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-white/70">{report.items} entries</span>
+                    <span className="text-sm text-slate-500 dark:text-white/70">{report.items} entries</span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                     >
-                      <Download className="w-4 h-4 text-white/60 hover:text-accent-500" />
+                      <Download className="w-4 h-4 text-slate-400 dark:text-white/60 hover:text-accent-500" />
                     </motion.button>
                   </td>
                 </motion.tr>
@@ -112,8 +112,8 @@ const OrgReports: React.FC = () => {
         {rows.length === 0 && (
           <div className="px-6 py-12 text-center">
             <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm text-white/70 mb-1">No reports yet</p>
-            <p className="text-xs text-white/50">Reports will appear here as you generate them</p>
+            <p className="text-sm text-slate-500 dark:text-white/70 mb-1">No reports yet</p>
+            <p className="text-xs text-slate-300 dark:text-white/50">Reports will appear here as you generate them</p>
           </div>
         )}
       </div>
@@ -127,8 +127,8 @@ const OrgReports: React.FC = () => {
           <div className="flex items-center gap-3">
             <Plus className="w-5 h-5 text-accent-500" />
             <div>
-              <h3 className="text-sm font-semibold text-white">Generate New Report</h3>
-              <p className="text-xs text-white/60 mt-0.5">Create a custom report for your needs</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Generate New Report</h3>
+              <p className="text-xs text-slate-400 dark:text-white/60 mt-0.5">Create a custom report for your needs</p>
             </div>
           </div>
         </div>

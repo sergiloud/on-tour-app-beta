@@ -15,7 +15,7 @@ export function FinalCta({ title, subtitle, cta, href = '/register' }: FinalCtaP
 
   return (
     <motion.section
-      className="glass relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-ink-900/80 to-ink-800/60 px-8 py-12 text-center shadow-[var(--elev-2)]"
+      className="glass relative overflow-hidden rounded-3xl border border-slate-100 dark:border-white/5 bg-gradient-to-br from-ink-900/80 to-ink-800/60 px-8 py-12 text-center shadow-[var(--elev-2)]"
       initial={{ opacity: 0, scale: 0.97 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true, amount: 0.5 }}

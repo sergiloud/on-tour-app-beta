@@ -22,7 +22,7 @@ const PriorityAction: React.FC<{
 }> = ({ icon, title, description, action, urgent }) => (
   <div className={`glass rounded-lg border p-5 transition-all duration-200 hover:scale-[1.02] ${urgent
       ? 'border-red-400/40 bg-red-500/10 shadow-lg shadow-red-500/10 animate-pulse'
-      : 'border-white/20 bg-white/5 hover:bg-white/10'
+      : 'border-slate-300 dark:border-white/20 bg-white/5 hover:bg-white/10'
     }`}>
     <div className="flex items-start gap-4">
       <div className={`text-3xl ${urgent ? 'animate-bounce' : ''}`} aria-hidden>{icon}</div>
@@ -67,7 +67,7 @@ const PriorityAction: React.FC<{
 );
 
 const ActivityFeed: React.FC<{ activities: ActivityItem[] }> = ({ activities }) => (
-  <div className="glass rounded border border-white/10 p-4">
+  <div className="glass rounded border border-slate-200 dark:border-white/10 p-4">
     <div className="text-sm font-medium mb-3">{t('overview.changesSince') || 'Changes since your last visit'}</div>
     {activities.length === 0 ? (
       <div className="text-xs opacity-70 text-center py-4">
@@ -92,7 +92,7 @@ const ActivityFeed: React.FC<{ activities: ActivityItem[] }> = ({ activities }) 
 );
 
 const RecentlyViewed: React.FC<{ items: Array<{ id: string; title: string; subtitle: string; to: string; type: string }> }> = ({ items }) => (
-  <div className="glass rounded border border-white/10 p-4">
+  <div className="glass rounded border border-slate-200 dark:border-white/10 p-4">
     <div className="text-sm font-medium mb-3">{t('overview.recentlyViewed') || 'Recently viewed'}</div>
     {items.length === 0 ? (
       <div className="text-xs opacity-70 text-center py-4">
@@ -103,8 +103,8 @@ const RecentlyViewed: React.FC<{ items: Array<{ id: string; title: string; subti
       <ul className="space-y-2" role="list">
         {items.map((item, i) => (
           <li key={i} role="listitem">
-            <Link to={item.to} className="flex items-center gap-3 p-2 rounded hover:bg-white/5 transition-colors">
-              <div className="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs" aria-hidden>
+            <Link to={item.to} className="flex items-center gap-3 p-2 rounded hover:bg-slate-100 dark:bg-white/5 transition-colors">
+              <div className="w-8 h-8 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 flex items-center justify-center text-xs" aria-hidden>
                 {item.type === 'show' ? '🎵' : item.type === 'artist' ? '👤' : '📄'}
               </div>
               <div className="flex-1 min-w-0">
@@ -244,8 +244,8 @@ const Overview: React.FC = () => {
     // Mock recent items - in real app this would come from user activity tracking
     if (org.type === 'agency') {
       return [
-        { id: '1', title: 'Danny Avila', subtitle: 'Artist profile', to: '/dashboard/clients/danny-avila', type: 'artist' },
-        { id: '2', title: 'Berlin Show Report', subtitle: 'Finance report', to: '/dashboard/finance', type: 'report' },
+        { id: '1', title: 'Artist Profile', subtitle: 'Artist profile', to: '/dashboard/clients', type: 'artist' },
+        { id: '2', title: 'Show Report', subtitle: 'Finance report', to: '/dashboard/finance', type: 'report' },
         { id: '3', title: 'Tour Contract', subtitle: 'Legal document', to: '/dashboard/org/documents', type: 'document' },
       ];
     } else {
@@ -351,7 +351,7 @@ const Overview: React.FC = () => {
             <span className="text-2xl" aria-hidden>🎯</span>
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white">{t('overview.attentionHub') || 'Para tu Atención'}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('overview.attentionHub') || 'Para tu Atención'}</h2>
             <p className="text-sm opacity-80 mt-1">{t('overview.attentionDesc') || 'Acciones críticas que requieren tu atención inmediata'}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
@@ -449,7 +449,7 @@ const Overview: React.FC = () => {
               <Link
                 key={i}
                 to={item.to}
-                className="glass p-4 rounded border border-white/10 hover:bg-white/5 transition-colors"
+                className="glass p-4 rounded border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/5 transition-colors"
               >
                 <div className="text-lg mb-2" aria-hidden>{item.icon}</div>
                 <div className="font-medium">{item.title}</div>
@@ -472,16 +472,16 @@ const Overview: React.FC = () => {
           <h3 className="text-lg font-semibold">{t('overview.quickAccess') || 'Quick Access'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
-              to="/dashboard/clients/danny-avila"
-              className="glass p-4 rounded border border-white/10 hover:bg-white/5 transition-colors"
+              to="/dashboard/clients"
+              className="glass p-4 rounded border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/5 transition-colors"
             >
               <div className="text-lg mb-2" aria-hidden>👤</div>
-              <div className="font-medium">Danny Avila</div>
-              <div className="text-xs opacity-70">View artist dashboard</div>
+              <div className="font-medium">Artists</div>
+              <div className="text-xs opacity-70">View artist dashboards</div>
             </Link>
             <Link
               to="/dashboard/org/reports"
-              className="glass p-4 rounded border border-white/10 hover:bg-white/5 transition-colors"
+              className="glass p-4 rounded border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/5 transition-colors"
             >
               <div className="text-lg mb-2" aria-hidden>📊</div>
               <div className="font-medium">Reports</div>
@@ -489,7 +489,7 @@ const Overview: React.FC = () => {
             </Link>
             <Link
               to="/dashboard/org/teams"
-              className="glass p-4 rounded border border-white/10 hover:bg-white/5 transition-colors"
+              className="glass p-4 rounded border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/5 transition-colors"
             >
               <div className="text-lg mb-2" aria-hidden>👥</div>
               <div className="font-medium">Team</div>
@@ -551,7 +551,7 @@ const NewUserOnboarding: React.FC<{ org: any; isAgency: boolean }> = ({ org, isA
       {/* Welcome Message */}
       <div className="text-center space-y-4">
         <div className="text-4xl sm:text-5xl md:text-6xl mb-4" aria-hidden>🎯</div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
           {t('onboarding.welcome') || 'Welcome to On Tour!'}
         </h1>
         <p className="text-lg opacity-80 max-w-2xl mx-auto">
@@ -562,12 +562,12 @@ const NewUserOnboarding: React.FC<{ org: any; isAgency: boolean }> = ({ org, isA
 
       {/* Onboarding Steps */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-white text-center">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white text-center">
           {t('onboarding.getStarted') || 'Get Started in 4 Easy Steps'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {onboardingSteps.map((step, i) => (
-            <div key={i} className="glass p-6 rounded border border-white/10 hover:bg-white/5 transition-colors">
+            <div key={i} className="glass p-6 rounded border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/5 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="text-3xl" aria-hidden>{step.icon}</div>
                 <div className="flex-1">
@@ -588,30 +588,30 @@ const NewUserOnboarding: React.FC<{ org: any; isAgency: boolean }> = ({ org, isA
 
       {/* Quick Tips */}
       <div className="glass p-6 rounded border border-white/10">
-        <h3 className="text-lg font-semibold text-white mb-4">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
           💡 {t('onboarding.quickTips') || 'Quick Tips'}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <strong className="text-white">{t('onboarding.tip1Title') || 'Track Everything'}</strong>
+            <strong className="text-slate-900 dark:text-white">{t('onboarding.tip1Title') || 'Track Everything'}</strong>
             <p className="opacity-70 mt-1">
               {t('onboarding.tip1Desc') || 'Keep all your shows, finances, and travel in one place for better insights.'}
             </p>
           </div>
           <div>
-            <strong className="text-white">{t('onboarding.tip2Title') || 'Stay Organized'}</strong>
+            <strong className="text-slate-900 dark:text-white">{t('onboarding.tip2Title') || 'Stay Organized'}</strong>
             <p className="opacity-70 mt-1">
               {t('onboarding.tip2Desc') || 'Use the calendar to plan ahead and avoid scheduling conflicts.'}
             </p>
           </div>
           <div>
-            <strong className="text-white">{t('onboarding.tip3Title') || 'Monitor Performance'}</strong>
+            <strong className="text-slate-900 dark:text-white">{t('onboarding.tip3Title') || 'Monitor Performance'}</strong>
             <p className="opacity-70 mt-1">
               {t('onboarding.tip3Desc') || 'Review your financial reports regularly to optimize profitability.'}
             </p>
           </div>
           <div>
-            <strong className="text-white">{t('onboarding.tip4Title') || 'Automate Travel'}</strong>
+            <strong className="text-slate-900 dark:text-white">{t('onboarding.tip4Title') || 'Automate Travel'}</strong>
             <p className="opacity-70 mt-1">
               {t('onboarding.tip4Desc') || 'Let the system help you find the best travel options and deals.'}
             </p>

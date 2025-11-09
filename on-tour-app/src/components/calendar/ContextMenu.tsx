@@ -49,7 +49,7 @@ const ContextMenu: React.FC<Props> = ({ x, y, items, onClose }) => {
   return (
     <motion.div
       ref={menuRef}
-      className="fixed z-50 glass rounded-lg border border-white/10 shadow-2xl backdrop-blur-md py-1 md:py-1.5 min-w-[180px] md:min-w-[200px]"
+      className="fixed z-50 glass rounded-lg border border-slate-200 dark:border-white/10 shadow-2xl backdrop-blur-md py-1 md:py-1.5 min-w-[180px] md:min-w-[200px]"
       style={{ left: adjustedX, top: adjustedY }}
       role="menu"
       initial={{ opacity: 0, scale: 0.9, y: -10 }}
@@ -59,9 +59,9 @@ const ContextMenu: React.FC<Props> = ({ x, y, items, onClose }) => {
     >
       {items.map((item, index) => (
         <React.Fragment key={index}>
-          {item.separator && <div className="border-t border-white/10 my-0.5" />}
+          {item.separator && <div className="border-t border-slate-200 dark:border-white/10 my-0.5" />}
           <motion.button
-            className={`w-full text-left px-2 md:px-2.5 py-1 md:py-1.5 text-[10px] md:text-xs hover:bg-white/10 flex items-center gap-1.5 md:gap-2 rounded-md mx-0.5 transition-all duration-200 ${
+            className={`w-full text-left px-2 md:px-2.5 py-1 md:py-1.5 text-[10px] md:text-xs hover:bg-slate-200 dark:bg-white/10 flex items-center gap-1.5 md:gap-2 rounded-md mx-0.5 transition-all duration-200 ${
               item.disabled ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             onClick={() => {

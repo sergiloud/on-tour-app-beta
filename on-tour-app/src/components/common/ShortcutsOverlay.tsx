@@ -31,10 +31,10 @@ const ShortcutsOverlay: React.FC<Props> = ({ open, onClose }) => {
         <h2 className="text-lg font-semibold mb-2">{t('shortcuts.title')}</h2>
         <p className="text-[12px] opacity-75 mb-3">{t('shortcuts.desc')}</p>
         <ul className="text-sm space-y-2">
-          <li className="flex items-center justify-between"><span>{t('shortcuts.openPalette')}</span><kbd className="px-2 py-0.5 rounded bg-white/10">Cmd/Ctrl + K</kbd></li>
-          <li className="flex items-center justify-between"><span>{t('shortcuts.showOverlay')}</span><kbd className="px-2 py-0.5 rounded bg-white/10">?</kbd></li>
-          <li className="flex items-center justify-between"><span>{t('shortcuts.closeDialogs')}</span><kbd className="px-2 py-0.5 rounded bg-white/10">Esc</kbd></li>
-          <li className="flex items-center justify-between"><span>{t('shortcuts.goTo')}</span><kbd className="px-2 py-0.5 rounded bg-white/10">g then key</kbd></li>
+          <li className="flex items-center justify-between"><span>{t('shortcuts.openPalette')}</span><kbd className="px-2 py-0.5 rounded bg-slate-200 dark:bg-white/10">Cmd/Ctrl + K</kbd></li>
+          <li className="flex items-center justify-between"><span>{t('shortcuts.showOverlay')}</span><kbd className="px-2 py-0.5 rounded bg-slate-200 dark:bg-white/10">?</kbd></li>
+          <li className="flex items-center justify-between"><span>{t('shortcuts.closeDialogs')}</span><kbd className="px-2 py-0.5 rounded bg-slate-200 dark:bg-white/10">Esc</kbd></li>
+          <li className="flex items-center justify-between"><span>{t('shortcuts.goTo')}</span><kbd className="px-2 py-0.5 rounded bg-slate-200 dark:bg-white/10">g then key</kbd></li>
         </ul>
       </div>
     </div>,

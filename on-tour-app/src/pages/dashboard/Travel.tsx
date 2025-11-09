@@ -139,14 +139,14 @@ const Travel: React.FC = () => {
         {/* Visually hidden aria-live region */}
         <div aria-live="polite" className="sr-only" role="status">{liveMsg}</div>
         {/* Sticky summary bar */}
-        <div className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/60 bg-neutral-900/95 border-b border-white/10 -mx-4 px-4">
+        <div className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-surface-card/60 bg-surface-card/95 border-b border-theme -mx-4 px-4">
           <div className="flex items-center gap-2 py-2 overflow-x-auto">
             <nav className="flex items-center gap-1 text-sm">
               {(['search', 'compare', 'calendar', 'trips'] as const).map(tab => (
                 <button
                   key={tab}
                   type="button"
-                  className={`px-3 py-1.5 rounded-full ${activeTab === tab ? 'bg-white/10' : 'hover:bg-white/5'} focus-ring`}
+                  className={`px-3 py-1.5 rounded-full ${activeTab === tab ? 'bg-white/10' : 'hover:bg-interactive'} focus-ring`}
                   aria-pressed={activeTab === tab}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -161,7 +161,7 @@ const Travel: React.FC = () => {
             </nav>
             <div className="ml-2 flex items-center gap-2 text-xs">
               {chips.map(c => (
-                <span key={c.key} className="px-2 py-1 rounded-full bg-white/5 whitespace-nowrap">{c.label}</span>
+                <span key={c.key} className="px-2 py-1 rounded-full bg-interactive whitespace-nowrap">{c.label}</span>
               ))}
             </div>
             <div className="ml-auto flex items-center gap-2">
@@ -245,7 +245,7 @@ const Travel: React.FC = () => {
                 {/* Sliding Results Panel */}
                 {activeTab === 'search' && (results.length > 0 || isLoading) && (
                   <div className="absolute inset-0 z-10 bg-black/20 backdrop-blur-sm">
-                    <div className="absolute right-0 top-0 bottom-0 w-96 bg-neutral-900 border-l border-white/10 p-4 overflow-y-auto">
+                    <div className="absolute right-0 top-0 bottom-0 w-96 bg-surface-card border-l border-theme p-4 overflow-y-auto">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold">{t('travel.results.title') || 'Flight Results'}</h3>
                         <button
@@ -261,7 +261,7 @@ const Travel: React.FC = () => {
                         <label className="inline-flex items-center gap-1 text-sm">
                           <span className="opacity-70">{t('travel.results.sortBy') || 'Sort by'}</span>
                           <select
-                            className="bg-white/5 rounded px-2 py-1 text-xs border border-transparent focus-ring"
+                            className="bg-interactive rounded px-2 py-1 text-xs border border-transparent focus-ring"
                             value={resultsSort}
                             onChange={(e) => setResultsSort(e.target.value)}
                           >
@@ -280,9 +280,9 @@ const Travel: React.FC = () => {
 
                         {isLoading && results.length === 0 ? (
                           <div className="animate-pulse space-y-2" aria-busy>
-                            <div className="h-16 rounded bg-white/5" />
-                            <div className="h-16 rounded bg-white/5" />
-                            <div className="h-16 rounded bg-white/5" />
+                            <div className="h-16 rounded bg-interactive" />
+                            <div className="h-16 rounded bg-interactive" />
+                            <div className="h-16 rounded bg-interactive" />
                           </div>
                         ) : grouped && Object.keys(grouped).length > 0 ? (
                           <div className="space-y-4">
@@ -330,7 +330,7 @@ const Travel: React.FC = () => {
                 {/* Other tab views */}
                 {activeTab === 'compare' && (
                   <div className="absolute inset-0 z-10 bg-black/20 backdrop-blur-sm">
-                    <div className="absolute right-0 top-0 bottom-0 w-96 bg-neutral-900 border-l border-white/10 p-4 overflow-y-auto">
+                    <div className="absolute right-0 top-0 bottom-0 w-96 bg-surface-card border-l border-theme p-4 overflow-y-auto">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold">{t('travel.compare.title') || 'Compare Flights'}</h3>
                         <button
@@ -347,7 +347,7 @@ const Travel: React.FC = () => {
 
                 {activeTab === 'calendar' && (
                   <div className="absolute inset-0 z-10 bg-black/20 backdrop-blur-sm">
-                    <div className="absolute right-0 top-0 bottom-0 w-96 bg-neutral-900 border-l border-white/10 p-4 overflow-y-auto">
+                    <div className="absolute right-0 top-0 bottom-0 w-96 bg-surface-card border-l border-theme p-4 overflow-y-auto">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold">{t('calendar') || 'Calendar'}</h3>
                         <button
@@ -366,7 +366,7 @@ const Travel: React.FC = () => {
 
                 {activeTab === 'trips' && (
                   <div className="absolute inset-0 z-10 bg-black/20 backdrop-blur-sm">
-                    <div className="absolute right-0 top-0 bottom-0 w-96 bg-neutral-900 border-l border-white/10 p-4 overflow-y-auto">
+                    <div className="absolute right-0 top-0 bottom-0 w-96 bg-surface-card border-l border-theme p-4 overflow-y-auto">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold">{t('travel.trips') || 'Trips'}</h3>
                         <button
@@ -439,7 +439,7 @@ const CompareGrid: React.FC<{ pinned: FlightResult[]; onUnpin: (id: string) => v
       <div className="flex items-center gap-2 text-xs">
         <label className="inline-flex items-center gap-1">
           <span className="opacity-70">{t('travel.sort.menu') || 'Sort by'}</span>
-          <select className="bg-white/5 rounded px-2 py-1" value={sortKey + ':' + sortDir} onChange={e => { const [k, d] = e.target.value.split(':'); setSortKey(k as any); setSortDir(d as any); }}>
+          <select className="bg-interactive rounded px-2 py-1" value={sortKey + ':' + sortDir} onChange={e => { const [k, d] = e.target.value.split(':'); setSortKey(k as any); setSortDir(d as any); }}>
             <option value="price:asc">{t('travel.sort.priceAsc') || 'Price (low to high)'}</option>
             <option value="price:desc">{t('travel.sort.priceDesc') || 'Price (high to low)'}</option>
             <option value="duration:asc">{t('travel.sort.duration') || 'Duration'} <ArrowUpIcon /></option>
@@ -468,7 +468,7 @@ const CompareGrid: React.FC<{ pinned: FlightResult[]; onUnpin: (id: string) => v
               const isBestTime = r.id === bestTimeId;
               const isBestBalance = r.id === bestBalanceId;
               return (
-                <tr key={r.id} className="glass rounded hover:bg-white/5">
+                <tr key={r.id} className="glass rounded hover:bg-interactive">
                   <td className="px-2 py-1 font-mono text-[11px] md:text-xs">{r.origin}</td>
                   <td className="px-2 py-1 font-mono text-[11px] md:text-xs">{r.dest}</td>
                   <td className="px-2 py-1 tabular-nums">{Math.round(r.durationM / 60)}h{(r.durationM % 60).toString().padStart(2, '0')}</td>
@@ -478,9 +478,9 @@ const CompareGrid: React.FC<{ pinned: FlightResult[]; onUnpin: (id: string) => v
                     {isBestPrice && <span className="px-1 py-0.5 rounded bg-accent-500/20 text-accent-100 text-[10px]" title={t('travel.compare.bestPrice') || 'Best price'}>P</span>}
                     {isBestTime && <span className="px-1 py-0.5 rounded bg-indigo-500/20 text-indigo-100 text-[10px]" title={t('travel.compare.bestTime') || 'Fastest'}>T</span>}
                     {isBestBalance && <span className="px-1 py-0.5 rounded bg-amber-500/25 text-amber-100 text-[10px]" title={t('travel.compare.bestBalance') || 'Best balance'}>B</span>}
-                    <button className="ml-auto px-2 py-0.5 rounded bg-white/5 hover:bg-white/10" onClick={() => onAdd(r)}>{t('travel.compare.add_to_trip') || 'Add to trip'}</button>
-                    <button className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10" onClick={() => onUnpin(r.id)} aria-label="Unpin"><CloseIcon /></button>
-                    {r.deepLink && <a href={r.deepLink} target="_blank" rel="noreferrer" className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10"><ExternalLinkIcon /></a>}
+                    <button className="ml-auto px-2 py-0.5 rounded bg-interactive hover:bg-slate-200 dark:bg-white/10" onClick={() => onAdd(r)}>{t('travel.compare.add_to_trip') || 'Add to trip'}</button>
+                    <button className="px-2 py-0.5 rounded bg-interactive hover:bg-slate-200 dark:bg-white/10" onClick={() => onUnpin(r.id)} aria-label="Unpin"><CloseIcon /></button>
+                    {r.deepLink && <a href={r.deepLink} target="_blank" rel="noreferrer" className="px-2 py-0.5 rounded bg-interactive hover:bg-slate-200 dark:bg-white/10"><ExternalLinkIcon /></a>}
                   </td>
                 </tr>
               );

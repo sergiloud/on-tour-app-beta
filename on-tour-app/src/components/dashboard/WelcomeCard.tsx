@@ -39,7 +39,7 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="max-w-4xl mx-auto p-8 rounded-2xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm"
+      className="max-w-4xl mx-auto p-8 rounded-2xl border border-slate-300 dark:border-white/20 bg-gradient-to-br from-white/10 to-slate-50 dark:to-white/5 backdrop-blur-sm"
     >
       <div className="text-center mb-8">
         <motion.div
@@ -55,7 +55,7 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.15 }}
-          className="text-3xl font-bold text-white mb-4"
+          className="text-3xl font-bold text-slate-900 dark:text-white mb-4"
         >
           {t('welcome.title') || 'Welcome to On Tour App'}
         </motion.h1>
@@ -82,14 +82,14 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-            className="p-6 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+            className="p-6 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
                 <span className="text-xl">{feature.icon}</span>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                   {feature.title}
                 </h3>
                 <p className="text-sm text-slate-400">
@@ -120,7 +120,7 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onImportData}
-          className="px-8 py-3 border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full transition-all duration-200"
+          className="px-8 py-3 border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-white font-semibold rounded-full transition-all duration-200"
         >
           {t('welcome.importData') || 'Import Existing Data'}
         </motion.button>

@@ -126,7 +126,7 @@ export function PerformanceDashboard() {
 
     return (
         <div className="fixed bottom-4 right-4 z-50 w-[400px] max-h-[600px] overflow-y-auto">
-            <Card className="bg-ink-900/95 backdrop-blur-sm border border-white/10 shadow-2xl">
+            <Card className="bg-ink-900/95 backdrop-blur-sm border border-slate-200 dark:border-white/10 shadow-2xl">
                 <div className="p-4 space-y-4">
                     {/* Header */}
                     <div className="flex items-center justify-between">
@@ -136,7 +136,7 @@ export function PerformanceDashboard() {
                         </h3>
                         <button
                             onClick={() => setIsVisible(false)}
-                            className="text-white/60 hover:text-white text-lg leading-none"
+                            className="text-slate-400 dark:text-white/60 hover:text-white text-lg leading-none"
                         >
                             ×
                         </button>
@@ -210,11 +210,11 @@ export function PerformanceDashboard() {
 function Section({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
     return (
         <div className="space-y-2">
-            <h4 className="text-xs font-medium text-white/80 flex items-center gap-2">
+            <h4 className="text-xs font-medium text-slate-600 dark:text-white/80 flex items-center gap-2">
                 <span>{icon}</span>
                 {title}
             </h4>
-            <div className="bg-white/5 rounded-lg p-3">
+            <div className="bg-slate-100 dark:bg-white/5 rounded-lg p-3">
                 {children}
             </div>
         </div>
@@ -234,13 +234,13 @@ function Metric({
     good?: boolean;
     colSpan?: number;
 }) {
-    const colorClass = good === undefined ? 'text-white/90' : good ? 'text-green-400' : 'text-red-400';
+    const colorClass = good === undefined ? 'text-slate-700 dark:text-white/90' : good ? 'text-green-400' : 'text-red-400';
 
     return (
         <div className={colSpan ? `col-span-${colSpan}` : ''}>
-            <div className="text-white/60 text-[10px] mb-0.5">{label}</div>
+            <div className="text-slate-400 dark:text-white/60 text-[10px] mb-0.5">{label}</div>
             <div className={`font-mono font-semibold ${colorClass}`}>
-                {value}{unit && <span className="text-white/40 ml-0.5">{unit}</span>}
+                {value}{unit && <span className="text-slate-400 dark:text-white/40 ml-0.5">{unit}</span>}
             </div>
         </div>
     );
@@ -255,7 +255,7 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
     };
 
     return (
-        <div className="mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div className="mt-2 h-1.5 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
             <div
                 className={`h-full ${colorClasses[color]} transition-all duration-300`}
                 style={{ width: `${percentage}%` }}
@@ -267,7 +267,7 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
 function StatusItem({ label, active }: { label: string; active: boolean }) {
     return (
         <div className="flex items-center justify-between">
-            <span className="text-white/70">{label}</span>
+            <span className="text-slate-500 dark:text-white/70">{label}</span>
             <span className={`w-2 h-2 rounded-full ${active ? 'bg-green-500' : 'bg-white/20'}`} />
         </div>
     );
@@ -303,18 +303,18 @@ export function PerformanceBadgeMini() {
     }, []);
 
     return (
-        <div className="fixed bottom-4 left-4 z-50 bg-ink-900/90 backdrop-blur-sm border border-white/10 rounded-lg px-3 py-2 text-xs font-mono shadow-lg">
+        <div className="fixed bottom-4 left-4 z-50 bg-ink-900/90 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-mono shadow-lg">
             <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
                     <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span className="text-white/60">FPS:</span>
+                    <span className="text-slate-400 dark:text-white/60">FPS:</span>
                     <span className={fps >= 55 ? 'text-green-400' : fps >= 30 ? 'text-yellow-400' : 'text-red-400'}>
                         {fps}
                     </span>
                 </div>
                 {cacheStats && (
                     <div className="flex items-center gap-1.5">
-                        <span className="text-white/60">Cache:</span>
+                        <span className="text-slate-400 dark:text-white/60">Cache:</span>
                         <span className={parseFloat(cacheStats.hitRate) >= 80 ? 'text-green-400' : 'text-yellow-400'}>
                             {cacheStats.hitRate}
                         </span>

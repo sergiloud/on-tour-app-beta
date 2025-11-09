@@ -43,7 +43,7 @@ export const PricingTable: React.FC = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-lg text-white/60 max-w-2xl mx-auto"
+                        className="text-lg text-slate-400 dark:text-white/60 max-w-2xl mx-auto"
                     >
                         {t('pricing.subtitle')}
                     </motion.p>
@@ -63,7 +63,7 @@ export const PricingTable: React.FC = () => {
                 relative p-8 rounded-2xl backdrop-blur-xl
                 ${plan.popular
                                     ? 'border-2 border-accent-500 bg-accent-500/10'
-                                    : 'border border-white/10 glass'
+                                    : 'border border-slate-200 dark:border-white/10 glass'
                                 }
               `}
                         >
@@ -84,10 +84,10 @@ export const PricingTable: React.FC = () => {
                                     <span className="text-5xl font-bold text-accent-500">
                                         ${plan.monthly}
                                     </span>
-                                    <span className="text-white/60">/mes</span>
+                                    <span className="text-slate-400 dark:text-white/60">/mes</span>
                                 </div>
                                 {plan.yearly && plan.yearly > 0 && (
-                                    <p className="text-sm text-white/40 mt-2">
+                                    <p className="text-sm text-slate-400 dark:text-white/40 mt-2">
                                         ${plan.yearly}/año (ahorra ${Math.round((plan.monthly * 12 - plan.yearly) / (plan.monthly * 12) * 100)}%)
                                     </p>
                                 )}
@@ -98,7 +98,7 @@ export const PricingTable: React.FC = () => {
                                 {plan.features.map((feature, idx) => (
                                     <li key={idx} className="flex items-start gap-3">
                                         <Check className="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5" />
-                                        <span className="text-white/80 text-sm">{feature}</span>
+                                        <span className="text-slate-600 dark:text-white/80 text-sm">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -111,7 +111,7 @@ export const PricingTable: React.FC = () => {
                   transition-all duration-200
                   ${plan.popular
                                         ? 'bg-accent-500 text-ink-900 hover:bg-accent-400'
-                                        : 'glass hover:bg-white/10 border border-white/20'
+                                        : 'glass hover:bg-slate-200 dark:bg-white/10 border border-white/20'
                                     }
                 `}
                             >
@@ -127,7 +127,7 @@ export const PricingTable: React.FC = () => {
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.4 }}
-                    className="text-center text-white/40 text-sm mt-12"
+                    className="text-center text-slate-400 dark:text-white/40 text-sm mt-12"
                 >
                     {t('pricing.allPlansInclude')}{' '}
                     <a href="/contact" className="text-accent-500 hover:underline">

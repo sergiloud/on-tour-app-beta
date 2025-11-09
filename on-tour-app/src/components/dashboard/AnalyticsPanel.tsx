@@ -97,7 +97,7 @@ const AnalyticsPanel: React.FC = () => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     return (
-        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:border-white/20">
+        <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:border-white/20">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent pointer-events-none" />
 
             <div className="relative p-5 space-y-5">
@@ -113,7 +113,7 @@ const AnalyticsPanel: React.FC = () => {
                         initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0 }}
-                        className="p-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                        className="p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                     >
                         <div className="flex items-center gap-2 mb-2">
                             <Calendar className="w-4 h-4 text-blue-400" />
@@ -126,7 +126,7 @@ const AnalyticsPanel: React.FC = () => {
                         initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.05 }}
-                        className="p-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                        className="p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                     >
                         <div className="flex items-center gap-2 mb-2">
                             <Calendar className="w-4 h-4 text-blue-400" />
@@ -139,7 +139,7 @@ const AnalyticsPanel: React.FC = () => {
                         initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="p-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                        className="p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                     >
                         <div className="flex items-center gap-2 mb-2">
                             <Calendar className="w-4 h-4 text-blue-400" />
@@ -151,7 +151,7 @@ const AnalyticsPanel: React.FC = () => {
 
                 {/* Trend & Conversion */}
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 rounded-lg border border-white/10 bg-gradient-to-br from-white/5 to-transparent">
+                    <div className="p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent">
                         <div className="flex items-center gap-2 mb-2">
                             {insights.trendDirection === 'up' ? (
                                 <TrendingUp className="w-4 h-4 text-green-400" />
@@ -166,7 +166,7 @@ const AnalyticsPanel: React.FC = () => {
                         <div className="text-[10px] opacity-50 mt-1">30d → 60d growth</div>
                     </div>
 
-                    <div className="p-4 rounded-lg border border-white/10 bg-gradient-to-br from-white/5 to-transparent">
+                    <div className="p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent">
                         <div className="flex items-center gap-2 mb-2">
                             <Award className="w-4 h-4 text-amber-400" />
                             <span className="text-xs font-medium opacity-70">Win Rate</span>
@@ -189,7 +189,7 @@ const AnalyticsPanel: React.FC = () => {
                                     initial={prefersReducedMotion ? false : { opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.15 + index * 0.05 }}
-                                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                                    className="flex items-center justify-between p-3 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                                 >
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 rounded-full bg-accent-500/20 flex items-center justify-center text-xs font-bold text-accent-400">

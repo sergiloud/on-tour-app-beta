@@ -3,19 +3,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Music, TrendingUp, AlertCircle, Calendar, Users, ChevronRight } from 'lucide-react';
 import { t } from '../../lib/i18n';
-import { getOrgById, listTeams, listMembers, ORG_AGENCY_SHALIZI, startViewAs } from '../../lib/tenants';
+import { getOrgById, listTeams, listMembers, startViewAs } from '../../lib/tenants';
 import { useFilteredShows } from '../../features/shows/selectors';
 import { useSettings } from '../../context/SettingsContext';
+import { useOrg } from '../../context/OrgContext';
 
 const ArtistHub: React.FC = () => {
   const { artistId } = useParams();
   const navigate = useNavigate();
   const { shows } = useFilteredShows();
   const { fmtMoney } = useSettings();
+  const { orgId } = useOrg();
 
   const org = artistId ? getOrgById(artistId) : undefined;
-  const team = listTeams(ORG_AGENCY_SHALIZI).find(t => t.name === (org?.name||''));
-  const members = team ? team.members.map(id => listMembers(ORG_AGENCY_SHALIZI).find(m => m.user.id===id)?.user.name || id) : [];
+  const team = listTeams(artistId || '').find(t => t.name === (org?.name||''));
+  const members = team ? team.members.map(id => listMembers(orgId).find(m => m.user.id===id)?.user.name || id) : [];
 
   const artistKpis = useMemo(() => {
     if (!artistId || !shows) return {
@@ -103,16 +105,16 @@ const ArtistHub: React.FC = () => {
   return (
     <div className="px-4 sm:px-6 flex flex-col gap-4 lg:gap-5 pb-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:shadow-md hover:shadow-accent-500/5">
-        <div className="relative px-6 pt-5 pb-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+      <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md hover:shadow-accent-500/5">
+        <div className="relative px-6 pt-5 pb-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1 h-6 rounded-full bg-gradient-to-b from-accent-500 to-blue-500" />
               <div>
-                <h1 className="text-lg font-semibold tracking-tight text-white">
+                <h1 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
                   {org?.name || 'Artist'}
                 </h1>
-                <p className="text-xs text-white/60 mt-1">Artist Mission Control Dashboard</p>
+                <p className="text-xs text-slate-400 dark:text-white/60 mt-1">Artist Mission Control Dashboard</p>
               </div>
             </div>
 
@@ -121,7 +123,7 @@ const ArtistHub: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate('/dashboard/org/links')}
-                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-medium text-xs transition-all"
+                className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-slate-500 dark:text-white/70 hover:text-white font-medium text-xs transition-all"
               >
                 Edit Scopes
               </motion.button>
@@ -146,16 +148,16 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-start justify-between mb-3">
-            <p className="text-xs text-white/60 font-medium uppercase tracking-wider">Next Show</p>
+            <p className="text-xs text-slate-400 dark:text-white/60 font-medium uppercase tracking-wider">Next Show</p>
             <Calendar className="w-5 h-5 text-blue-400 opacity-50" />
           </div>
-          <p className="text-2xl font-bold text-white mb-2">
+          <p className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
             {artistKpis.nextShow ? new Date(artistKpis.nextShow.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) : '—'}
           </p>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-slate-300 dark:text-white/50">
             {artistKpis.nextShow ? `${artistKpis.nextShow.city}, ${artistKpis.nextShow.country}` : 'No upcoming shows'}
           </p>
         </motion.div>
@@ -166,14 +168,14 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-start justify-between mb-3">
-            <p className="text-xs text-white/60 font-medium uppercase tracking-wider">This Month</p>
+            <p className="text-xs text-slate-400 dark:text-white/60 font-medium uppercase tracking-wider">This Month</p>
             <TrendingUp className="w-5 h-5 text-green-400 opacity-50" />
           </div>
-          <p className="text-2xl font-bold text-white mb-2">{fmtMoney(artistKpis.thisMonthRevenue)}</p>
-          <p className="text-xs text-white/50">Revenue</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{fmtMoney(artistKpis.thisMonthRevenue)}</p>
+          <p className="text-xs text-slate-300 dark:text-white/50">Revenue</p>
         </motion.div>
 
         {/* YTD Revenue */}
@@ -182,14 +184,14 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-start justify-between mb-3">
-            <p className="text-xs text-white/60 font-medium uppercase tracking-wider">YTD Revenue</p>
+            <p className="text-xs text-slate-400 dark:text-white/60 font-medium uppercase tracking-wider">YTD Revenue</p>
             <Music className="w-5 h-5 text-purple-400 opacity-50" />
           </div>
-          <p className="text-2xl font-bold text-white mb-2">{fmtMoney(artistKpis.ytdRevenue)}</p>
-          <p className="text-xs text-white/50">Total earnings</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{fmtMoney(artistKpis.ytdRevenue)}</p>
+          <p className="text-xs text-slate-300 dark:text-white/50">Total earnings</p>
         </motion.div>
 
         {/* Pending Costs */}
@@ -198,16 +200,16 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-start justify-between mb-3">
-            <p className="text-xs text-white/60 font-medium uppercase tracking-wider">Pending</p>
+            <p className="text-xs text-slate-400 dark:text-white/60 font-medium uppercase tracking-wider">Pending</p>
             <AlertCircle className={`w-5 h-5 opacity-50 ${artistKpis.pendingCosts > 0 ? 'text-amber-400' : 'text-green-400'}`} />
           </div>
           <p className={`text-2xl font-bold mb-2 ${artistKpis.pendingCosts > 0 ? 'text-amber-300' : 'text-white'}`}>
             {fmtMoney(artistKpis.pendingCosts)}
           </p>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-slate-300 dark:text-white/50">
             {artistKpis.pendingCosts > 0 ? 'Action needed' : 'All paid'}
           </p>
         </motion.div>
@@ -218,22 +220,22 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-start justify-between mb-3">
-            <p className="text-xs text-white/60 font-medium uppercase tracking-wider">Alerts</p>
+            <p className="text-xs text-slate-400 dark:text-white/60 font-medium uppercase tracking-wider">Alerts</p>
             <AlertCircle className={`w-5 h-5 opacity-50 ${artistKpis.activeAlerts > 0 ? 'text-red-400' : 'text-green-400'}`} />
           </div>
           <p className={`text-2xl font-bold mb-2 ${artistKpis.activeAlerts > 0 ? 'text-red-300' : 'text-green-300'}`}>
             {artistKpis.activeAlerts}
           </p>
-          <p className="text-xs text-white/50">Need attention</p>
+          <p className="text-xs text-slate-300 dark:text-white/50">Need attention</p>
         </motion.div>
       </div>
 
       {/* Quick Actions */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-white px-1">Quick Actions</h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white px-1">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
           {[
             { icon: '🎵', label: 'Shows', desc: 'Manage performances', action: () => navigateAsArtist('/dashboard/shows?restore=1') },
@@ -248,11 +250,11 @@ const ArtistHub: React.FC = () => {
               transition={{ delay: 0.05 + idx * 0.05 }}
               whileHover={{ scale: 1.01 }}
               onClick={action.action}
-              className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-4 text-left group"
+              className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-4 text-left group"
             >
               <p className="text-2xl mb-2 group-hover:scale-110 transition-transform">{action.icon}</p>
-              <p className="text-sm font-semibold text-white">{action.label}</p>
-              <p className="text-xs text-white/50 mt-0.5">{action.desc}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{action.label}</p>
+              <p className="text-xs text-slate-300 dark:text-white/50 mt-0.5">{action.desc}</p>
             </motion.button>
           ))}
         </div>
@@ -266,23 +268,23 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
             <Music className="w-4 h-4 text-accent-500" />
-            <h3 className="text-sm font-semibold text-white">Show Status</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Show Status</h3>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-white/70">Confirmed</span>
-              <span className="font-semibold text-white">{artistKpis.confirmedShows}</span>
+              <span className="text-slate-500 dark:text-white/70">Confirmed</span>
+              <span className="font-semibold text-slate-900 dark:text-white">{artistKpis.confirmedShows}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-white/70">Total Shows</span>
-              <span className="font-semibold text-white">{artistKpis.totalShows}</span>
+              <span className="text-slate-500 dark:text-white/70">Total Shows</span>
+              <span className="font-semibold text-slate-900 dark:text-white">{artistKpis.totalShows}</span>
             </div>
             <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10">
-              <span className="text-white/70">Completion</span>
+              <span className="text-slate-500 dark:text-white/70">Completion</span>
               <span className="font-semibold text-green-400">
                 {artistKpis.totalShows > 0 ? Math.round((artistKpis.confirmedShows / artistKpis.totalShows) * 100) : 0}%
               </span>
@@ -296,25 +298,25 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
             <TrendingUp className="w-4 h-4 text-green-500" />
-            <h3 className="text-sm font-semibold text-white">Financial</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Financial</h3>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-white/70">Avg Fee</span>
-              <span className="font-semibold text-white">
+              <span className="text-slate-500 dark:text-white/70">Avg Fee</span>
+              <span className="font-semibold text-slate-900 dark:text-white">
                 {artistKpis.confirmedShows > 0 ? fmtMoney(artistKpis.net / artistKpis.confirmedShows) : fmtMoney(0)}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-white/70">Travel Costs</span>
-              <span className="font-semibold text-white">{fmtMoney(artistKpis.travel)}</span>
+              <span className="text-slate-500 dark:text-white/70">Travel Costs</span>
+              <span className="font-semibold text-slate-900 dark:text-white">{fmtMoney(artistKpis.travel)}</span>
             </div>
             <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10">
-              <span className="text-white/70">Profit Margin</span>
+              <span className="text-slate-500 dark:text-white/70">Profit Margin</span>
               <span className="font-semibold text-green-400">
                 {artistKpis.net > 0 ? Math.round(((artistKpis.net - artistKpis.travel) / artistKpis.net) * 100) : 0}%
               </span>
@@ -328,24 +330,24 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
             <AlertCircle className="w-4 h-4 text-yellow-500" />
-            <h3 className="text-sm font-semibold text-white">Activity</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Activity</h3>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs">
               <div className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-white/70">Last show completed</span>
+              <span className="text-slate-500 dark:text-white/70">Last show completed</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <div className="w-2 h-2 rounded-full bg-blue-400" />
-              <span className="text-white/70">Next booking confirmed</span>
+              <span className="text-slate-500 dark:text-white/70">Next booking confirmed</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <div className={`w-2 h-2 rounded-full ${artistKpis.pendingCosts > 0 ? 'bg-amber-400' : 'bg-green-400'}`} />
-              <span className="text-white/70">
+              <span className="text-slate-500 dark:text-white/70">
                 {artistKpis.pendingCosts > 0 ? 'Pending payments' : 'All paid'}
               </span>
             </div>
@@ -361,21 +363,21 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
             <Calendar className="w-4 h-4 text-blue-400" />
-            <h3 className="text-sm font-semibold text-white">Upcoming 14 Days</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Upcoming 14 Days</h3>
           </div>
           {upcomingShows.length === 0 ? (
-            <p className="text-xs text-white/50">No upcoming shows</p>
+            <p className="text-xs text-slate-300 dark:text-white/50">No upcoming shows</p>
           ) : (
             <div className="space-y-2">
               {upcomingShows.map((show: any, i: number) => (
-                <div key={i} className="flex items-center justify-between p-2 bg-white/5 rounded-lg border border-white/10">
+                <div key={i} className="flex items-center justify-between p-2 bg-slate-100 dark:bg-white/5 rounded-lg border border-white/10">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-white truncate">{show.venue || 'TBD'}</p>
-                    <p className="text-[11px] text-white/50">{new Date(show.date).toLocaleDateString()}</p>
+                    <p className="text-[11px] text-slate-300 dark:text-white/50">{new Date(show.date).toLocaleDateString()}</p>
                   </div>
                   <span className={`ml-2 px-2 py-1 rounded text-[10px] font-medium whitespace-nowrap ${
                     show.status === 'confirmed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
@@ -394,32 +396,32 @@ const ArtistHub: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
             <Users className="w-4 h-4 text-purple-400" />
-            <h3 className="text-sm font-semibold text-white">Assigned Team</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Assigned Team</h3>
           </div>
           {members.length === 0 ? (
-            <p className="text-xs text-white/50">No team members assigned</p>
+            <p className="text-xs text-slate-300 dark:text-white/50">No team members assigned</p>
           ) : (
             <div className="space-y-2">
               {members.map((member, i) => (
-                <div key={i} className="flex items-center justify-between p-2 bg-white/5 rounded-lg border border-white/10">
+                <div key={i} className="flex items-center justify-between p-2 bg-slate-100 dark:bg-white/5 rounded-lg border border-white/10">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="w-6 h-6 rounded-full bg-accent-500/20 flex items-center justify-center text-[10px] font-medium flex-shrink-0">
                       {member.split(' ').map(n => n[0]).join('').toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-white truncate">{member}</p>
-                      <p className="text-[10px] text-white/50">Account Manager</p>
+                      <p className="text-[10px] text-slate-300 dark:text-white/50">Account Manager</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-3 h-3 text-white/30 flex-shrink-0 ml-2" />
+                  <ChevronRight className="w-3 h-3 text-slate-300 dark:text-white/30 flex-shrink-0 ml-2" />
                 </div>
               ))}
               {members.length > 0 && (
-                <p className="text-[11px] text-white/50 pt-2 border-t border-white/10 mt-2">
+                <p className="text-[11px] text-slate-300 dark:text-white/50 pt-2 border-t border-slate-200 dark:border-white/10 mt-2">
                   {members.length} member{members.length !== 1 ? 's' : ''} managing this artist
                 </p>
               )}
@@ -434,7 +436,7 @@ const ArtistHub: React.FC = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/dashboard/org/links')}
-          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 text-white/70 font-medium text-xs transition-all"
+          className="flex-1 px-3 py-2 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-slate-500 dark:text-white/70 font-medium text-xs transition-all"
         >
           Edit Scopes
         </motion.button>

@@ -174,7 +174,7 @@ export const DashboardTeaser: React.FC<DashboardTeaserProps> = ({ className = ''
           <span className="badge-soft">Live</span>
         </div>
         <div className="text-3xl font-semibold tracking-tight tabular-nums">{yearNetDisplay}</div>
-        <div className="h-1.5 w-full rounded-full bg-white/5 overflow-hidden">
+        <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
           <motion.span
             className="block h-full bg-accent-500/80 transition-all duration-700"
             style={{ width: `${Math.max(progress * 100, 4)}%` }}

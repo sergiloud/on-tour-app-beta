@@ -162,7 +162,7 @@ export const DependencyConflictAlert: React.FC<{
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => onResolve(conflict)}
-                        className="mt-2 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-medium transition-all"
+                        className="mt-2 px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-white text-xs font-medium transition-all"
                       >
                         {t('calendar.dependencies.resolve') || 'Resolve'}
                       </motion.button>
@@ -188,16 +188,16 @@ export const DependencyLinkManager: React.FC<{
   onRemoveDependency?: (depId: string) => void;
 }> = ({ events, dependencies, onAddDependency, onRemoveDependency }) => {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+    <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 space-y-3">
       <div className="flex items-center gap-2 mb-3">
         <LinkIcon className="w-4 h-4 text-accent-400" />
-        <h3 className="text-sm font-semibold text-white">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
           {t('calendar.dependencies.linkEvents') || 'Link Events'}
         </h3>
       </div>
 
       {dependencies.length === 0 ? (
-        <p className="text-xs text-white/50">{t('calendar.dependencies.none') || 'No event links yet'}</p>
+        <p className="text-xs text-slate-300 dark:text-white/50">{t('calendar.dependencies.none') || 'No event links yet'}</p>
       ) : (
         <div className="space-y-2">
           {dependencies.map((dep) => {
@@ -209,9 +209,9 @@ export const DependencyLinkManager: React.FC<{
                 key={dep.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10"
+                className="flex items-center justify-between p-2 rounded-lg bg-slate-100 dark:bg-white/5 border border-white/10"
               >
-                <div className="text-xs text-white/70 flex-1 min-w-0">
+                <div className="text-xs text-slate-500 dark:text-white/70 flex-1 min-w-0">
                   <span className="font-medium text-white truncate">{event?.title}</span>
                   <span className="mx-1">→</span>
                   <span className="font-medium text-white truncate">{dependsOn?.title}</span>

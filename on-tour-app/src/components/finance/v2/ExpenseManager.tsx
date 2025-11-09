@@ -185,28 +185,28 @@ const ExpenseManager: React.FC = () => {
   };
 
   return (
-    <div className="bg-dark-800/50 rounded-lg border border-white/10 overflow-hidden">
+    <div className="bg-dark-800/50 rounded-lg border border-slate-200 dark:border-white/10 overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-white/10 bg-dark-900/50">
+      <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-dark-900/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <TrendingDown className="w-4 h-4 text-white/40" />
-            <h3 className="text-xs font-medium text-white/40 uppercase tracking-wider">
+            <TrendingDown className="w-4 h-4 text-slate-300 dark:text-white/40" />
+            <h3 className="text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">
               Additional Expenses
             </h3>
           </div>
           <div className="flex items-center gap-4">
             {expenses.length > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-white/40">Total:</span>
+                <span className="text-xs text-slate-300 dark:text-white/40">Total:</span>
                 <span className="text-lg font-light text-white tabular-nums">{fmtMoney(totalExpenses)}</span>
               </div>
             )}
             <button
               onClick={() => setIsAdding(!isAdding)}
               className={`px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 transition-colors ${isAdding
-                ? 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
-                : 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
+                ? 'bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-white border border-white/10'
+                : 'bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-white border border-white/10'
                 }`}
             >
               {isAdding ? (
@@ -237,12 +237,12 @@ const ExpenseManager: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <div>
-                <h4 className="text-lg font-semibold text-white mb-1">New Expense</h4>
-                <p className="text-xs text-white/60">Add a new expense to track additional costs</p>
+                <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">New Expense</h4>
+                <p className="text-xs text-slate-400 dark:text-white/60">Add a new expense to track additional costs</p>
               </div>
               <button
                 onClick={() => setIsAdding(false)}
-                className="p-2 rounded-lg hover:bg-accent-500/20 text-white/70 hover:text-white transition-colors"
+                className="p-2 rounded-lg hover:bg-accent-500/20 text-slate-500 dark:text-white/70 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -251,9 +251,9 @@ const ExpenseManager: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Date */}
               <div>
-                <label className="block text-xs text-white/70 mb-2 font-medium">Date *</label>
+                <label className="block text-xs text-slate-500 dark:text-white/70 mb-2 font-medium">Date *</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-white/50" />
                   <input
                     type="date"
                     value={newExpense.date}
@@ -265,9 +265,9 @@ const ExpenseManager: React.FC = () => {
 
               {/* Category */}
               <div>
-                <label className="block text-xs text-white/70 mb-2 font-medium">Category *</label>
+                <label className="block text-xs text-slate-500 dark:text-white/70 mb-2 font-medium">Category *</label>
                 <div className="relative">
-                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-white/50" />
                   <select
                     value={newExpense.category}
                     onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value as ExpenseCategory })}
@@ -282,17 +282,17 @@ const ExpenseManager: React.FC = () => {
 
               {/* Amount */}
               <div>
-                <label className="block text-xs text-white/70 mb-2 font-medium">Amount *</label>
+                <label className="block text-xs text-slate-500 dark:text-white/70 mb-2 font-medium">Amount *</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-white/50" />
                     <input
                       type="number"
                       step="0.01"
                       value={newExpense.amount || ''}
                       onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) || 0 })}
                       placeholder="0.00"
-                      className="w-full pl-10 pr-3 py-2.5 bg-ink-800 border border-accent-500/20 rounded-lg text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/30"
+                      className="w-full pl-10 pr-3 py-2.5 bg-ink-800 border border-accent-500/20 rounded-lg text-sm text-white placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/30"
                     />
                   </div>
                   <select
@@ -309,15 +309,15 @@ const ExpenseManager: React.FC = () => {
 
               {/* Description */}
               <div>
-                <label className="block text-xs text-white/70 mb-2 font-medium">Description *</label>
+                <label className="block text-xs text-slate-500 dark:text-white/70 mb-2 font-medium">Description *</label>
                 <div className="relative">
-                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-white/50" />
                   <input
                     type="text"
                     value={newExpense.description}
                     onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
                     placeholder="e.g., Flight tickets, Hotel booking..."
-                    className="w-full pl-10 pr-3 py-2.5 bg-ink-800 border border-accent-500/20 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/30"
+                    className="w-full pl-10 pr-3 py-2.5 bg-ink-800 border border-accent-500/20 rounded-lg text-sm text-white placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/30"
                   />
                 </div>
               </div>
@@ -325,25 +325,25 @@ const ExpenseManager: React.FC = () => {
 
             {/* Notes */}
             <div>
-              <label className="block text-xs text-white/70 mb-2 font-medium">Notes <span className="text-white/40">(optional)</span></label>
+              <label className="block text-xs text-slate-500 dark:text-white/70 mb-2 font-medium">Notes <span className="text-slate-400 dark:text-slate-300 dark:text-white/40">(optional)</span></label>
               <textarea
                 value={newExpense.notes}
                 onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
                 placeholder="Add any additional details, invoice numbers, or context..."
                 rows={3}
-                className="w-full px-4 py-3 bg-ink-800 border border-accent-500/20 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/30 resize-none"
+                className="w-full px-4 py-3 bg-ink-800 border border-accent-500/20 rounded-lg text-sm text-white placeholder:text-slate-400 dark:placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/30 resize-none"
               />
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-3 justify-between pt-5 border-t border-accent-500/20">
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-slate-300 dark:text-white/50">
                 <span className="text-accent-400">*</span> Required fields
               </p>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsAdding(false)}
-                  className="px-5 py-2.5 rounded-lg text-sm bg-white/10 hover:bg-white/15 text-white/80 hover:text-white border border-white/20 transition-colors font-medium"
+                  className="px-5 py-2.5 rounded-lg text-sm bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-slate-600 dark:text-white/80 hover:text-white border border-slate-300 dark:border-white/20 transition-colors font-medium"
                 >
                   Cancel
                 </button>
@@ -369,12 +369,12 @@ const ExpenseManager: React.FC = () => {
               <div className="flex items-center gap-3">
                 <Users className="w-5 h-5 text-purple-400" />
                 <div>
-                  <h4 className="text-sm font-semibold text-white">Agency Commissions</h4>
-                  <p className="text-xs text-white/50 mt-0.5">Calculated from all confirmed shows</p>
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Agency Commissions</h4>
+                  <p className="text-xs text-slate-300 dark:text-white/50 mt-0.5">Calculated from all confirmed shows</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs text-white/40 mb-1">Total YTD</div>
+                <div className="text-xs text-slate-400 dark:text-white/40 mb-1">Total YTD</div>
                 <div className="text-2xl font-light text-purple-300 tabular-nums">{fmtMoney(totalAgencyCommissions)}</div>
               </div>
             </div>
@@ -385,7 +385,7 @@ const ExpenseManager: React.FC = () => {
                 const percentage = totalAgencyCommissions > 0 ? (agency.amount / totalAgencyCommissions) * 100 : 0;
                 const typeColor = agency.type === 'booking' ? 'blue' : 'emerald';
                 return (
-                  <div key={agency.name} className="bg-dark-900/60 rounded-lg border border-white/10 p-4 hover:border-purple-500/40 transition-all group">
+                  <div key={agency.name} className="bg-dark-900/60 rounded-lg border border-slate-200 dark:border-white/10 p-4 hover:border-purple-500/40 transition-all group">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -393,7 +393,7 @@ const ExpenseManager: React.FC = () => {
                             {agency.type}
                           </span>
                         </div>
-                        <h5 className="text-sm font-semibold text-white truncate group-hover:text-purple-300 transition-colors">
+                        <h5 className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-purple-300 transition-colors">
                           {sanitizeName(agency.name)}
                         </h5>
                       </div>
@@ -407,7 +407,7 @@ const ExpenseManager: React.FC = () => {
                       </div>
                     </div>
                     {/* Progress bar */}
-                    <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="mt-3 h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                       <div
                         className={`h-full bg-gradient-to-r from-${typeColor}-500 to-${typeColor}-400 rounded-full transition-all duration-500`}
                         style={{ width: `${percentage}%` }}
@@ -431,13 +431,13 @@ const ExpenseManager: React.FC = () => {
         {/* Filters - Only show when there are expenses */}
         {expenses.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap pb-2 border-b border-white/5">
-            <Filter className="w-4 h-4 text-white/40" />
-            <span className="text-xs text-white/40 mr-2">Filter by:</span>
+            <Filter className="w-4 h-4 text-slate-300 dark:text-white/40" />
+            <span className="text-xs text-slate-400 dark:text-white/40 mr-2">Filter by:</span>
             <button
               onClick={() => setFilterCategory('all')}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterCategory === 'all'
                 ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/20'
-                : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/5'
+                : 'bg-white/5 text-slate-400 dark:text-white/60 hover:bg-slate-200 dark:bg-white/10 border border-white/5'
                 }`}
             >
               All ({expenses.length})
@@ -451,7 +451,7 @@ const ExpenseManager: React.FC = () => {
                   onClick={() => setFilterCategory(cat.value)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterCategory === cat.value
                     ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/20'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/5'
+                    : 'bg-white/5 text-slate-400 dark:text-white/60 hover:bg-slate-200 dark:bg-white/10 border border-white/5'
                     }`}
                 >
                   {cat.label} ({count})
@@ -463,8 +463,8 @@ const ExpenseManager: React.FC = () => {
 
         {/* Expense Distribution Chart */}
         {chartData.length > 0 && (
-          <div className="bg-dark-900/50 rounded-xl border border-white/10 p-6 mb-6">
-            <h4 className="text-sm font-semibold text-white/90 mb-4 flex items-center gap-2">
+          <div className="bg-dark-900/50 rounded-xl border border-slate-200 dark:border-white/10 p-6 mb-6">
+            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-700 dark:text-white/90 mb-4 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-accent-500"></div>
               Expense Distribution
             </h4>
@@ -516,13 +516,13 @@ const ExpenseManager: React.FC = () => {
         {/* Expenses List */}
         {filteredExpenses.length === 0 ? (
           <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
-              <TrendingDown className="w-8 h-8 text-white/30" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 mb-4">
+              <TrendingDown className="w-8 h-8 text-slate-200 dark:text-white/30" />
             </div>
             <h4 className="text-base font-medium text-white mb-2">
               {filterCategory === 'all' ? 'No expenses yet' : `No ${getCategoryLabel(filterCategory as ExpenseCategory).toLowerCase()} expenses`}
             </h4>
-            <p className="text-sm text-white/50 max-w-sm mx-auto">
+            <p className="text-sm text-slate-300 dark:text-white/50 max-w-sm mx-auto">
               {filterCategory === 'all'
                 ? 'Add your first expense to start tracking additional costs beyond show expenses.'
                 : 'Try selecting a different category or add a new expense.'
@@ -531,7 +531,7 @@ const ExpenseManager: React.FC = () => {
             {filterCategory === 'all' && !isAdding && (
               <button
                 onClick={() => setIsAdding(true)}
-                className="mt-6 px-4 py-2 rounded text-sm bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-colors inline-flex items-center gap-2"
+                className="mt-6 px-4 py-2 rounded text-sm bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-white border border-slate-200 dark:border-white/10 transition-colors inline-flex items-center gap-2"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Your First Expense</span>
@@ -543,7 +543,7 @@ const ExpenseManager: React.FC = () => {
             {filteredExpenses.map(expense => (
               <div
                 key={expense.id}
-                className="bg-dark-900/50 rounded-lg border border-white/10 p-4 hover:border-white/20 transition-colors group"
+                className="bg-dark-900/50 rounded-lg border border-slate-200 dark:border-white/10 p-4 hover:border-slate-300 dark:hover:border-white/20 transition-colors group"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -551,11 +551,11 @@ const ExpenseManager: React.FC = () => {
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium bg-${getCategoryColor(expense.category)}-500/20 text-${getCategoryColor(expense.category)}-400 border border-${getCategoryColor(expense.category)}-500/30`}>
                         {getCategoryLabel(expense.category)}
                       </span>
-                      <span className="text-xs text-white/40">{expense.date}</span>
+                      <span className="text-xs text-slate-300 dark:text-white/40">{expense.date}</span>
                     </div>
-                    <h5 className="text-sm font-medium text-white mb-1">{expense.description}</h5>
+                    <h5 className="text-sm font-medium text-slate-900 dark:text-white mb-1">{expense.description}</h5>
                     {expense.notes && (
-                      <p className="text-xs text-white/50">{expense.notes}</p>
+                      <p className="text-xs text-slate-300 dark:text-white/50">{expense.notes}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
@@ -564,7 +564,7 @@ const ExpenseManager: React.FC = () => {
                         {fmtMoney(expense.amount)}
                       </div>
                       {expense.currency && expense.currency !== currency && (
-                        <div className="text-[10px] text-white/40 font-medium">
+                        <div className="text-[10px] text-slate-400 dark:text-white/40 font-medium">
                           {expense.currency}
                         </div>
                       )}

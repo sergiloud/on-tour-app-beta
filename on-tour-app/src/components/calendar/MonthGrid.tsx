@@ -572,7 +572,7 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
                   >
                   <div className="flex items-start justify-between gap-2 mb-1 md:mb-1.5 flex-shrink-0">
                     <motion.button
-                      className={`w-6 h-6 md:w-6 md:h-6 text-[8px] md:text-[9px] rounded-lg flex items-center justify-center focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 font-bold transition-all duration-150 ${isToday ? 'ring-2 ring-offset-1 ring-offset-ink-900 ring-accent-400' : ''} ${active ? 'bg-gradient-to-br from-accent-500/90 to-accent-600/80 text-white shadow-lg' : 'bg-white/10 text-white/70 hover:bg-white/15'}`}
+                      className={`w-6 h-6 md:w-6 md:h-6 text-[8px] md:text-[9px] rounded-lg flex items-center justify-center focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-400 focus-visible:ring-offset-1 focus-visible:ring-offset-ink-900 font-bold transition-all duration-150 ${isToday ? 'ring-2 ring-offset-1 ring-offset-ink-900 ring-accent-400' : ''} ${active ? 'bg-gradient-to-br from-accent-500/90 to-accent-600/80 text-black shadow-lg' : 'bg-white/10 text-white/70 hover:bg-white/15'}`}
                       onClick={()=> { setSelectedDay(cell.dateStr); announce((t('calendar.day.select')||'Selected {d}').replace('{d}', cell.dateStr)); }}
                       whileHover={{ scale: 1.1, y: -1 }}
                       whileTap={{ scale: 0.9 }}

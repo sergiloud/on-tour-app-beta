@@ -109,7 +109,7 @@ const AdvancedEventCard: React.FC<Props> = ({
         className={`
           relative group rounded-lg overflow-hidden cursor-move
           bg-gradient-to-r ${colorClass}
-          border border-white/20 hover:border-white/40
+          border border-slate-300 dark:border-white/20 hover:border-white/40
           p-2.5 shadow-lg hover:shadow-xl
           transition-all duration-200
           ${isDraggedOver ? 'ring-2 ring-accent-300 scale-105' : ''}
@@ -125,7 +125,7 @@ const AdvancedEventCard: React.FC<Props> = ({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">{eventTitle}</p>
               {eventStatus && (
-                <span className="inline-block text-xs font-medium text-white/80 mt-0.5 capitalize">
+                <span className="inline-block text-xs font-medium text-slate-600 dark:text-white/80 mt-0.5 capitalize">
                   {eventStatus}
                 </span>
               )}
@@ -143,10 +143,10 @@ const AdvancedEventCard: React.FC<Props> = ({
           </div>
 
           {/* Date Display */}
-          <div className="text-xs text-white/70 space-y-1">
+          <div className="text-xs text-slate-500 dark:text-white/70 space-y-1">
             <div>{new Date(eventDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}</div>
             {eventEndDate && eventEndDate !== eventDate && (
-              <div className="text-white/60">
+              <div className="text-slate-400 dark:text-white/60">
                 → {new Date(eventEndDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
               </div>
             )}
@@ -237,11 +237,11 @@ const AdvancedEventCard: React.FC<Props> = ({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
-          className="fixed z-50 bg-slate-900 border border-white/20 rounded-lg shadow-2xl overflow-hidden"
+          className="fixed z-50 bg-slate-900 border border-slate-300 dark:border-white/20 rounded-lg shadow-2xl overflow-hidden"
           style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
         >
           <button
-            className="w-full px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+            className="w-full px-4 py-2 text-sm text-white hover:bg-slate-200 dark:bg-white/10 transition-colors flex items-center gap-2"
             onClick={() => {
               onEdit?.(eventId);
               setContextMenu(null);
@@ -253,7 +253,7 @@ const AdvancedEventCard: React.FC<Props> = ({
             Edit
           </button>
           <button
-            className="w-full px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2 border-t border-white/10"
+            className="w-full px-4 py-2 text-sm text-white hover:bg-slate-200 dark:bg-white/10 transition-colors flex items-center gap-2 border-t border-white/10"
             onClick={() => {
               const nextDay = new Date(eventDate);
               nextDay.setDate(nextDay.getDate() + (duration || 1));
@@ -267,7 +267,7 @@ const AdvancedEventCard: React.FC<Props> = ({
             Duplicate
           </button>
           <button
-            className="w-full px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2 border-t border-white/10"
+            className="w-full px-4 py-2 text-sm text-white hover:bg-slate-200 dark:bg-white/10 transition-colors flex items-center gap-2 border-t border-white/10"
             onClick={() => {
               if (confirm(`Delete "${eventTitle}"?`)) {
                 onDelete?.(eventId);

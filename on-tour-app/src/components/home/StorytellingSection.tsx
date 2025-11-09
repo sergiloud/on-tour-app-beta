@@ -360,7 +360,7 @@ const ArtistChaosView: React.FC<{ chaosLevel: number; isVisible: boolean; flyPro
                 flyProgress={flyProgress}
                 delay={index * 0.15}
                 morphType={element.morphType}
-                className="rounded px-2 py-1 border border-white/20 shadow-lg"
+                className="rounded px-2 py-1 border border-slate-300 dark:border-white/20 shadow-lg"
               >
                 <div className="flex items-center gap-2 text-xs">
                   <span className="font-bold">{element.city}</span>

@@ -51,8 +51,8 @@ export function useShowsQuery() {
   return useQuery({
     queryKey: showsQueryKeys.all,
     queryFn: fetchAllShows,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    staleTime: 10 * 60 * 1000, // 10 minutes - increased from 5
+    gcTime: 30 * 60 * 1000, // 30 minutes - increased from 10
     enabled: true,
   });
 }
@@ -65,8 +65,8 @@ export function useShowQuery(id: string | undefined) {
   return useQuery({
     queryKey: id ? showsQueryKeys.detail(id) : showsQueryKeys.all,
     queryFn: () => (id ? fetchShowById(id) : Promise.resolve(undefined)),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes - increased from 5
+    gcTime: 30 * 60 * 1000, // 30 minutes - increased from 10
     enabled: !!id,
   });
 }

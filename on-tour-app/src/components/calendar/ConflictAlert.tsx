@@ -55,14 +55,14 @@ const ConflictAlert: React.FC<Props> = ({ conflicts, onDismiss }) => {
                     {conflict.message}
                   </p>
                   {conflict.suggestion && (
-                    <p className="text-xs text-white/60 mt-1">
+                    <p className="text-xs text-slate-400 dark:text-white/60 mt-1">
                       💡 {conflict.suggestion}
                     </p>
                   )}
                 </div>
                 <button
                   onClick={() => handleDismiss(conflict.id)}
-                  className="flex-shrink-0 text-white/40 hover:text-white/70 transition-colors"
+                  className="flex-shrink-0 text-slate-400 dark:text-white/40 hover:text-slate-500 dark:text-white/70 transition-colors"
                   title={t('common.dismiss') || 'Dismiss'}
                 >
                   ✕

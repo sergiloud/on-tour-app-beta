@@ -64,7 +64,7 @@ export const FinanceSummaryCard: React.FC<FinanceSummaryCardProps> = ({
             <span className="text-lg">💰</span>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
               {t('dashboard.card.finance.title') || 'Finance'}
             </h3>
             <p className="text-sm text-slate-400">
@@ -114,7 +114,7 @@ export const FinanceSummaryCard: React.FC<FinanceSummaryCardProps> = ({
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="px-3 py-1 text-xs font-medium bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+            className="px-3 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-full transition-colors"
           >
             {t('dashboard.card.viewAll') || 'View All'}
           </motion.button>

@@ -102,7 +102,7 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
 
         {/* Recent missions */}
         <div>
-          <h4 className="text-sm font-medium text-white mb-3">
+          <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
             {t('dashboard.card.mission.recent') || 'Recent Missions'}
           </h4>
           <div className="space-y-2">
@@ -115,7 +115,7 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
                 className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-white truncate">
+                  <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
                     {mission.title}
                   </div>
                   {mission.assignee && (

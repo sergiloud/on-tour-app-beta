@@ -109,7 +109,7 @@ const DayDetailsModal: React.FC<Props> = ({
             aria-modal="true"
           >
             <motion.div
-              className="w-full max-w-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+              className="w-full max-w-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden"
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -118,7 +118,7 @@ const DayDetailsModal: React.FC<Props> = ({
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-6 border-b border-white/5">
-                <h2 className="text-2xl font-bold text-white">{formatDate(day)}</h2>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatDate(day)}</h2>
                 <p className="text-sm text-slate-400 mt-1">{events.length} events scheduled</p>
               </div>
 
@@ -144,12 +144,12 @@ const DayDetailsModal: React.FC<Props> = ({
                         {typeEvents.map((event) => (
                           <motion.div
                             key={event.id}
-                            className="p-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all group"
+                            className="p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg hover:bg-slate-200 dark:bg-white/10 transition-all group"
                             whileHover={{ scale: 1.02 }}
                           >
                             <div className="flex items-center justify-between gap-3">
                               <div className="flex-1 min-w-0">
-                                <p className="text-white font-medium truncate">{event.title}</p>
+                                <p className="text-slate-900 dark:text-white font-medium truncate">{event.title}</p>
                                 {event.meta && <p className="text-xs text-slate-400 mt-0.5">{event.meta}</p>}
                               </div>
                               {event.status && (
@@ -161,7 +161,7 @@ const DayDetailsModal: React.FC<Props> = ({
                                 {onEditEvent && (
                                   <button
                                     onClick={() => onEditEvent(event)}
-                                    className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                                    className="p-1.5 hover:bg-slate-200 dark:bg-white/10 rounded-lg transition-all"
                                     title="Edit"
                                   >
                                     <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,10 +221,10 @@ const DayDetailsModal: React.FC<Props> = ({
               </div>
 
               {/* Footer */}
-              <div className="px-8 py-4 bg-white/2 border-t border-white/5 flex items-center justify-end gap-3">
+              <div className="px-8 py-4 bg-white/2 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-3">
                 <button
                   onClick={onClose}
-                  className="px-6 py-2 rounded-lg font-medium text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+                  className="px-6 py-2 rounded-lg font-medium text-slate-300 hover:text-white bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all"
                 >
                   Close
                 </button>

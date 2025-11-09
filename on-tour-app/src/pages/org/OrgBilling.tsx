@@ -10,16 +10,16 @@ const OrgBilling: React.FC = () => {
   return (
     <div className="px-4 sm:px-6 flex flex-col gap-4 lg:gap-5 pb-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:shadow-md hover:shadow-accent-500/5">
-        <div className="relative px-6 pt-5 pb-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+      <div className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm transition-all duration-300 hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md hover:shadow-accent-500/5">
+        <div className="relative px-6 pt-5 pb-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1 h-6 rounded-full bg-gradient-to-b from-accent-500 to-blue-500" />
               <div>
-                <h1 className="text-lg font-semibold tracking-tight text-white">
+                <h1 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
                   {t('nav.billing') || 'Billing'}
                 </h1>
-                <p className="text-xs text-white/60 mt-1">Manage your subscription and seats</p>
+                <p className="text-xs text-slate-400 dark:text-white/60 mt-1">Manage your subscription and seats</p>
               </div>
             </div>
 
@@ -41,18 +41,18 @@ const OrgBilling: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="flex items-start gap-3 mb-4">
             <div className="w-8 h-8 rounded-lg bg-accent-500/10 flex items-center justify-center flex-shrink-0">
               <CreditCard className="w-4 h-4 text-accent-500" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">Current Plan</h3>
-              <p className="text-xs text-white/50 mt-0.5">Free Trial</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Current Plan</h3>
+              <p className="text-xs text-slate-300 dark:text-white/50 mt-0.5">Free Trial</p>
             </div>
           </div>
-          <p className="text-xs text-white/60 mb-4">Basic access to all features. Upgrade for more capacity.</p>
+          <p className="text-xs text-slate-400 dark:text-white/60 mb-4">Basic access to all features. Upgrade for more capacity.</p>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -67,18 +67,18 @@ const OrgBilling: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
+          className="relative overflow-hidden rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 p-5"
         >
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-white mb-3">Seat Usage</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Seat Usage</h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/70">Internal Seats</span>
+                <span className="text-xs text-slate-500 dark:text-white/70">Internal Seats</span>
                 <span className="text-sm font-semibold text-accent-500">
                   {seats.internalUsed}/{seats.internalLimit}
                 </span>
               </div>
-              <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full h-2 overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${(seats.internalUsed / seats.internalLimit) * 100}%` }}
@@ -105,8 +105,8 @@ const OrgBilling: React.FC = () => {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-white mb-1">Ready to scale?</h3>
-            <p className="text-xs text-white/60">Upgrade your plan to unlock advanced features</p>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Ready to scale?</h3>
+            <p className="text-xs text-slate-400 dark:text-white/60">Upgrade your plan to unlock advanced features</p>
           </div>
           <ArrowRight className="w-5 h-5 text-accent-500 flex-shrink-0" />
         </div>

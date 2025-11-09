@@ -1,6 +1,8 @@
-import React from 'react';
-import { t } from '../../../lib/i18n';
-import StatusBadge from '../../../ui/StatusBadge';
+import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { CheckCircle, MessageCircle, Clock, RotateCw, X, Archive } from 'lucide-react'
+import { t } from '../../../lib/i18n'
+import StatusBadge from '../../../ui/StatusBadge'
 
 export type ShowStatus = 'offer' | 'pending' | 'confirmed' | 'postponed' | 'canceled' | 'archived';
 
@@ -13,10 +15,98 @@ export interface StatusSelectorProps {
 }
 
 /**
- * Interactive Status Selector with clickable StatusBadges
- * - Visual selection with StatusBadge components
- * - Much faster and clearer than dropdown selects
- * - Header color changes based on selected status
+ * Status Configuration
+ * Centralized configuration for all status options
+ * Easy to maintain and extend in the future
+ */
+interface StatusOption {
+  value: ShowStatus
+  labelKey: string
+  bgColor: string
+  borderColor: string
+  selectedBg: string
+  selectedBorder: string
+  selectedShadow: string
+  accentColor: string
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+}
+
+const STATUS_OPTIONS: StatusOption[] = [
+  {
+    value: 'offer',
+    labelKey: 'shows.status.offer',
+    bgColor: 'bg-amber-500/5',
+    borderColor: 'border-amber-500/20',
+    selectedBg: 'bg-amber-500/15',
+    selectedBorder: 'border-amber-500/40',
+    selectedShadow: 'shadow-lg shadow-amber-500/20',
+    accentColor: 'text-amber-400',
+    icon: MessageCircle,
+  },
+  {
+    value: 'pending',
+    labelKey: 'shows.status.pending',
+    bgColor: 'bg-blue-500/5',
+    borderColor: 'border-blue-500/20',
+    selectedBg: 'bg-blue-500/15',
+    selectedBorder: 'border-blue-500/40',
+    selectedShadow: 'shadow-lg shadow-blue-500/20',
+    accentColor: 'text-blue-400',
+    icon: Clock,
+  },
+  {
+    value: 'confirmed',
+    labelKey: 'shows.status.confirmed',
+    bgColor: 'bg-green-500/5',
+    borderColor: 'border-green-500/20',
+    selectedBg: 'bg-green-500/15',
+    selectedBorder: 'border-green-500/40',
+    selectedShadow: 'shadow-lg shadow-green-500/20',
+    accentColor: 'text-green-400',
+    icon: CheckCircle,
+  },
+  {
+    value: 'postponed',
+    labelKey: 'shows.status.postponed',
+    bgColor: 'bg-orange-500/5',
+    borderColor: 'border-orange-500/20',
+    selectedBg: 'bg-orange-500/15',
+    selectedBorder: 'border-orange-500/40',
+    selectedShadow: 'shadow-lg shadow-orange-500/20',
+    accentColor: 'text-orange-400',
+    icon: RotateCw,
+  },
+  {
+    value: 'canceled',
+    labelKey: 'shows.status.canceled',
+    bgColor: 'bg-red-500/5',
+    borderColor: 'border-red-500/20',
+    selectedBg: 'bg-red-500/15',
+    selectedBorder: 'border-red-400/40',
+    selectedShadow: 'shadow-lg shadow-red-500/20',
+    accentColor: 'text-red-400',
+    icon: X,
+  },
+  {
+    value: 'archived',
+    labelKey: 'shows.status.archived',
+    bgColor: 'bg-slate-500/5',
+    borderColor: 'border-slate-500/20',
+    selectedBg: 'bg-slate-500/15',
+    selectedBorder: 'border-slate-500/40',
+    selectedShadow: 'shadow-lg shadow-slate-500/20',
+    accentColor: 'text-slate-400',
+    icon: Archive,
+  },
+]
+
+/**
+ * Premium Status Selector
+ * - Glassmorphism with layoutId animations
+ * - Framer Motion spring physics
+ * - i18n support with centralized configuration
+ * - Responsive grid (2 cols mobile, 3 cols desktop)
+ * - lucide-react icons for premium feel
  */
 export const StatusSelector: React.FC<StatusSelectorProps> = ({
   value,
@@ -25,75 +115,110 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
   help,
   disabled = false,
 }) => {
-  const statuses: ShowStatus[] = ['offer', 'pending', 'confirmed', 'postponed', 'canceled', 'archived'];
-
-  // Status colors for header background
-  const statusColors: Record<ShowStatus, string> = {
-    offer: 'from-amber-500/20 via-amber-500/10 to-amber-500/5',
-    pending: 'from-blue-500/20 via-blue-500/10 to-blue-500/5',
-    confirmed: 'from-green-500/20 via-green-500/10 to-green-500/5',
-    postponed: 'from-orange-500/20 via-orange-500/10 to-orange-500/5',
-    canceled: 'from-red-500/20 via-red-500/10 to-red-500/5',
-    archived: 'from-slate-500/20 via-slate-500/10 to-slate-500/5',
+  const handleStatusChange = (newStatus: ShowStatus) => {
+    if (!disabled) {
+      onChange(newStatus);
+    }
   };
 
+  const selectedOption = STATUS_OPTIONS.find(opt => opt.value === value);
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       {label && (
-        <div className="flex items-center gap-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-white/70">
+        <div className="flex items-center gap-2" id="status-label">
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
             {label}
           </label>
           {help && (
-            <span className="text-[9px] lowercase tracking-normal opacity-50 font-normal">
+            <span className="text-xs lowercase tracking-normal opacity-50 font-normal">
               {help}
             </span>
           )}
         </div>
       )}
 
-      {/* Status Badges Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-        {statuses.map(status => {
-          // Get tooltip description for each status
-          const tooltipKey = `shows.status.${status}.tooltip`;
+      {/* Status Grid - Responsive (2 cols mobile, 3 cols desktop) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 relative" role="group" aria-labelledby={label ? "status-label" : undefined}>
+        {/* Animated Background Indicator */}
+        <AnimatePresence mode="wait">
+          {selectedOption && (
+            <motion.div
+              key={`indicator-${selectedOption.value}`}
+              layoutId="status-selector-indicator"
+              className={`absolute rounded-lg border-2 pointer-events-none ${selectedOption.selectedBorder} ${selectedOption.selectedShadow}`}
+              style={{
+                background: selectedOption.selectedBg,
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              aria-hidden="true"
+            />
+          )}
+        </AnimatePresence>
+
+        {STATUS_OPTIONS.map((option) => {
+          const isSelected = value === option.value;
+          const tooltipKey = `shows.status.${option.value}.tooltip`;
           const tooltipDesc = t(tooltipKey);
           const titleAttr = tooltipDesc && tooltipDesc !== tooltipKey ? tooltipDesc : undefined;
+          const statusLabel = t(option.labelKey) || option.value.charAt(0).toUpperCase() + option.value.slice(1);
 
           return (
-          <button
-            key={status}
-            type="button"
-            disabled={disabled}
-            onClick={() => !disabled && onChange(status)}
-            title={titleAttr}
-            className={`relative p-2.5 rounded-md border-2 transition-all duration-200 flex flex-col items-center gap-1 hover:scale-105 active:scale-95 ${
-              value === status
-                ? 'border-accent-400 bg-accent-500/20 shadow-lg shadow-accent-500/30'
-                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-          >
-            {/* Status Badge */}
-            <StatusBadge status={status as any} />
+            <motion.button
+              key={option.value}
+              type="button"
+              disabled={disabled}
+              onClick={() => handleStatusChange(option.value)}
+              title={titleAttr}
+              aria-label={`${t('shows.editor.label.status') || 'Status'}: ${statusLabel}`}
+              aria-pressed={isSelected}
+              whileHover={!disabled ? { scale: 1.02 } : {}}
+              whileTap={!disabled ? { scale: 0.97 } : {}}
+              className={`relative px-2.5 py-2.5 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center gap-1 backdrop-blur-sm z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400 overflow-hidden ${
+                isSelected
+                  ? `${option.borderColor} text-white`
+                  : `${option.bgColor} ${option.borderColor} border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 hover:bg-white/5`
+              } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              {/* Status Icon */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                className="shrink-0"
+              >
+                {React.createElement(option.icon, {
+                  className: `w-4 h-4 ${isSelected ? option.accentColor : 'text-white/70'} transition-all duration-200`,
+                  strokeWidth: 2.5,
+                })}
+              </motion.div>
 
-            {/* Label */}
-            <span className="text-xs font-medium text-white/70">
-              {t(`shows.status.${status}`) || status.charAt(0).toUpperCase() + status.slice(1)}
-            </span>
-
-            {/* Checkmark when selected */}
-            {value === status && (
-              <svg className="w-3 h-3 text-accent-300 absolute top-0.5 right-0.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-              </svg>
-            )}
-          </button>
+              {/* Animated Check Icon - Only for selected */}
+              <AnimatePresence mode="wait">
+                {isSelected && (
+                  <motion.div
+                    key="check-icon"
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    exit={{ scale: 0, rotate: 180 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                    className="absolute top-0.5 right-0.5 shrink-0"
+                    aria-hidden="true"
+                  >
+                    <CheckCircle className={`w-3.5 h-3.5 ${option.accentColor}`} strokeWidth={2.5} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
           );
         })}
       </div>
 
-      {/* Description */}
-      <p className="text-[10px] text-white/60 italic">
+      {/* Hint text - Subtle and informative */}
+      <p className="text-xs text-slate-400 dark:text-white/40 text-center italic pt-1" id="status-hint">
         {t('shows.editor.status.hint') || 'Click to change status'}
       </p>
     </div>

@@ -391,14 +391,14 @@ export const ExportImportPanel: React.FC<ExportImportPanelProps> = ({
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-lg bg-gradient-to-br from-slate-900/30 to-slate-800/20 border border-white/10 p-4"
+      className="rounded-lg bg-gradient-to-br from-slate-900/30 to-slate-800/20 border border-slate-200 dark:border-white/10 p-4"
     >
       {/* Header */}
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between text-white/80 hover:text-white transition"
+        className="w-full flex items-center justify-between text-slate-600 dark:text-white/80 hover:text-white transition"
       >
         <div className="flex items-center gap-2">
           <Download size={18} />
@@ -424,7 +424,7 @@ export const ExportImportPanel: React.FC<ExportImportPanelProps> = ({
           >
             {/* Export Section */}
             <div>
-              <p className="text-xs font-semibold text-white/70 uppercase mb-3">
+              <p className="text-xs font-semibold text-slate-500 dark:text-white/70 uppercase mb-3">
                 {t('calendar.export.section') || 'Export Events'}
               </p>
               <div className="space-y-2">
@@ -453,13 +453,13 @@ export const ExportImportPanel: React.FC<ExportImportPanelProps> = ({
                 ].map((option) => (
                   <div
                     key={option.format}
-                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition"
+                    className="flex items-center justify-between p-3 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 transition"
                   >
                     <div>
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
                         {option.label}
                       </p>
-                      <p className="text-xs text-white/40">{option.desc}</p>
+                      <p className="text-xs text-slate-300 dark:text-white/40">{option.desc}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {option.format !== 'pdf' && (
@@ -497,12 +497,12 @@ export const ExportImportPanel: React.FC<ExportImportPanelProps> = ({
             {/* Import Section */}
             {onImport && (
               <div className="pt-4 border-t border-white/10">
-                <p className="text-xs font-semibold text-white/70 uppercase mb-3">
+                <p className="text-xs font-semibold text-slate-500 dark:text-white/70 uppercase mb-3">
                   {t('calendar.import.section') || 'Import Events'}
                 </p>
                 <label className="block">
                   <div
-                    className="relative p-3 rounded-lg border-2 border-dashed border-white/20 hover:border-accent-500/40 hover:bg-accent-500/5 transition cursor-pointer"
+                    className="relative p-3 rounded-lg border-2 border-dashed border-slate-300 dark:border-white/20 hover:border-accent-500/40 hover:bg-accent-500/5 transition cursor-pointer"
                   >
                     <input
                       type="file"
@@ -510,13 +510,13 @@ export const ExportImportPanel: React.FC<ExportImportPanelProps> = ({
                       onChange={handleImportFile}
                       className="hidden"
                     />
-                    <div className="flex items-center justify-center gap-2 text-white/60">
+                    <div className="flex items-center justify-center gap-2 text-slate-400 dark:text-white/60">
                       <Upload size={18} />
                       <span className="text-sm font-medium">
                         {t('calendar.import.dropFile') || 'Drop file or click to import'}
                       </span>
                     </div>
-                    <p className="text-xs text-white/40 text-center mt-1">
+                    <p className="text-xs text-slate-400 dark:text-white/40 text-center mt-1">
                       {t('calendar.import.formats') || 'Supports .ics, .csv, .json'}
                     </p>
                   </div>
@@ -526,7 +526,7 @@ export const ExportImportPanel: React.FC<ExportImportPanelProps> = ({
 
             {/* Info */}
             <div className="pt-4 border-t border-white/10">
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-slate-300 dark:text-white/50">
                 <strong>💡 {t('calendar.export.tip') || 'Tip'}:</strong> {t('calendar.export.tipText') || 'Export regularly to backup your events. Use PDF for sharing with managers/promoters, ICS for calendar integrations, CSV for spreadsheets.'}
               </p>
             </div>

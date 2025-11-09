@@ -33,7 +33,7 @@ const ShowDetails: React.FC = () => {
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold tracking-tight">{show.city}, {countryLabel(show.country, lang)}</h2>
-        <Link to="/dashboard/shows" className="text-sm px-3 py-2 rounded bg-white/10 hover:bg-white/15">{t('common.back') || 'Back'}</Link>
+        <Link to="/dashboard/shows" className="text-sm px-3 py-2 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/15">{t('common.back') || 'Back'}</Link>
       </div>
       <div className="grid md:grid-cols-3 gap-3">
         <Card className="p-4">

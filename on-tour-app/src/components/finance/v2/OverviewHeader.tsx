@@ -64,8 +64,8 @@ const OverviewHeader: React.FC = () => {
                 <Users className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <div className="text-xs text-white/50 mb-1">Agency Commissions YTD</div>
-                <div className="text-2xl font-light text-white tabular-nums">
+                <div className="text-xs text-slate-300 dark:text-white/50 mb-1">Agency Commissions YTD</div>
+                <div className="text-2xl font-light text-slate-900 dark:text-white tabular-nums">
                   {fmtMoney(agencyData.totalCommissions)}
                 </div>
               </div>
@@ -74,7 +74,7 @@ const OverviewHeader: React.FC = () => {
             {/* Comparison with previous period */}
             {commissionDeltaPct && (
               <div className="text-right">
-                <div className="text-xs text-white/40 mb-1">vs prev period</div>
+                <div className="text-xs text-slate-400 dark:text-white/40 mb-1">vs prev period</div>
                 <div className="flex items-center justify-end gap-2">
                   {parseFloat(commissionDeltaPct) >= 0 ? (
                     <>

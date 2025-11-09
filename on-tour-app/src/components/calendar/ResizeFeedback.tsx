@@ -84,7 +84,7 @@ const ResizeFeedback: React.FC<Props> = ({ isActive, dateStr, delta, direction }
                 <span className="text-xs font-semibold uppercase tracking-widest text-cyan-100 opacity-80">
                   {directionText}
                 </span>
-                <span className="text-base font-bold text-white">
+                <span className="text-base font-bold text-slate-900 dark:text-white">
                   {formattedDate}
                 </span>
               </div>

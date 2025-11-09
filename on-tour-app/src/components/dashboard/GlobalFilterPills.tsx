@@ -50,28 +50,28 @@ const GlobalFilterPills: React.FC = () => {
   const from = dateRange.from || '—';
   const to = dateRange.to || '—';
   return (
-    <div className="px-3 md:px-5 py-2 border-b border-white/5 bg-ink-900/35 backdrop-blur-xl sticky top-[var(--kpi-offset,0px)] z-20">
+    <div className="px-3 md:px-5 py-2 border-b border-slate-100 dark:border-white/5 bg-ink-900/35 backdrop-blur-xl sticky top-[var(--kpi-offset,0px)] z-20">
       <div className="flex items-center gap-2 text-[12px] overflow-x-auto">
-        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10" aria-label={`Region ${region}`}>{region}</span>
-        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10" aria-label={`Currency ${currency}`}>{currency}</span>
-        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10" aria-label={`Date range ${from} to ${to}`}>{from} → {to}</span>
+        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 border border-white/10" aria-label={`Region ${region}`}>{region}</span>
+        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 border border-white/10" aria-label={`Currency ${currency}`}>{currency}</span>
+        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 border border-white/10" aria-label={`Date range ${from} to ${to}`}>{from} → {to}</span>
         <div className="ml-auto flex items-center gap-2">
           <div className="relative" ref={menuRef}>
-            <button className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-[12px]" aria-haspopup="menu" aria-expanded={open} onClick={()=> setOpen(o=>!o)} title={t('filters.presets')||'Presets'}>{t('filters.presets')||'Presets'}</button>
+            <button className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-[12px]" aria-haspopup="menu" aria-expanded={open} onClick={()=> setOpen(o=>!o)} title={t('filters.presets')||'Presets'}>{t('filters.presets')||'Presets'}</button>
             {open && (
-              <div role="menu" className="absolute right-0 mt-1 min-w-[180px] glass rounded-md border border-white/10 p-1 shadow-lg">
-                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={()=>applyPreset('LAST_7')}>{t('filters.presets.last7')||'Last 7 days'}</button>
-                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={()=>applyPreset('LAST_30')}>{t('filters.presets.last30')||'Last 30 days'}</button>
-                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={()=>applyPreset('LAST_90')}>{t('filters.presets.last90')||'Last 90 days'}</button>
-                <div className="h-px my-1 bg-white/10" />
-                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={()=>applyPreset('MTD')}>{t('filters.presets.mtd')||'Month to date'}</button>
-                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={()=>applyPreset('QTD')}>{t('filters.presets.qtd')||'Quarter to date'}</button>
-                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-white/10" onClick={()=>applyPreset('YTD')}>{t('filters.presets.ytd')||'Year to date'}</button>
+              <div role="menu" className="absolute right-0 mt-1 min-w-[180px] glass rounded-md border border-slate-200 dark:border-white/10 p-1 shadow-lg">
+                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-slate-200 dark:bg-white/10" onClick={()=>applyPreset('LAST_7')}>{t('filters.presets.last7')||'Last 7 days'}</button>
+                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-slate-200 dark:bg-white/10" onClick={()=>applyPreset('LAST_30')}>{t('filters.presets.last30')||'Last 30 days'}</button>
+                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-slate-200 dark:bg-white/10" onClick={()=>applyPreset('LAST_90')}>{t('filters.presets.last90')||'Last 90 days'}</button>
+                <div className="h-px my-1 bg-slate-200 dark:bg-white/10" />
+                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-slate-200 dark:bg-white/10" onClick={()=>applyPreset('MTD')}>{t('filters.presets.mtd')||'Month to date'}</button>
+                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-slate-200 dark:bg-white/10" onClick={()=>applyPreset('QTD')}>{t('filters.presets.qtd')||'Quarter to date'}</button>
+                <button role="menuitem" className="w-full text-left px-2 py-1 rounded hover:bg-slate-200 dark:bg-white/10" onClick={()=>applyPreset('YTD')}>{t('filters.presets.ytd')||'Year to date'}</button>
               </div>
             )}
           </div>
-          <button className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-[12px]" onClick={clearAll} title={t('filters.clear')||'Clear'}>{t('filters.clear')||'Clear'}</button>
-          <button className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-[12px]" onClick={openDrawer} title={t('filters.more')||'More filters'}>{t('filters.more')||'More filters'}</button>
+          <button className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-[12px]" onClick={clearAll} title={t('filters.clear')||'Clear'}>{t('filters.clear')||'Clear'}</button>
+          <button className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-[12px]" onClick={openDrawer} title={t('filters.more')||'More filters'}>{t('filters.more')||'More filters'}</button>
         </div>
       </div>
     </div>

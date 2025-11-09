@@ -83,7 +83,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
             {/* Loading skeleton */}
             {!isLoaded && !blurDataURL && (
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 animate-pulse" aria-hidden="true" />
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-100 dark:from-white/5 to-white/10 animate-pulse" aria-hidden="true" />
             )}
 
             {/* Actual image */}

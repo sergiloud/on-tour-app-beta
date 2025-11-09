@@ -1,731 +1,657 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { getUserMemberships, setCurrentOrgId } from '../../lib/tenants';
+import { useSettings } from '../../context/SettingsContext';
+import { getUserMemberships, setCurrentOrgId, getOrgById } from '../../lib/tenants';
 import { showStore } from '../../shared/showStore';
-import { clearAndReseedAuth } from '../../lib/demoAuth';
-import { ensureDemoTenants } from '../../lib/tenants';
 import { t } from '../../lib/i18n';
+import { User, Mail, Bell, Shield, Database, Upload, Palette, Globe, Clock, DollarSign, Save, CheckCircle2, Camera, Phone, MapPin, Link as LinkIcon, Monitor, Moon, Sun } from 'lucide-react';
+import PageHeader from '../../components/common/PageHeader';
+import { useTheme } from '../../hooks/useTheme';
+import { useHighContrast } from '../../context/HighContrastContext';
 
-const Field: React.FC<{ label: string; children: React.ReactNode; description?: string }>=({label, children, description})=> (
-  <label className="flex flex-col gap-2">
-    <div>
-      <span className="text-sm font-medium">{label}</span>
-      {description && <p className="text-xs opacity-60 mt-0.5">{description}</p>}
-    </div>
-    {children}
-  </label>
+// Modern Toggle Switch Component
+const Toggle: React.FC<{ checked: boolean; onChange: (checked: boolean) => void; label?: string; description?: string }> = ({ checked, onChange, label, description }) => (
+  <div className="flex items-center justify-between">
+    {(label || description) && (
+      <div className="flex-1">
+        {label && <div className="text-sm font-medium text-slate-700 dark:text-white/90">{label}</div>}
+        {description && <div className="text-xs text-slate-300 dark:text-white/50 mt-0.5">{description}</div>}
+      </div>
+    )}
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-dark-900 ${
+        checked ? 'bg-accent-500' : 'bg-white/10'
+      }`}
+    >
+      <span
+        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+          checked ? 'translate-x-5' : 'translate-x-0'
+        }`}
+      />
+    </button>
+  </div>
 );
 
-const Section: React.FC<{ title: string; description?: string; children: React.ReactNode; icon?: string }>=({title, description, children, icon})=> (
-  <section className="glass rounded-xl p-6 border border-white/10">
-    <div className="flex items-start gap-3 mb-5">
+// Modern Input Component
+const Input: React.FC<{
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+  placeholder?: string;
+  description?: string;
+  icon?: React.ReactNode;
+  error?: string;
+}> = ({ label, value, onChange, type = 'text', placeholder, description, icon, error }) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-slate-700 dark:text-white/90">{label}</label>
+    {description && <p className="text-xs text-slate-300 dark:text-white/50">{description}</p>}
+    <div className="relative">
       {icon && (
-        <div className="w-10 h-10 rounded-lg bg-accent-500/10 flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
-          </svg>
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-300 dark:text-white/40">
+          {icon}
+        </div>
+      )}
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-4 py-2.5 rounded-lg bg-white/5 border ${
+          error ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-white/10 focus:border-accent-500'
+        } text-white placeholder-slate-400 dark:placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all`}
+      />
+    </div>
+    {error && <p className="text-xs text-red-400">{error}</p>}
+  </div>
+);
+
+// Modern Select Component
+const Select: React.FC<{
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  description?: string;
+  icon?: React.ReactNode;
+}> = ({ label, value, onChange, options, description, icon }) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-slate-700 dark:text-white/90">{label}</label>
+    {description && <p className="text-xs text-slate-300 dark:text-white/50">{description}</p>}
+    <div className="relative">
+      {icon && (
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-300 dark:text-white/40">
+          {icon}
+        </div>
+      )}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-10 py-2.5 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500 text-white focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all appearance-none cursor-pointer`}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value} className="bg-dark-800">
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <svg className="h-4 w-4 text-slate-300 dark:text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </div>
+  </div>
+);
+
+// Modern Card Section
+const Card: React.FC<{ title: string; description?: string; icon?: React.ReactNode; children: React.ReactNode }> = ({
+  title,
+  description,
+  icon,
+  children,
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="glass rounded-xl border border-slate-200 dark:border-white/10 p-6 hover:border-slate-300 dark:hover:border-white/20 transition-all"
+  >
+    <div className="flex items-start gap-4 mb-6">
+      {icon && (
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500/20 to-accent-600/10 flex items-center justify-center flex-shrink-0 border border-accent-500/20">
+          {icon}
         </div>
       )}
       <div className="flex-1">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        {description && <p className="text-sm opacity-60 mt-1">{description}</p>}
+        <h3 className="text-lg font-semibold text-white/95">{title}</h3>
+        {description && <p className="text-sm text-slate-300 dark:text-white/50 mt-1">{description}</p>}
       </div>
     </div>
-    {children}
-  </section>
+    <div className="space-y-4">{children}</div>
+  </motion.div>
 );
 
-const SettingRow: React.FC<{
-  icon: string;
-  title: string;
-  description: string;
-  children: React.ReactNode;
-  accent?: 'blue' | 'green' | 'purple' | 'orange' | 'red';
-}> = ({ icon, title, description, children, accent = 'blue' }) => {
-  const colors = {
-    blue: 'bg-blue-500/10 text-blue-400',
-    green: 'bg-green-500/10 text-green-400',
-    purple: 'bg-purple-500/10 text-purple-400',
-    orange: 'bg-orange-500/10 text-orange-400',
-    red: 'bg-red-500/10 text-red-400',
-  };
-
-  return (
-    <div className="flex items-center gap-4 p-4 rounded-lg bg-dark-500/30 border border-white/5 hover:border-white/10 transition-all">
-      <div className={`w-12 h-12 rounded-xl ${colors[accent]} flex items-center justify-center flex-shrink-0`}>
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
-        </svg>
-      </div>
-      <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <p className="text-xs opacity-60 mt-0.5">{description}</p>
-      </div>
-      <div className="flex-shrink-0">
-        {children}
-      </div>
-    </div>
-  );
-};
+const Users: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+);
 
 const ProfilePage: React.FC = () => {
-  const { profile, prefs, updateProfile } = useAuth();
-  const [form, setForm] = useState({ name: profile.name, email: profile.email, avatarUrl: profile.avatarUrl||'', bio: profile.bio||'', phone: '', location: '', website: '' });
-  const [notifyEmail, setNotifyEmail] = useState<boolean>(profile.notifyEmail ?? true);
-  const [notifySlack, setNotifySlack] = useState<boolean>(profile.notifySlack ?? false);
-  const [saved, setSaved] = useState<string>('');
-  const [errors, setErrors] = useState<{name?: string; email?: string}>({});
-  const liveRef = useRef<HTMLDivElement>(null);
-  const memberships = getUserMemberships(profile.id);
-  const [activeTab, setActiveTab] = useState<'overview' | 'preferences' | 'appearance' | 'notifications' | 'security' | 'data' | 'import'>('overview');
+  const { profile, prefs, updateProfile, updatePrefs } = useAuth();
+  const { currency, setCurrency, unit, setUnit, lang, setLang, presentationMode, setPresentationMode } = useSettings();
+  const { mode: themeMode, setMode: setThemeMode } = useTheme();
+  const { highContrast, toggleHC } = useHighContrast();
 
-  // Settings states
-  const [theme, setTheme] = useState<'dark' | 'light' | 'auto'>('dark');
-  const [language, setLanguage] = useState('en');
-  const [timezone, setTimezone] = useState('America/New_York');
+  const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'notifications' | 'security' | 'data'>('profile');
+  const [saved, setSaved] = useState(false);
+  const liveRef = useRef<HTMLDivElement>(null);
+
+  // Profile form - synced with AuthContext
+  const [form, setForm] = useState({
+    name: profile.name || '',
+    email: profile.email || '',
+    avatarUrl: profile.avatarUrl || '',
+    bio: profile.bio || '',
+    phone: '',
+    location: '',
+    website: '',
+  });
+
+  // Preferences - synced with SettingsContext and UserPrefs
+  const [timezone, setTimezone] = useState('UTC');
   const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
   const [timeFormat, setTimeFormat] = useState<'12h' | '24h'>('12h');
-  const [currency, setCurrency] = useState('USD');
-  const [compactMode, setCompactMode] = useState(false);
-  const [animations, setAnimations] = useState(true);
-  const [soundEffects, setSoundEffects] = useState(false);
-  const [autoSave, setAutoSave] = useState(true);
-  const [showTips, setShowTips] = useState(true);
 
-  useEffect(()=>{
-    setForm({ name: profile.name, email: profile.email, avatarUrl: profile.avatarUrl||'', bio: profile.bio||'', phone: '', location: '', website: '' });
-    setNotifyEmail(profile.notifyEmail ?? true);
-    setNotifySlack(profile.notifySlack ?? false);
+  // Notifications - synced with profile
+  const [emailNotifications, setEmailNotifications] = useState(profile.notifyEmail ?? true);
+  const [slackNotifications, setSlackNotifications] = useState(profile.notifySlack ?? false);
+  const [pushNotifications, setPushNotifications] = useState(false);
+  const [weeklyDigest, setWeeklyDigest] = useState(true);
+
+  // Advanced - synced with prefs
+  const [animations, setAnimations] = useState(true);
+  const [autoSave, setAutoSave] = useState(true);
+  const [compactMode, setCompactMode] = useState(false);
+
+  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+
+  useEffect(() => {
+    setForm({
+      name: profile.name || '',
+      email: profile.email || '',
+      avatarUrl: profile.avatarUrl || '',
+      bio: profile.bio || '',
+      phone: '',
+      location: '',
+      website: '',
+    });
   }, [profile]);
 
-  const onSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    const errs: {name?: string; email?: string} = {};
-    if (!form.name.trim()) errs.name = t('profile.error.name') || 'Name is required';
-    if (!form.email.trim()) errs.email = t('profile.error.email') || 'Email is required';
-    setErrors(errs);
-    if (Object.keys(errs).length) return;
-    updateProfile({ ...profile, ...form, notifyEmail, notifySlack });
-    setSaved(t('profile.saved')||'Saved');
-    setTimeout(()=> setSaved(''), 2000);
+  const handleSave = () => {
+    const newErrors: typeof errors = {};
+    if (!form.name.trim()) newErrors.name = 'Name is required';
+    if (!form.email.trim()) newErrors.email = 'Email is required';
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Update profile
+    updateProfile?.({
+      ...profile,
+      name: form.name,
+      email: form.email,
+      avatarUrl: form.avatarUrl,
+      bio: form.bio,
+      notifyEmail: emailNotifications,
+      notifySlack: slackNotifications,
+    });
+
+    // Update preferences - sync all context values
+    updatePrefs?.({
+      presentationMode,
+      highContrast,
+      theme: themeMode,
+      currency,
+      unit,
+      lang,
+    });
+
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    if (liveRef.current) {
+      liveRef.current.textContent = t('profile.saved') || 'Saved successfully';
+      setTimeout(() => {
+        if (liveRef.current) liveRef.current.textContent = '';
+      }, 2000);
+    }
   };
 
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4" /> },
+    { id: 'preferences', label: 'Preferences', icon: <Globe className="w-4 h-4" /> },
+    { id: 'notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
+    { id: 'security', label: 'Security', icon: <Shield className="w-4 h-4" /> },
+    { id: 'data', label: 'Data', icon: <Database className="w-4 h-4" /> },
+  ] as const;
+
+  const memberships = getUserMemberships(profile.id);
+
   return (
-    <div className="min-h-screen">
-      {/* Sidebar Navigation */}
-      <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-6 max-w-7xl mx-auto">
-        {/* Left Sidebar */}
-        <div className="lg:w-64 flex-shrink-0 space-y-4">
-          {/* Profile Card */}
-          <div className="glass rounded-xl p-6 border border-white/10">
-            <div className="flex flex-col items-center text-center">
-              <div className="relative group mb-4">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-accent-500 via-purple-500 to-pink-500 p-0.5">
-                  <div className="w-full h-full rounded-full bg-dark-600 flex items-center justify-center">
-                    {profile.avatarUrl ? (
-                      <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full rounded-full object-cover" />
-                    ) : (
-                      <span className="text-3xl font-bold bg-gradient-to-br from-accent-400 to-purple-400 bg-clip-text text-transparent">
-                        {profile.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <button className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 flex items-center justify-center shadow-lg transition-all transform hover:scale-110 group-hover:rotate-12">
-                  <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </button>
-              </div>
-              <h2 className="text-xl font-bold mb-1">{profile.name}</h2>
-              <p className="text-xs opacity-60 mb-3">{profile.email}</p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-accent-500/20 to-purple-500/20 text-accent-400 text-[10px] font-medium border border-accent-500/30">
-                  Artist
-                </span>
-                <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 text-[10px] font-medium border border-blue-500/30">
-                  {memberships.length} Orgs
-                </span>
-                <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 text-[10px] font-medium border border-purple-500/30">
-                  {showStore.getAll().length} Shows
-                </span>
-              </div>
-            </div>
-          </div>
+    <div className="max-w-5xl mx-auto space-y-6">
+      <PageHeader
+        title="Profile & Settings"
+        subtitle="Manage your personal information and preferences"
+      />
 
-          {/* Navigation Menu */}
-          <nav className="glass rounded-xl border border-white/10 p-2">
-            {[
-              { id: 'overview', label: 'Overview', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-              { id: 'preferences', label: 'Preferences', icon: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4' },
-              { id: 'appearance', label: 'Appearance', icon: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01' },
-              { id: 'notifications', label: 'Notifications', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
-              { id: 'security', label: 'Security', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-              { id: 'data', label: 'Data & Privacy', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-              { id: 'import', label: 'Import & Export', icon: 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-gradient-to-r from-accent-500/20 to-purple-500/10 text-accent-400 shadow-lg shadow-accent-500/10'
-                    : 'hover:bg-white/5 opacity-70 hover:opacity-100'
-                }`}
-              >
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeTab === tab.id ? 2.5 : 2} d={tab.icon} />
-                </svg>
-                <span className="text-sm font-medium">{tab.label}</span>
-                {activeTab === tab.id && (
-                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent-400 animate-pulse" />
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 space-y-6">
-          <form onSubmit={onSave} aria-describedby="profile-live">
-
-            {/* Overview Tab */}
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <Section
-                  title="Personal Information"
-                  description="Manage your account details and public profile"
-                  icon="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label="Full Name" description="Your display name across the platform">
-                      <input
-                        value={form.name}
-                        onChange={e=> setForm(f=> ({...f, name: e.target.value}))}
-                        className="px-4 py-3 rounded-lg bg-dark-500/50 border border-white/10 hover:border-white/20 focus:border-accent-500 focus:outline-none transition-colors"
-                        aria-invalid={!!errors.name}
-                      />
-                      {errors.name && <div className="text-xs text-red-400 mt-1">{errors.name}</div>}
-                    </Field>
-
-                    <Field label="Email Address" description="Primary contact email">
-                      <input
-                        type="email"
-                        value={form.email}
-                        onChange={e=> setForm(f=> ({...f, email: e.target.value}))}
-                        className="px-4 py-3 rounded-lg bg-dark-500/50 border border-white/10 hover:border-white/20 focus:border-accent-500 focus:outline-none transition-colors"
-                        aria-invalid={!!errors.email}
-                      />
-                      {errors.email && <div className="text-xs text-red-400 mt-1">{errors.email}</div>}
-                    </Field>
-
-                    <Field label="Phone Number" description="Optional contact number">
-                      <input
-                        type="tel"
-                        value={form.phone}
-                        onChange={e=> setForm(f=> ({...f, phone: e.target.value}))}
-                        placeholder="+1 (555) 000-0000"
-                        className="px-4 py-3 rounded-lg bg-dark-500/50 border border-white/10 hover:border-white/20 focus:border-accent-500 focus:outline-none transition-colors"
-                      />
-                    </Field>
-
-                    <Field label="Location" description="City, Country">
-                      <input
-                        value={form.location}
-                        onChange={e=> setForm(f=> ({...f, location: e.target.value}))}
-                        placeholder="Madrid, Spain"
-                        className="px-4 py-3 rounded-lg bg-dark-500/50 border border-white/10 hover:border-white/20 focus:border-accent-500 focus:outline-none transition-colors"
-                      />
-                    </Field>
-
-                    <Field label="Website" description="Your personal or professional website">
-                      <input
-                        type="url"
-                        value={form.website}
-                        onChange={e=> setForm(f=> ({...f, website: e.target.value}))}
-                        placeholder="https://yourwebsite.com"
-                        className="px-4 py-3 rounded-lg bg-dark-500/50 border border-white/10 hover:border-white/20 focus:border-accent-500 focus:outline-none transition-colors"
-                      />
-                    </Field>
-
-                    <Field label="Avatar URL" description="Profile picture URL">
-                      <input
-                        type="url"
-                        value={form.avatarUrl}
-                        onChange={e=> setForm(f=> ({...f, avatarUrl: e.target.value}))}
-                        placeholder="https://..."
-                        className="px-4 py-3 rounded-lg bg-dark-500/50 border border-white/10 hover:border-white/20 focus:border-accent-500 focus:outline-none transition-colors"
-                      />
-                    </Field>
-                  </div>
-
-                  <Field label="Bio" description="Tell us about yourself (max 500 characters)">
-                    <textarea
-                      value={form.bio}
-                      onChange={e=> setForm(f=> ({...f, bio: e.target.value}))}
-                      rows={4}
-                      maxLength={500}
-                      placeholder="Share your story, interests, or professional background..."
-                      className="px-4 py-3 rounded-lg bg-dark-500/50 border border-white/10 hover:border-white/20 focus:border-accent-500 focus:outline-none transition-colors resize-none"
-                    />
-                    <div className="text-xs opacity-50 mt-1">{form.bio.length}/500 characters</div>
-                  </Field>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                    {saved && (
-                      <div className="flex items-center gap-2 text-green-400">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="text-sm font-medium">{saved}</span>
-                      </div>
-                    )}
-                    <button type="submit" className="ml-auto px-6 py-3 rounded-lg bg-gradient-to-r from-accent-500 to-purple-500 hover:from-accent-600 hover:to-purple-600 text-black font-semibold transition-all transform hover:scale-105 shadow-lg">
-                      Save Changes
-                    </button>
-                  </div>
-                </Section>
-
-                <Section
-                  title="Organizations"
-                  description="Manage your organization memberships"
-                  icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {memberships.map(m => {
-                      const isDefault = m.org.id === profile.defaultOrgId;
-                      return (
-                        <div
-                          key={m.org.id}
-                          className="relative p-5 rounded-xl bg-gradient-to-br from-dark-500/50 to-dark-600/30 border border-white/10 hover:border-accent-500/50 transition-all group"
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent-500 to-purple-500 flex items-center justify-center text-2xl font-bold shadow-lg">
-                              {m.org.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-semibold mb-1 truncate">{m.org.name}</h3>
-                              <p className="text-xs opacity-60 capitalize">{m.role}</p>
-                              {isDefault && (
-                                <div className="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-md bg-accent-500/20 text-accent-400 text-[10px] font-medium">
-                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                  </svg>
-                                  Default Organization
-                                </div>
-                              )}
-                              {!isDefault && (
-                                <button
-                                  type="button"
-                                  onClick={()=> { updateProfile({ defaultOrgId: m.org.id }); setSaved('Updated default organization'); setTimeout(()=> setSaved(''), 2000); }}
-                                  className="mt-2 text-xs text-accent-400 hover:text-accent-300 font-medium"
-                                >
-                                  Set as Default →
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </Section>
-              </div>
-            )}
-
-            {/* Preferences Tab */}
-            {activeTab === 'preferences' && (
-              <div className="space-y-6">
-                <Section
-                  title="Regional Settings"
-                  description="Customize date, time, and regional preferences"
-                  icon="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                >
-                  <div className="space-y-4">
-                    <SettingRow
-                      icon="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                      title="Language"
-                      description="Interface language"
-                      accent="purple"
-                    >
-                      <select
-                        value={language}
-                        onChange={e => setLanguage(e.target.value)}
-                        className="px-4 py-2 rounded-lg bg-dark-500/50 border border-white/10 focus:border-accent-500 focus:outline-none text-sm"
-                      >
-                        <option value="en">English</option>
-                        <option value="es">Español</option>
-                        <option value="fr">Français</option>
-                        <option value="de">Deutsch</option>
-                        <option value="it">Italiano</option>
-                        <option value="pt">Português</option>
-                      </select>
-                    </SettingRow>
-
-                    <SettingRow
-                      icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      title="Timezone"
-                      description="Your local timezone"
-                      accent="blue"
-                    >
-                      <select
-                        value={timezone}
-                        onChange={e => setTimezone(e.target.value)}
-                        className="px-4 py-2 rounded-lg bg-dark-500/50 border border-white/10 focus:border-accent-500 focus:outline-none text-sm"
-                      >
-                        <option value="America/New_York">Eastern Time (ET)</option>
-                        <option value="America/Chicago">Central Time (CT)</option>
-                        <option value="America/Denver">Mountain Time (MT)</option>
-                        <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                        <option value="Europe/London">London (GMT)</option>
-                        <option value="Europe/Madrid">Madrid (CET)</option>
-                        <option value="Europe/Paris">Paris (CET)</option>
-                        <option value="Asia/Tokyo">Tokyo (JST)</option>
-                      </select>
-                    </SettingRow>
-
-                    <SettingRow
-                      icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      title="Date Format"
-                      description="How dates are displayed"
-                      accent="green"
-                    >
-                      <select
-                        value={dateFormat}
-                        onChange={e => setDateFormat(e.target.value)}
-                        className="px-4 py-2 rounded-lg bg-dark-500/50 border border-white/10 focus:border-accent-500 focus:outline-none text-sm"
-                      >
-                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                        <option value="DD MMM YYYY">DD MMM YYYY</option>
-                      </select>
-                    </SettingRow>
-
-                    <SettingRow
-                      icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      title="Time Format"
-                      description="12-hour or 24-hour clock"
-                      accent="orange"
-                    >
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setTimeFormat('12h')}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                            timeFormat === '12h'
-                              ? 'bg-accent-500 text-black'
-                              : 'bg-dark-500/50 border border-white/10 hover:border-white/20'
-                          }`}
-                        >
-                          12h
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTimeFormat('24h')}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                            timeFormat === '24h'
-                              ? 'bg-accent-500 text-black'
-                              : 'bg-dark-500/50 border border-white/10 hover:border-white/20'
-                          }`}
-                        >
-                          24h
-                        </button>
-                      </div>
-                    </SettingRow>
-
-                    <SettingRow
-                      icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      title="Default Currency"
-                      description="Primary currency for financial calculations"
-                      accent="green"
-                    >
-                      <select
-                        value={currency}
-                        onChange={e => setCurrency(e.target.value)}
-                        className="px-4 py-2 rounded-lg bg-dark-500/50 border border-white/10 focus:border-accent-500 focus:outline-none text-sm"
-                      >
-                        <option value="USD">USD - US Dollar</option>
-                        <option value="EUR">EUR - Euro</option>
-                        <option value="GBP">GBP - British Pound</option>
-                        <option value="JPY">JPY - Japanese Yen</option>
-                        <option value="AUD">AUD - Australian Dollar</option>
-                        <option value="CAD">CAD - Canadian Dollar</option>
-                      </select>
-                    </SettingRow>
-                  </div>
-                </Section>
-              </div>
-            )}
-
-            {/* Appearance Tab */}
-            {activeTab === 'appearance' && (
-              <div className="space-y-6">
-                <Section
-                  title="Theme & Display"
-                  description="Customize the look and feel of your interface"
-                  icon="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                >
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-sm font-semibold mb-3">Color Theme</h3>
-                      <div className="grid grid-cols-3 gap-4">
-                        {(['dark', 'light', 'auto'] as const).map(t => (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => setTheme(t)}
-                            className={`p-6 rounded-xl border-2 transition-all ${
-                              theme === t
-                                ? 'border-accent-500 bg-accent-500/10'
-                                : 'border-white/10 hover:border-white/20 bg-dark-500/30'
-                            }`}
-                          >
-                            <div className={`w-12 h-12 mx-auto mb-3 rounded-lg flex items-center justify-center ${
-                              t === 'dark' ? 'bg-gray-900' :
-                              t === 'light' ? 'bg-gray-100' :
-                              'bg-gradient-to-br from-gray-100 to-gray-900'
-                            }`}>
-                              {t === 'dark' && (
-                                <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                                </svg>
-                              )}
-                              {t === 'light' && (
-                                <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {t === 'auto' && (
-                                <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                            </div>
-                            <div className="text-sm font-medium capitalize">{t}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <SettingRow
-                        icon="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                        title="Compact Mode"
-                        description="Reduce spacing for more content"
-                        accent="blue"
-                      >
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={compactMode}
-                            onChange={e => setCompactMode(e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-dark-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
-                        </label>
-                      </SettingRow>
-
-                      <SettingRow
-                        icon="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        title="Animations"
-                        description="Enable smooth transitions and effects"
-                        accent="purple"
-                      >
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={animations}
-                            onChange={e => setAnimations(e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-dark-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
-                        </label>
-                      </SettingRow>
-
-                      <SettingRow
-                        icon="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.536a5 5 0 001.414 1.414m2.828-9.9a9 9 0 0012.728 0"
-                        title="Sound Effects"
-                        description="Play sounds for actions and notifications"
-                        accent="orange"
-                      >
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={soundEffects}
-                            onChange={e => setSoundEffects(e.target.checked)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-dark-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
-                        </label>
-                      </SettingRow>
-                    </div>
-                  </div>
-                </Section>
-              </div>
-            )}
-
-            {/* Notifications Tab */}
-            {activeTab === 'notifications' && (
-              <div className="space-y-6">
-                <Section
-                  title="Notification Preferences"
-                  description="Control how and when you receive updates"
-                  icon="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                >
-                  <div className="space-y-4">
-                    <SettingRow
-                      icon="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      title="Email Notifications"
-                      description="Receive updates and alerts via email"
-                      accent="blue"
-                    >
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={notifyEmail}
-                          onChange={e => setNotifyEmail(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-dark-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
-                      </label>
-                    </SettingRow>
-
-                    <SettingRow
-                      icon="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      title="Slack Notifications"
-                      description="Get notified in your Slack workspace"
-                      accent="purple"
-                    >
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={notifySlack}
-                          onChange={e => setNotifySlack(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-dark-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
-                      </label>
-                    </SettingRow>
-
-                    <SettingRow
-                      icon="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                      title="Auto-Save"
-                      description="Automatically save changes as you work"
-                      accent="green"
-                    >
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={autoSave}
-                          onChange={e => setAutoSave(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-dark-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
-                      </label>
-                    </SettingRow>
-
-                    <SettingRow
-                      icon="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      title="Show Tips"
-                      description="Display helpful tips and tutorials"
-                      accent="orange"
-                    >
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={showTips}
-                          onChange={e => setShowTips(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-dark-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
-                      </label>
-                    </SettingRow>
-                  </div>
-                </Section>
-              </div>
-            )}
-
-            {/* Security, Data & Import tabs remain similar but with new Section component style */}
-            {activeTab === 'security' && (
-              <div className="space-y-6">
-                <Section
-                  title="Security Settings"
-                  description="Protect your account and manage sessions"
-                  icon="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                >
-                  <p className="text-sm opacity-60">Two-factor authentication and session management coming soon...</p>
-                </Section>
-              </div>
-            )}
-
-            {activeTab === 'data' && (
-              <div className="space-y-6">
-                <Section
-                  title="Data Management"
-                  description="Export or clear your application data"
-                  icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                >
-                  <div className="flex flex-wrap gap-4">
-                    <button
-                      type="button"
-                      onClick={()=>{
-                        const data = { profile, prefs, shows: showStore.getAll() };
-                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'on-tour-data.json';
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        setSaved('Exported successfully');
-                        setTimeout(()=> setSaved(''), 2000);
-                      }}
-                      className="px-6 py-3 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 font-medium transition-all"
-                    >
-                      Export JSON
-                    </button>
-                    <button
-                      type="button"
-                      onClick={()=>{
-                        if (confirm('Clear all data?')) {
-                          localStorage.removeItem('on-tour-shows');
-                          window.location.reload();
-                        }
-                      }}
-                      className="px-6 py-3 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 font-medium transition-all"
-                    >
-                      Clear Data
-                    </button>
-                  </div>
-                </Section>
-              </div>
-            )}
-
-            {activeTab === 'import' && (
-              <div className="space-y-6">
-                <Section
-                  title="Import & Export"
-                  description="Data importers coming soon"
-                  icon="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                >
-                  <div className="p-8 rounded-xl bg-gradient-to-br from-accent-500/10 to-purple-500/10 border border-accent-500/20 text-center">
-                    <svg className="w-16 h-16 mx-auto mb-4 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <h3 className="text-xl font-bold mb-2">Intelligent Data Import</h3>
-                    <p className="text-sm opacity-70">HTML timelines, CSV files, and calendar sync coming soon</p>
-                  </div>
-                </Section>
-              </div>
-            )}
-
-          </form>
+      {/* Tabs Navigation */}
+      <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-2">
+        <div className="flex flex-wrap gap-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all ${
+                activeTab === tab.id
+                  ? 'bg-accent-500 text-black shadow-lg shadow-accent-500/20'
+                  : 'text-slate-400 dark:text-white/60 hover:text-slate-700 dark:text-slate-700 dark:text-white/90 hover:bg-white/5'
+              }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div id="profile-live" ref={liveRef} className="sr-only" aria-live="polite">{saved}</div>
+      {/* Tab Content */}
+      <div className="space-y-6">
+        {activeTab === 'profile' && (
+          <>
+            {/* Avatar & Basic Info */}
+            <Card title="Personal Information" description="Your basic profile information" icon={<User className="w-5 h-5 text-accent-400" />}>
+              {/* Avatar */}
+              <div className="flex items-center gap-6 pb-6 border-b border-white/5">
+                <div className="relative group">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-accent-500/30 to-accent-600/20 flex items-center justify-center text-2xl font-bold text-accent-100 border-2 border-accent-500/30">
+                    {form.avatarUrl ? (
+                      <img src={form.avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      form.name.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <Camera className="w-5 h-5 text-slate-900 dark:text-white" />
+                  </button>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-white/90">{form.name || 'Your Name'}</h4>
+                  <p className="text-xs text-slate-300 dark:text-white/50 mt-0.5">{form.email || 'your@email.com'}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = prompt('Enter avatar URL:');
+                      if (url) setForm({ ...form, avatarUrl: url });
+                    }}
+                    className="mt-2 text-xs text-accent-400 hover:text-accent-300 font-medium"
+                  >
+                    Change Avatar
+                  </button>
+                </div>
+              </div>
+
+              {/* Form Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Full Name"
+                  value={form.name}
+                  onChange={(val) => setForm({ ...form, name: val })}
+                  icon={<User className="w-4 h-4" />}
+                  error={errors.name}
+                  placeholder="John Doe"
+                />
+                <Input
+                  label="Email"
+                  type="email"
+                  value={form.email}
+                  onChange={(val) => setForm({ ...form, email: val })}
+                  icon={<Mail className="w-4 h-4" />}
+                  error={errors.email}
+                  placeholder="john@example.com"
+                />
+                <Input
+                  label="Phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(val) => setForm({ ...form, phone: val })}
+                  icon={<Phone className="w-4 h-4" />}
+                  placeholder="+1 (555) 000-0000"
+                />
+                <Input
+                  label="Location"
+                  value={form.location}
+                  onChange={(val) => setForm({ ...form, location: val })}
+                  icon={<MapPin className="w-4 h-4" />}
+                  placeholder="New York, NY"
+                />
+              </div>
+
+              <Input
+                label="Website"
+                type="url"
+                value={form.website}
+                onChange={(val) => setForm({ ...form, website: val })}
+                icon={<LinkIcon className="w-4 h-4" />}
+                placeholder="https://yourwebsite.com"
+              />
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-white/90">Bio</label>
+                <textarea
+                  value={form.bio}
+                  onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
+                  rows={4}
+                  className="w-full px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500 text-white placeholder-slate-400 dark:placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all resize-none"
+                />
+              </div>
+            </Card>
+
+            {/* Organizations */}
+            {memberships.length > 0 && (
+              <Card
+                title="Organizations"
+                description="Teams and organizations you're part of"
+                icon={<Users className="w-5 h-5 text-accent-400" />}
+              >
+                <div className="space-y-2">
+                  {memberships.map((membership) => {
+                    const org = membership.org;
+                    return (
+                      <div
+                        key={org.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all cursor-pointer"
+                        onClick={() => setCurrentOrgId(org.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500/20 to-accent-600/10 flex items-center justify-center text-sm font-bold text-accent-100 border border-accent-500/20">
+                            {org.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-700 dark:text-white/90">{org.name}</div>
+                            <div className="text-xs text-slate-300 dark:text-white/50 capitalize">{org.type}</div>
+                          </div>
+                        </div>
+                        <span className="text-xs px-2.5 py-1 rounded-full bg-accent-500/10 text-accent-300 border border-accent-500/20 capitalize">
+                          {membership.role}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+          </>
+        )}
+
+        {activeTab === 'preferences' && (
+          <>
+            <Card title="Regional Settings" description="Customize your regional preferences" icon={<Globe className="w-5 h-5 text-accent-400" />}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Select
+                  label="Language"
+                  value={lang}
+                  onChange={(val) => setLang(val as 'en' | 'es')}
+                  options={[
+                    { value: 'en', label: 'English' },
+                    { value: 'es', label: 'Español' },
+                    { value: 'fr', label: 'Français' },
+                  ]}
+                  icon={<Globe className="w-4 h-4" />}
+                  description="Application language"
+                />
+                <Select
+                  label="Timezone"
+                  value={timezone}
+                  onChange={setTimezone}
+                  options={[
+                    { value: 'UTC', label: 'UTC' },
+                    { value: 'America/New_York', label: 'Eastern Time' },
+                    { value: 'America/Los_Angeles', label: 'Pacific Time' },
+                    { value: 'Europe/London', label: 'London' },
+                    { value: 'Europe/Madrid', label: 'Madrid' },
+                  ]}
+                  icon={<Clock className="w-4 h-4" />}
+                />
+                <Select
+                  label="Date Format"
+                  value={dateFormat}
+                  onChange={setDateFormat}
+                  options={[
+                    { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+                    { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+                    { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+                  ]}
+                />
+                <Select
+                  label="Currency"
+                  value={currency}
+                  onChange={(val) => setCurrency(val as typeof currency)}
+                  options={[
+                    { value: 'USD', label: 'USD ($)' },
+                    { value: 'EUR', label: 'EUR (€)' },
+                    { value: 'GBP', label: 'GBP (£)' },
+                  ]}
+                  icon={<DollarSign className="w-4 h-4" />}
+                  description="Default currency for shows and finances"
+                />
+                <Select
+                  label="Distance Unit"
+                  value={unit}
+                  onChange={(val) => setUnit(val as typeof unit)}
+                  options={[
+                    { value: 'km', label: 'Kilometers (km)' },
+                    { value: 'mi', label: 'Miles (mi)' },
+                  ]}
+                  description="Travel distance measurement"
+                />
+              </div>
+            </Card>
+
+            <Card title="Appearance" description="Customize the look and feel" icon={<Palette className="w-5 h-5 text-accent-400" />}>
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/90">Theme</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      onClick={() => setThemeMode('dark')}
+                      className={`p-4 rounded-lg border transition-all ${
+                        themeMode === 'dark'
+                          ? 'bg-dark-800 border-accent-500 shadow-lg shadow-accent-500/20 text-white'
+                          : 'bg-white/5 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-white/70'
+                      }`}
+                    >
+                      <Moon className={`w-6 h-6 mx-auto mb-2 ${themeMode === 'dark' ? 'text-white' : 'text-white/70'}`} />
+                      <div className="text-xs font-medium">Dark</div>
+                    </button>
+                    <button
+                      onClick={() => setThemeMode('light')}
+                      className={`p-4 rounded-lg border transition-all ${
+                        themeMode === 'light'
+                          ? 'bg-white border-accent-500 shadow-lg shadow-accent-500/20 text-black'
+                          : 'bg-white/5 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-white/70'
+                      }`}
+                    >
+                      <Sun className={`w-6 h-6 mx-auto mb-2 ${themeMode === 'light' ? 'text-black' : 'text-white/70'}`} />
+                      <div className="text-xs font-medium">Light</div>
+                    </button>
+                    <button
+                      onClick={() => setThemeMode('auto')}
+                      className={`p-4 rounded-lg border transition-all ${
+                        themeMode === 'auto'
+                          ? 'bg-gradient-to-br from-dark-800 to-white/20 border-accent-500 shadow-lg shadow-accent-500/20 text-white'
+                          : 'bg-white/5 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-white/70'
+                      }`}
+                    >
+                      <Monitor className={`w-6 h-6 mx-auto mb-2 ${themeMode === 'auto' ? 'text-white' : 'text-white/70'}`} />
+                      <div className="text-xs font-medium">Auto</div>
+                    </button>
+                  </div>
+                </div>
+                <Toggle
+                  checked={highContrast}
+                  onChange={toggleHC}
+                  label="High Contrast"
+                  description="Increase contrast for better visibility"
+                />
+                <Toggle
+                  checked={presentationMode}
+                  onChange={setPresentationMode}
+                  label="Presentation Mode"
+                  description="Optimize for presentations and demos"
+                />
+                <Toggle checked={animations} onChange={setAnimations} label="Animations" description="Enable smooth animations and transitions" />
+                <Toggle checked={compactMode} onChange={setCompactMode} label="Compact Mode" description="Reduce spacing for more content" />
+              </div>
+            </Card>
+          </>
+        )}
+
+        {activeTab === 'notifications' && (
+          <Card
+            title="Notification Preferences"
+            description="Choose how you want to be notified"
+            icon={<Bell className="w-5 h-5 text-accent-400" />}
+          >
+            <Toggle
+              checked={emailNotifications}
+              onChange={setEmailNotifications}
+              label="Email Notifications"
+              description="Receive updates via email"
+            />
+            <Toggle
+              checked={slackNotifications}
+              onChange={setSlackNotifications}
+              label="Slack Notifications"
+              description="Get notified in Slack"
+            />
+            <Toggle checked={pushNotifications} onChange={setPushNotifications} label="Push Notifications" description="Browser push notifications" />
+            <Toggle checked={weeklyDigest} onChange={setWeeklyDigest} label="Weekly Digest" description="Get a weekly summary of your activity" />
+            <Toggle checked={autoSave} onChange={setAutoSave} label="Auto-Save" description="Automatically save changes" />
+          </Card>
+        )}
+
+        {activeTab === 'security' && (
+          <Card title="Security Settings" description="Manage your account security" icon={<Shield className="w-5 h-5 text-accent-400" />}>
+            <div className="p-6 rounded-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20">
+              <div className="flex items-center gap-3 mb-3">
+                <Shield className="w-6 h-6 text-blue-400" />
+                <h4 className="font-semibold text-slate-700 dark:text-white/90">Two-Factor Authentication</h4>
+              </div>
+              <p className="text-sm text-slate-400 dark:text-white/60 mb-4">Add an extra layer of security to your account</p>
+              <button className="px-4 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 font-medium transition-all text-sm">
+                Enable 2FA
+              </button>
+            </div>
+            <div className="p-6 rounded-lg bg-slate-100 dark:bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-slate-700 dark:text-slate-700 dark:text-white/90 mb-2">Password</h4>
+              <p className="text-sm text-slate-400 dark:text-white/60 mb-4">Change your password regularly to keep your account secure</p>
+              <button className="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-700 dark:text-slate-700 dark:text-white/90 font-medium transition-all text-sm">
+                Change Password
+              </button>
+            </div>
+          </Card>
+        )}
+
+        {activeTab === 'data' && (
+          <>
+            <Card title="Export Data" description="Download your data" icon={<Database className="w-5 h-5 text-accent-400" />}>
+              <div className="space-y-3">
+                <p className="text-sm text-slate-400 dark:text-white/60">Export all your shows, contacts, and settings as JSON</p>
+                <button
+                  onClick={() => {
+                    const data = { profile, shows: showStore.getAll() };
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'on-tour-data.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 font-medium transition-all text-sm"
+                >
+                  Export JSON
+                </button>
+              </div>
+            </Card>
+
+            <Card title="Import Data" description="Import shows and data" icon={<Upload className="w-5 h-5 text-accent-400" />}>
+              <div className="p-8 rounded-lg bg-gradient-to-br from-accent-500/10 to-purple-500/10 border border-accent-500/20 text-center">
+                <Upload className="w-12 h-12 mx-auto mb-4 text-accent-400" />
+                <h4 className="text-lg font-semibold text-slate-700 dark:text-slate-700 dark:text-white/90 mb-2">Import Shows & Data</h4>
+                <p className="text-sm text-slate-400 dark:text-white/60 mb-4">CSV, Excel, and calendar sync coming soon</p>
+              </div>
+            </Card>
+
+            <Card title="Danger Zone" description="Irreversible actions" icon={<Shield className="w-5 h-5 text-red-400" />}>
+              <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                <h4 className="font-semibold text-red-300 mb-2">Clear All Data</h4>
+                <p className="text-sm text-slate-400 dark:text-white/60 mb-3">This will permanently delete all your shows and data</p>
+                <button
+                  onClick={() => {
+                    if (confirm('Are you sure? This cannot be undone!')) {
+                      localStorage.removeItem('on-tour-shows');
+                      window.location.reload();
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 font-medium transition-all text-sm"
+                >
+                  Clear All Data
+                </button>
+              </div>
+            </Card>
+          </>
+        )}
+      </div>
+
+      {/* Save Button - Fixed at bottom */}
+      {(activeTab === 'profile' || activeTab === 'preferences' || activeTab === 'notifications') && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="sticky bottom-6 z-10"
+        >
+          <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {saved && (
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-2 text-green-400">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="text-sm font-medium">Saved successfully!</span>
+                  </motion.div>
+                )}
+              </div>
+              <button
+                onClick={handleSave}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white font-semibold shadow-lg shadow-accent-500/20 transition-all"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save Changes</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      <div id="profile-live" ref={liveRef} className="sr-only" aria-live="polite" />
     </div>
   );
 };

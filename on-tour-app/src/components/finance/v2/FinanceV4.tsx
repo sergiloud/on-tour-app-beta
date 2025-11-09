@@ -204,11 +204,11 @@ const FinanceV4: React.FC = () => {
                         <button
                             key={section}
                             onClick={() => restoreSection(section)}
-                            className="group flex items-center gap-2 px-3 py-2 rounded-lg glass border border-white/20 hover:border-accent-500/50 transition-all hover:scale-105 backdrop-blur-xl shadow-xl"
+                            className="group flex items-center gap-2 px-3 py-2 rounded-lg glass border border-slate-300 dark:border-white/20 hover:border-accent-500/50 transition-all hover:scale-105 backdrop-blur-xl shadow-xl"
                             title={`Restore ${sectionTitles[section]}`}
                         >
-                            <Maximize2 className="w-4 h-4 text-white/60 group-hover:text-accent-400 transition-colors" />
-                            <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">
+                            <Maximize2 className="w-4 h-4 text-slate-400 dark:text-white/60 group-hover:text-accent-400 transition-colors" />
+                            <span className="text-xs font-medium text-slate-600 dark:text-white/80 group-hover:text-white transition-colors">
                                 {sectionTitles[section]}
                             </span>
                         </button>
@@ -219,25 +219,25 @@ const FinanceV4: React.FC = () => {
             <div className="space-y-6 lg:space-y-8">
 
                 {/* Top Controls Bar */}
-                <div className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300">
+                <div className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
                     <div className="bg-gradient-to-r from-transparent via-white/5 to-transparent px-6 py-4">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             {/* Period Selector */}
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 text-slate-300 dark:text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Period</span>
+                                    <span className="text-xs font-medium text-slate-400 dark:text-white/40 uppercase tracking-wider">Period</span>
                                 </div>
                                 <PeriodSelector />
                             </div>
 
                             {/* Actions */}
                             <div className="flex items-center gap-3">
-                                <span className="text-xs text-white/40 font-medium uppercase tracking-wider">Export:</span>
+                                <span className="text-xs text-slate-400 dark:text-white/40 font-medium uppercase tracking-wider">Export:</span>
                                 <button
-                                    className="px-3 py-1.5 rounded-lg text-xs font-medium glass border border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all disabled:opacity-40"
+                                    className="px-3 py-1.5 rounded-lg text-xs font-medium glass border border-slate-200 dark:border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all disabled:opacity-40"
                                     disabled={!can('finance:export')}
                                     onClick={handleExportCSV}
                                 >
@@ -247,7 +247,7 @@ const FinanceV4: React.FC = () => {
                                     </span>
                                 </button>
                                 <button
-                                    className="px-3 py-1.5 rounded-lg text-xs font-medium glass border border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all disabled:opacity-40"
+                                    className="px-3 py-1.5 rounded-lg text-xs font-medium glass border border-slate-200 dark:border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all disabled:opacity-40"
                                     disabled={!can('finance:export')}
                                     onClick={handleExportXLSX}
                                 >
@@ -262,28 +262,28 @@ const FinanceV4: React.FC = () => {
                 </div>
 
                 {/* Hero Summary - Siempre Visible */}
-                <div className="glass rounded-xl border border-white/10 backdrop-blur-sm shadow-lg overflow-hidden hover:border-white/20 hover:shadow-xl hover:shadow-accent-500/5 transition-all duration-300">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
+                <div className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm shadow-lg overflow-hidden hover:border-slate-300 dark:hover:border-white/20 hover:shadow-xl hover:shadow-accent-500/5 transition-all duration-300">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-white/10">
 
                         {/* Revenue */}
-                        <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-white/5 hover:to-transparent cursor-default">
+                        <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-slate-100 dark:from-white/5 hover:to-transparent cursor-default">
                             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             <div className="relative">
-                                <div className="text-xs text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-white/60 transition-colors">
+                                <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 dark:text-white/60 transition-colors">
                                     Total Revenue
                                 </div>
                                 <div className="text-2xl lg:text-3xl font-light text-white tabular-nums tracking-tight">
                                     {fmtMoney(stats.totalRevenue)}
                                 </div>
-                                <div className="text-xs text-white/40 mt-2">{stats.showCount} shows</div>
+                                <div className="text-xs text-slate-400 dark:text-white/40 mt-2">{stats.showCount} shows</div>
                             </div>
                         </div>
 
                         {/* Costs */}
-                        <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-white/5 hover:to-transparent cursor-default">
+                        <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-slate-100 dark:from-white/5 hover:to-transparent cursor-default">
                             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             <div className="relative">
-                                <div className="text-xs text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-white/60 transition-colors">
+                                <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 dark:text-white/60 transition-colors">
                                     Total Costs
                                 </div>
                                 <div className="text-2xl lg:text-3xl font-light text-white tabular-nums tracking-tight">
@@ -301,7 +301,7 @@ const FinanceV4: React.FC = () => {
                         <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-blue-500/5 cursor-default">
                             <div className="absolute inset-0 bg-gradient-to-br from-accent-500/10 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             <div className="relative">
-                                <div className="text-xs text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-accent-300 transition-colors">
+                                <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-accent-300 transition-colors">
                                     Net Profit
                                 </div>
                                 <div className="text-2xl lg:text-3xl font-light text-accent-400 tabular-nums tracking-tight group-hover:text-accent-300 transition-all duration-300">
@@ -317,10 +317,10 @@ const FinanceV4: React.FC = () => {
                         </div>
 
                         {/* Upcoming */}
-                        <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-white/5 hover:to-transparent cursor-default">
+                        <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-slate-100 dark:from-white/5 hover:to-transparent cursor-default">
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             <div className="relative">
-                                <div className="text-xs text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-white/60 transition-colors">
+                                <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 dark:text-white/60 transition-colors">
                                     Next 30 Days
                                 </div>
                                 <div className="text-2xl lg:text-3xl font-light text-white tabular-nums tracking-tight">
@@ -334,19 +334,19 @@ const FinanceV4: React.FC = () => {
 
                 {/* Regional Quick View */}
                 {stats.byRegion.length > 0 && (
-                    <div className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300">
-                        <div className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
-                            <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Regional Overview</h3>
+                    <div className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+                            <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Regional Overview</h3>
                         </div>
                         <div className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                                 {stats.byRegion.map(region => (
                                     <div
                                         key={region.region}
-                                        className="glass rounded-lg p-4 border border-white/10 hover:border-accent-500/30 transition-all group cursor-pointer"
+                                        className="glass rounded-lg p-4 border border-slate-200 dark:border-white/10 hover:border-accent-500/30 transition-all group cursor-pointer"
                                     >
                                         <div className="flex items-center justify-between mb-3">
-                                            <span className="text-sm font-semibold text-white">{region.region}</span>
+                                            <span className="text-sm font-semibold text-slate-900 dark:text-white">{region.region}</span>
                                             <div className={`w-2 h-2 rounded-full ${region.margin > 70 ? 'bg-emerald-400' :
                                                 region.margin > 50 ? 'bg-accent-400' :
                                                     'bg-orange-400'
@@ -355,7 +355,7 @@ const FinanceV4: React.FC = () => {
                                         <div className="text-xl font-bold text-white tabular-nums mb-1">
                                             {fmtMoney(region.revenue)}
                                         </div>
-                                        <div className="flex items-center justify-between text-xs text-white/50">
+                                        <div className="flex items-center justify-between text-xs text-slate-300 dark:text-white/50">
                                             <span>{region.shows} shows</span>
                                             <span className={`font-semibold ${region.margin > 70 ? 'text-emerald-400' :
                                                 region.margin > 50 ? 'text-accent-400' :
@@ -373,15 +373,15 @@ const FinanceV4: React.FC = () => {
 
                 {/* Performance Analysis */}
                 {!minimizedSections.has('performance') && (
-                    <div id="section-performance" className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300">
-                        <div className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Performance Analysis</h3>
+                    <div id="section-performance" className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Performance Analysis</h3>
                             <button
                                 onClick={() => toggleMinimize('performance')}
-                                className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-white/40 hover:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -397,15 +397,15 @@ const FinanceV4: React.FC = () => {
 
                 {/* Pivot Analysis */}
                 {!minimizedSections.has('pivot') && (
-                    <div id="section-pivot" className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300">
-                        <div className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Pivot Analysis</h3>
+                    <div id="section-pivot" className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Pivot Analysis</h3>
                             <button
                                 onClick={() => toggleMinimize('pivot')}
-                                className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-white/40 hover:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -421,15 +421,15 @@ const FinanceV4: React.FC = () => {
 
                 {/* Cash Flow & AR */}
                 {!minimizedSections.has('ar') && (
-                    <div id="section-ar" className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300">
-                        <div className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Cash Flow & AR Management</h3>
+                    <div id="section-ar" className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Cash Flow & AR Management</h3>
                             <button
                                 onClick={() => toggleMinimize('ar')}
-                                className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-white/40 hover:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -445,15 +445,15 @@ const FinanceV4: React.FC = () => {
 
                 {/* Trends */}
                 {!minimizedSections.has('trends') && (
-                    <div id="section-trends" className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300">
-                        <div className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Trends & Growth</h3>
+                    <div id="section-trends" className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Trends & Growth</h3>
                             <button
                                 onClick={() => toggleMinimize('trends')}
-                                className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-white/40 hover:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -464,10 +464,10 @@ const FinanceV4: React.FC = () => {
 
                 {/* P&L Table */}
                 {!minimizedSections.has('pl') && (
-                    <div id="section-pl" className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300 scroll-mt-20">
-                        <div className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
+                    <div id="section-pl" className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300 scroll-mt-20">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Profit & Loss Detail</h3>
+                                <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Profit & Loss Detail</h3>
                                 {plFilter && (
                                     <span className="px-2 py-1 rounded text-xs font-medium bg-accent-500/20 text-accent-300 border border-accent-500/30">
                                         {plFilter.kind} = {plFilter.value}
@@ -476,10 +476,10 @@ const FinanceV4: React.FC = () => {
                             </div>
                             <button
                                 onClick={() => toggleMinimize('pl')}
-                                className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-white/40 hover:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -490,15 +490,15 @@ const FinanceV4: React.FC = () => {
 
                 {/* Expenses */}
                 {!minimizedSections.has('expenses') && (
-                    <div id="section-expenses" className="glass rounded-xl border border-white/10 backdrop-blur-sm overflow-hidden hover:border-white/20 transition-all duration-300">
-                        <div className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Expense Management</h3>
+                    <div id="section-expenses" className="glass rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-transparent via-white/5 to-transparent flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Expense Management</h3>
                             <button
                                 onClick={() => toggleMinimize('expenses')}
-                                className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-white/40 hover:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">

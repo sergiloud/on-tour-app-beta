@@ -45,9 +45,9 @@ const PlanningCanvas: React.FC<PlanningCanvasProps> = ({
       )}
       {isLoading && results.length === 0 ? (
         <div className="animate-pulse space-y-2" aria-busy>
-          <div className="h-16 rounded bg-white/5" />
-          <div className="h-16 rounded bg-white/5" />
-          <div className="h-16 rounded bg-white/5" />
+          <div className="h-16 rounded bg-slate-100 dark:bg-white/5" />
+          <div className="h-16 rounded bg-slate-100 dark:bg-white/5" />
+          <div className="h-16 rounded bg-slate-100 dark:bg-white/5" />
         </div>
       ) : grouped && Object.keys(grouped).length > 0 ? (
         <div className="space-y-4" aria-label={t('travel.workspace.timeline')}>

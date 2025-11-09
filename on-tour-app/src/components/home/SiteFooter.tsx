@@ -59,7 +59,7 @@ export const SiteFooter: React.FC = () => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 py-12">
         {columns.map((column) => (
           <div key={column.title}>
-            <h3 className="font-semibold mb-4 text-white">{column.title}</h3>
+            <h3 className="font-semibold mb-4 text-slate-900 dark:text-white">{column.title}</h3>
             <ul className="space-y-2 text-sm" style={{color:'var(--text-secondary)'}}>
               {column.items.map((item) => (
                 <li key={`${column.title}-${item.label}`}>
@@ -76,7 +76,7 @@ export const SiteFooter: React.FC = () => {
       {/* Newsletter CTA Section */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="glass p-8 text-center">
-          <h3 className="text-xl font-semibold mb-2 text-white">{newsletterCopy.title}</h3>
+          <h3 className="text-xl font-semibold mb-2 text-slate-900 dark:text-white">{newsletterCopy.title}</h3>
           <p className="text-sm mb-6 opacity-80" style={{color:'var(--text-secondary)'}}>
             {newsletterCopy.description}
           </p>
@@ -84,7 +84,7 @@ export const SiteFooter: React.FC = () => {
             <input
               type="email"
               placeholder={newsletterCopy.placeholder}
-              className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition"
+              className="flex-1 px-4 py-3 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition"
               aria-label={isSpanish ? 'Introduce tu correo electrónico para suscribirte al boletín' : 'Enter your email address for the newsletter'}
               required
             />
@@ -123,14 +123,14 @@ export const SiteFooter: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto text-sm flex flex-col md:flex-row gap-4 md:items-center justify-between border-t border-white/10 pt-6" style={{color:'var(--text-secondary)'}}>
+      <div className="max-w-7xl mx-auto text-sm flex flex-col md:flex-row gap-4 md:items-center justify-between border-t border-slate-200 dark:border-white/10 pt-6" style={{color:'var(--text-secondary)'}}>
         <p>
           © {new Date().getFullYear()} On Tour App. {isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}
         </p>
         <div className="flex gap-6">
-          <a href="#privacy" className="transition hover:text-white">{isSpanish ? 'Privacidad' : 'Privacy'}</a>
-          <a href="#terms" className="transition hover:text-white">{isSpanish ? 'Términos' : 'Terms'}</a>
-          <a href="#cookies" className="transition hover:text-white">Cookies</a>
+          <a href="#privacy" className="transition hover:text-slate-900 dark:hover:text-white">{isSpanish ? 'Privacidad' : 'Privacy'}</a>
+          <a href="#terms" className="transition hover:text-slate-900 dark:hover:text-white">{isSpanish ? 'Términos' : 'Terms'}</a>
+          <a href="#cookies" className="transition hover:text-slate-900 dark:hover:text-white">Cookies</a>
         </div>
       </div>
     </footer>

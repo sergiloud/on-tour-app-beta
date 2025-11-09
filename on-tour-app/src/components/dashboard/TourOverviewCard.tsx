@@ -117,7 +117,7 @@ export const TourOverviewCard: React.FC = React.memo(() => {
           </h3>
           <Link
             to="/dashboard/shows"
-            className="text-xs px-2.5 py-1 rounded-lg glass hover:bg-white/15 transition-all"
+            className="text-xs px-2.5 py-1 rounded-lg glass hover:bg-slate-300 dark:bg-white/15 transition-all"
           >
             View all
           </Link>

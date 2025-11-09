@@ -16,7 +16,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
   const [trip, setTrip] = useState<Trip | undefined>(undefined);
   const { currency, fmtMoney } = useSettings();
   useEffect(() => { setTrip(getTrip(id)); }, [id]);
-  
+
   const [showAddSegment, setShowAddSegment] = useState(false);
   const [showAddCost, setShowAddCost] = useState(false);
 
@@ -58,7 +58,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
         <h3 className="text-base font-semibold">{trip.title}</h3>
         <Button variant="soft" onClick={onClose}>{t('shows.dialog.close')||'Close'}</Button>
       </div>
-      <div className="text-xs opacity-80">{t('common.status')||'Status'}: <span className="capitalize px-2 py-0.5 rounded-full bg-white/10">{trip.status}</span></div>
+      <div className="text-xs opacity-80">{t('common.status')||'Status'}: <span className="capitalize px-2 py-0.5 rounded-full bg-slate-200 dark:bg-white/10">{trip.status}</span></div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Card className="p-3">
           <div className="text-xs font-semibold mb-2">{t('travel.segments')||'Segments'}</div>
@@ -79,7 +79,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
             <div className="mt-2">
               <GuardedAction
                 scope="travel:book"
-                className="relative inline-flex items-center justify-center font-semibold rounded-full focus-ring motion-safe:transition disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98] text-[11px] px-3 py-1.5 bg-white/8 hover:bg-white/12 text-white/90"
+                className="relative inline-flex items-center justify-center font-semibold rounded-full focus-ring motion-safe:transition disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98] text-[11px] px-3 py-1.5 bg-white/8 hover:bg-white/12 text-slate-700 dark:text-white/90"
                 onClick={() => setShowAddSegment(true)}
               >
                 {t('common.add')||'Add'}
@@ -94,7 +94,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
                 <Input name="dep" type="date" required />
               </div>
           <div className="flex items-center gap-2">
-            <select name="type" defaultValue="flight" className="bg-white/5 rounded px-2 py-1 w-full max-w-[12rem] border border-transparent focus-ring">
+            <select name="type" defaultValue="flight" className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1 w-full max-w-[12rem] border border-transparent focus-ring">
               <option value="flight">{t('travel.segment.flight')||'Flight'}</option>
               <option value="hotel">{t('travel.segment.hotel')||'Hotel'}</option>
               <option value="ground">{t('travel.segment.ground')||'Ground'}</option>
@@ -124,7 +124,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
             <div className="mt-2">
               <GuardedAction
                 scope="travel:book"
-                className="relative inline-flex items-center justify-center font-semibold rounded-full focus-ring motion-safe:transition disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98] text-[11px] px-3 py-1.5 bg-white/8 hover:bg-white/12 text-white/90"
+                className="relative inline-flex items-center justify-center font-semibold rounded-full focus-ring motion-safe:transition disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98] text-[11px] px-3 py-1.5 bg-white/8 hover:bg-white/12 text-slate-700 dark:text-white/90"
                 onClick={() => setShowAddCost(true)}
               >
                 {t('common.add')||'Add'}
@@ -134,7 +134,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
           {showAddCost && (
             <form onSubmit={handleAddCost} className="mt-2 space-y-2 text-xs p-2 border-t border-white/10">
               <div className="grid grid-cols-3 gap-2">
-                <select name="category" defaultValue="flight" className="bg-white/5 rounded px-2 py-1 w-full border border-transparent focus-ring">
+                <select name="category" defaultValue="flight" className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1 w-full border border-transparent focus-ring">
                   <option value="flight">{t('cost.category.flight')||'Flight'}</option>
                   <option value="hotel">{t('cost.category.hotel')||'Hotel'}</option>
                   <option value="ground">{t('cost.category.ground')||'Ground'}</option>
@@ -143,7 +143,7 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
                   <option value="other">{t('cost.category.other')||'Other'}</option>
                 </select>
                 <Input name="amount" type="number" step="0.01" placeholder={t('shows.costs.amount')||'Amount'} required />
-                <select name="currency" defaultValue={currency} className="bg-white/5 rounded px-2 py-1 w-full border border-transparent focus-ring">
+                <select name="currency" defaultValue={currency} className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1 w-full border border-transparent focus-ring">
                   <option value="EUR">EUR</option>
                   <option value="USD">USD</option>
                   <option value="GBP">GBP</option>
@@ -163,4 +163,4 @@ export const TripDetail: React.FC<Props> = ({ id, onClose }) => {
 
 };
 
-export default TripDetail;
+export default React.memo(TripDetail);

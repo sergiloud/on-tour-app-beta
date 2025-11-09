@@ -55,7 +55,7 @@ const TravelWorkspace: React.FC = () => {
       <div className="lg:col-span-2">
         {/* View switch */}
         <div className="mb-2 flex justify-end">
-          <div role="group" aria-label="View" className="inline-flex rounded-full bg-white/5 p-0.5 text-xs">
+          <div role="group" aria-label="View" className="inline-flex rounded-full bg-slate-100 dark:bg-white/5 p-0.5 text-xs">
             <button className={`px-2 py-1 rounded-full ${view==='list'?'bg-white/10':''}`} onClick={()=> setView('list')}>{t('common.list')||'List'}</button>
             <button className={`px-2 py-1 rounded-full ${view==='week'?'bg-white/10':''}`} onClick={()=> setView('week')}>{t('calendar.timeline')||'Week'}</button>
           </div>

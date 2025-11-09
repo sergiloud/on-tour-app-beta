@@ -345,7 +345,7 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, onTh
   };
 
   return (
-    <motion.div className="flex gap-2 p-2 rounded-lg bg-white/5 border border-white/10 backdrop-blur-lg">
+    <motion.div className="flex gap-2 p-2 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-lg">
       {themeNames.map((theme) => (
         <motion.button
           key={theme}

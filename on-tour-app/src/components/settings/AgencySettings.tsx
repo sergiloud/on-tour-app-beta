@@ -55,7 +55,7 @@ export const AgencySettings: React.FC = () => {
   const renderList = (list: AgencyConfig[]) => (
     <ul className="space-y-2" aria-live="polite">
       {list.map(a=> (
-        <li key={a.id} className="p-2 rounded bg-white/5 border border-white/10 text-xs flex flex-col gap-1">
+        <li key={a.id} className="p-2 rounded bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <strong className="text-[11px] uppercase tracking-wide">{a.name}</strong>
             <span className="opacity-70">{a.commissionPct}%</span>
@@ -71,20 +71,20 @@ export const AgencySettings: React.FC = () => {
   );
 
   const AgencyForm: React.FC<{ draft: ReturnType<typeof emptyDraft>; setDraft: any; countries: string; setCountries: any; type: 'booking'|'management' }> = ({ draft, setDraft, countries, setCountries, type }) => (
-    <div className="space-y-2 border rounded p-3 bg-white/5 border-white/10">
+    <div className="space-y-2 border rounded p-3 bg-slate-100 dark:bg-white/5 border-white/10">
       <div className="flex gap-2 items-end">
         <label className="flex-1 text-xs">
           <span className="block mb-1 opacity-70">{t('settings.agencies.name')}</span>
-          <input className="w-full bg-white/10 rounded px-2 py-1 text-sm" value={draft.name} onChange={e=> setDraft({ ...draft, name:e.target.value })} />
+          <input className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded px-2 py-1 text-sm" value={draft.name} onChange={e=> setDraft({ ...draft, name:e.target.value })} />
         </label>
         <label className="w-28 text-xs">
           <span className="block mb-1 opacity-70">{t('settings.agencies.commission')}</span>
-            <input type="number" min={0} max={100} className="w-full bg-white/10 rounded px-2 py-1 text-sm" value={draft.commissionPct} onChange={e=> setDraft({ ...draft, commissionPct:Number(e.target.value) })} />
+            <input type="number" min={0} max={100} className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded px-2 py-1 text-sm" value={draft.commissionPct} onChange={e=> setDraft({ ...draft, commissionPct:Number(e.target.value) })} />
         </label>
       </div>
       <label className="text-xs block">
         <span className="block mb-1 opacity-70">{t('settings.agencies.territoryMode')}</span>
-        <select className="bg-white/10 rounded px-2 py-1 text-sm" value={draft.territoryMode} onChange={e=> setDraft({ ...draft, territoryMode: e.target.value as AgencyTerritoryMode })}>
+        <select className="bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded px-2 py-1 text-sm" value={draft.territoryMode} onChange={e=> setDraft({ ...draft, territoryMode: e.target.value as AgencyTerritoryMode })}>
           {territoryModes.map(m=> <option key={m.value} value={m.value}>{m.label}</option>)}
         </select>
       </label>
@@ -96,19 +96,19 @@ export const AgencySettings: React.FC = () => {
               const set = new Set(draft.continents||[]);
               if (set.has(c.code)) set.delete(c.code); else set.add(c.code);
               setDraft({ ...draft, continents: Array.from(set) });
-            }} className={`px-2 py-1 rounded border ${active? 'bg-accent-500 text-black border-transparent':'bg-white/10 border-white/10 hover:bg-white/15'}`}>{c.label}</button>;
+            }} className={`px-2 py-1 rounded border ${active? 'bg-accent-500 text-black border-transparent':'bg-slate-200 dark:bg-white/10 border-slate-200 dark:border-white/10 hover:bg-white/15'}`}>{c.label}</button>;
           })}
         </div>
       )}
       {draft.territoryMode==='countries' && (
         <label className="block text-xs">
           <span className="block mb-1 opacity-70">{t('settings.agencies.countries')}</span>
-          <textarea className="w-full h-16 bg-white/10 rounded px-2 py-1 text-xs" value={countries} onChange={e=> setCountries(e.target.value)} placeholder="US CA ES..." />
+          <textarea className="w-full h-16 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded px-2 py-1 text-xs" value={countries} onChange={e=> setCountries(e.target.value)} placeholder="US CA ES..." />
         </label>
       )}
       <div className="flex gap-2">
         <button disabled={!draft.name} onClick={()=> submit(draft, { countriesStr: countries }, setDraft, setCountries)} className="px-3 py-1.5 rounded bg-accent-500 text-black disabled:opacity-40 text-xs">{type==='booking'? t('settings.agencies.addBooking') : t('settings.agencies.addManagement')}</button>
-        <button type="button" onClick={()=>{ setDraft(emptyDraft(type)); setCountries(''); }} className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/15 text-xs">{t('settings.agencies.reset')}</button>
+        <button type="button" onClick={()=>{ setDraft(emptyDraft(type)); setCountries(''); }} className="px-3 py-1.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-xs">{t('settings.agencies.reset')}</button>
       </div>
     </div>
   );
@@ -143,11 +143,11 @@ export const AgencySettings: React.FC = () => {
       {/* confirm delete dialog */}
       {confirmId && (
         <div role="dialog" aria-modal="true" className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-white/10 rounded p-4 w-full max-w-sm">
+          <div className="bg-neutral-900 border border-slate-200 dark:border-white/10 rounded p-4 w-full max-w-sm">
             <h4 className="font-semibold mb-2 text-sm">{t('shows.editor.delete.confirmTitle')}</h4>
             <p className="text-xs opacity-80 mb-3">{t('shows.editor.delete.confirmBody')}</p>
             <div className="flex gap-2 justify-end">
-              <button className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/15 text-xs" onClick={()=> setConfirmId(null)}>{t('common.cancel')}</button>
+              <button className="px-3 py-1.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-xs" onClick={()=> setConfirmId(null)}>{t('common.cancel')}</button>
               <button className="px-3 py-1.5 rounded bg-red-500 text-white text-xs" onClick={()=>{ if (confirmId) removeAgency(confirmId); setConfirmId(null); setMessage(t('settings.agencies.remove')); }}>{t('shows.editor.delete.confirm')}</button>
             </div>
           </div>

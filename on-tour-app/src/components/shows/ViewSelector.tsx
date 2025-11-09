@@ -34,7 +34,7 @@ export const ViewSelector: React.FC<ViewSelectorProps> = ({
   ];
 
   return (
-    <div className="flex items-center gap-2 p-1 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
+    <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 backdrop-blur-sm">
       {views.map((view, index) => (
         <motion.button
           key={view.id}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
+import { useAuth } from '../../context/AuthContext';
 
 // Import all dashboard components
 import { FinancialHealthKPI } from './FinancialHealthKPI';
@@ -88,8 +89,10 @@ export const ProactiveDashboard: React.FC<ProactiveDashboardProps> = ({
   userRole = 'artist',
   isNewUser = false
 }) => {
+  const { profile } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const userName = profile.name.split(' ')[0] || 'User';
 
   // Generate dynamic headline based on data
   const generateTodaysHeadline = (dashboardData: DashboardData) => {
@@ -308,7 +311,7 @@ export const ProactiveDashboard: React.FC<ProactiveDashboardProps> = ({
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
             <span className="text-2xl">❌</span>
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
             {t('dashboard.error.title') || 'Unable to load dashboard'}
           </h2>
           <p className="text-slate-400 mb-4">
@@ -330,7 +333,7 @@ export const ProactiveDashboard: React.FC<ProactiveDashboardProps> = ({
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Hero Section */}
         <HeroSection
-          userName="Danny"
+          userName={userName}
           todaysHeadline={data ? generateTodaysHeadline(data) : { text: 'Cargando...', type: 'info', pulse: false }}
         />
 

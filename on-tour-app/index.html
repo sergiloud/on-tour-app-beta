@@ -19,14 +19,20 @@
   <!-- Resource Hints for faster connections -->
   <!-- DNS prefetch for external domains -->
   <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+  <link rel="dns-prefetch" href="https://demotiles.maplibre.org" />
 
   <!-- Preconnect to critical origins (includes DNS + TLS + TCP) -->
   <link rel="preconnect" href="https://api.openstreetmap.org" crossorigin />
   <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
 
-  <!-- Preload critical assets -->
-  <link rel="preload" href="/maplibre-gl.css" as="style" />
+  <!-- Prefetch critical route chunks (non-blocking) -->
+  <link rel="prefetch" href="/assets/vendor-react.js" as="script" />
+  <link rel="prefetch" href="/assets/vendor-router.js" as="script" />
+
+  <!-- Note: maplibre-gl.css is loaded dynamically by InteractiveMap component on demand -->
+  <!-- Removed preload to avoid unused resource warning -->
 
   <style>
     body {

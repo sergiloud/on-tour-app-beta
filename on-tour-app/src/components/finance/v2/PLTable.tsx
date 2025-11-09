@@ -190,7 +190,7 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
   const COLS = '110px minmax(160px,1.2fr) minmax(120px,1fr) minmax(110px,0.8fr) minmax(110px,0.8fr) minmax(110px,0.8fr) minmax(160px,1fr) minmax(140px,1fr) 100px 70px 100px 70px 70px 100px 110px minmax(110px,0.8fr) minmax(120px,0.8fr) 120px';
 
   return (
-    <div className="glass rounded-xl border border-white/10 overflow-hidden backdrop-blur-sm hover:border-white/20 transition-all duration-300">
+    <div className="glass rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-transparent via-white/5 to-transparent px-6 py-4 border-b border-white/10">
         <div id="pltable-desc" className="sr-only">
@@ -200,10 +200,10 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
           <div className="flex items-center gap-3">
             <div className="w-1 h-6 rounded-full bg-gradient-to-b from-accent-500 to-blue-500" />
             <div className="font-semibold tracking-tight flex items-center gap-3">
-              <span className="text-white">{t('finance.ledger') || 'P&L Ledger'}</span>
+              <span className="text-slate-900 dark:text-white">{t('finance.ledger') || 'P&L Ledger'}</span>
               {filter && (
                 <span className="text-[11px] px-3 py-1.5 rounded-lg glass border border-accent-500/30 bg-gradient-to-br from-accent-500/20 to-accent-500/10 font-medium flex items-center gap-2">
-                  <span className="text-white/60">{filter.kind}:</span>
+                  <span className="text-slate-400 dark:text-white/60">{filter.kind}:</span>
                   <strong className="text-accent-300">{filter.value}</strong>
                   <button
                     className="ml-1 w-4 h-4 rounded-full hover:bg-white/20 transition-colors flex items-center justify-center"
@@ -217,18 +217,18 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
           <div className="flex items-center gap-2">
             <div className="relative">
               <input
-                className="pl-9 pr-4 py-2 rounded-lg glass border border-white/10 hover:border-white/20 focus:border-accent-500/50 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all duration-300 text-sm placeholder:text-white/40"
+                className="pl-9 pr-4 py-2 rounded-lg glass border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-accent-500/50 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all duration-300 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/40"
                 placeholder={t('common.search') || 'Search...'}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 aria-label={t('common.search') || 'Search'}
               />
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
             <button
-              className="px-4 py-2 rounded-lg text-xs font-medium glass border border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg flex items-center gap-2"
+              className="px-4 py-2 rounded-lg text-xs font-medium glass border border-slate-200 dark:border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg flex items-center gap-2"
               disabled={!can('finance:export')}
               onClick={() => { exportFinanceCsv(rowsView, { columns: ['date', 'city', 'country', 'venue', 'promoter', 'fee', 'status', 'route', 'net'] }); try { toast.success(t('finance.export.csv.success') || 'Exported ✓'); announce(t('finance.export.csv.success') || 'Exported ✓'); } catch { } }}
             >
@@ -238,7 +238,7 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
               CSV
             </button>
             <button
-              className="px-4 py-2 rounded-lg text-xs font-medium glass border border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg flex items-center gap-2"
+              className="px-4 py-2 rounded-lg text-xs font-medium glass border border-slate-200 dark:border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg flex items-center gap-2"
               disabled={!can('finance:export')}
               onClick={async () => {
                 const ExcelJS = await import('exceljs');
@@ -312,7 +312,7 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
           <div className="min-w-[1800px]" role="table" aria-rowcount={rowsView.length}>
             {/* Header */}
             <div
-              className="sticky top-0 glass backdrop-blur-md text-[11px] font-medium text-white/70 uppercase tracking-wider z-10 border-b border-white/20"
+              className="sticky top-0 glass backdrop-blur-md text-[11px] font-medium text-slate-500 dark:text-white/70 uppercase tracking-wider z-10 border-b border-white/20"
               role="rowgroup"
               style={{ display: 'grid', gridTemplateColumns: COLS }}
             >
@@ -425,7 +425,7 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
                   return (
                     <motion.div
                       key={s.id}
-                      className="border-t border-white/10 leading-tight"
+                      className="border-t border-slate-200 dark:border-white/10 leading-tight"
                       role="row"
                       style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vi.start}px)`, display: 'grid', gridTemplateColumns: COLS }}
                       initial={{ opacity: 0, y: -10 }}
@@ -462,9 +462,9 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
                       <div className="p-2 truncate whitespace-nowrap" role="cell">{s.status}</div>
                       <div className="p-2 truncate whitespace-nowrap" role="cell">{(s as any).route || ''}</div>
                       <div className="p-2 whitespace-nowrap flex gap-1.5" role="cell">
-                        <button className="px-3 py-1 rounded-lg text-xs font-medium glass border border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all duration-300 hover:shadow-lg" onClick={() => { try { trackEvent('pl.open', { id: s.id }); } catch { }; try { window.dispatchEvent(new CustomEvent('navigate', { detail: { to: `/dashboard/shows?edit=${encodeURIComponent(s.id)}` } } as any)); } catch { } }}>{t('common.open') || 'Open'}</button>
+                        <button className="px-3 py-1 rounded-lg text-xs font-medium glass border border-slate-200 dark:border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all duration-300 hover:shadow-lg" onClick={() => { try { trackEvent('pl.open', { id: s.id }); } catch { }; try { window.dispatchEvent(new CustomEvent('navigate', { detail: { to: `/dashboard/shows?edit=${encodeURIComponent(s.id)}` } } as any)); } catch { } }}>{t('common.open') || 'Open'}</button>
                         <div className="relative inline-block">
-                          <button className="px-2.5 py-1 rounded-lg text-xs font-medium glass border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300" aria-haspopup="menu" aria-expanded={false} aria-label={t('common.moreActions') || 'More actions'} onClick={(e) => {
+                          <button className="px-2.5 py-1 rounded-lg text-xs font-medium glass border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all duration-300" aria-haspopup="menu" aria-expanded={false} aria-label={t('common.moreActions') || 'More actions'} onClick={(e) => {
                             const btn = e.currentTarget as HTMLButtonElement;
                             const menu = btn.nextElementSibling as HTMLDivElement | null;
                             if (menu) {
@@ -473,18 +473,18 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
                               (first as HTMLButtonElement | null)?.focus();
                             }
                           }}>…</button>
-                          <div className="absolute right-0 mt-1 w-40 bg-ink-800 border border-white/10 rounded shadow hidden" role="menu" aria-label={t('common.actions') || 'Actions'}>
-                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-white/10" onClick={() => {
+                          <div className="absolute right-0 mt-1 w-40 bg-ink-800 border border-slate-200 dark:border-white/10 rounded shadow hidden" role="menu" aria-label={t('common.actions') || 'Actions'}>
+                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-slate-200 dark:bg-white/10" onClick={() => {
                               try { navigator.clipboard.writeText(JSON.stringify(s)); toast.success(t('common.copied') || 'Copied \u2713'); } catch { }
                             }}>{t('actions.copyRow') || 'Copy row'}</button>
-                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-white/10 disabled:opacity-50" disabled={!can('finance:export')} onClick={() => {
+                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 disabled:opacity-50" disabled={!can('finance:export')} onClick={() => {
                               if (!can('finance:export')) return;
                               exportFinanceCsv([s] as any, { columns: ['date', 'city', 'country', 'venue', 'promoter', 'fee', 'status', 'route', 'net'] });
                             }}>{t('actions.exportRowCsv') || 'Export row (CSV)'}</button>
-                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-white/10" onClick={() => {
+                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-slate-200 dark:bg-white/10" onClick={() => {
                               try { window.dispatchEvent(new CustomEvent('navigate', { detail: { to: `/dashboard/shows?edit=${encodeURIComponent(s.id)}` } } as any)); } catch { }
                             }}>{t('actions.goToShow') || 'Go to show'}</button>
-                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-white/10" onClick={() => {
+                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-slate-200 dark:bg-white/10" onClick={() => {
                               try { window.dispatchEvent(new CustomEvent('navigate', { detail: { to: `/dashboard/shows?edit=${encodeURIComponent(s.id)}&tab=costs` } } as any)); } catch { }
                             }}>{t('actions.openCosts') || 'Open costs'}</button>
                           </div>
@@ -498,7 +498,7 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
 
             {/* Footer */}
             <div
-              className="sticky bottom-0 bg-ink-900 border-t border-white/10 font-medium"
+              className="sticky bottom-0 bg-ink-900 border-t border-slate-200 dark:border-white/10 font-medium"
               role="rowgroup"
               style={{ display: 'grid', gridTemplateColumns: COLS }}
             >

@@ -51,7 +51,7 @@ export const PinnedDrawer: React.FC<{
           </thead>
           <tbody>
             {items.map(r => (
-              <tr key={r.id} className={`border-t border-white/10 hover:bg-white/5 transition-colors ${justAdded === r.id ? 'bg-green-500/10 animate-pulse' : ''}`}>
+              <tr key={r.id} className={`border-t border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors ${justAdded === r.id ? 'bg-green-500/10 animate-pulse' : ''}`}>
                 <td className="py-1 pr-2 whitespace-nowrap">{r.origin}→{r.dest}</td>
                 <td className="py-1 pr-2 whitespace-nowrap">{new Date(r.dep).toLocaleDateString(undefined, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
                 <td className="py-1 pr-2">{r.stops===0 ? (t('travel.flight_card.nonstop')||'nonstop') : `${r.stops} ${r.stops===1?(t('travel.flight_card.stop')||'stop'):(t('travel.flight_card.stops')||'stops')}`}</td>

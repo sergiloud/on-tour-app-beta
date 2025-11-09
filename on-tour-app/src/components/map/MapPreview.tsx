@@ -197,7 +197,7 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border border-white/10 ${className}`}
+      className={`relative overflow-hidden rounded-xl bg-gradient-to-br from-white/10 to-slate-50 dark:to-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 ${className}`}
       {...ariaProps}
     >
       <svg
@@ -350,7 +350,7 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
   {/* Atmosphere overlay (disabled in high contrast) */}
   {!highContrast && <rect x={0} y={0} width={100} height={56} filter="url(#atmo)" />}
       </svg>
-      <div className="absolute inset-0 pointer-events-none border border-white/10 rounded-xl" />
+      <div className="absolute inset-0 pointer-events-none border border-slate-200 dark:border-white/10 rounded-xl" />
     </div>
   );
 };

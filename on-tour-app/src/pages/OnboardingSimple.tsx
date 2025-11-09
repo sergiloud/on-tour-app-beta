@@ -197,7 +197,7 @@ const OnboardingPage: React.FC = () => {
                         <span className="text-sm font-medium">Step {step} of 3</span>
                         <span className="text-sm opacity-60">{Math.round((step / 3) * 100)}%</span>
                     </div>
-                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
                         <motion.div
                             className="h-full bg-gradient-to-r from-accent-500 to-blue-500"
                             initial={{ width: 0 }}
@@ -234,7 +234,7 @@ const OnboardingPage: React.FC = () => {
                                             value={data.fullName}
                                             onChange={(e) => updateData('fullName', e.target.value)}
                                             placeholder={t('placeholder.name')}
-                                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                                         />
                                     </div>
 
@@ -248,7 +248,7 @@ const OnboardingPage: React.FC = () => {
                                                     onClick={() => updateData('businessType', type.id)}
                                                     className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.businessType === type.id
                                                         ? 'border-accent-500 bg-accent-500/10'
-                                                        : 'border-white/10 bg-white/5 hover:border-white/20'
+                                                        : 'border-slate-200 dark:border-white/10 bg-white/5 hover:border-white/20'
                                                         }`}
                                                 >
                                                     <div className="font-semibold mb-1">{type.label}</div>
@@ -274,7 +274,7 @@ const OnboardingPage: React.FC = () => {
                                                 value={data.companyName}
                                                 onChange={(e) => updateData('companyName', e.target.value)}
                                                 placeholder={data.businessType === 'artist' ? 'e.g., The Rolling Stones' : ''}
-                                                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                                             />
                                         </motion.div>
                                     )}
@@ -300,7 +300,7 @@ const OnboardingPage: React.FC = () => {
                                         <select
                                             value={data.country}
                                             onChange={(e) => handleCountryChange(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                                         >
                                             <option value="">Select your country</option>
                                             {countries.map(country => (
@@ -343,21 +343,21 @@ const OnboardingPage: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-3 text-sm">
-                                    <div className="p-4 rounded-xl bg-white/5">
+                                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5">
                                         <div className="opacity-60 mb-1">Name</div>
                                         <div className="font-medium">{data.fullName}</div>
                                     </div>
-                                    <div className="p-4 rounded-xl bg-white/5">
+                                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5">
                                         <div className="opacity-60 mb-1">Type</div>
                                         <div className="font-medium">{businessTypes.find(t => t.id === data.businessType)?.label}</div>
                                     </div>
                                     {data.companyName && (
-                                        <div className="p-4 rounded-xl bg-white/5">
+                                        <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5">
                                             <div className="opacity-60 mb-1">Company</div>
                                             <div className="font-medium">{data.companyName}</div>
                                         </div>
                                     )}
-                                    <div className="p-4 rounded-xl bg-white/5">
+                                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5">
                                         <div className="opacity-60 mb-1">Location</div>
                                         <div className="font-medium">{countries.find(c => c.code === data.country)?.name}</div>
                                     </div>
@@ -372,7 +372,7 @@ const OnboardingPage: React.FC = () => {
                             {step > 1 && (
                                 <button
                                     onClick={() => setStep(step - 1)}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 dark:bg-white/5 transition-colors"
                                 >
                                     <ArrowLeft className="w-4 h-4" />
                                     Back

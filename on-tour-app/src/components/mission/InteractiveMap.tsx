@@ -86,7 +86,14 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
 
     const init = () => {
       if (!containerRef.current || mapRef.current) return;
-      const mlib = mlibRef.current!;
+      const mlib = mlibRef.current;
+
+      // Safety check: ensure MapLibre is fully loaded
+      if (!mlib || typeof mlib.Map !== 'function') {
+        console.warn('[InteractiveMap] MapLibre not ready yet');
+        return;
+      }
+
       const map = new mlib.Map({
         container: containerRef.current,
         style: ({
@@ -575,19 +582,47 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     };
 
     const boot = async () => {
-      // dynamic import to code-split
-      const lib = await import('maplibre-gl');
-      mlibRef.current = lib;
-      const rect = el.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) {
-        const ro = new ResizeObserver(() => {
-          const r = el.getBoundingClientRect();
-          if (r.width > 0 && r.height > 0) { try { ro.disconnect(); } catch { } init(); }
-        });
-        try { ro.observe(el); } catch { init(); }
-        return () => { try { ro.disconnect(); } catch { } };
-      } else {
-        return init();
+      try {
+        // dynamic import to code-split
+        const lib = await import('maplibre-gl');
+
+        // Handle both default and named exports
+        const mapLibre = (lib as any).default || lib;
+
+        // Debug logging in development
+        if (import.meta.env.DEV) {
+          console.log('[InteractiveMap] MapLibre loaded:', {
+            hasMap: !!mapLibre.Map,
+            mapType: typeof mapLibre.Map,
+            keys: Object.keys(mapLibre).filter(k => k.includes('Map'))
+          });
+        }
+
+        // Ensure the library loaded correctly
+        if (!mapLibre || typeof mapLibre.Map !== 'function') {
+          console.error('[InteractiveMap] MapLibre loaded but Map constructor not found', {
+            lib,
+            mapLibre,
+            allKeys: Object.keys(mapLibre)
+          });
+          return undefined;
+        }
+
+        mlibRef.current = mapLibre;
+        const rect = el.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+          const ro = new ResizeObserver(() => {
+            const r = el.getBoundingClientRect();
+            if (r.width > 0 && r.height > 0) { try { ro.disconnect(); } catch { } init(); }
+          });
+          try { ro.observe(el); } catch { init(); }
+          return () => { try { ro.disconnect(); } catch { } };
+        } else {
+          return init();
+        }
+      } catch (error) {
+        console.error('[InteractiveMap] Failed to load MapLibre:', error);
+        return undefined;
       }
     };
     return void boot();
@@ -852,7 +887,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         aria-label={`Tour map showing ${shows.length} shows across different locations`}
         tabIndex={0}
       />
-      {!ready && <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white/5 to-white/0 animate-pulse text-[10px] tracking-widest uppercase text-white/40">Loading map…</div>}
+      {!ready && <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100/10 to-transparent dark:from-slate-100 dark:from-white/5 dark:to-white/0 animate-pulse text-[10px] tracking-widest uppercase text-slate-300 dark:text-white/40">Loading map…</div>}
       {cssWarning && (
         <div className="absolute top-2 right-2 text-[11px] px-2 py-1 rounded bg-amber-400/90 text-black border border-amber-900/20 shadow">
           {t('map.cssWarning')}
@@ -866,7 +901,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       {ready && shows.length > 0 && (
         <button
           onClick={fitAllShows}
-          className="absolute top-4 right-4 px-3 py-2 min-h-[44px] md:min-h-0 md:py-1.5 backdrop-blur-md bg-slate-900/80 hover:bg-slate-800/90 border border-white/20 hover:border-accent-500/40 rounded-lg text-xs font-medium transition-all duration-300 shadow-xl hover:shadow-accent-500/20 flex items-center gap-2 active:scale-95"
+          className="absolute top-4 right-4 px-3 py-2 min-h-[44px] md:min-h-0 md:py-1.5 backdrop-blur-md bg-slate-900/80 hover:bg-slate-800/90 border border-slate-300 dark:border-white/20 hover:border-accent-500/40 rounded-lg text-xs font-medium transition-all duration-300 shadow-xl hover:shadow-accent-500/20 flex items-center gap-2 active:scale-95"
           aria-label="Fit all shows in view"
           title="View all shows"
         >

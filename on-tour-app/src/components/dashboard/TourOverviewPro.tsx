@@ -120,7 +120,7 @@ export const TourOverviewPro: React.FC = () => {
     }, [orgId, fmtMoney]);
 
     return (
-        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:shadow-lg hover:shadow-accent-500/5">
+        <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm transition-all duration-300 hover:border-slate-300 dark:hover:border-white/20 hover:shadow-lg hover:shadow-accent-500/5">
             {/* Gradiente decorativo sutil */}
             <div className="absolute inset-0 bg-gradient-to-br from-accent-500/5 via-transparent to-transparent pointer-events-none" />
 
@@ -136,7 +136,7 @@ export const TourOverviewPro: React.FC = () => {
                     </div>
                     <Link
                         to="/dashboard/shows"
-                        className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-accent-500/20 border border-white/10 hover:border-accent-500/30 transition-all duration-300 font-medium"
+                        className="text-xs px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-accent-500/20 border border-slate-200 dark:border-white/10 hover:border-accent-500/30 transition-all duration-300 font-medium"
                     >
                         View all →
                     </Link>
@@ -146,7 +146,7 @@ export const TourOverviewPro: React.FC = () => {
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="group flex items-center justify-between p-4 border border-white/10 rounded-xl bg-gradient-to-r from-white/5 to-white/10 hover:border-accent-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-accent-500/10"
+                    className="group flex items-center justify-between p-4 border border-slate-200 dark:border-white/10 rounded-xl bg-gradient-to-r from-slate-100 dark:from-white/5 to-white/10 hover:border-accent-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-accent-500/10"
                 >
                     <div className="flex items-center gap-6">
                         <div className="transition-transform duration-300 group-hover:scale-105">
@@ -156,7 +156,7 @@ export const TourOverviewPro: React.FC = () => {
                                 <span className="text-xs opacity-60">shows</span>
                             </div>
                         </div>
-                        <div className="h-10 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+                        <div className="h-10 w-px bg-gradient-to-b from-transparent via-slate-300 dark:via-white/20 to-transparent" />
                         <div className="transition-transform duration-300 group-hover:scale-105">
                             <div className="text-xs opacity-60 mb-1 font-medium">Projected</div>
                             <div className="text-lg font-bold bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent">{fmtMoney(data.revenue30)}</div>
@@ -231,13 +231,13 @@ export const TourOverviewPro: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="border border-white/10 rounded-lg overflow-hidden">
+                    <div className="border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden">
                         {data.timeline.length === 0 ? (
                             <div className="p-6 text-center text-sm opacity-60">
                                 No shows scheduled in next 21 days
                             </div>
                         ) : (
-                            <div className="divide-y divide-white/5">
+                            <div className="divide-y divide-slate-200 dark:divide-white/5">
                                 {data.timeline.slice(0, 8).map((event, i) => (
                                     <motion.div
                                         key={`${event.type}-${i}-${event.date}`}
@@ -246,7 +246,7 @@ export const TourOverviewPro: React.FC = () => {
                                         transition={{ delay: 0.25 + i * 0.03 }}
                                         className={`p-3 ${event.type === 'gap'
                                             ? 'bg-amber-500/5'
-                                            : 'hover:bg-white/5 transition-colors'
+                                            : 'hover:bg-slate-100 dark:hover:bg-white/5 transition-colors'
                                             }`}
                                     >
                                         {event.type === 'show' ? (
@@ -291,7 +291,7 @@ export const TourOverviewPro: React.FC = () => {
                         {data.timeline.length > 8 && (
                             <Link
                                 to="/dashboard/shows"
-                                className="block p-2 text-center text-xs text-accent-400 hover:bg-white/5 transition-colors border-t border-white/5"
+                                className="block p-2 text-center text-xs text-accent-400 hover:bg-slate-100 dark:bg-white/5 transition-colors border-t border-white/5"
                             >
                                 + {data.timeline.length - 8} more shows
                             </Link>

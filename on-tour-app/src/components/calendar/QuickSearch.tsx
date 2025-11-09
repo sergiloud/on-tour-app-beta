@@ -69,7 +69,7 @@ const QuickSearch: React.FC<Props> = ({ events, onSelectEvent, onClose }) => {
         whileHover={{ scale: 1.08, y: -1 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleOpen}
-        className="px-2.5 md:px-3 py-1.5 md:py-1.5 rounded-lg bg-white/8 border border-white/15 hover:border-white/30 hover:bg-white/12 text-white/70 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5"
+        className="px-2.5 md:px-3 py-1.5 md:py-1.5 rounded-lg bg-white/8 border border-white/15 hover:border-slate-400 dark:hover:border-white/30 hover:bg-white/12 text-slate-500 dark:text-white/70 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5"
         title={`${t('calendar.search') || 'Search'} (Ctrl+F)`}
         aria-label={t('calendar.search') || 'Search events'}
       >
@@ -99,7 +99,7 @@ const QuickSearch: React.FC<Props> = ({ events, onSelectEvent, onClose }) => {
             {/* Search Box */}
             <motion.div
               onClick={(e) => e.stopPropagation()}
-              className="relative glass rounded-2xl border border-white/10 shadow-2xl backdrop-blur-md w-full max-w-2xl bg-gradient-to-br from-white/8 via-white/4 to-white/2"
+              className="relative glass rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl backdrop-blur-md w-full max-w-2xl bg-gradient-to-br from-slate-100 dark:from-white/8 via-white/4 to-white/2"
               initial={{ opacity: 0, scale: 0.9, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: -20 }}
@@ -108,7 +108,7 @@ const QuickSearch: React.FC<Props> = ({ events, onSelectEvent, onClose }) => {
               {/* Input */}
               <div className="relative px-5 md:px-6 pt-4 md:pt-5">
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-white/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-slate-400 dark:text-white/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
@@ -117,7 +117,7 @@ const QuickSearch: React.FC<Props> = ({ events, onSelectEvent, onClose }) => {
                     placeholder={t('calendar.search.placeholder') || 'Type to search shows, cities...'}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="flex-1 bg-transparent text-white placeholder-white/40 text-lg font-medium focus:outline-none"
+                    className="flex-1 bg-transparent text-white placeholder-slate-400 dark:placeholder-slate-400 dark:placeholder-white/40 text-lg font-medium focus:outline-none"
                     autoComplete="off"
                     spellCheck="false"
                   />
@@ -126,7 +126,7 @@ const QuickSearch: React.FC<Props> = ({ events, onSelectEvent, onClose }) => {
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
                       onClick={() => setQuery('')}
-                      className="p-1 rounded-lg hover:bg-white/10 transition-colors text-white/60"
+                      className="p-1 rounded-lg hover:bg-slate-200 dark:bg-white/10 transition-colors text-slate-400 dark:text-white/60"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
@@ -144,11 +144,11 @@ const QuickSearch: React.FC<Props> = ({ events, onSelectEvent, onClose }) => {
                 transition={{ delay: 0.1 }}
               >
                 {query.trim() === '' ? (
-                  <div className="text-center py-8 text-white/50">
+                  <div className="text-center py-8 text-slate-300 dark:text-white/50">
                     <p className="text-sm">{t('calendar.search.placeholder') || 'Type to search shows, cities...'}</p>
                   </div>
                 ) : filteredEvents.length === 0 ? (
-                  <div className="text-center py-8 text-white/50">
+                  <div className="text-center py-8 text-slate-300 dark:text-white/50">
                     <p className="text-sm">{t('calendar.search.noResults') || 'No events found'}</p>
                   </div>
                 ) : (
@@ -160,17 +160,17 @@ const QuickSearch: React.FC<Props> = ({ events, onSelectEvent, onClose }) => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.03 }}
-                        className="w-full text-left px-3 py-2 md:py-3 rounded-lg bg-white/8 hover:bg-white/12 border border-white/10 hover:border-white/20 transition-all group cursor-pointer"
+                        className="w-full text-left px-3 py-2 md:py-3 rounded-lg bg-white/8 hover:bg-white/12 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all group cursor-pointer"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-white group-hover:text-accent-100 truncate">
                               {event.title}
-                              <span className="ml-2 text-xs text-white/50">
+                              <span className="ml-2 text-xs text-slate-300 dark:text-white/50">
                                 {event.kind === 'show' ? '🎤' : '✈️'}
                               </span>
                             </p>
-                            <p className="text-xs text-white/50 mt-1">
+                            <p className="text-xs text-slate-300 dark:text-white/50 mt-1">
                               {new Date(event.date).toLocaleDateString('en-US', {
                                 weekday: 'short',
                                 month: 'short',
@@ -199,10 +199,10 @@ const QuickSearch: React.FC<Props> = ({ events, onSelectEvent, onClose }) => {
               </motion.div>
 
               {/* Footer */}
-              <div className="px-5 md:px-6 py-3 border-t border-white/10 flex items-center justify-between text-xs text-white/50">
+              <div className="px-5 md:px-6 py-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs text-slate-300 dark:text-white/50">
                 <p>Found {filteredEvents.length} {filteredEvents.length === 1 ? 'result' : 'results'}</p>
                 <p>
-                  Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-white/70 mx-1">Esc</kbd> to close
+                  Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/70 mx-1">Esc</kbd> to close
                 </p>
               </div>
             </motion.div>

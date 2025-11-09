@@ -107,8 +107,8 @@ export const BoardView: React.FC<BoardViewProps> = ({
           {/* Column Header */}
           <div className="p-4 border-b border-white/10">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">{column.title}</h3>
-              <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-medium text-white">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{column.title}</h3>
+              <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-medium text-slate-900 dark:text-white">
                 {column.shows.length}
               </span>
             </div>
@@ -144,7 +144,7 @@ export const BoardView: React.FC<BoardViewProps> = ({
 
                   {/* Show Info */}
                   <div className="space-y-2">
-                    <h4 className="font-medium text-white text-sm leading-tight">
+                    <h4 className="font-medium text-slate-900 dark:text-white text-sm leading-tight">
                       {show.name}
                     </h4>
 
@@ -167,7 +167,7 @@ export const BoardView: React.FC<BoardViewProps> = ({
                     <div className="flex justify-between items-center pt-2 border-t border-white/10">
                       <div className="flex items-center gap-1 text-xs">
                         <span>🎫</span>
-                        <span className="text-white font-medium">{show.ticketSalesPercentage}%</span>
+                        <span className="text-slate-900 dark:text-white font-medium">{show.ticketSalesPercentage}%</span>
                       </div>
                       <div className="flex items-center gap-1 text-xs">
                         <span>💰</span>

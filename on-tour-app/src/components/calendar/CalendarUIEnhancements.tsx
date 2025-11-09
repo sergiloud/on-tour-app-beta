@@ -82,7 +82,7 @@ export const CalendarUIEnhancements: React.FC<CalendarUIEnhancementsProps> = ({
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setShowGrid(!showGrid)}
-        className="fixed bottom-6 right-6 p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold transition-all z-50 backdrop-blur-lg"
+        className="fixed bottom-6 right-6 p-3 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/20 border border-slate-300 dark:border-white/20 text-white text-sm font-semibold transition-all z-50 backdrop-blur-lg"
       >
         {showGrid ? '⊞' : '⊟'}
       </motion.button>
@@ -207,8 +207,8 @@ export const CalendarButton: React.FC<CalendarButtonProps> = ({
 }) => {
   const variantClasses = {
     primary: 'bg-gradient-to-r from-blue-500/40 to-purple-500/40 hover:from-blue-500/60 hover:to-purple-500/60 border-blue-400/50 text-white',
-    secondary: 'bg-white/10 hover:bg-white/20 border-white/20 text-gray-100',
-    subtle: 'bg-white/5 hover:bg-white/10 border-white/10 text-gray-200',
+    secondary: 'bg-slate-200 dark:bg-white/10 hover:bg-white/20 border-slate-300 dark:border-white/20 text-gray-100',
+    subtle: 'bg-white/5 hover:bg-slate-200 dark:bg-white/10 border-slate-200 dark:border-white/10 text-gray-200',
     danger: 'bg-gradient-to-r from-red-500/40 to-rose-500/40 hover:from-red-500/60 hover:to-rose-500/60 border-red-400/50 text-white',
   };
 
@@ -288,14 +288,14 @@ export const EnhancedModal: React.FC<EnhancedModalProps> = ({
             className={`
               ${sizeClasses[size]} w-full mx-4
               bg-gradient-to-br from-white/10 to-white/5
-              border border-white/20 rounded-xl
+              border border-slate-300 dark:border-white/20 rounded-xl
               backdrop-blur-lg shadow-2xl
               overflow-hidden
             `}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/10">
-              <h2 className="text-xl font-bold text-white">{title}</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h2>
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}

@@ -61,7 +61,7 @@ export const TripList: React.FC<Props> = ({ onSelectTrip, activeTripId }) => {
 	};
 
 	if (!trips.length) return (
-		<div className="text-center text-xs opacity-60 p-4 border border-dashed border-white/10 rounded-md">
+		<div className="text-center text-xs opacity-60 p-4 border border-dashed border-slate-200 dark:border-white/10 rounded-md">
 			{t('travel.no_trips_yet') || 'No trips planned yet. Use the search to get started!'}
 		</div>
 	);
@@ -72,7 +72,7 @@ export const TripList: React.FC<Props> = ({ onSelectTrip, activeTripId }) => {
 				{trips.map(t => (
 					<li key={t.id}>
 						<button
-							className={`w-full text-left px-2 py-1 rounded border ${activeTripId===t.id?'bg-white/10 border-white/20':'hover:bg-white/5 border-transparent'} ${dropping===t.id?'border-accent-500/60 bg-accent-900/10':''}`}
+							className={`w-full text-left px-2 py-1 rounded border ${activeTripId===t.id?'bg-slate-200 dark:bg-white/10 border-white/20':'hover:bg-slate-100 dark:hover:bg-white/5 border-transparent'} ${dropping===t.id?'border-accent-500/60 bg-accent-900/10':''}`}
 							onClick={()=> onSelectTrip?.(t.id)}
 							onDragOver={allowDrop}
 							onDragEnter={()=> setDropping(t.id)}
@@ -87,7 +87,7 @@ export const TripList: React.FC<Props> = ({ onSelectTrip, activeTripId }) => {
 			</ul>
 			{/* Create new trip dropzone */}
 			<div
-				className={`mt-2 text-xs px-2 py-2 rounded border border-dashed ${dropping==='new'?'border-accent-500/60 bg-accent-900/10':'border-white/10 opacity-80'}`}
+				className={`mt-2 text-xs px-2 py-2 rounded border border-dashed ${dropping==='new'?'border-accent-500/60 bg-accent-900/10':'border-slate-200 dark:border-white/10 opacity-80'}`}
 				onDragOver={allowDrop}
 				onDragEnter={()=> setDropping('new')}
 				onDragLeave={()=> setDropping(d=> d==='new'? null : d)}
@@ -110,5 +110,5 @@ export const TripList: React.FC<Props> = ({ onSelectTrip, activeTripId }) => {
 	);
 };
 
-export default TripList;
+export default React.memo(TripList);
 

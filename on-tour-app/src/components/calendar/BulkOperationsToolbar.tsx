@@ -65,7 +65,7 @@ const BulkOperationsToolbar: React.FC<Props> = ({
               className="flex items-center gap-2"
               layout
             >
-              <div className="text-white font-semibold">
+              <div className="text-slate-900 dark:text-white font-semibold">
                 {selectedCount} {selectedCount === 1 ? 'event' : 'events'} selected
               </div>
               <motion.button

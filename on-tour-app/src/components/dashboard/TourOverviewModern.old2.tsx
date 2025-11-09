@@ -211,7 +211,7 @@ export const TourOverviewModern: React.FC = () => {
                     </div>
                     <Link
                         to="/dashboard/shows"
-                        className="text-xs px-2.5 py-1 rounded-lg glass hover:bg-white/15 transition-all"
+                        className="text-xs px-2.5 py-1 rounded-lg glass hover:bg-slate-300 dark:bg-white/15 transition-all"
                     >
                         View all
                     </Link>
@@ -249,10 +249,10 @@ export const TourOverviewModern: React.FC = () => {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -50 }}
                             transition={{ duration: 0.3 }}
-                            className={`glass rounded-xl p-6 border bg-gradient-to-br ${currentCard.gradient} border-white/10 relative overflow-hidden`}
+                            className={`glass rounded-xl p-6 border bg-gradient-to-br ${currentCard.gradient} border-slate-200 dark:border-white/10 relative overflow-hidden`}
                         >
                             {/* Decorative glow */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl" />
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent rounded-full blur-3xl" />
 
                             <div className="relative z-10">
                                 <div className="flex items-start justify-between mb-4">

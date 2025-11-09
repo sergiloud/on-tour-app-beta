@@ -259,12 +259,12 @@ const Register: React.FC = () => {
               <svg className="w-4 h-4 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              <span className="font-medium text-white/80">4.8/5 rating</span>
+              <span className="font-medium text-slate-600 dark:text-white/80">4.8/5 rating</span>
             </div>
             <div className="w-1 h-1 rounded-full bg-white/30" />
             <div className="flex items-center gap-1.5">
               <Zap className="w-4 h-4 text-accent-400" />
-              <span className="font-medium text-white/80">8h/week saved</span>
+              <span className="font-medium text-slate-600 dark:text-white/80">8h/week saved</span>
             </div>
           </motion.div>
         </motion.div>
@@ -275,7 +275,7 @@ const Register: React.FC = () => {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="glass p-8 rounded-2xl border border-white/10 shadow-2xl"
+          className="glass p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl"
           style={{
             boxShadow: '0 0 60px rgba(0, 0, 0, 0.3), 0 0 100px rgba(191, 255, 0, 0.1)'
           }}
@@ -314,7 +314,7 @@ const Register: React.FC = () => {
                 onChange={handleNameChange}
                 autoFocus
                 placeholder={t('placeholder.name')}
-                className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                 autoComplete="name"
               />
             </div>
@@ -352,7 +352,7 @@ const Register: React.FC = () => {
                 value={email}
                 onChange={handleEmailChange}
                 placeholder="you@example.com"
-                className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                 autoComplete="email"
               />
             </div>
@@ -388,7 +388,7 @@ const Register: React.FC = () => {
                 value={password}
                 onChange={handlePasswordChange}
                 placeholder="••••••••"
-                className="w-full pl-12 pr-12 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
+                className="w-full pl-12 pr-12 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:ring-2 focus:ring-accent-500/20 transition-all outline-none"
                 autoComplete="new-password"
               />
               <button
@@ -403,7 +403,7 @@ const Register: React.FC = () => {
             {/* Password Strength Indicator */}
             {password && (
               <motion.div
-                className="mt-3 p-3 rounded-xl bg-white/5 border border-white/10"
+                className="mt-3 p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/10"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 transition={{ duration: 0.3 }}
@@ -426,7 +426,7 @@ const Register: React.FC = () => {
                         : 'Strong'}
                   </span>
                 </div>
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-3">
+                <div className="h-1.5 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden mb-3">
                   <motion.div
                     className={`h-full transition-all duration-300 ${Object.values(passwordRequirements).filter(Boolean).length <= 2
                       ? 'bg-red-500'
@@ -486,7 +486,7 @@ const Register: React.FC = () => {
                 type="checkbox"
                 checked={agreeToTerms}
                 onChange={(e) => setAgreeToTerms(e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-accent-500 focus:ring-accent-500/50"
+                className="mt-0.5 w-4 h-4 rounded border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 text-accent-500 focus:ring-accent-500/50"
               />
               <span className="text-sm opacity-70">
                 I agree to the{' '}
@@ -600,7 +600,7 @@ const Register: React.FC = () => {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-900/50 text-white/50">
+              <span className="px-4 bg-slate-900/50 text-slate-300 dark:text-white/50">
                 Already have an account?
               </span>
             </div>
@@ -608,7 +608,7 @@ const Register: React.FC = () => {
 
           <Link
             to="/login"
-            className="w-full py-3.5 rounded-xl border border-white/20 hover:border-accent-500/50 transition-all flex items-center justify-center gap-2 font-medium hover:bg-white/5"
+            className="w-full py-3.5 rounded-xl border border-slate-300 dark:border-white/20 hover:border-accent-500/50 transition-all flex items-center justify-center gap-2 font-medium hover:bg-slate-100 dark:bg-white/5"
           >
             <span>Sign in to your account</span>
             <ArrowRight className="w-4 h-4" />
@@ -617,7 +617,7 @@ const Register: React.FC = () => {
           <motion.div className="text-center mt-6">
             <Link
               to="/"
-              className="text-sm text-white/50 hover:text-white/80 transition-colors inline-flex items-center gap-1"
+              className="text-sm text-slate-300 dark:text-white/50 hover:text-slate-600 dark:text-white/80 transition-colors inline-flex items-center gap-1"
             >
               ← Back to home
             </Link>
@@ -639,59 +639,59 @@ const Register: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-dark-900/90 backdrop-blur-xl border border-white/10 rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl"
+              className="bg-dark-900/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
               <div className="p-8 border-b border-white/10">
-                <h2 className="text-2xl font-bold text-white">Terms of Service</h2>
-                <p className="text-white/60 mt-2">Last updated: {new Date().toLocaleDateString()}</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Terms of Service</h2>
+                <p className="text-slate-400 dark:text-white/60 mt-2">Last updated: {new Date().toLocaleDateString()}</p>
               </div>
 
               <div className="p-8 overflow-y-auto max-h-[calc(80vh-180px)] prose prose-invert prose-sm">
                 <h3 className="text-lg font-semibold text-white mb-3">1. Acceptance of Terms</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   By accessing and using On Tour App, you accept and agree to be bound by these Terms of Service.
                   If you do not agree to these terms, please do not use our service.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">2. Use License</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We grant you a limited, non-exclusive, non-transferable license to use On Tour App for managing
                   your tour operations. This license does not include any resale or commercial use of our service.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">3. User Accounts</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   You are responsible for maintaining the confidentiality of your account and password. You agree to
                   accept responsibility for all activities that occur under your account.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">4. Data Ownership</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   You retain all rights to the data you input into On Tour App. We claim no intellectual property
                   rights over the content you provide. Your data remains yours.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">5. Service Availability</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We strive to maintain 99.9% uptime but do not guarantee uninterrupted access. We may perform
                   maintenance that temporarily suspends access to the service.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">6. Limitation of Liability</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   On Tour App shall not be liable for any indirect, incidental, special, consequential or punitive
                   damages resulting from your use of or inability to use the service.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">7. Modifications to Terms</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We reserve the right to modify these terms at any time. We will notify users of any material changes
                   via email or through the application.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">8. Contact</h3>
-                <p className="text-white/70">
+                <p className="text-slate-500 dark:text-white/70">
                   For questions about these Terms, please contact us at legal@ontourapp.com
                 </p>
               </div>
@@ -723,65 +723,65 @@ const Register: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-dark-900/90 backdrop-blur-xl border border-white/10 rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl"
+              className="bg-dark-900/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
               <div className="p-8 border-b border-white/10">
-                <h2 className="text-2xl font-bold text-white">Privacy Policy</h2>
-                <p className="text-white/60 mt-2">Last updated: {new Date().toLocaleDateString()}</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Privacy Policy</h2>
+                <p className="text-slate-400 dark:text-white/60 mt-2">Last updated: {new Date().toLocaleDateString()}</p>
               </div>
 
               <div className="p-8 overflow-y-auto max-h-[calc(80vh-180px)] prose prose-invert prose-sm">
                 <h3 className="text-lg font-semibold text-white mb-3">1. Information We Collect</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We collect information you provide directly to us, including name, email address, and tour data.
                   We also automatically collect device information, log data, and usage statistics.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">2. How We Use Your Information</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We use your information to provide, maintain, and improve our services, to process transactions,
                   send technical notices, and respond to your requests.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">3. Data Security</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We implement industry-standard security measures to protect your data. All data is encrypted in
                   transit using TLS and at rest using AES-256 encryption.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">4. Data Sharing</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We do not sell your personal information. We may share data with service providers who assist in
                   operating our platform, subject to confidentiality agreements.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">5. Your Rights</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   You have the right to access, correct, or delete your personal data. You can export your data at
                   any time through the application settings.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">6. Data Retention</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We retain your data for as long as your account is active. Upon account deletion, we will delete
                   your data within 30 days, except where required by law.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">7. Cookies and Tracking</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   We use essential cookies for authentication and preferences. We use analytics to understand how
                   users interact with our service to improve user experience.
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">8. GDPR Compliance</h3>
-                <p className="text-white/70 mb-4">
+                <p className="text-slate-500 dark:text-white/70 mb-4">
                   For EU users, we comply with GDPR requirements. You have rights to data portability, erasure,
                   and restriction of processing. Contact our DPO at privacy@ontourapp.com
                 </p>
 
                 <h3 className="text-lg font-semibold text-white mb-3">9. Contact Us</h3>
-                <p className="text-white/70">
+                <p className="text-slate-500 dark:text-white/70">
                   For privacy-related questions, email us at privacy@ontourapp.com or write to our Data Protection
                   Officer at the address listed on our website.
                 </p>

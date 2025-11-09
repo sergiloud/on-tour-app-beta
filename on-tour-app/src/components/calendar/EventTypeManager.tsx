@@ -86,14 +86,14 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-lg bg-gradient-to-br from-slate-900/30 to-slate-800/20 border border-white/10 p-4"
+      className="rounded-lg bg-gradient-to-br from-slate-900/30 to-slate-800/20 border border-slate-200 dark:border-white/10 p-4"
     >
       {/* Header */}
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between text-white/80 hover:text-white transition"
+        className="w-full flex items-center justify-between text-slate-600 dark:text-white/80 hover:text-white transition"
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">🏷️</span>
@@ -119,19 +119,19 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
           >
             {/* Existing Types */}
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-white/60 uppercase">{t('calendar.eventType.existing') || 'Event Types'}</p>
+              <p className="text-xs font-semibold text-slate-400 dark:text-white/60 uppercase">{t('calendar.eventType.existing') || 'Event Types'}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
                 {eventTypes.map((type) => (
                   <motion.div
                     key={type.id}
                     whileHover={{ scale: 1.02 }}
-                    className={`flex items-center justify-between p-3 rounded-lg border border-white/10 ${type.color} bg-opacity-10 hover:bg-opacity-20 transition-all`}
+                    className={`flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-white/10 ${type.color} bg-opacity-10 hover:bg-opacity-20 transition-all`}
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{type.icon}</span>
                       <div>
-                        <p className="text-sm font-medium text-white">{type.name}</p>
-                        {type.description && <p className="text-xs text-white/60">{type.description}</p>}
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{type.name}</p>
+                        {type.description && <p className="text-xs text-slate-400 dark:text-white/60">{type.description}</p>}
                       </div>
                     </div>
                     {!type.isDefault && (
@@ -151,7 +151,7 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
 
             {/* Add New Type */}
             <div className="pt-4 border-t border-white/10">
-              <p className="text-xs font-semibold text-white/60 uppercase mb-3">{t('calendar.eventType.create') || 'Create New Type'}</p>
+              <p className="text-xs font-semibold text-slate-400 dark:text-white/60 uppercase mb-3">{t('calendar.eventType.create') || 'Create New Type'}</p>
 
               <div className="space-y-3">
                 {/* Name Input */}
@@ -160,13 +160,13 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
                   value={newTypeName}
                   onChange={(e) => setNewTypeName(e.target.value)}
                   placeholder={t('calendar.eventType.namePlaceholder') || 'Event type name (e.g., Photo Shoot)'}
-                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-accent-500/50 transition-colors"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-200 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-white placeholder-slate-400 dark:placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-accent-500/50 transition-colors"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddType()}
                 />
 
                 {/* Icon Selector */}
                 <div>
-                  <label className="text-xs font-semibold text-white/60 mb-2 block">Icon</label>
+                  <label className="text-xs font-semibold text-slate-400 dark:text-white/60 mb-2 block">Icon</label>
                   <div className="grid grid-cols-8 gap-2">
                     {icons.map((icon) => (
                       <motion.button
@@ -177,7 +177,7 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
                         className={`p-2 rounded-lg text-xl transition-all ${
                           newTypeIcon === icon
                             ? 'bg-accent-500/30 border border-accent-500/50'
-                            : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                            : 'bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-white/10'
                         }`}
                       >
                         {icon}
@@ -188,7 +188,7 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
 
                 {/* Color Selector */}
                 <div>
-                  <label className="text-xs font-semibold text-white/60 mb-2 block">Color</label>
+                  <label className="text-xs font-semibold text-slate-400 dark:text-white/60 mb-2 block">Color</label>
                   <div className="grid grid-cols-5 gap-2">
                     {colors.map((color) => (
                       <motion.button
@@ -199,7 +199,7 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
                         className={`p-3 rounded-lg transition-all border-2 ${color} ${
                           newTypeColor === color
                             ? 'border-white/80 shadow-lg'
-                            : 'border-white/20 hover:border-white/40'
+                            : 'border-slate-300 dark:border-white/20 hover:border-white/40'
                         }`}
                       />
                     ))}
@@ -214,7 +214,7 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
                     className={`p-3 rounded-lg ${newTypeColor} flex items-center gap-2`}
                   >
                     <span className="text-xl">{newTypeIcon}</span>
-                    <span className="font-medium text-white">{newTypeName}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{newTypeName}</span>
                   </motion.div>
                 )}
 
@@ -234,7 +234,7 @@ const EventTypeManager: React.FC<Props> = ({ eventTypes, onTypesChange }) => {
 
             {/* Info */}
             <div className="pt-4 border-t border-white/10">
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-slate-300 dark:text-white/50">
                 <strong>💡 {t('calendar.eventType.tip') || 'Tip'}:</strong> {t('calendar.eventType.tipText') || 'Create custom event types for your tour (e.g., Photo Shoot, Press Interview, Free Day). Custom types can be deleted anytime.'}
               </p>
             </div>

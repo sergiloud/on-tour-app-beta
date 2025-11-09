@@ -202,7 +202,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({ onFilterChange }) => {
         {insights.map((insight) => (
           <Card
             key={insight.id}
-            className={`p-4 border border-white/10 glass cursor-pointer transition-all hover:bg-white/5 ${insight.type === 'positive' ? 'border-emerald-500/30 bg-emerald-500/5' :
+            className={`p-4 border border-slate-200 dark:border-white/10 glass cursor-pointer transition-all hover:bg-slate-100 dark:hover:bg-white/5 ${insight.type === 'positive' ? 'border-emerald-500/30 bg-emerald-500/5' :
               insight.type === 'warning' ? 'border-amber-500/30 bg-amber-500/5' :
                 'border-blue-500/30 bg-blue-500/5'
               }`}
@@ -215,7 +215,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({ onFilterChange }) => {
               </div>
               {insight.action && (
                 <button
-                  className="ml-3 px-2 py-1 text-xs rounded bg-white/10 hover:bg-white/20 transition-colors"
+                  className="ml-3 px-2 py-1 text-xs rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     insight.action?.onClick();

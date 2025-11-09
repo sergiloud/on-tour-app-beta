@@ -71,7 +71,7 @@ const EventLinkingModal: React.FC<Props> = ({
   if (!open || !fromEvent || !toEvent) return null;
 
   return (
-    <div role="dialog" aria-labelledby="link-modal-title" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
+    <div role="dialog" aria-labelledby="link-modal-title" aria-modal="true" className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center">
       <motion.div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         initial={{ opacity: 0 }}
@@ -80,21 +80,21 @@ const EventLinkingModal: React.FC<Props> = ({
         onClick={onClose}
       />
       <motion.div
-        className="relative glass rounded-xl p-6 w-[420px] border border-white/20 shadow-2xl"
+        className="relative glass rounded-xl p-6 w-[420px] border border-slate-300 dark:border-white/20 shadow-2xl"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 id="link-modal-title" className="text-lg font-semibold text-white">
+          <h2 id="link-modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">
             {t('calendar.link.title') || 'Link Events'}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+            className="p-1 rounded-lg hover:bg-slate-200 dark:bg-white/10 transition-colors"
             aria-label="Close"
           >
-            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-slate-400 dark:text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -106,7 +106,7 @@ const EventLinkingModal: React.FC<Props> = ({
             <div className="px-2 py-1 rounded bg-sky-500/30 border border-sky-500/50 text-sky-200">
               📌 {fromEvent.title}
             </div>
-            <div className="text-white/50">→</div>
+            <div className="text-slate-300 dark:text-white/50">→</div>
             <div className="px-2 py-1 rounded bg-emerald-500/30 border border-emerald-500/50 text-emerald-200">
               🎯 {toEvent.title}
             </div>
@@ -116,9 +116,9 @@ const EventLinkingModal: React.FC<Props> = ({
         {/* Link type selector */}
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-white/80 font-medium mb-3 block">Link Type</label>
+            <label className="text-sm text-slate-600 dark:text-white/80 font-medium mb-3 block">Link Type</label>
             <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-white/5 transition-colors">
+              <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-slate-100 dark:bg-white/5 transition-colors">
                 <input
                   type="radio"
                   name="linkType"
@@ -127,9 +127,9 @@ const EventLinkingModal: React.FC<Props> = ({
                   onChange={(e) => setLinkType('before')}
                   className="w-4 h-4"
                 />
-                <span className="text-sm text-white">Before</span>
+                <span className="text-sm text-slate-900 dark:text-white">Before</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-white/5 transition-colors">
+              <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-slate-100 dark:bg-white/5 transition-colors">
                 <input
                   type="radio"
                   name="linkType"
@@ -138,9 +138,9 @@ const EventLinkingModal: React.FC<Props> = ({
                   onChange={(e) => setLinkType('after')}
                   className="w-4 h-4"
                 />
-                <span className="text-sm text-white">After</span>
+                <span className="text-sm text-slate-900 dark:text-white">After</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-white/5 transition-colors">
+              <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-slate-100 dark:bg-white/5 transition-colors">
                 <input
                   type="radio"
                   name="linkType"
@@ -149,7 +149,7 @@ const EventLinkingModal: React.FC<Props> = ({
                   onChange={(e) => setLinkType('sameDay')}
                   className="w-4 h-4"
                 />
-                <span className="text-sm text-white">Same Day</span>
+                <span className="text-sm text-slate-900 dark:text-white">Same Day</span>
               </label>
             </div>
           </div>
@@ -157,7 +157,7 @@ const EventLinkingModal: React.FC<Props> = ({
           {/* Gap input for "before" type */}
           {linkType === 'before' && (
             <div>
-              <label className="text-sm text-white/80 font-medium mb-2 block">
+              <label className="text-sm text-slate-600 dark:text-white/80 font-medium mb-2 block">
                 {t('calendar.link.minGap') || 'Minimum gap (days)'}
               </label>
               <input
@@ -166,14 +166,14 @@ const EventLinkingModal: React.FC<Props> = ({
                 max="365"
                 value={gap}
                 onChange={(e) => setGap(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full px-3 py-2 rounded bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-full px-3 py-2 rounded bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
           )}
 
           {/* Description */}
-          <div className="p-2 rounded bg-white/5 border border-white/10">
-            <p className="text-xs text-white/70">{getDescription()}</p>
+          <div className="p-2 rounded bg-slate-100 dark:bg-white/5 border border-white/10">
+            <p className="text-xs text-slate-500 dark:text-white/70">{getDescription()}</p>
           </div>
         </div>
 

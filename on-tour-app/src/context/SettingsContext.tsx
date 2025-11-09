@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { trackEvent } from '../lib/telemetry';
 import { loadSettings, saveSettings, SETTINGS_KEY } from '../lib/persist';
 import type { PeriodPreset } from '../features/finance/period';
@@ -65,26 +65,20 @@ const LS_KEY = SETTINGS_KEY;
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Determine current user and load their preferences (fallback to legacy settings)
-  const [userId] = useState<string>(() => { try { ensureDemoAuth(); return getCurrentUserId(); } catch { return 'user_danny'; } });
+  const [userId] = useState<string>(() => {
+    try {
+      ensureDemoAuth();
+      return getCurrentUserId();
+    } catch {
+      // Fallback to a default if no user is set
+      return 'default_user';
+    }
+  });
 
-  // Load agencies for Danny Avila immediately if not already loaded
+  // Load initial settings
   const legacyInitial = (() => {
     try {
-      const settings = loadSettings() as any;
-      // Check if Danny Avila and agencies not loaded yet
-      if (userId === 'danny_avila' && (!settings.bookingAgencies || settings.bookingAgencies.length === 0)) {
-        // console.log('[SettingsContext] Danny Avila detected, loading demo agencies...');
-        // Import and load agencies synchronously
-        try {
-          const { loadDemoAgencies } = require('../lib/agencies');
-          loadDemoAgencies();
-          // Reload settings after loading agencies
-          return loadSettings();
-        } catch (e) {
-          console.error('[SettingsContext] Error loading demo agencies:', e);
-        }
-      }
-      return settings;
+      return loadSettings() as any;
     } catch {
       return {};
     }
@@ -165,76 +159,150 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const fmtMoney = useMemo(() => (n: number) => new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n), [currency]);
-  const fmtDistance = useMemo(() => (km: number) => unit === 'km' ? `${Math.round(km).toLocaleString()} km` : `${Math.round(km * 0.621371).toLocaleString()} mi`, [unit]);
+  const fmtMoney = useCallback((n: number) => new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n), [currency]);
+  const fmtDistance = useCallback((km: number) => unit === 'km' ? `${Math.round(km).toLocaleString()} km` : `${Math.round(km * 0.621371).toLocaleString()} mi`, [unit]);
+
+  const handleSetCurrency = useCallback((c: Currency) => {
+    setCurrency(c);
+    try { trackEvent('settings.currency', { currency: c }); } catch { }
+  }, []);
+
+  const handleSetUnit = useCallback((u: DistanceUnit) => {
+    setUnit(u);
+    try { trackEvent('settings.unit', { unit: u }); } catch { }
+  }, []);
+
+  const handleSetLang = useCallback((l: 'en' | 'es') => {
+    setLangState(l);
+    try { setI18nLang(l as any); } catch { }
+    try { trackEvent('settings.lang', { lang: l }); } catch { }
+  }, []);
+
+  const handleSetMaskAmounts = useCallback((_v: boolean) => {
+    /* no-op; masking disabled globally */
+  }, []);
+
+  const handleSetDashboardView = useCallback((v: DashboardView) => {
+    setDashboardView(v);
+    try { trackEvent('settings.dashboardView', { view: v }); trackEvent('dashboard.view', { view: v }); } catch { }
+  }, []);
+
+  const handleSetPresentationMode = useCallback((v: boolean) => {
+    setPresentationMode(v);
+    try { trackEvent('settings.presentation', { presentation: v }); } catch { }
+  }, []);
+
+  const handleSetRegion = useCallback((r: Region) => {
+    setRegion(r);
+    try { trackEvent('settings.region', { region: r }); } catch { }
+  }, []);
+
+  const handleSetDateRange = useCallback((dr: DateRange) => {
+    setDateRange(dr);
+    try { trackEvent('settings.daterange', dr as any); } catch { }
+  }, []);
+
+  const handleSetPeriodPreset = useCallback((p: PeriodPreset) => {
+    setPeriodPresetState(p);
+    try { trackEvent('settings.period.preset', { preset: p }); } catch { }
+  }, []);
+
+  const handleSetComparePrev = useCallback((v: boolean) => {
+    setComparePrevState(v);
+    try { trackEvent('finance.compare.toggle', { compare: v }); } catch { }
+  }, []);
+
+  const handleSetSelectedStatuses = useCallback((s: Array<'confirmed' | 'pending' | 'offer' | 'canceled' | 'archived' | 'postponed'>) => {
+    setSelectedStatusesState(s);
+    try { trackEvent('settings.status.filter', { statuses: s.join(',') }); } catch { }
+  }, []);
+
+  const handleSetKpiTickerHidden = useCallback((v: boolean) => {
+    setKpiTickerHiddenState(v);
+    try { trackEvent('settings.kpiTicker', { hidden: v }); } catch { }
+  }, []);
+
+  const handleAddAgency = useCallback((a: Omit<AgencyConfig, 'id'>) => {
+    const max = 3;
+    if (a.type === 'booking') {
+      let added: AgencyConfig | undefined;
+      setBookingAgencies(prev => {
+        if (prev.length >= max) return prev; // limit reached
+        const pct = Math.max(0, Math.min(100, a.commissionPct));
+        const id = `booking-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        added = { ...a, commissionPct: pct, id };
+        return [...prev, added];
+      });
+      if (!added) { try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }; return { ok: false, reason: 'limit' } as const; }
+      try { trackEvent('settings.agency.add', { type: a.type, commission: added.commissionPct, territoryMode: added.territoryMode }); } catch { }
+      return { ok: true, agency: added } as const;
+    } else {
+      let added: AgencyConfig | undefined;
+      setManagementAgencies(prev => {
+        if (prev.length >= max) return prev;
+        const pct = Math.max(0, Math.min(100, a.commissionPct));
+        const id = `management-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        added = { ...a, commissionPct: pct, id };
+        return [...prev, added];
+      });
+      if (!added) { try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }; return { ok: false, reason: 'limit' } as const; }
+      try { trackEvent('settings.agency.add', { type: a.type, commission: added.commissionPct, territoryMode: added.territoryMode }); } catch { }
+      return { ok: true, agency: added } as const;
+    }
+  }, []);
+
+  const handleUpdateAgency = useCallback((id: string, patch: Partial<AgencyConfig>) => {
+    const apply = (arr: AgencyConfig[]) => arr.map(a => a.id === id ? { ...a, ...patch, commissionPct: patch.commissionPct != null ? Math.max(0, Math.min(100, patch.commissionPct)) : a.commissionPct } : a);
+    setBookingAgencies(a => apply(a));
+    setManagementAgencies(a => apply(a));
+    try { trackEvent('settings.agency.update', { id, ...patch }); } catch { }
+  }, []);
+
+  const handleRemoveAgency = useCallback((id: string) => {
+    setBookingAgencies(a => a.filter(x => x.id !== id));
+    setManagementAgencies(a => a.filter(x => x.id !== id));
+    try { trackEvent('settings.agency.remove', { id }); } catch { }
+  }, []);
 
   const value = useMemo(() => ({
     currency, unit,
-    setCurrency: (c: Currency) => { setCurrency(c); try { trackEvent('settings.currency', { currency: c }); } catch { } },
-    setUnit: (u: DistanceUnit) => { setUnit(u); try { trackEvent('settings.unit', { unit: u }); } catch { } },
+    setCurrency: handleSetCurrency,
+    setUnit: handleSetUnit,
     fmtMoney, fmtDistance,
     lang,
-    setLang: (l: 'en' | 'es') => { setLangState(l); try { setI18nLang(l as any); } catch { }; try { trackEvent('settings.lang', { lang: l }); } catch { } },
+    setLang: handleSetLang,
     maskAmounts,
-    setMaskAmounts: (_v: boolean) => { /* no-op; masking disabled globally */ },
+    setMaskAmounts: handleSetMaskAmounts,
     dashboardView,
-    setDashboardView: (v: DashboardView) => { setDashboardView(v); try { trackEvent('settings.dashboardView', { view: v }); trackEvent('dashboard.view', { view: v }); } catch { } },
+    setDashboardView: handleSetDashboardView,
     presentationMode,
-    setPresentationMode: (v: boolean) => { setPresentationMode(v); try { trackEvent('settings.presentation', { presentation: v }); } catch { } },
+    setPresentationMode: handleSetPresentationMode,
     region,
-    setRegion: (r: Region) => { setRegion(r); try { trackEvent('settings.region', { region: r }); } catch { } },
+    setRegion: handleSetRegion,
     dateRange,
-    setDateRange: (dr: DateRange) => { setDateRange(dr); try { trackEvent('settings.daterange', dr as any); } catch { } },
+    setDateRange: handleSetDateRange,
     periodPreset,
-    setPeriodPreset: (p: PeriodPreset) => { setPeriodPresetState(p); try { trackEvent('settings.period.preset', { preset: p }); } catch { } },
+    setPeriodPreset: handleSetPeriodPreset,
     comparePrev,
-    setComparePrev: (v: boolean) => { setComparePrevState(v); try { trackEvent('finance.compare.toggle', { compare: v }); } catch { } },
+    setComparePrev: handleSetComparePrev,
     selectedStatuses,
-    setSelectedStatuses: (s: Array<'confirmed' | 'pending' | 'offer' | 'canceled' | 'archived' | 'postponed'>) => { setSelectedStatusesState(s); try { trackEvent('settings.status.filter', { statuses: s.join(',') }); } catch { } },
+    setSelectedStatuses: handleSetSelectedStatuses,
     bookingAgencies,
     managementAgencies,
     kpiTickerHidden,
-    setKpiTickerHidden: (v: boolean) => { setKpiTickerHiddenState(v); try { trackEvent('settings.kpiTicker', { hidden: v }); } catch { } },
-    addAgency: (a: Omit<AgencyConfig, 'id'>) => {
-      const max = 3;
-      if (a.type === 'booking') {
-        let added: AgencyConfig | undefined;
-        setBookingAgencies(prev => {
-          if (prev.length >= max) return prev; // limit reached
-          const pct = Math.max(0, Math.min(100, a.commissionPct));
-          const id = `booking-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-          added = { ...a, commissionPct: pct, id };
-          return [...prev, added];
-        });
-        if (!added) { try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }; return { ok: false, reason: 'limit' } as const; }
-        try { trackEvent('settings.agency.add', { type: a.type, commission: added.commissionPct, territoryMode: added.territoryMode }); } catch { }
-        return { ok: true, agency: added } as const;
-      } else {
-        let added: AgencyConfig | undefined;
-        setManagementAgencies(prev => {
-          if (prev.length >= max) return prev;
-          const pct = Math.max(0, Math.min(100, a.commissionPct));
-          const id = `management-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-          added = { ...a, commissionPct: pct, id };
-          return [...prev, added];
-        });
-        if (!added) { try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }; return { ok: false, reason: 'limit' } as const; }
-        try { trackEvent('settings.agency.add', { type: a.type, commission: added.commissionPct, territoryMode: added.territoryMode }); } catch { }
-        return { ok: true, agency: added } as const;
-      }
-    },
-    updateAgency: (id: string, patch: Partial<AgencyConfig>) => {
-      const apply = (arr: AgencyConfig[]) => arr.map(a => a.id === id ? { ...a, ...patch, commissionPct: patch.commissionPct != null ? Math.max(0, Math.min(100, patch.commissionPct)) : a.commissionPct } : a);
-      setBookingAgencies(a => apply(a));
-      setManagementAgencies(a => apply(a));
-      try { trackEvent('settings.agency.update', { id, ...patch }); } catch { }
-    },
-    removeAgency: (id: string) => {
-      setBookingAgencies(a => a.filter(x => x.id !== id));
-      setManagementAgencies(a => a.filter(x => x.id !== id));
-      try { trackEvent('settings.agency.remove', { id }); } catch { }
-    }
-  }), [currency, unit, fmtMoney, fmtDistance, lang, maskAmounts, dashboardView, presentationMode, region, dateRange, periodPreset, bookingAgencies, managementAgencies, kpiTickerHidden]);
+    setKpiTickerHidden: handleSetKpiTickerHidden,
+    addAgency: handleAddAgency,
+    updateAgency: handleUpdateAgency,
+    removeAgency: handleRemoveAgency
+  }), [
+    currency, unit, handleSetCurrency, handleSetUnit, fmtMoney, fmtDistance,
+    lang, handleSetLang, maskAmounts, handleSetMaskAmounts,
+    dashboardView, handleSetDashboardView, presentationMode, handleSetPresentationMode,
+    region, handleSetRegion, dateRange, handleSetDateRange,
+    periodPreset, handleSetPeriodPreset, comparePrev, handleSetComparePrev,
+    selectedStatuses, handleSetSelectedStatuses, bookingAgencies, managementAgencies,
+    kpiTickerHidden, handleSetKpiTickerHidden, handleAddAgency, handleUpdateAgency, handleRemoveAgency
+  ]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 };

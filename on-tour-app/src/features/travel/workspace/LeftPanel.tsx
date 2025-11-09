@@ -38,7 +38,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           <label className="inline-flex items-center gap-1 text-xs">
             <span className="opacity-70">{t('travel.provider')}</span>
             <select
-              className="bg-white/5 rounded px-2 py-1 text-xs border border-transparent focus-ring"
+              className="bg-slate-100 dark:bg-white/5 rounded px-2 py-1 text-xs border border-transparent focus-ring"
               value={provider}
               onChange={(e)=> setProvider(e.target.value)}
             >

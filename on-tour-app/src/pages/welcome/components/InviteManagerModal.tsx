@@ -18,11 +18,11 @@ export const InviteManagerModal: React.FC<{ orgId: string; open: boolean; onClos
         <div className="space-y-2">
           <label className="block text-xs opacity-80">
             {t('profile.name')||'Name'}
-            <input className="mt-1 w-full bg-white/10 rounded px-2 py-1" value={name} onChange={e=> setName(e.target.value)} />
+            <input className="mt-1 w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded px-2 py-1" value={name} onChange={e=> setName(e.target.value)} />
           </label>
           <label className="block text-xs opacity-80">
             {t('profile.role')||'Role'}
-            <select className="mt-1 w-full bg-white/10 rounded px-2 py-1" value={role} onChange={e=> setRole(e.target.value as any)}>
+            <select className="mt-1 w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded px-2 py-1" value={role} onChange={e=> setRole(e.target.value as any)}>
               <option value="manager">{t('role.agencyManager')||'Manager'}</option>
               <option value="owner">{t('role.artistOwner')||'Owner'}</option>
             </select>

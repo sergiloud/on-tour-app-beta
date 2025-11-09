@@ -50,7 +50,7 @@ export const defaultTheme: CalendarTheme = {
   background: {
     primary: 'bg-white/5 backdrop-blur-lg',
     secondary: 'bg-white/8 backdrop-blur-md',
-    tertiary: 'bg-white/10 backdrop-blur-sm',
+    tertiary: 'bg-slate-200 dark:bg-white/10 backdrop-blur-sm',
     hover: 'hover:bg-white/12 hover:backdrop-blur-lg',
   },
   border: {
@@ -65,7 +65,7 @@ export const defaultTheme: CalendarTheme = {
     inverse: 'text-white dark:text-gray-900',
   },
   state: {
-    hover: 'hover:shadow-lg hover:shadow-white/10',
+    hover: 'hover:shadow-lg hover:shadow-slate-200 dark:shadow-white/10',
     active: 'ring-2 ring-blue-500/50',
     focus: 'focus:ring-2 focus:ring-blue-500/50 focus:outline-none',
     disabled: 'opacity-50 cursor-not-allowed',
@@ -111,7 +111,7 @@ export const EnhancedDayCell: React.FC<EnhancedDayCellProps> = ({
         relative group h-24 rounded-lg transition-all duration-300
         ${isCurrentMonth ? theme.background.primary : 'bg-gray-500/5'}
         ${isToday ? `ring-2 ring-blue-500/50 ${theme.background.secondary}` : theme.border.subtle}
-        ${isWeekend ? 'bg-gradient-to-br from-white/5 to-white/3' : ''}
+        ${isWeekend ? 'bg-gradient-to-br from-slate-100 dark:from-white/5 to-white/3' : ''}
         ${theme.state.hover} cursor-pointer overflow-hidden
       `}
     >
@@ -446,7 +446,7 @@ export const EnhancedTimeSlot: React.FC<EnhancedTimeSlotProps> = ({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="ml-auto px-2 py-1 bg-blue-500/40 border border-blue-400/50 rounded text-xs font-bold text-white"
+          className="ml-auto px-2 py-1 bg-blue-500/40 border border-blue-400/50 rounded text-xs font-bold text-slate-900 dark:text-white"
         >
           {events} {events === 1 ? 'event' : 'events'}
         </motion.div>
@@ -494,7 +494,7 @@ export const EnhancedStatsPanel: React.FC<EnhancedStatsPanelProps> = ({
           className={`
             p-4 rounded-lg bg-gradient-to-br ${colorGradients[stat.color]}
             border backdrop-blur-lg
-            hover:shadow-lg hover:shadow-white/10 transition-all duration-300
+            hover:shadow-lg hover:shadow-slate-200 dark:shadow-white/10 transition-all duration-300
             relative overflow-hidden group
           `}
         >
@@ -512,7 +512,7 @@ export const EnhancedStatsPanel: React.FC<EnhancedStatsPanelProps> = ({
               <p className={`text-sm font-medium ${theme.text.secondary} mb-2`}>
                 {stat.label}
               </p>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {stat.value}
               </p>
             </div>
@@ -522,10 +522,10 @@ export const EnhancedStatsPanel: React.FC<EnhancedStatsPanelProps> = ({
           {/* Trend Indicator */}
           {stat.trend && (
             <div className="flex items-center gap-1 mt-2 text-xs">
-              <span className="text-white/60">
+              <span className="text-slate-400 dark:text-white/60">
                 {stat.trend === 'up' ? '↑' : stat.trend === 'down' ? '↓' : '→'}
               </span>
-              <span className="text-white/60">
+              <span className="text-slate-400 dark:text-white/60">
                 {stat.trend === 'up' ? 'Increasing' : stat.trend === 'down' ? 'Decreasing' : 'Stable'}
               </span>
             </div>

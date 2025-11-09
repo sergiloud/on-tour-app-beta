@@ -105,7 +105,7 @@ export const FeatureGallery: React.FC<FeatureGalleryProps> = ({
             <motion.article
               key={feature.id}
               variants={itemVariants}
-              className={`glass relative flex h-full flex-col justify-between rounded-2xl border border-white/5 bg-white/5 p-6 shadow-sm transition-transform duration-[var(--dur)] ease-[var(--ease)] hover:-translate-y-1 hover:shadow-[var(--elev-2)] ${
+              className={`glass relative flex h-full flex-col justify-between rounded-2xl border border-slate-100 dark:border-white/5 bg-white/5 p-6 shadow-sm transition-transform duration-[var(--dur)] ease-[var(--ease)] hover:-translate-y-1 hover:shadow-[var(--elev-2)] ${
                 isHighlighted ? 'ring-2 ring-accent-400/60 shadow-accent-400/20' : ''
               }`}
             >
@@ -114,15 +114,15 @@ export const FeatureGallery: React.FC<FeatureGalleryProps> = ({
                   {feature.icon ?? '✨'}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold tracking-tight text-white">
+                  <h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
                     {feature.title}
                   </h3>
-                  <p className="mt-2 text-sm text-white/70">
+                  <p className="mt-2 text-sm text-slate-500 dark:text-white/70">
                     {feature.description}
                   </p>
                 </div>
               </div>
-              <div className="mt-6 flex items-center justify-between text-xs text-white/50">
+              <div className="mt-6 flex items-center justify-between text-xs text-slate-300 dark:text-white/50">
                 <span>{feature.id.toUpperCase()}</span>
                 <span aria-hidden="true">•••</span>
               </div>

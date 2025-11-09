@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { DemoShow } from '../lib/shows';
+import type { Show } from '../../../lib/shows';
 
 export type TravelSuggestion = {
   originCity: string;

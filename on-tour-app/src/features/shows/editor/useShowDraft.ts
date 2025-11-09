@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { DemoShow } from '../lib/shows';
+import type { Show } from '../../../lib/shows';
 import type { Cost } from '../../../types/shows';
 
 export type ShowDraft = Partial<Show> & {
@@ -79,9 +79,9 @@ export function useShowDraft(initial: ShowDraft){
     const whtPct = clampPct(d.whtPct);
     const mgmtPct = clampPct(d.mgmtPct);
     const bookingPct = clampPct(d.bookingPct);
-  const costs = (d.costs||[]).map(c=>({ id: c.id, type: c.type, amount: c.amount, desc: c.desc }));
+  const costs = (d.costs||[]).map((c: Cost)=>({ id: c.id, type: c.type, amount: c.amount, desc: c.desc }));
   // sort costs for stable compare: by type then description then id to avoid false dirty when ids differ ordering
-  costs.sort((a,b)=> (a.type||'').localeCompare(b.type||'') || (a.desc||'').localeCompare(b.desc||'') || a.id.localeCompare(b.id));
+  costs.sort((a: Cost, b: Cost)=> (a.type||'').localeCompare(b.type||'') || (a.desc||'').localeCompare(b.desc||'') || a.id.localeCompare(b.id));
   const feeCurrency = (d as any).feeCurrency as ('EUR'|'USD'|'GBP'|'AUD'|undefined);
   return { ...d, date, fee, feeCurrency, whtPct, mgmtPct, bookingPct, costs };
   }
@@ -112,7 +112,7 @@ export function useShowDraft(initial: ShowDraft){
             // Only restore if it differs from current initial (i.e., truly unsaved work)
             const normalizedSaved = normalize(payload.data);
             if (stableStringify(normalize(initial)) !== stableStringify(normalizedSaved)){
-              setDraft(prev=> ({ ...prev, ...normalizedSaved }));
+              setDraft((prev: ShowDraft)=> ({ ...prev, ...normalizedSaved }));
               setRestored(true);
             }
           }

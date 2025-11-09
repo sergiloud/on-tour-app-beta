@@ -8,7 +8,7 @@
  * preserving safe HTML elements.
  */
 
-import DOMPurify from 'dompurify';
+import DOMPurify, { Config } from 'dompurify';
 
 /**
  * Sanitize HTML string to prevent XSS attacks
@@ -26,13 +26,13 @@ import DOMPurify from 'dompurify';
  */
 export function sanitizeHTML(
     dirty: string,
-    options?: DOMPurify.Config
+    options?: Config
 ): string {
     if (!dirty || typeof dirty !== 'string') {
         return '';
     }
 
-    const defaultConfig: DOMPurify.Config = {
+    const defaultConfig: Config = {
         // Allow only safe HTML tags
         ALLOWED_TAGS: [
             'b', 'i', 'em', 'strong', 'u', 's', 'strike',
@@ -61,7 +61,7 @@ export function sanitizeHTML(
         ...options,
     };
 
-    return DOMPurify.sanitize(dirty, defaultConfig);
+    return DOMPurify.sanitize(dirty, defaultConfig) as string;
 }
 
 /**

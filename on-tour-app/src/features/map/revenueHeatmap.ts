@@ -1,5 +1,5 @@
 // Revenue Heatmap Utilities
-import { DemoShow } from '../lib/shows';
+import { Show } from '../../lib/shows';
 
 export type RegionRevenue = {
     country: string;

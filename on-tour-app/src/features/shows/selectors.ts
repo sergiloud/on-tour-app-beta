@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { DemoShow } from '../lib/shows';
+import type { Show } from '../../lib/shows';
 import { useShows } from '../../hooks/useShows';
 import { useSettings, type Region, type DateRange } from '../../context/SettingsContext';
 

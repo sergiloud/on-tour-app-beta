@@ -28,7 +28,7 @@ const ArrowDownIcon = () => (
 import { Button } from '../../../../ui/Button';
 import { buildGoogleFlightsMultiUrl } from '../../../../lib/travel/deeplink';
 import { showStore } from '../../../../shared/showStore';
-import type { DemoShow } from '../lib/shows';
+import type { Show } from '../../../../lib/shows';
 import { findAirport } from '../../../../lib/airports';
 import FlightResults from './FlightResults';
 import FlightResultsSkeleton from './FlightResultsSkeleton';

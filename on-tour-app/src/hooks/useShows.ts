@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { DemoShow } from '../lib/shows';
+import { Show } from '../lib/shows';
 import { showStore } from '../shared/showStore';
 import { getCurrentOrgId } from '../lib/tenants';
 

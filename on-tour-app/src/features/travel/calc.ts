@@ -1,6 +1,6 @@
 import { showStore } from '../../shared/showStore';
 import { getCurrentOrgId } from '../../lib/tenants';
-import type { DemoShow } from '../lib/shows';
+import type { Show } from '../../lib/shows';
 
 export type Segment = {
   from: Show;

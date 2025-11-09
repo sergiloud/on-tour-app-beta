@@ -8,6 +8,7 @@ export interface EventButton {
   description?: string;
   color: 'emerald' | 'amber' | 'sky' | 'rose' | 'purple' | 'cyan';
   type: 'show' | 'travel' | 'soundcheck' | 'rehearsal' | 'interview' | 'personal' | 'meeting' | 'other';
+  category?: 'show' | 'travel' | 'soundcheck' | 'rehearsal' | 'interview' | 'personal' | 'meeting' | 'other';
 }
 
 type Props = {

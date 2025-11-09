@@ -32,10 +32,10 @@ const QuickEventCreator: React.FC<Props> = ({ open, button, date, onClose, onSav
     label: button?.label || '',
     city: '',
     country: 'US',
-    category: button?.category,
+    category: (button?.category || button?.type) as string,
     notes: '',
     color: button?.color || 'emerald',
-    type: button?.type || 'show',
+    type: (button?.type === 'show' || button?.type === 'travel') ? button.type : 'show',
   });
 
   const handleSubmit = () => {
@@ -46,10 +46,10 @@ const QuickEventCreator: React.FC<Props> = ({ open, button, date, onClose, onSav
       label: button?.label || '',
       city: '',
       country: 'US',
-      category: button?.category,
+      category: (button?.category || button?.type) as string,
       notes: '',
       color: button?.color || 'emerald',
-      type: button?.type || 'show',
+      type: (button?.type === 'show' || button?.type === 'travel') ? button.type : 'show',
     });
     onClose();
   };

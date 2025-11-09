@@ -8,7 +8,7 @@ import {
     getTierLabel,
     type RegionRevenue
 } from '../../features/map/revenueHeatmap';
-import { DemoShow } from '../lib/shows';
+import { Show } from '../../lib/shows';
 import { trackEvent } from '../../lib/telemetry';
 
 type HeatmapControlProps = {

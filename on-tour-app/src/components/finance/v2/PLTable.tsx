@@ -12,7 +12,7 @@ import { computeNet } from '../../../lib/computeNet';
 import { can } from '../../../lib/tenants';
 import { AnimatePresence, motion } from 'framer-motion';
 import { agenciesForShow, computeCommission } from '../../../lib/agencies';
-import type { DemoShow } from '../lib/shows';
+import type { Show } from '../../../lib/shows';
 import { sanitizeName } from '../../../lib/sanitize';
 
 type Filter = { kind: 'Region' | 'Agency' | 'Country' | 'Promoter' | 'Route' | 'Aging'; value: string } | null;
@@ -21,7 +21,7 @@ type SortKey = 'date' | 'show' | 'city' | 'country' | 'region' | 'venue' | 'prom
 // Helper function to calculate agency commissions for a show
 function calculateAgencyCommissions(show: any, bookingAgencies: any[], managementAgencies: any[]): { totalCommission: number; bookingPct: number; mgmtPct: number } {
   try {
-    const demoShow: Show = {
+    const demoShow: Partial<Show> = {
       id: show.id,
       name: show.name || '',
       city: show.city,
@@ -33,9 +33,9 @@ function calculateAgencyCommissions(show: any, bookingAgencies: any[], managemen
       status: show.status
     };
 
-    const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);
-    const totalBooking = applicable.booking.length > 0 ? computeCommission(demoShow, applicable.booking) : 0;
-    const totalMgmt = applicable.management.length > 0 ? computeCommission(demoShow, applicable.management) : 0;
+    const applicable = agenciesForShow(demoShow as Show, bookingAgencies, managementAgencies);
+    const totalBooking = applicable.booking.length > 0 ? computeCommission(demoShow as Show, applicable.booking) : 0;
+    const totalMgmt = applicable.management.length > 0 ? computeCommission(demoShow as Show, applicable.management) : 0;
 
     const totalCommission = totalBooking + totalMgmt;
     const bookingPct = show.fee > 0 ? (totalBooking / show.fee) * 100 : 0;

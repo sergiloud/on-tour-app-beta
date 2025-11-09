@@ -23,6 +23,7 @@ const ResizeFeedback: React.FC<Props> = ({ isActive, dateStr, delta, direction }
       return () => clearTimeout(timer);
     } else {
       setShowFeedback(false);
+      return undefined;
     }
   }, [isActive, dateStr, delta, direction]);
 
@@ -38,6 +39,8 @@ const ResizeFeedback: React.FC<Props> = ({ isActive, dateStr, delta, direction }
   // Directional arrow with animation
   const arrowIcon = delta && delta > 0 ? '↘' : delta && delta < 0 ? '↙' : '○';
   const arrowColor = delta && delta > 0 ? 'text-emerald-300' : delta && delta < 0 ? 'text-amber-300' : 'text-cyan-300';
+
+  if (!showFeedback) return null;
 
   return (
     <AnimatePresence mode="wait">

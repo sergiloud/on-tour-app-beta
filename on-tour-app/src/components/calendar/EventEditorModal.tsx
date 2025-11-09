@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { t } from '../../lib/i18n';
-import { Show } from '../../lib/api/services/shows';
+import { Show } from '../../lib/shows';
 import { Itinerary } from '../../services/travelApi';
 
 interface EventEditorModalProps {
@@ -21,7 +21,7 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
   useEffect(() => {
     if (open && event) {
       if (event.kind === 'show') {
-        setTitle(event.city || '');
+        setTitle(event.name || event.city || '');
         setDescription('');
         setLocation('');
       } else {
@@ -55,7 +55,7 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
   const eventTypeLabel = event?.kind === 'show'
     ? 'Show'
     : (event && 'btnType' in event)
-    ? (event.btnType?.charAt(0).toUpperCase() + event.btnType?.slice(1)) || 'Event'
+    ? ((event.btnType?.charAt(0).toUpperCase() ?? '') + (event.btnType?.slice(1) ?? '')) || 'Event'
     : 'Event';
 
   const buttonColor = ((event && 'buttonColor' in event ? event.buttonColor : undefined) || 'emerald') as string;
@@ -212,7 +212,7 @@ const EventEditorModal: React.FC<EventEditorModalProps> = ({ open, event, onClos
                     <p className="text-sm text-slate-600 dark:text-white/80 capitalize">{(event as Show).status || 'pending'}</p>
                   </div>
                 )}
-                {event?.kind !== 'show' && 'btnType' in event && (
+                {event && event.kind !== 'show' && 'btnType' in event && (
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 dark:text-white/50 mb-1">Type</p>
                     <p className="text-sm text-slate-600 dark:text-white/80 capitalize">{event.btnType || 'event'}</p>

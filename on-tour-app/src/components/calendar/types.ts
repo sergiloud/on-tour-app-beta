@@ -8,6 +8,8 @@ export type CalEvent = {
   title: string;
   status?: string;
   meta?: string;
+  city?: string; // Optional city for show events
+  country?: string; // Optional country for show events
   // Optional timed fields used in Week/Day views
   start?: string; // ISO
   end?: string;   // ISO

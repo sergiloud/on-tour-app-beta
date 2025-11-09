@@ -75,7 +75,7 @@ export const DragToMoveHandler: React.FC<DragToMoveHandlerProps> = ({
           if (isCopy) {
             onCopy?.(event.id, newDate);
           } else {
-            onMove?.(event.id, newDate, newTime);
+            onMove?.(event.id, newDate, newTime ?? undefined);
           }
         }
       } else if (dateCell) {

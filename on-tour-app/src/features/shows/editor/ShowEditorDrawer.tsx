@@ -177,7 +177,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     }
   ];
   const applyCostTemplate = useCallback((tpl: CostTemplate) => {
-    setDraft(d => ({ ...d, costs: [...(d.costs || []), ...tpl.items.map(i => ({ id: crypto.randomUUID(), ...i }))] }));
+    setDraft((d: ShowDraft) => ({ ...d, costs: [...(d.costs || []), ...tpl.items.map(i => ({ id: crypto.randomUUID(), ...i }))] }));
     announce(t('shows.editor.cost.template.applied') || 'Template applied', 'polite');
     track('shows.editor.cost.template.apply', { template: tpl.id, items: tpl.items.length });
     setOpenTemplateMenu(false);
@@ -488,7 +488,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
   }, []);
   // Reorder costs up/down by id
   const moveCost = useCallback((id: string, direction: 'up' | 'down', focusField: 'type' | 'amount' | 'desc' = 'type') => {
-    setDraft(d => {
+    setDraft((d: ShowDraft) => {
       const arr = [...(d.costs || [])];
       const idx = arr.findIndex(c => c.id === id);
       if (idx < 0) return d;
@@ -503,7 +503,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
   }, [setDraft, focusCostField]);
   // Duplicate a cost line (insert after current)
   const duplicateCost = useCallback((id: string) => {
-    setDraft(d => {
+    setDraft((d: ShowDraft) => {
       const arr = [...(d.costs || [])];
       const idx = arr.findIndex(c => c.id === id);
       if (idx < 0) return d;
@@ -656,7 +656,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     setJustAppliedQuick(true);
     setTimeout(() => setJustAppliedQuick(false), 900);
     if (!quickPreview) return;
-    setDraft(d => ({ ...d, ...quickPreview }));
+    setDraft((d: ShowDraft) => ({ ...d, ...quickPreview }));
     track(TE.QUICK_PARSE_APPLY, { keys: Object.keys(quickPreview) });
     quickParseApply.current += 1;
     announce(t('shows.editor.quick.applied') || 'Quick entry applied', 'polite');
@@ -899,7 +899,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   onClick={() => {
                     const current = (draft as any).status;
                     const next = current === 'offer' ? 'pending' : 'confirmed';
-                    setDraft(d => ({ ...d, status: next } as any));
+                    setDraft((d: ShowDraft) => ({ ...d, status: next } as any));
                     track(TE.STATUS_PROMOTE, { from: current, to: next });
                     announce((t('shows.editor.status.promote') || 'Promoted to') + ': ' + next, 'polite');
                   }}
@@ -990,7 +990,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                         <button
                           type="button"
                           onClick={() => {
-                            setDraft(d => ({ ...d, status: 'archived' } as any));
+                            setDraft((d: ShowDraft) => ({ ...d, status: 'archived' } as any));
                             track(TE.STATUS_PROMOTE, { from: draft.status, to: 'archived' });
                             announce((t('shows.editor.archived') || 'Show archived'), 'polite');
                             setShowMoreMenu(false);
@@ -1207,7 +1207,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     className="px-4 py-2.5 rounded-md bg-white/5 border border-white/15 hover:border-white/25 focus:border-accent-500 focus:bg-white/10 focus:shadow-lg focus:shadow-accent-500/15 focus:ring-1 focus:ring-accent-500/30 transition-all placeholder:text-white/40 text-base font-semibold"
                     value={(draft as any).name || ''}
                     placeholder={t('shows.editor.placeholder.name') || 'Enter show name...'}
-                    onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
+                    onChange={e => setDraft((d: ShowDraft) => ({ ...d, name: e.target.value }))}
                   />
                 </label>
 
@@ -1215,7 +1215,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 <div className="grid grid-cols-2 gap-3">
                   <DatePickerAdvanced
                     value={String(draft.date || '').slice(0, 10) || undefined}
-                    onChange={date => setDraft(d => ({ ...d, date }))}
+                    onChange={date => setDraft((d: ShowDraft) => ({ ...d, date }))}
                     label={t('shows.editor.label.date') || 'Date'}
                     help={t('shows.editor.help.date') || 'Select show date'}
                     error={validation.date ? t(validation.date) || 'Required' : undefined}
@@ -1230,7 +1230,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       data-field="startTime"
                       className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-sm"
                       value={(draft as any).startTime || ''}
-                      onChange={e => setDraft(d => ({ ...d, startTime: e.target.value }))}
+                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, startTime: e.target.value }))}
                     />
                   </label>
                 </div>
@@ -1253,13 +1253,13 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                           className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 flex-1 text-sm"
                           value={draft.city || ''}
                           placeholder="Enter city..."
-                          onChange={e => setDraft(d => ({ ...d, city: e.target.value }))}
+                          onChange={e => setDraft((d: ShowDraft) => ({ ...d, city: e.target.value }))}
                           onBlur={e => { const v = e.target.value.trim(); if (v) recordCity(v); }}
                         />
                         {recentCities.length > 0 && (
                           <div className="hidden sm:flex items-center gap-0.5" aria-label={t('shows.editor.city.recent') || 'Recent cities'}>
                             {recentCities.slice(0, 2).map(rc => (
-                              <button key={rc} type="button" className="px-1 py-0.5 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft(d => ({ ...d, city: rc })); recordCity(rc); }}>{rc}</button>
+                              <button key={rc} type="button" className="px-1 py-0.5 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, city: rc })); recordCity(rc); }}>{rc}</button>
                             ))}
                           </div>
                         )}
@@ -1281,7 +1281,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                         aria-invalid={!!validation.country}
                         aria-describedby={validation.country ? 'err-country' : undefined}
                         value={draft.country || ''}
-                        onChange={code => setDraft(d => ({ ...d, country: code }))}
+                        onChange={code => setDraft((d: ShowDraft) => ({ ...d, country: code }))}
                       />
                       {validation.country && <p id="err-country" className="text-[10px] text-red-400">{t(validation.country) || 'Required'}</p>}
                     </div>
@@ -1298,7 +1298,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
                     value={(draft as any).promoter || ''}
                     placeholder={t('shows.editor.placeholder.promoter') || 'Enter promoter name...'}
-                    onChange={e => setDraft(d => ({ ...d, promoter: e.target.value }))}
+                    onChange={e => setDraft((d: ShowDraft) => ({ ...d, promoter: e.target.value }))}
                   />
                 </label>
 
@@ -1316,13 +1316,13 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
                     value={(draft as any).venue || ''}
                     placeholder={t('shows.editor.placeholder.venue') || 'Venue name'}
-                    onChange={e => setDraft(d => ({ ...d, venue: e.target.value }))}
+                    onChange={e => setDraft((d: ShowDraft) => ({ ...d, venue: e.target.value }))}
                     onBlur={e => { const v = e.target.value.trim(); if (v) recordVenue(v); }}
                   />
                   {recentVenues.length > 0 && (
                     <div className="hidden md:flex items-center gap-0.5" aria-label={t('shows.editor.venue.recent') || 'Recent venues'}>
                       {recentVenues.slice(0, 3).map(rv => (
-                        <button key={rv} type="button" className="px-1.5 py-1 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft(d => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
+                        <button key={rv} type="button" className="px-1.5 py-1 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
                       ))}
                     </div>
                   )}
@@ -1334,7 +1334,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 {/* Notes - Large & Prominent */}
                 <NotesEditor
                   value={draft.notes}
-                  onChange={notes => setDraft(d => ({ ...d, notes }))}
+                  onChange={notes => setDraft((d: ShowDraft) => ({ ...d, notes }))}
                   onAutoSave={notes => {
                     track(TE.NOTES_AUTO_SAVE);
                   }}
@@ -1354,7 +1354,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   </span>
                   <StatusSelector
                     value={(draft as any).status || 'pending'}
-                    onChange={status => setDraft(d => ({ ...d, status } as any))}
+                    onChange={status => setDraft((d: ShowDraft) => ({ ...d, status } as any))}
                     label=""
                     help=""
                     disabled={false}
@@ -1371,7 +1371,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       data-field="feeCurrency"
                       className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
                       value={feeCurrency}
-                      onChange={e => setDraft(d => ({ ...d, feeCurrency: e.target.value as any }))}
+                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, feeCurrency: e.target.value as any }))}
                     >
                       {['EUR', 'USD', 'GBP', 'AUD'].map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -1416,7 +1416,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                             <select
                               className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
                               value={draft.mgmtAgency || ''}
-                              onChange={e => setDraft(d => ({ ...d, mgmtAgency: e.target.value || undefined }))}
+                              onChange={e => setDraft((d: ShowDraft) => ({ ...d, mgmtAgency: e.target.value || undefined }))}
                             >
                               <option value="">{t('common.none') || '—'}</option>
                               {managementAgencies.map(a => (
@@ -1437,7 +1437,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                             <select
                               className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
                               value={draft.bookingAgency || ''}
-                              onChange={e => setDraft(d => ({ ...d, bookingAgency: e.target.value || undefined }))}
+                              onChange={e => setDraft((d: ShowDraft) => ({ ...d, bookingAgency: e.target.value || undefined }))}
                             >
                               <option value="">{t('common.none') || '—'}</option>
                               {bookingAgencies.map(a => (
@@ -1474,7 +1474,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-sm flex-1"
                       value={draft.whtPct ?? ''}
                       placeholder="0"
-                      onChange={e => setDraft(d => ({ ...d, whtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))}
+                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, whtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))}
                     />
                     {(() => {
                       if (!draft.country) return null;
@@ -1487,7 +1487,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       return (
                         <button
                           type="button"
-                          onClick={() => { setDraft(d => ({ ...d, whtPct: sug })); announce((t('shows.editor.wht.suggest.applied') || 'WHT suggestion applied') + ': ' + sug + '%'); track(TE.WHT_SUGGEST_APPLY, { country: draft.country, pct: sug }); }}
+                          onClick={() => { setDraft((d: ShowDraft) => ({ ...d, whtPct: sug })); announce((t('shows.editor.wht.suggest.applied') || 'WHT suggestion applied') + ': ' + sug + '%'); track(TE.WHT_SUGGEST_APPLY, { country: draft.country, pct: sug }); }}
                           className={`px-2 py-1 rounded text-[10px] border whitespace-nowrap ${isApplied ? 'border-green-500/40 text-green-300 bg-green-500/10' : 'border-accent-500/40 text-accent-200 bg-accent-500/10 hover:bg-accent-500/20'}`}
                           aria-pressed={isApplied}
                         >{sug}%</button>
@@ -1607,7 +1607,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     <select
                       className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
                       value={draft.mgmtAgency || ''}
-                      onChange={e => setDraft(d => ({ ...d, mgmtAgency: e.target.value || undefined }))}
+                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, mgmtAgency: e.target.value || undefined }))}
                     >
                       <option value="">{t('common.none') || '—'}</option>
                       {managementAgencies.map(a => (
@@ -1620,7 +1620,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     <select
                       className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
                       value={draft.bookingAgency || ''}
-                      onChange={e => setDraft(d => ({ ...d, bookingAgency: e.target.value || undefined }))}
+                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, bookingAgency: e.target.value || undefined }))}
                     >
                       <option value="">{t('common.none') || '—'}</option>
                       {bookingAgencies.map(a => (
@@ -1637,13 +1637,13 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                             {t('shows.editor.commission.default') ? t('shows.editor.commission.default')!.replace('{pct}', String(mgmtDefault)) : `Default ${mgmtDefault}%`}
                           </span>
                         ) : draft.mgmtPct !== mgmtDefault && (
-                          <button type="button" onClick={() => setDraft(d => ({ ...d, mgmtPct: undefined }))} className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-400/50 text-amber-100 hover:bg-amber-500/30 text-[9px] font-medium focus-ring"
+                          <button type="button" onClick={() => setDraft((d: ShowDraft) => ({ ...d, mgmtPct: undefined }))} className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-400/50 text-amber-100 hover:bg-amber-500/30 text-[9px] font-medium focus-ring"
                             title={t('shows.editor.commission.reset') || 'Reset'}
                           >{t('shows.editor.commission.overridden') || 'Override'}</button>
                         )
                       )}
                     </span>
-                    <input aria-describedby={draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault ? 'mgmt-override-hint' : undefined} type="number" min={0} max={50} className={`px-3 py-1.5 rounded-md bg-white/5 border focus-ring transition-all text-sm ${(draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault) ? 'border-amber-400/60 bg-amber-500/5' : 'border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50'}`} value={draft.mgmtPct ?? ''} onChange={e => setDraft(d => ({ ...d, mgmtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))} />
+                    <input aria-describedby={draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault ? 'mgmt-override-hint' : undefined} type="number" min={0} max={50} className={`px-3 py-1.5 rounded-md bg-white/5 border focus-ring transition-all text-sm ${(draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault) ? 'border-amber-400/60 bg-amber-500/5' : 'border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50'}`} value={draft.mgmtPct ?? ''} onChange={e => setDraft((d: ShowDraft) => ({ ...d, mgmtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))} />
                     {(draft.mgmtPct != null && draft.mgmtPct !== mgmtDefault) && <span id="mgmt-override-hint" className="text-xs text-amber-200 font-medium">{t('shows.editor.commission.overriddenIndicator') || 'Commission overridden'} ({mgmtDefault}% → {draft.mgmtPct}%)</span>}
                   </label>
                   <label className="flex flex-col gap-1.5">
@@ -1655,13 +1655,13 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                             {t('shows.editor.commission.default') ? t('shows.editor.commission.default')!.replace('{pct}', String(bookingDefault)) : `Default ${bookingDefault}%`}
                           </span>
                         ) : draft.bookingPct !== bookingDefault && (
-                          <button type="button" onClick={() => setDraft(d => ({ ...d, bookingPct: undefined }))} className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-400/50 text-amber-100 hover:bg-amber-500/30 text-[9px] font-medium focus-ring"
+                          <button type="button" onClick={() => setDraft((d: ShowDraft) => ({ ...d, bookingPct: undefined }))} className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-400/50 text-amber-100 hover:bg-amber-500/30 text-[9px] font-medium focus-ring"
                             title={t('shows.editor.commission.reset') || 'Reset'}
                           >{t('shows.editor.commission.overridden') || 'Override'}</button>
                         )
                       )}
                     </span>
-                    <input aria-describedby={draft.bookingPct != null && draft.bookingPct !== bookingDefault ? 'booking-override-hint' : undefined} type="number" min={0} max={50} className={`px-3 py-1.5 rounded-md bg-white/5 border focus-ring transition-all text-sm ${(draft.bookingPct != null && draft.bookingPct !== bookingDefault) ? 'border-amber-400/60 bg-amber-500/5' : 'border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50'}`} value={draft.bookingPct ?? ''} onChange={e => setDraft(d => ({ ...d, bookingPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))} />
+                    <input aria-describedby={draft.bookingPct != null && draft.bookingPct !== bookingDefault ? 'booking-override-hint' : undefined} type="number" min={0} max={50} className={`px-3 py-1.5 rounded-md bg-white/5 border focus-ring transition-all text-sm ${(draft.bookingPct != null && draft.bookingPct !== bookingDefault) ? 'border-amber-400/60 bg-amber-500/5' : 'border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50'}`} value={draft.bookingPct ?? ''} onChange={e => setDraft((d: ShowDraft) => ({ ...d, bookingPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))} />
                     {(draft.bookingPct != null && draft.bookingPct !== bookingDefault) && <span id="booking-override-hint" className="text-xs text-amber-200 font-medium">{t('shows.editor.commission.overriddenIndicator') || 'Commission overridden'} ({bookingDefault}% → {draft.bookingPct}%)</span>}
                   </label>
                 </div>;
@@ -1698,8 +1698,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 </p>
                 {(draft.costs && draft.costs.length > 1) && (
                   <div className="flex items-center gap-1" aria-label={t('shows.editor.cost.sort') || 'Sort'}>
-                    <button type="button" className="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-[10px] font-medium transition-all" onClick={() => { setDraft(d => ({ ...d, costs: [...(d.costs || [])].sort((a, b) => (a.type || '').localeCompare(b.type || '')) })); track(TE.COST_SORT, { by: 'type', direction: 'asc' }); }}>{t('shows.sort.type') || 'Type'}</button>
-                    <button type="button" className="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-[10px] font-medium transition-all" onClick={() => { setDraft(d => ({ ...d, costs: [...(d.costs || [])].sort((a, b) => (b.amount || 0) - (a.amount || 0)) })); track(TE.COST_SORT, { by: 'amount', direction: 'desc' }); }}>{t('shows.sort.amount') || 'Amount'}</button>
+                    <button type="button" className="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-[10px] font-medium transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, costs: [...(d.costs || [])].sort((a, b) => (a.type || '').localeCompare(b.type || '')) })); track(TE.COST_SORT, { by: 'type', direction: 'asc' }); }}>{t('shows.sort.type') || 'Type'}</button>
+                    <button type="button" className="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-[10px] font-medium transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, costs: [...(d.costs || [])].sort((a, b) => (b.amount || 0) - (a.amount || 0)) })); track(TE.COST_SORT, { by: 'amount', direction: 'desc' }); }}>{t('shows.sort.amount') || 'Amount'}</button>
                   </div>
                 )}
                 {recentCostTypes.length > 0 && (
@@ -1707,7 +1707,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     {recentCostTypes.slice(0, 3).map(ct => (
                       <button key={ct} type="button" className="px-1.5 py-0.5 rounded-sm bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[9px] tracking-wide border border-slate-200 dark:border-white/10 transition-all" onClick={() => {
                         const id = crypto.randomUUID();
-                        setDraft(d => ({ ...d, costs: [...(d.costs || []), { id, type: ct, amount: 0, desc: '' }] }));
+                        setDraft((d: ShowDraft) => ({ ...d, costs: [...(d.costs || []), { id, type: ct, amount: 0, desc: '' }] }));
                         manualCostAdds.current += 1;
                         setJustAddedCostId(id);
                         setTimeout(() => setJustAddedCostId(null), 1200);
@@ -1767,7 +1767,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   )}
                 </div>
                 {(draft.costs && draft.costs.length > 0) && (
-                  <button type="button" className="px-2 py-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10" onClick={() => setDraft(d => ({ ...d, costs: [] }))}>{t('filters.clear') || 'Clear'}</button>
+                  <button type="button" className="px-2 py-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10" onClick={() => setDraft((d: ShowDraft) => ({ ...d, costs: [] }))}>{t('filters.clear') || 'Clear'}</button>
                 )}
               </div>
               {/* Subtotals sticky below toolbar */}
@@ -1799,7 +1799,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                           onKeyDown={e => {
                             if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); moveCost(c.id, e.key === 'ArrowUp' ? 'up' : 'down', 'type'); }
                           }}
-                          onChange={e => setDraft(d => { track(TE.COST_UPDATE, { id: c.id, field: 'type' }); recordCostType(e.target.value); return ({ ...d, costs: (d.costs || []).map(cc => cc.id === c.id ? { ...cc, type: e.target.value } : cc) }); })}
+                          onChange={e => setDraft((d: ShowDraft) => { track(TE.COST_UPDATE, { id: c.id, field: 'type' }); recordCostType(e.target.value); return ({ ...d, costs: (d.costs || []).map(cc => cc.id === c.id ? { ...cc, type: e.target.value } : cc) }); })}
                         />
                         <input
                           type="number"
@@ -1811,7 +1811,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                           onKeyDown={e => {
                             if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); moveCost(c.id, e.key === 'ArrowUp' ? 'up' : 'down', 'amount'); }
                           }}
-                          onChange={e => setDraft(d => { track(TE.COST_UPDATE, { id: c.id, field: 'amount' }); return ({ ...d, costs: (d.costs || []).map(cc => cc.id === c.id ? { ...cc, amount: e.target.value === '' ? 0 : Number(e.target.value) } : cc) }); })}
+                          onChange={e => setDraft((d: ShowDraft) => { track(TE.COST_UPDATE, { id: c.id, field: 'amount' }); return ({ ...d, costs: (d.costs || []).map(cc => cc.id === c.id ? { ...cc, amount: e.target.value === '' ? 0 : Number(e.target.value) } : cc) }); })}
                         />
                       </div>
                       <input
@@ -1823,7 +1823,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                         onKeyDown={e => {
                           if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); moveCost(c.id, e.key === 'ArrowUp' ? 'up' : 'down', 'desc'); }
                         }}
-                        onChange={e => setDraft(d => { track(TE.COST_UPDATE, { id: c.id, field: 'desc' }); return ({ ...d, costs: (d.costs || []).map(cc => cc.id === c.id ? { ...cc, desc: e.target.value } : cc) }); })}
+                        onChange={e => setDraft((d: ShowDraft) => { track(TE.COST_UPDATE, { id: c.id, field: 'desc' }); return ({ ...d, costs: (d.costs || []).map(cc => cc.id === c.id ? { ...cc, desc: e.target.value } : cc) }); })}
                       />
                       <div className="flex items-center gap-1 self-start sm:self-center">
                         <button
@@ -1850,7 +1850,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                           type="button"
                           aria-label={t('shows.table.remove') || 'Remove'}
                           className="px-2 py-1 rounded-md bg-red-600/30 hover:bg-red-600/50 border border-red-500/30 hover:border-red-500/50 text-red-100 font-bold text-base leading-none transition-all"
-                          onClick={() => setDraft(d => { track(TE.COST_REMOVE, { id: c.id }); return ({ ...d, costs: (d.costs || []).filter(cc => cc.id !== c.id) }); })}
+                          onClick={() => setDraft((d: ShowDraft) => { track(TE.COST_REMOVE, { id: c.id }); return ({ ...d, costs: (d.costs || []).filter(cc => cc.id !== c.id) }); })}
                         >&times;</button>
                       </div>
                     </fieldset>
@@ -1864,7 +1864,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 <button
                   type="button"
                   className="mt-1.5 px-3 py-1.5 rounded-md bg-accent-500/20 hover:bg-accent-500/30 border border-accent-500/30 hover:border-accent-500/50 text-xs font-semibold text-accent-300 hover:text-accent-200 transition-all w-fit flex items-center gap-1"
-                  onClick={() => setDraft(d => { const id = crypto.randomUUID(); track(TE.COST_ADD, { id }); manualCostAdds.current += 1; return ({ ...d, costs: [...(d.costs || []), { id, type: '', amount: 0, desc: '' }] }); })}
+                  onClick={() => setDraft((d: ShowDraft) => { const id = crypto.randomUUID(); track(TE.COST_ADD, { id }); manualCostAdds.current += 1; return ({ ...d, costs: [...(d.costs || []), { id, type: '', amount: 0, desc: '' }] }); })}
                 >
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1936,7 +1936,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   disabled={bulkParsed.length === 0}
                   onClick={() => {
                     if (bulkParsed.length === 0) return;
-                    setDraft(d => ({ ...d, costs: [...(d.costs || []), ...bulkParsed.map(b => ({ id: crypto.randomUUID(), type: b.type, amount: b.amount, desc: b.desc }))] }));
+                    setDraft((d: ShowDraft) => ({ ...d, costs: [...(d.costs || []), ...bulkParsed.map(b => ({ id: crypto.randomUUID(), type: b.type, amount: b.amount, desc: b.desc }))] }));
                     bulkParsed.forEach(b => recordCostType(b.type));
                     track(TE.COST_BULK_ADD, { count: bulkParsed.length });
                     announce((t('shows.editor.bulk.add') || 'Add costs') + ': ' + bulkParsed.length, 'polite');

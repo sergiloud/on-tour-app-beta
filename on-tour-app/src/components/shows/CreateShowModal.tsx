@@ -442,16 +442,16 @@ export const CreateShowModal: React.FC<CreateShowModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div
-        }
-        }
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       >
-        <div
-          }
-          }
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           className="bg-slate-900 border border-slate-300 dark:border-white/20 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
@@ -529,8 +529,8 @@ export const CreateShowModal: React.FC<CreateShowModalProps> = ({
               )}
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </AnimatePresence>
   );
 };

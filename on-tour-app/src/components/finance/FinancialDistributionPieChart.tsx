@@ -313,12 +313,12 @@ export const FinancialDistributionPieChart: React.FC<Props> = ({
       <text
         x={x}
         y={y}
-        fill="currentColor" className="text-slate-900 dark:text-white"
+        fill="currentColor"
+        className="text-slate-900 dark:text-white drop-shadow-lg"
         textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
         fontSize={13}
         fontWeight={700}
-        className="drop-shadow-lg"
       >
         {`${(percent * 100).toFixed(0)}%`}
       </text>

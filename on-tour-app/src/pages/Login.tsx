@@ -718,53 +718,6 @@ const Login: React.FC = () => {
               </motion.button>
             </motion.div>
 
-            {/* Demo Login Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.85 }}
-              className="space-y-3"
-            >
-              <motion.button
-                onClick={handleDannyAvilaLogin}
-                disabled={loginState.state === 'loading'}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-accent-500 to-blue-500 hover:from-accent-600 hover:to-blue-600 text-black font-semibold shadow-lg transition-all disabled:opacity-50"
-              >
-                <Zap className="w-5 h-5" />
-                <span>Demo: Danny Avila (Artist)</span>
-              </motion.button>
-
-              <motion.button
-                onClick={handleDannyAvila2Login}
-                disabled={loginState.state === 'loading'}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg transition-all disabled:opacity-50"
-              >
-                <Zap className="w-5 h-5" />
-                <span>Demo: Danny Avila 2 (HTML Import)</span>
-              </motion.button>
-
-              <motion.button
-                onClick={handleProphecyLogin}
-                disabled={loginState.state === 'loading'}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex flex-col gap-1 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold shadow-lg transition-all disabled:opacity-50"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  <span>Demo: Prophecy</span>
-                </div>
-                <div className="text-xs font-normal opacity-90">
-                  Managed by Aitzol • A2G Management
-                </div>
-              </motion.button>
-            </motion.div>
-
-
           </form>
 
           {/* Divider */}

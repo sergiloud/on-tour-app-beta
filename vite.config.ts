@@ -11,7 +11,10 @@ export default defineConfig({
     legalComments: 'none',
     logOverride: {
       'css-syntax-error': 'silent' // Suppress CSS syntax warnings that don't affect functionality
-    }
+    },
+    // Prevent hoisting issues that can cause initialization errors
+    treeShaking: true,
+    minifyIdentifiers: false // Helps with debugging initialization issues
   },
   css: {
     // Fix CSS syntax warnings during minification
@@ -90,35 +93,21 @@ export default defineConfig({
       polyfill: true
     },
     rollupOptions: {
+      // Prevent circular dependencies
+      preserveEntrySignatures: 'strict',
       output: {
-        // Estrategia simplificada: menos chunks = build más rápido
-        manualChunks: (id) => {
-          // Keep React and React-dependent libraries together to avoid context issues
-          if (id.includes('node_modules/react') ||
-              id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/react-router') ||
-              id.includes('node_modules/react-is') ||
-              id.includes('node_modules/scheduler') ||
-              id.includes('node_modules/prop-types') ||
-              id.includes('node_modules/recharts') ||
-              id.includes('node_modules/d3-') ||
-              id.includes('node_modules/@reduxjs/toolkit') ||
-              id.includes('node_modules/react-redux')) {
-            return 'vendor-react';
-          }
-          // UI pesado (framer-motion + lucide)
-          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react')) {
-            return 'vendor-ui';
-          }
-          // Bibliotecas pesadas que se cargan bajo demanda
-          if (id.includes('node_modules/maplibre-gl') || id.includes('node_modules/exceljs') ||
-              id.includes('node_modules/xlsx')) {
-            return 'vendor-heavy';
-          }
-          // Todo lo demás de node_modules en un solo vendor
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
+        // Use format that handles imports better
+        format: 'es',
+        // Simplified chunking strategy to avoid circular dependencies and initialization issues
+        manualChunks: {
+          // Single vendor chunk with explicit dependencies to avoid initialization issues
+          'vendor': ['react', 'react-dom', 'react-router-dom', 'react-is', 'scheduler'],
+          // Charts in separate chunk but with explicit dependencies
+          'charts': ['recharts', '@reduxjs/toolkit', 'react-redux'],
+          // UI libraries
+          'ui': ['framer-motion', 'lucide-react'],
+          // Heavy libraries that can be lazy loaded
+          'heavy': ['maplibre-gl', 'exceljs', 'xlsx']
         },
         // Nombres optimizados para caching
         chunkFileNames: 'assets/[name]-[hash].js',

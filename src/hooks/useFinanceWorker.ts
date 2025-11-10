@@ -40,6 +40,19 @@ export function useFinanceWorker(transactions: readonly TransactionV3[]): UseFin
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
+    // WORKER DISABLED - causes __publicField errors on Vercel
+    // TODO: Fix Vite worker compilation with TypeScript class syntax
+    // Return null to indicate worker is disabled
+    setData(null);
+    setIsLoading(false);
+    setError(null);
+    
+    // No worker initialization
+    return () => {
+      // No cleanup needed
+    };
+
+    /* ORIGINAL WORKER CODE - DISABLED DUE TO __publicField ERRORS
     // Solo iniciar worker si hay transacciones suficientes (>100 para optimizar)
     if (transactions.length < 100) {
       // Para datasets pequeños, no vale la pena el overhead del worker
@@ -104,6 +117,7 @@ export function useFinanceWorker(transactions: readonly TransactionV3[]): UseFin
         workerRef.current = null;
       }
     };
+    */
   }, [transactions]);
 
   return {

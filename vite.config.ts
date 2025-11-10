@@ -7,7 +7,7 @@ import path from 'path';
 export default defineConfig({
   base: '/', // Always use root path for Vercel deployment
   esbuild: {
-    drop: ['console', 'debugger'],
+    drop: [], // TEMPORARILY allow console.log for debugging
     legalComments: 'none',
     logOverride: {
       'css-syntax-error': 'silent' // Suppress CSS syntax warnings that don't affect functionality

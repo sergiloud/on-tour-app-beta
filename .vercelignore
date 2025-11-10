@@ -1,0 +1,30 @@
+# Tests
+*.test.*
+*.spec.*
+__tests__
+**/__tests__/**
+e2e/
+coverage/
+
+# Storybook
+.storybook/
+**/*.stories.*
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Development
+.vscode/
+.idea/
+.git/
+.github/
+
+# Build artifacts no necesarios
+dist/stats.html
+node_modules/.cache/
+
+# Otros
+*.log
+.DS_Store

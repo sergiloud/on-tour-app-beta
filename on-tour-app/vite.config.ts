@@ -104,7 +104,7 @@ export default defineConfig({
             return 'vendor-ui';
           }
           // Bibliotecas pesadas que se cargan bajo demanda
-          if (id.includes('node_modules/maplibre-gl') || id.includes('node_modules/exceljs') || 
+          if (id.includes('node_modules/maplibre-gl') || id.includes('node_modules/exceljs') ||
               id.includes('node_modules/xlsx') || id.includes('node_modules/recharts') ||
               id.includes('node_modules/d3-')) {
             return 'vendor-heavy';

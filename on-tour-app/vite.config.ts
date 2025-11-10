@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import viteCompression from 'vite-plugin-compression';
 import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
@@ -21,15 +20,6 @@ export default defineConfig({
         gzipSize: false, // Desactivar para builds más rápidos
         brotliSize: false,
         template: 'treemap',
-      }),
-    ]),
-    // Vercel ya hace compresión automática, solo comprimir en local
-    ...(process.env.VERCEL ? [] : [
-      viteCompression({
-        algorithm: 'gzip',
-        ext: '.gz',
-        threshold: 10240, // Solo archivos > 10KB
-        deleteOriginFile: false
       }),
     ]),
     VitePWA({

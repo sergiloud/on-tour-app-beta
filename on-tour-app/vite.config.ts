@@ -87,8 +87,8 @@ export default defineConfig({
         // Estrategia simplificada: menos chunks = build más rápido
         manualChunks: (id) => {
           // Core React (MUST be loaded first - includes all React packages)
-          if (id.includes('node_modules/react') || 
-              id.includes('node_modules/react-dom') || 
+          if (id.includes('node_modules/react') ||
+              id.includes('node_modules/react-dom') ||
               id.includes('node_modules/react-router') ||
               id.includes('node_modules/react-is') ||
               id.includes('node_modules/scheduler')) {
@@ -115,7 +115,7 @@ export default defineConfig({
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    chunkSizeWarningLimit: 800, // Chunks más grandes, menos splits
+    chunkSizeWarningLimit: 2500, // Aumentado para vendor-heavy (recharts + maplibre)
     reportCompressedSize: false, // Desactivar para build más rápido
     cssMinify: true,
     assetsInlineLimit: 4096

@@ -1,37 +1,41 @@
 import jwt from 'jsonwebtoken';
-import { AuthPayload } from '../types/auth.js';
-import { logger } from './logger.js';
 
 const JWT_SECRET: string = process.env.JWT_SECRET || 'dev-secret-change-in-production';
-const JWT_EXPIRY: string = process.env.JWT_EXPIRY || '7d';
+const JWT_EXPIRES_IN = '24h';
 
-export function generateToken(payload: Omit<AuthPayload, 'iat' | 'exp'>): string {
-  try {
-    const token = jwt.sign(payload as jwt.JwtPayload, JWT_SECRET, {
-      expiresIn: JWT_EXPIRY,
-    } as jwt.SignOptions);
-    return token;
-  } catch (error) {
-    logger.error('Error generating JWT:', error);
-    throw new Error('Failed to generate token');
-  }
+/**
+ * Enterprise JWT Payload
+ * Encodes organization and permission info for stateless authentication
+ */
+export interface JwtPayload {
+  userId: string;       // sub: User ID
+  organizationId: string; // org: Organization ID (cannot be spoofed)
+  email: string;
+  role?: string;        // User role (admin, manager, viewer, etc.)
+  permissions?: string[]; // Fine-grained permissions array
+  scope?: string;       // 'superadmin' for cross-tenant access
+  iat?: number;         // Issued at
+  exp?: number;         // Expiration
 }
 
-export function verifyToken(token: string): AuthPayload {
+export function generateToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+    algorithm: 'HS256',
+  });
+}
+
+export function verifyToken(token: string): JwtPayload {
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as AuthPayload;
-    return payload;
+    return jwt.verify(token, JWT_SECRET) as JwtPayload;
   } catch (error) {
-    logger.error('Error verifying JWT:', error);
     throw new Error('Invalid or expired token');
   }
 }
 
-export function decodeToken(token: string): AuthPayload | null {
-  try {
-    const payload = jwt.decode(token) as AuthPayload;
-    return payload;
-  } catch (error) {
+export function extractToken(authHeader?: string): string | null {
+  if (!authHeader?.startsWith('Bearer ')) {
     return null;
   }
+  return authHeader.slice(7);
 }

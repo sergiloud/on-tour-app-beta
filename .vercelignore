@@ -1,43 +1,44 @@
-# Exclude root-level duplicates (project is in on-tour-app/)
-
-backend/
-build.sh
-install.sh
-on-tour-app.zip
-
 # Tests
 
-_.test._
-_.spec._
-**tests**
-**/**tests**/**
+**/**tests**
+**/_.test.ts
+\*\*/_.test.tsx
+**/\*.spec.ts
+**/\*.spec.tsx
 e2e/
+playwright.config.ts
+vitest.config.ts
+vitest.setup.ts
+vitest.shims.d.ts
+vitest.unit.config.ts
 coverage/
-
-# Storybook
-
-.storybook/
-\*\*/_.stories._
 
 # Documentation
 
 docs/
 \*.md
 !README.md
+BUILD_RESULTS.md
+CHANGELOG.md
+FIREBASE_SETUP.md
+PERFORMANCE_IMPROVEMENTS.md
+SECURITY.md
+
+# Storybook
+
+.storybook/
+**/\*.stories.tsx
+**/\*.stories.ts
 
 # Development
 
 .vscode/
-.idea/
-.git/
-.github/
+.editorconfig
+.prettierrc
+.eslintrc.json
+.lintstagedrc.json
+backend/
 
-# Build artifacts
+# Netlify (no longer used)
 
-dist/stats.html
-node_modules/.cache/
-
-# Others
-
-\*.log
-.DS_Store
+netlify.toml

@@ -1,76 +1,146 @@
-import { shows as showsDb } from '../db/mockDb.js';
+import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../utils/logger.js';
-import type { CreateShowRequest, UpdateShowRequest } from '../types/shows.js';
+
+export interface Show {
+  id: string;
+  organizationId: string;
+  title: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  status: 'draft' | 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  budget?: number;
+  revenue?: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}
+
+export interface CreateShowInput {
+  title: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  budget?: number;
+}
+
+export interface UpdateShowInput {
+  title?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  location?: string;
+  status?: Show['status'];
+  budget?: number;
+  revenue?: number;
+}
+
+// In-memory database for now (will migrate to PostgreSQL)
+const mockDb: Map<string, Show[]> = new Map();
 
 export class ShowsService {
-  static async listShows(org_id: string) {
-    try {
-      const shows = showsDb.findByOrganization(org_id);
-      logger.info(`Listed ${shows.length} shows for org ${org_id}`);
-      return shows;
-    } catch (error) {
-      logger.error('Error listing shows:', error);
-      throw error;
+  static async listShows(
+    organizationId: string,
+    options?: { status?: string; limit?: number; offset?: number }
+  ): Promise<{ shows: Show[]; total: number }> {
+    logger.debug({ organizationId, options }, 'Listing shows');
+
+    let shows = mockDb.get(organizationId) || [];
+
+    if (options?.status) {
+      shows = shows.filter(s => s.status === options.status);
     }
+
+    const total = shows.length;
+    const offset = options?.offset || 0;
+    const limit = options?.limit || 50;
+
+    shows = shows.slice(offset, offset + limit);
+
+    return { shows, total };
   }
 
-  static async createShow(org_id: string, user_id: string, data: CreateShowRequest) {
-    try {
-      const show = showsDb.create({
-        organization_id: org_id,
-        created_by: user_id,
-        status: 'scheduled',
-        metadata: {},
-        ...data,
-      });
-      logger.info(`Created show: ${show.id}`);
-      return show;
-    } catch (error) {
-      logger.error('Error creating show:', error);
-      throw error;
-    }
+  static async createShow(
+    organizationId: string,
+    userId: string,
+    input: CreateShowInput
+  ): Promise<Show> {
+    logger.debug({ organizationId, userId, input }, 'Creating show');
+
+    const show: Show = {
+      id: uuidv4(),
+      organizationId,
+      title: input.title,
+      description: input.description,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      location: input.location,
+      status: 'draft',
+      budget: input.budget,
+      revenue: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: userId,
+    };
+
+    const shows = mockDb.get(organizationId) || [];
+    shows.push(show);
+    mockDb.set(organizationId, shows);
+
+    logger.info({ showId: show.id, organizationId }, 'Show created');
+    return show;
   }
 
-  static async getShow(id: string) {
-    try {
-      const show = showsDb.findById(id);
-      if (!show) {
-        throw new Error('Show not found');
-      }
-      return show;
-    } catch (error) {
-      logger.error(`Error getting show ${id}:`, error);
-      throw error;
-    }
+  static async getShow(organizationId: string, showId: string): Promise<Show | null> {
+    logger.debug({ organizationId, showId }, 'Getting show');
+
+    const shows = mockDb.get(organizationId) || [];
+    return shows.find(s => s.id === showId) || null;
   }
 
-  static async updateShow(id: string, data: UpdateShowRequest) {
-    try {
-      const show = showsDb.findById(id);
-      if (!show) {
-        throw new Error('Show not found');
-      }
-      const updated = showsDb.update(id, data);
-      logger.info(`Updated show: ${id}`);
-      return updated;
-    } catch (error) {
-      logger.error(`Error updating show ${id}:`, error);
-      throw error;
+  static async updateShow(
+    organizationId: string,
+    showId: string,
+    input: UpdateShowInput
+  ): Promise<Show> {
+    logger.debug({ organizationId, showId, input }, 'Updating show');
+
+    const shows = mockDb.get(organizationId) || [];
+    const show = shows.find(s => s.id === showId);
+
+    if (!show) {
+      throw new Error('Show not found');
     }
+
+    const updated: Show = {
+      ...show,
+      ...input,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const index = shows.findIndex(s => s.id === showId);
+    shows[index] = updated;
+    mockDb.set(organizationId, shows);
+
+    logger.info({ showId }, 'Show updated');
+    return updated;
   }
 
-  static async deleteShow(id: string) {
-    try {
-      const show = showsDb.findById(id);
-      if (!show) {
-        throw new Error('Show not found');
-      }
-      showsDb.delete(id);
-      logger.info(`Deleted show: ${id}`);
-      return { success: true };
-    } catch (error) {
-      logger.error(`Error deleting show ${id}:`, error);
-      throw error;
+  static async deleteShow(organizationId: string, showId: string): Promise<void> {
+    logger.debug({ organizationId, showId }, 'Deleting show');
+
+    const shows = mockDb.get(organizationId) || [];
+    const index = shows.findIndex(s => s.id === showId);
+
+    if (index === -1) {
+      throw new Error('Show not found');
     }
+
+    shows.splice(index, 1);
+    mockDb.set(organizationId, shows);
+
+    logger.info({ showId }, 'Show deleted');
   }
 }

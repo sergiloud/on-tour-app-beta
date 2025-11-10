@@ -1,32 +1,56 @@
-# OS / Editor
-.DS_Store
-**/.DS_Store
-*.log
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Environment variables
 .env
-.env.*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Node / Vite
-**/node_modules/
-**/dist/
-.vite/
-**/.vite/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Netlify/Deploy
-.netlify/
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Local artifacts
-on-tour-app.zip
-on-tour-app/.devpid
-.claude/
-*.local.json
+# Dev temporary files
+.devpid
 
-# Coverage/Tests
+# Logs
+logs
+*.log
+
+# Coverage
 coverage/
-**/.tsbuildinfo
+*.lcov
 
-# Misc
-**/*.local
-**/*.tmp
-**/*.temp
-**/*.bak
+# Husky
+.husky/_
+
+# Temporary files
+*.tmp
+*.temp
+*storybook.log
+storybook-static

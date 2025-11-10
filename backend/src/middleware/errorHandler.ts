@@ -1,71 +1,37 @@
-import type { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger.js';
-import { verifyToken } from '../utils/jwt.js';
-import type { AuthPayload } from '../types/auth.js';
+import { ZodError } from 'zod';
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: AuthPayload;
-    }
-  }
+export interface ApiError extends Error {
+  status?: number;
+  code?: string;
 }
 
-export class AppError extends Error {
-  constructor(
-    public message: string,
-    public statusCode: number = 500
-  ) {
-    super(message);
-    this.name = 'AppError';
-  }
-}
-
-export const errorHandler = (
-  err: Error | AppError,
+export function errorHandler(
+  err: Error | ApiError,
   req: Request,
   res: Response,
-  _next: NextFunction
-) => {
-  logger.error({ err, path: (req as any).path }, 'Error handler invoked');
+  next: NextFunction
+): void {
+  const status = (err as ApiError).status || 500;
+  const message = err.message || 'Internal Server Error';
 
-  if (err instanceof AppError) {
-    (res as any).status(err.statusCode).json({
-      error: {
-        message: err.message,
-        statusCode: err.statusCode,
-      },
+  logger.error({ error: err, status }, 'Request failed');
+
+  if (err instanceof ZodError) {
+    res.status(400).json({
+      error: 'Validation Error',
+      details: err.errors.map(e => ({
+        path: e.path.join('.'),
+        message: e.message,
+      })),
     });
     return;
   }
 
-  (res as any).status(500).json({
-    error: {
-      message: err.message || 'Internal Server Error',
-      statusCode: 500,
-    },
+  res.status(status).json({
+    error: message,
+    code: (err as ApiError).code,
+    status,
   });
-};
-
-export const asyncHandler =
-  (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-
-// JWT authentication middleware
-export const authMiddleware = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = (req as any).headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new AppError('Missing or invalid authorization header', 401);
-  }
-
-  const token = authHeader.slice(7);
-  try {
-    const payload = verifyToken(token);
-    (req as any).user = payload;
-    next();
-  } catch (error) {
-    throw new AppError('Invalid or expired token', 401);
-  }
-});
+}

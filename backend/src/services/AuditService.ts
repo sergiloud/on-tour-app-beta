@@ -25,13 +25,13 @@ export class AuditService {
     action: string;
     resourceType: string;
     resourceId?: string;
-    changes?: Record<string, unknown>;
+    changes?: Record<string, any>;
     ipAddress?: string;
     userAgent?: string;
     status?: 'success' | 'error' | 'partial';
     errorMessage?: string;
     duration?: number;
-    metadata?: Record<string, unknown>;
+    metadata?: Record<string, any>;
     description?: string;
     severity?: 'info' | 'warning' | 'critical';
     isSystemOperation?: boolean;
@@ -153,7 +153,7 @@ export class AuditService {
       offset?: number;
     }
   ): Promise<{ data: AuditLog[]; total: number }> {
-    const query = this.auditLogRepository
+    let query = this.auditLogRepository
       .createQueryBuilder('audit')
       .where('audit.resourceType = :resourceType', { resourceType })
       .andWhere('audit.resourceId = :resourceId', { resourceId })
@@ -237,7 +237,7 @@ export class AuditService {
   /**
    * Get audit statistics
    */
-  async getStatistics(organizationId: string): Promise<Record<string, unknown>> {
+  async getStatistics(organizationId: string): Promise<Record<string, any>> {
     const query = this.auditLogRepository
       .createQueryBuilder('audit')
       .where('audit.organizationId = :organizationId', { organizationId });
@@ -314,7 +314,7 @@ export class AuditService {
       endDate?: Date;
       resourceType?: string;
     }
-  ): Promise<Record<string, unknown>> {
+  ): Promise<Record<string, any>> {
     let query = this.auditLogRepository
       .createQueryBuilder('audit')
       .where('audit.organizationId = :organizationId', { organizationId });

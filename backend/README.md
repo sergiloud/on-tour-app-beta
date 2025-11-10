@@ -1,445 +1,394 @@
-# 🎵 On Tour Backend - FASE 6
+# On Tour App Backend - FASE 6
 
-**Status**: 🟢 DEVELOPMENT READY  
-**Version**: 1.0.0  
-**Environment**: Node.js 20 LTS + Express 4.x + PostgreSQL 15
+Backend API for On Tour App, built with Node.js, Express, and TypeScript.
 
----
+## Overview
 
-## 🚀 Quick Start
+**Status**: 🟢 Week 1 Ready  
+**Build**: ✅ TypeScript configured  
+**Tests**: 📝 Framework ready (Vitest)  
+**Database**: 📋 PostgreSQL setup pending
 
-### 1. Setup
+## Quick Start
+
+### Prerequisites
+
+- Node.js 20 LTS
+- npm or yarn
+
+### Installation
 
 ```bash
-# Navigate to backend directory
-cd backend
-
 # Install dependencies
 npm install
 
-# Copy environment template
+# Copy environment file
 cp .env.example .env
 
-# Edit .env with your configuration
-```
-
-### 2. Database Setup
-
-```bash
-# Create PostgreSQL database
-createdb on_tour_db
-
-# Run migrations
-npm run db:migrate
-
-# (Optional) Seed with demo data
-npm run db:seed
-```
-
-### 3. Development
-
-```bash
-# Start development server (with auto-reload)
+# Development
 npm run dev
 
-# In another terminal, run tests
-npm test
-
-# Type checking
-npm run type-check
+# Production build
+npm run build
+npm start
 ```
 
-The API will be available at `http://localhost:3001`
+## API Endpoints
 
----
+### Shows Management
 
-## 📁 Project Structure
+| Method | Endpoint         | Description       |
+| ------ | ---------------- | ----------------- |
+| GET    | `/api/shows`     | List all shows    |
+| POST   | `/api/shows`     | Create a new show |
+| GET    | `/api/shows/:id` | Get show details  |
+| PUT    | `/api/shows/:id` | Update a show     |
+| DELETE | `/api/shows/:id` | Delete a show     |
+
+**Example: Create a Show**
+
+```bash
+curl -X POST http://localhost:3000/api/shows \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Summer Tour 2025",
+    "startDate": "2025-06-01T00:00:00Z",
+    "endDate": "2025-08-31T23:59:59Z",
+    "location": "North America",
+    "budget": 500000
+  }'
+```
+
+### Finance Management
+
+| Method | Endpoint                      | Description                  |
+| ------ | ----------------------------- | ---------------------------- |
+| GET    | `/api/finance/summary`        | Get financial summary        |
+| POST   | `/api/finance/calculate-fees` | Calculate fees & commissions |
+| POST   | `/api/finance/settlement`     | Create a settlement          |
+| GET    | `/api/finance/settlements`    | List settlements             |
+
+**Example: Calculate Fees**
+
+```bash
+curl -X POST http://localhost:3000/api/finance/calculate-fees \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "showIds": ["show-id-1", "show-id-2"],
+    "commissionRate": 0.15,
+    "taxRate": 0.08
+  }'
+```
+
+### Travel Management
+
+| Method | Endpoint                      | Description        |
+| ------ | ----------------------------- | ------------------ |
+| POST   | `/api/travel/search-flights`  | Search for flights |
+| POST   | `/api/travel/itineraries`     | Create itinerary   |
+| GET    | `/api/travel/itineraries`     | List itineraries   |
+| GET    | `/api/travel/itineraries/:id` | Get itinerary      |
+
+**Example: Search Flights**
+
+```bash
+curl -X POST http://localhost:3000/api/travel/search-flights \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "departure": "LAX",
+    "arrival": "NYC",
+    "departureDate": "2025-06-01T10:00:00Z",
+    "passengers": 5
+  }'
+```
+
+## Architecture
+
+### Project Structure
 
 ```
 backend/
 ├── src/
-│   ├── app.ts                 # Express app configuration
-│   ├── server.ts              # Server startup entry point
-│   │
-│   ├── middleware/
-│   │   ├── auth.ts            # OAuth2 & JWT validation
-│   │   ├── validation.ts       # Input validation (Zod)
-│   │   └── errorHandler.ts    # Global error handling
-│   │
+│   ├── index.ts                 # Application entry point
 │   ├── routes/
-│   │   ├── auth.ts            # Authentication endpoints
-│   │   ├── shows.ts           # Shows CRUD
-│   │   ├── finance.ts         # Finance operations
-│   │   └── users.ts           # User management
-│   │
+│   │   ├── shows.ts             # Shows endpoints
+│   │   ├── finance.ts           # Finance endpoints
+│   │   └── travel.ts            # Travel endpoints
 │   ├── services/
-│   │   ├── authService.ts     # Auth business logic
-│   │   ├── showsService.ts    # Shows business logic
-│   │   ├── financeService.ts  # Finance calculations
-│   │   └── usersService.ts    # User operations
-│   │
-│   ├── db/
-│   │   ├── migrations/        # Database migrations
-│   │   │   └── 001_initial_schema.ts
-│   │   ├── types.ts           # Database types
-│   │   └── client.ts          # Kysely database client
-│   │
-│   ├── types/
-│   │   ├── auth.ts            # Auth types
-│   │   ├── shows.ts           # Shows types
-│   │   ├── finance.ts         # Finance types
-│   │   └── api.ts             # API response types
-│   │
-│   └── utils/
-│       ├── logger.ts          # Logging setup
-│       ├── jwt.ts             # JWT utilities
-│       └── validation.ts       # Validation helpers
-│
-├── __tests__/
-│   ├── auth.test.ts           # Auth tests
-│   ├── shows.test.ts          # Shows API tests
-│   ├── finance.test.ts        # Finance API tests
-│   └── integration/           # End-to-end tests
-│
-├── .env.example               # Environment variables template
-├── package.json               # Dependencies
-├── tsconfig.json              # TypeScript config
-└── README.md                  # This file
+│   │   └── showsService.ts      # Business logic
+│   ├── middleware/
+│   │   ├── auth.ts              # Authentication
+│   │   └── errorHandler.ts      # Error handling
+│   ├── utils/
+│   │   ├── logger.ts            # Pino logger
+│   │   └── jwt.ts               # JWT utilities
+│   └── types/
+│       └── express.d.ts         # Express augmentations
+├── tests/
+│   ├── unit/                    # Unit tests
+│   └── integration/             # Integration tests
+├── package.json
+├── tsconfig.json
+└── .env.example
 ```
 
----
+### Technology Stack
 
-## 🔑 API Endpoints
+- **Runtime**: Node.js 20 LTS
+- **Framework**: Express 4.18
+- **Language**: TypeScript 5
+- **Validation**: Zod
+- **Logging**: Pino
+- **Database**: PostgreSQL (setup pending)
+- **ORM**: TypeORM (setup pending)
+- **Testing**: Vitest
+- **Security**: Helmet, CORS, JWT
 
 ### Authentication
 
-- `POST /api/auth/login` - OAuth2 login
-- `POST /api/auth/logout` - Logout
-- `GET /api/auth/profile` - Get user profile
+All endpoints except `/health` require a valid JWT token in the Authorization header:
 
-### Shows
+```
+Authorization: Bearer <jwt-token>
+```
 
-- `GET /api/shows` - List all shows
-- `POST /api/shows` - Create new show
-- `GET /api/shows/:id` - Get show details
-- `PUT /api/shows/:id` - Update show
-- `DELETE /api/shows/:id` - Delete show
+Token format:
 
-### Finance
+```typescript
+{
+  userId: string;
+  organizationId: string;
+  email: string;
+  iat: number;
+  exp: number;
+}
+```
 
-- `GET /api/finance/overview` - Finance dashboard data
-- `POST /api/finance/records` - Create finance record
-- `GET /api/finance/records/:showId` - Get show finances
-- `POST /api/finance/settlement` - Create settlement
+## Development
 
-### Users
-
-- `GET /api/users` - List organization users
-- `GET /api/users/:id` - Get user details
-- `PUT /api/users/:id` - Update user
-- `DELETE /api/users/:id` - Remove from organization
-
----
-
-## 🗄️ Database Schema
-
-### Tables
-
-**users**
-
-- id (UUID, PK)
-- email (VARCHAR, unique)
-- name (VARCHAR)
-- avatar_url (TEXT)
-- oauth_provider (VARCHAR)
-- oauth_id (VARCHAR)
-- is_active (BOOLEAN)
-- created_at, updated_at (TIMESTAMP)
-
-**organizations**
-
-- id (UUID, PK)
-- name (VARCHAR)
-- owner_id (UUID, FK→users)
-- description (TEXT)
-- logo_url (TEXT)
-- settings (JSONB)
-- created_at, updated_at (TIMESTAMP)
-
-**organization_members**
-
-- id (UUID, PK)
-- organization_id (UUID, FK→organizations)
-- user_id (UUID, FK→users)
-- role (VARCHAR: owner, manager, member, viewer)
-- joined_at (TIMESTAMP)
-
-**shows**
-
-- id (UUID, PK)
-- organization_id (UUID, FK)
-- name (VARCHAR)
-- venue, city, country (VARCHAR)
-- show_date (DATE)
-- door_time, show_time, end_time (TIME)
-- notes (TEXT)
-- ticket_url (TEXT)
-- status (VARCHAR: scheduled, cancelled, completed)
-- metadata (JSONB)
-- created_by, created_at, updated_at
-
-**finance_records**
-
-- id (UUID, PK)
-- show_id (UUID, FK)
-- organization_id (UUID, FK)
-- amount (DECIMAL)
-- currency (VARCHAR)
-- category (VARCHAR: venue_fee, ticket_sales, expenses, settlement)
-- description (TEXT)
-- status (VARCHAR: pending, confirmed, settled)
-- recorded_by (UUID, FK)
-- created_at, updated_at
-
-**audit_logs**
-
-- id (UUID, PK)
-- organization_id (UUID, FK)
-- user_id (UUID, FK)
-- action (VARCHAR)
-- entity_type, entity_id (VARCHAR, UUID)
-- changes (JSONB)
-- ip_address, user_agent (VARCHAR, TEXT)
-- created_at
-
----
-
-## 🧪 Testing
+### Commands
 
 ```bash
-# Run all tests (watch mode)
-npm test
+# Development server
+npm run dev
 
-# Run tests once with coverage
-npm run test:run
-
-# Run only E2E tests
-npm run test:e2e
-
-# Run tests matching pattern
-npm test -- shows
-
-# Watch specific test file
-npm test -- auth.test.ts --watch
-```
-
----
-
-## 🔐 Authentication Flow
-
-### OAuth2 (Google/Spotify)
-
-```
-1. User clicks "Sign in with Google"
-   └─> Frontend redirects to /api/auth/google
-
-2. Google OAuth dialog opens
-   └─> User authorizes
-
-3. Google redirects to /api/auth/google/callback
-   └─> Backend creates/updates user in DB
-
-4. Backend creates JWT token
-   └─> Redirects to frontend with token
-
-5. Frontend stores JWT
-   └─> Uses for all API requests
-```
-
-### JWT Validation
-
-All protected endpoints expect:
-
-```
-Authorization: Bearer <jwt_token>
-```
-
-The JWT contains:
-
-- `sub` (user ID)
-- `email`
-- `org_id` (organization ID)
-- `role` (user role)
-- `exp` (expiration)
-
----
-
-## 📊 Development Workflow
-
-### Add New API Endpoint
-
-1. **Define types** in `src/types/`
-
-   ```typescript
-   export interface CreateShowRequest {
-     name: string;
-     venue: string;
-     show_date: string;
-   }
-   ```
-
-2. **Create service** in `src/services/`
-
-   ```typescript
-   export class ShowsService {
-     async create(orgId: string, data: CreateShowRequest) {
-       // Business logic
-     }
-   }
-   ```
-
-3. **Create route** in `src/routes/`
-
-   ```typescript
-   router.post(
-     "/",
-     asyncHandler(async (req, res) => {
-       const show = await showsService.create(req.org.id, req.body);
-       res.json(show);
-     })
-   );
-   ```
-
-4. **Write tests** in `__tests__/`
-
-   ```typescript
-   describe("POST /api/shows", () => {
-     it("creates a new show", async () => {
-       // Test implementation
-     });
-   });
-   ```
-
-5. **Run type check**
-   ```bash
-   npm run type-check
-   ```
-
----
-
-## 🚀 Deployment
-
-### Production Build
-
-```bash
-# Compile TypeScript
+# Build TypeScript
 npm run build
 
-# Start production server
+# Type checking
+npm run type-check
+
+# Run tests
+npm run test              # Watch mode
+npm run test:run          # Single run
+npm run test:coverage     # With coverage
+
+# Linting
+npm run lint
+
+# Format code
+npm run format
+```
+
+### Testing
+
+Tests are organized by type:
+
+- **Unit Tests** (`tests/unit/`) - Individual functions and services
+- **Integration Tests** (`tests/integration/`) - API endpoints and workflows
+
+Run tests:
+
+```bash
+npm run test              # Watch mode
+npm run test:run          # Single run
+npm run test:coverage     # With coverage report
+```
+
+## Database
+
+### Setup (Pending)
+
+PostgreSQL integration is planned for Week 2:
+
+```bash
+# Generate migration
+npm run migration:generate -- -n CreateShowsTable
+
+# Run migrations
+npm run migration:run
+
+# Revert migration
+npm run migration:revert
+```
+
+### Schema (Planned)
+
+```sql
+-- Shows table
+CREATE TABLE shows (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  start_date TIMESTAMP NOT NULL,
+  end_date TIMESTAMP NOT NULL,
+  location VARCHAR(255),
+  status VARCHAR(50),
+  budget DECIMAL,
+  revenue DECIMAL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_by UUID,
+  FOREIGN KEY (organization_id) REFERENCES organizations(id)
+);
+
+-- Similar tables for Finance and Travel
+```
+
+## Error Handling
+
+API returns standard error format:
+
+```json
+{
+  "error": "Error message",
+  "code": "error_code",
+  "status": 400
+}
+```
+
+Validation errors:
+
+```json
+{
+  "error": "Validation Error",
+  "details": [
+    {
+      "path": "title",
+      "message": "Required"
+    }
+  ]
+}
+```
+
+## Logging
+
+Pino logger configured for development and production:
+
+- **Development**: Pretty-printed logs to console
+- **Production**: JSON-formatted logs for machine parsing
+
+Log levels: `debug`, `info`, `warn`, `error`
+
+## Security
+
+- CORS enabled for frontend (configured in `.env`)
+- Helmet for HTTP headers
+- JWT for authentication
+- Input validation with Zod
+- SQL injection prevention (will use TypeORM parameterized queries)
+
+## Deployment
+
+### Environment Variables
+
+Create `.env` file (copy from `.env.example`):
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with production values:
+
+```
+NODE_ENV=production
+PORT=3000
+JWT_SECRET=<strong-secret-key>
+DATABASE_URL=postgresql://user:pass@host/db
+CORS_ORIGIN=https://yourdomain.com
+```
+
+### Build
+
+```bash
+npm run build
 npm start
 ```
 
-### Docker
+### Docker (Optional)
+
+Create `Dockerfile`:
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY dist ./dist
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
+Build and run:
 
 ```bash
-# Build image
 docker build -t on-tour-backend .
-
-# Run container
-docker run -p 3001:3001 \
-  -e DATABASE_URL=postgresql://... \
-  -e JWT_SECRET=... \
-  on-tour-backend
+docker run -p 3000:3000 --env-file .env on-tour-backend
 ```
 
----
+## Next Steps (Week 2)
 
-## 📝 Environment Variables
+- [ ] PostgreSQL setup and migrations
+- [ ] TypeORM integration
+- [ ] Additional validation rules
+- [ ] Integration tests for all endpoints
+- [ ] API documentation with Swagger/OpenAPI
+- [ ] Error logging and monitoring
+- [ ] Rate limiting
+- [ ] Request/response logging
 
-See `.env.example` for complete list. Key variables:
+## Roadmap
 
-- `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - Secret for signing JWT tokens
-- `GOOGLE_CLIENT_ID/SECRET` - OAuth2 Google credentials
-- `SPOTIFY_CLIENT_ID/SECRET` - OAuth2 Spotify credentials
-- `CORS_ORIGIN` - Frontend URL for CORS
-- `NODE_ENV` - development, production, test
+### FASE 6 (Backend Foundation)
 
----
+- ✅ Week 1: Project setup, 3 API modules
+- [ ] Week 2: PostgreSQL + TypeORM
+- [ ] Week 3: Tests + validation
+- [ ] Week 4: Documentation + deployment
 
-## 🆘 Troubleshooting
+### FASE 7 (Multi-User)
 
-### Database Connection Error
+- Real-time collaboration
+- WebSocket integration
+- Advanced permissions
 
-```
-Error: connect ECONNREFUSED 127.0.0.1:5432
+### FASE 8 (Advanced)
 
-→ Ensure PostgreSQL is running
-→ Verify DATABASE_URL in .env
-→ Run: createdb on_tour_db
-```
+- Third-party integrations
+- Analytics
+- Mobile API
 
-### Port Already in Use
+## Contributing
 
-```
-Error: listen EADDRINUSE :::3001
+1. Create a feature branch: `git checkout -b feature/my-feature`
+2. Make changes and write tests
+3. Run tests: `npm run test:run`
+4. Format code: `npm run format`
+5. Submit pull request
 
-→ Kill process: lsof -i :3001 | kill <PID>
-→ Or use different port: PORT=3002 npm run dev
-```
-
-### TypeScript Errors
-
-```bash
-npm run type-check
-```
-
-Fix any reported errors before committing.
-
----
-
-## 📚 Architecture Decisions
-
-### Why Kysely + PostgreSQL?
-
-- **Type-safe**: Full TypeScript support, compile-time SQL validation
-- **Lightweight**: ~5KB bundle (vs 50KB+ for Prisma)
-- **Flexible**: Raw SQL when needed, but type-safe query builders
-- **PostgreSQL**: JSONB, arrays, full-text search, PostGIS for coordinates
-
-### Why Express?
-
-- **Minimal**: Only what you need, no bloat
-- **Ecosystem**: Best middleware ecosystem in Node.js
-- **Performance**: Benchmarks consistently fast
-- **Familiar**: Most developers know Express
-
-### Why Socket.io?
-
-- **Real-time**: WebSocket with fallbacks
-- **Scalable**: Works with multi-process/cluster
-- **Rooms**: Channel management built-in
-- **Reconnect**: Automatic reconnection logic
-
----
-
-## 📞 Support
+## Support
 
 For issues or questions:
 
-1. Check existing docs in `docs/`
-2. Review code comments
-3. Run tests to verify behavior
-4. Check git history for context
+1. Check existing GitHub issues
+2. Check `/docs` directory for guides
+3. See `DOCUMENTATION_INDEX.md` for navigation
 
 ---
 
-## 📄 License
-
-MIT
-
----
-
-**Backend ready to begin development!** 🚀
-
-Next: Install dependencies and setup database.
+**Last Updated**: November 4, 2025  
+**Maintainer**: @sergirecio  
+**License**: MIT

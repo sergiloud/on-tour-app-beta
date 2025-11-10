@@ -10,7 +10,7 @@ import {
   User as FirebaseUser
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '../lib/firebase';
-import { setAuthed, setCurrentUserIdId } from '../lib/demoAuth';
+import { setAuthed, setCurrentUserId } from '../lib/demoAuth';
 import { setCurrentOrgId } from '../lib/tenants';
 import { secureStorage } from '../lib/secureStorage';
 
@@ -34,13 +34,13 @@ const useFirebase = () => isFirebaseConfigured();
 
 // Sign in with email and password
 export const signIn = async (email: string, password: string): Promise<AuthUser> => {
-  if (useFirebase()) {
+  if (useFirebase() && auth) {
     const result = await signInWithEmailAndPassword(auth, email, password);
     const authUser = toAuthUser(result.user);
 
     // Sync with local storage
     secureStorage.setItem('auth:userId', authUser.uid);
-    secureStorage.setItem('auth:email', authUser.email);
+    secureStorage.setItem('auth:email', authUser.email || '');
 
     return authUser;
   } else {
@@ -50,7 +50,7 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
     return {
       uid: 'demo_' + email,
       email,
-      displayName: email.split('@')[0],
+      displayName: email.split('@')[0] || 'User',
       photoURL: null
     };
   }
@@ -58,7 +58,7 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
 
 // Register new user
 export const signUp = async (email: string, password: string, displayName?: string): Promise<AuthUser> => {
-  if (useFirebase()) {
+  if (useFirebase() && auth) {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     const authUser = toAuthUser(result.user);
 
@@ -67,7 +67,7 @@ export const signUp = async (email: string, password: string, displayName?: stri
 
     // Sync with local storage
     secureStorage.setItem('auth:userId', authUser.uid);
-    secureStorage.setItem('auth:email', authUser.email);
+    secureStorage.setItem('auth:email', authUser.email || '');
 
     return authUser;
   } else {
@@ -77,7 +77,7 @@ export const signUp = async (email: string, password: string, displayName?: stri
     return {
       uid: 'demo_' + email,
       email,
-      displayName: displayName || email.split('@')[0],
+      displayName: displayName || email.split('@')[0] || 'User',
       photoURL: null
     };
   }
@@ -85,13 +85,13 @@ export const signUp = async (email: string, password: string, displayName?: stri
 
 // Sign in with Google
 export const signInWithGoogle = async (): Promise<AuthUser> => {
-  if (useFirebase()) {
+  if (useFirebase() && auth) {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const authUser = toAuthUser(result.user);
 
     secureStorage.setItem('auth:userId', authUser.uid);
-    secureStorage.setItem('auth:email', authUser.email);
+    secureStorage.setItem('auth:email', authUser.email || '');
 
     return authUser;
   } else {
@@ -110,13 +110,13 @@ export const signInWithGoogle = async (): Promise<AuthUser> => {
 
 // Sign in with Apple
 export const signInWithApple = async (): Promise<AuthUser> => {
-  if (useFirebase()) {
+  if (useFirebase() && auth) {
     const provider = new OAuthProvider('apple.com');
     const result = await signInWithPopup(auth, provider);
     const authUser = toAuthUser(result.user);
 
     secureStorage.setItem('auth:userId', authUser.uid);
-    secureStorage.setItem('auth:email', authUser.email);
+    secureStorage.setItem('auth:email', authUser.email || '');
 
     return authUser;
   } else {
@@ -135,7 +135,7 @@ export const signInWithApple = async (): Promise<AuthUser> => {
 
 // Sign out
 export const signOut = async (): Promise<void> => {
-  if (useFirebase()) {
+  if (useFirebase() && auth) {
     await firebaseSignOut(auth);
   }
 
@@ -149,7 +149,7 @@ export const signOut = async (): Promise<void> => {
 
 // Reset password
 export const resetPassword = async (email: string): Promise<void> => {
-  if (useFirebase()) {
+  if (useFirebase() && auth) {
     await sendPasswordResetEmail(auth, email);
   } else {
     // Demo mode - just simulate
@@ -159,7 +159,7 @@ export const resetPassword = async (email: string): Promise<void> => {
 
 // Get current user
 export const getCurrentUser = (): AuthUser | null => {
-  if (useFirebase() && auth.currentUser) {
+  if (useFirebase() && auth && auth.currentUser) {
     return toAuthUser(auth.currentUser);
   }
 
@@ -171,7 +171,7 @@ export const getCurrentUser = (): AuthUser | null => {
     return {
       uid: userId,
       email,
-      displayName: email.split('@')[0],
+      displayName: email.split('@')[0] || 'User',
       photoURL: null
     };
   }
@@ -181,7 +181,7 @@ export const getCurrentUser = (): AuthUser | null => {
 
 // Listen to auth state changes
 export const onAuthStateChange = (callback: (user: AuthUser | null) => void): (() => void) => {
-  if (useFirebase()) {
+  if (useFirebase() && auth) {
     return auth.onAuthStateChanged((firebaseUser) => {
       callback(firebaseUser ? toAuthUser(firebaseUser) : null);
     });

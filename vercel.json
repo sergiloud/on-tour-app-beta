@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "installCommand": "npm install --legacy-peer-deps",
+  "installCommand": "npm ci --legacy-peer-deps --prefer-offline",
   "framework": null,
   "rewrites": [
     {
@@ -12,7 +12,10 @@
   ],
   "build": {
     "env": {
-      "NODE_VERSION": "20"
+      "NODE_VERSION": "20",
+      "NPM_CONFIG_LOGLEVEL": "error",
+      "VITE_BUILD_CACHE": "true"
     }
-  }
+  },
+  "crons": []
 }

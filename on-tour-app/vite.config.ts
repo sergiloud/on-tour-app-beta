@@ -7,30 +7,31 @@ import path from 'path';
 
 export default defineConfig({
   base: '/', // Always use root path for Vercel deployment
+  esbuild: {
+    drop: ['console', 'debugger'],
+    legalComments: 'none'
+  },
   plugins: [
     react(),
-    // Bundle analyzer (genera stats.html en build)
-    visualizer({
-      filename: './dist/stats.html',
-      open: false, // No abrir automáticamente
-      gzipSize: true,
-      brotliSize: true,
-      template: 'treemap', // 'sunburst' | 'treemap' | 'network'
-    }),
-    // Brotli compression (best compression, modern browsers)
-    viteCompression({
-      algorithm: 'brotliCompress',
-      ext: '.br',
-      threshold: 1024, // Only compress files > 1KB
-      deleteOriginFile: false
-    }),
-    // Gzip compression (fallback for older browsers)
-    viteCompression({
-      algorithm: 'gzip',
-      ext: '.gz',
-      threshold: 1024,
-      deleteOriginFile: false
-    }),
+    // Bundle analyzer (solo en local, desactivado en Vercel para builds más rápidos)
+    ...(process.env.VERCEL ? [] : [
+      visualizer({
+        filename: './dist/stats.html',
+        open: false,
+        gzipSize: false, // Desactivar para builds más rápidos
+        brotliSize: false,
+        template: 'treemap',
+      }),
+    ]),
+    // Vercel ya hace compresión automática, solo comprimir en local
+    ...(process.env.VERCEL ? [] : [
+      viteCompression({
+        algorithm: 'gzip',
+        ext: '.gz',
+        threshold: 10240, // Solo archivos > 10KB
+        deleteOriginFile: false
+      }),
+    ]),
     VitePWA({
       strategies: 'injectManifest', // Usar nuestro SW personalizado
       srcDir: 'src',
@@ -88,38 +89,11 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild', // Mucho más rápido que terser (4-5x faster)
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'], // Modern browsers
     cssCodeSplit: true, // Split CSS for better caching
     modulePreload: {
       polyfill: true
-    },
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.debug', 'console.info', 'console.warn'],
-        passes: 3, // More aggressive compression (was 2)
-        unsafe: true,
-        unsafe_arrows: true,
-        unsafe_methods: true,
-        unsafe_comps: true,
-        dead_code: true,
-        conditionals: true,
-        evaluate: true,
-        booleans: true,
-        loops: true,
-        unused: true,
-        toplevel: true,
-        inline: 2
-      },
-      mangle: {
-        safari10: true, // Better Safari compatibility
-        toplevel: true
-      },
-      format: {
-        comments: false
-      }
     },
     rollupOptions: {
       output: {

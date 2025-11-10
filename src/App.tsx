@@ -58,8 +58,8 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {/* Service Worker Update Notifications */}
-      <ServiceWorkerUpdater />
+      {/* SERVICE WORKER DISABLED - causes MIME type errors on Vercel */}
+      {/* <ServiceWorkerUpdater /> */}
 
       {/* Sonner toast notifications */}
       <Toaster

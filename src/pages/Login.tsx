@@ -454,9 +454,11 @@ const Login: React.FC = () => {
         console.log('[LOGIN] Loading user profile from Firestore...');
         const userData = await FirestoreUserService.getUserData(authUser.uid);
         console.log('[LOGIN] Firestore userData:', userData);
+        console.log('[LOGIN] Firestore userData JSON:', JSON.stringify(userData, null, 2));
         if (userData) {
           userProfile = userData.profile;
           console.log('[LOGIN] Extracted userProfile:', userProfile);
+          console.log('[LOGIN] Extracted userProfile JSON:', JSON.stringify(userProfile, null, 2));
           console.log('[LOGIN] userProfile.defaultOrgId:', userProfile?.defaultOrgId);
           // Update local preferences if available
           if (userData.preferences) {

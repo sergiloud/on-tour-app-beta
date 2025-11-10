@@ -3,7 +3,8 @@
  * Abstrae la lógica de filtrado y ordenamiento de contactos
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { useDebouncedValue } from './useDebouncedValue';
 import type { Contact, ContactFilters } from '../types/crm';
 import { contactStore } from '../shared/contactStore';
 
@@ -32,10 +33,13 @@ export const useContactFilters = (contacts: Contact[]): UseContactFiltersResult 
   const [filters, setFilters] = useState<ContactFilters>(DEFAULT_FILTERS);
   const [sortBy, setSortBy] = useState<SortBy>('name');
 
-  // Aplicar filtros
+  // ✅ Debounce del término de búsqueda para evitar filtrados excesivos
+  const debouncedSearch = useDebouncedValue(filters.search, 300);
+
+  // Aplicar filtros con búsqueda debounceda
   const filteredContacts = useMemo(() => {
-    return contactStore.search(filters);
-  }, [contacts.length, filters]);
+    return contactStore.search({ ...filters, search: debouncedSearch });
+  }, [contacts.length, filters.type, filters.priority, filters.status, filters.tags, filters.city, filters.country, debouncedSearch]);
 
   // Aplicar ordenamiento
   const sortedContacts = useMemo(() => {

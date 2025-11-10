@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Plus, Search, Download, Upload, X, Building2, Users,
   Mail, Phone, MapPin, Tag as TagIcon, Loader2, SlidersHorizontal,
@@ -59,136 +60,15 @@ export const Contacts: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'history'>('info');
   const [newNote, setNewNote] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     filters, setFilters, sortBy, setSortBy, sortedContacts, resetFilters
   } = useContactFilters(contacts);
 
-  // ✨ Sincronización automática inteligente: venues y promoters de shows → contactos CRM
-  useEffect(() => {
-    if (!shows || shows.length === 0 || !createContactMutation) return;
-
-    const syncShowDataToContacts = async () => {
-      // Map de contactos existentes para evitar duplicados
-      const existingVenues = new Set(
-        contacts
-          .filter(c => c.type === 'venue_manager')
-          .map(c => `${c.company?.toLowerCase()}_${c.city?.toLowerCase()}_${c.country}`)
-      );
-
-      const existingPromoters = new Set(
-        contacts
-          .filter(c => c.type === 'promoter')
-          .map(c => `${c.firstName?.toLowerCase()}_${c.lastName?.toLowerCase()}_${c.company?.toLowerCase()}`)
-      );
-
-      const uniqueVenues = new Map<string, { venue: string; city: string; country: string; lat: number; lng: number }>();
-      const uniquePromoters = new Map<string, { name: string; company?: string; city: string; country: string }>();
-
-      // Procesar shows y extraer venues y promoters
-      shows.forEach((show: any) => {
-        // Sincronizar Venues
-        if (show.venue && show.venue !== 'TBA' && show.city && show.country) {
-          const venueKey = `${show.venue.toLowerCase()}_${show.city.toLowerCase()}_${show.country}`;
-          if (!existingVenues.has(venueKey) && !uniqueVenues.has(venueKey)) {
-            uniqueVenues.set(venueKey, {
-              venue: show.venue,
-              city: show.city,
-              country: show.country,
-              lat: show.lat || 0,
-              lng: show.lng || 0
-            });
-          }
-        }
-
-        // Sincronizar Promoters
-        if (show.promoter && show.promoter.trim() && show.city && show.country) {
-          const nameParts = show.promoter.trim().split(' ');
-          const firstName = nameParts[0] || show.promoter;
-          const lastName = nameParts.slice(1).join(' ') || '';
-          const promoterKey = `${firstName.toLowerCase()}_${lastName.toLowerCase()}_${show.promoter.toLowerCase()}`;
-
-          if (!existingPromoters.has(promoterKey) && !uniquePromoters.has(promoterKey)) {
-            uniquePromoters.set(promoterKey, {
-              name: show.promoter,
-              company: show.name || undefined,
-              city: show.city,
-              country: show.country
-            });
-          }
-        }
-      });
-
-      let syncedCount = 0;
-
-      // Crear contactos para nuevos venues
-      for (const [_, venueData] of uniqueVenues) {
-        try {
-          const newContact: Partial<Contact> = {
-            firstName: venueData.venue,
-            lastName: '',
-            company: venueData.venue,
-            type: 'venue_manager',
-            city: venueData.city,
-            country: venueData.country,
-            priority: 'medium',
-            status: 'pending',
-            tags: ['auto-sync', 'venue', 'shows-integration'],
-            notes: [{
-              id: `note_${Date.now()}_${Math.random()}`,
-              content: `🎪 Venue auto-sincronizado desde shows el ${new Date().toLocaleDateString('es-ES')}`,
-              createdAt: new Date().toISOString()
-            }],
-            interactions: []
-          };
-
-          await createContactMutation.mutateAsync(newContact as Contact);
-          syncedCount++;
-          console.log(`✅ Venue: ${venueData.venue} (${venueData.city})`);
-        } catch (err) {
-          console.error(`❌ Error venue ${venueData.venue}:`, err);
-        }
-      }
-
-      // Crear contactos para nuevos promoters
-      for (const [_, promoterData] of uniquePromoters) {
-        try {
-          const nameParts = promoterData.name.trim().split(' ');
-          const newContact: Partial<Contact> = {
-            firstName: nameParts[0],
-            lastName: nameParts.slice(1).join(' '),
-            company: promoterData.company,
-            type: 'promoter',
-            city: promoterData.city,
-            country: promoterData.country,
-            priority: 'high',
-            status: 'active',
-            tags: ['auto-sync', 'promoter', 'shows-integration'],
-            notes: [{
-              id: `note_${Date.now()}_${Math.random()}`,
-              content: `🎤 Promoter auto-sincronizado desde shows el ${new Date().toLocaleDateString('es-ES')}`,
-              createdAt: new Date().toISOString()
-            }],
-            interactions: []
-          };
-
-          await createContactMutation.mutateAsync(newContact as Contact);
-          syncedCount++;
-          console.log(`✅ Promoter: ${promoterData.name}`);
-        } catch (err) {
-          console.error(`❌ Error promoter ${promoterData.name}:`, err);
-        }
-      }
-
-      if (syncedCount > 0) {
-        console.log(`🔄 Sincronización completa: ${uniqueVenues.size} venues + ${uniquePromoters.size} promoters = ${syncedCount} nuevos contactos`);
-      }
-    };
-
-    // Ejecutar sincronización con delay para evitar saturar la API
-    const timeoutId = setTimeout(syncShowDataToContacts, 2000);
-    return () => clearTimeout(timeoutId);
-  }, [shows, contacts, createContactMutation]);
+  // ❌ REMOVED: Auto-sync agresivo que creaba contactos automáticamente
+  // Esto causaba lag al navegar porque ejecutaba mutations masivas en background
+  // Si se necesita, hacer manualmente con un botón "Sync from Shows"
 
   // Filtrar por categoría + ubicación
   const categoryFilteredContacts = useMemo(() => {
@@ -279,6 +159,14 @@ export const Contacts: React.FC = () => {
     };
     return stats;
   }, [categoryFilteredContacts]);
+
+  // ✅ Virtualización para renderizar solo los contactos visibles
+  const rowVirtualizer = useVirtualizer({
+    count: categoryFilteredContacts.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 73, // altura estimada de cada fila en px
+    overscan: 5, // renderizar 5 items extra arriba/abajo para scroll suave
+  });
 
   const handleCreateContact = () => { setEditingContact(undefined); setShowEditor(true); };
   const handleEditContact = (contact: Contact) => { setEditingContact(contact); setShowEditor(true); setSelectedContact(null); };
@@ -582,21 +470,42 @@ export const Contacts: React.FC = () => {
               </div>
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 z-10">
-                <tr>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Contacto</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Empresa / Cargo</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Info</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Ubicación</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Prioridad</th>
-                  <th className="text-right px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                {categoryFilteredContacts.map((contact) => (
-                  <tr key={contact.id} onClick={() => handleViewContact(contact)}
-                    className={`hover:bg-interactive-hover cursor-pointer transition-all duration-150 ${selectedContact?.id === contact.id ? 'bg-accent-500/10 border-l-2 border-accent-500' : ''}`}>
+            <div ref={tableContainerRef} className="flex-1 overflow-auto">
+              <table className="w-full">
+                <thead className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 z-10">
+                  <tr>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Contacto</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Empresa / Cargo</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Info</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Ubicación</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Prioridad</th>
+                    <th className="text-right px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody 
+                  className="divide-y divide-slate-200 dark:divide-white/5"
+                  style={{
+                    height: `${rowVirtualizer.getTotalSize()}px`,
+                    position: 'relative',
+                  }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const contact = categoryFilteredContacts[virtualRow.index];
+                    if (!contact) return null;
+                    return (
+                      <tr 
+                        key={contact.id} 
+                        onClick={() => handleViewContact(contact)}
+                        className={`hover:bg-interactive-hover cursor-pointer transition-all duration-150 ${selectedContact?.id === contact.id ? 'bg-accent-500/10 border-l-2 border-accent-500' : ''}`}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: `${virtualRow.size}px`,
+                          transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                      >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-sm font-semibold shadow-lg shadow-accent-500/20">
@@ -635,24 +544,26 @@ export const Contacts: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={(e) => { e.stopPropagation(); handleViewContact(contact); }}
+                        <button onClick={(e) => { e.stopPropagation(); handleViewContact(contact!); }}
                           className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400 transition-all duration-150" title="Ver">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleEditContact(contact); }}
+                        <button onClick={(e) => { e.stopPropagation(); handleEditContact(contact!); }}
                           className="p-2 rounded-lg hover:bg-blue-500/20 text-theme-secondary hover:text-blue-400 transition-all duration-150" title="Editar">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleDeleteContact(contact.id); }}
+                        <button onClick={(e) => { e.stopPropagation(); handleDeleteContact(contact!.id); }}
                           className="p-2 rounded-lg hover:bg-red-500/20 text-theme-secondary hover:text-red-400 transition-all duration-150" title="Eliminar">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 

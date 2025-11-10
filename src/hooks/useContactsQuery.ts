@@ -45,8 +45,9 @@ export const useContactsQuery = () => {
       // Use hybrid service for cloud sync
       return await HybridContactService.getAllContacts(userId);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos (antes era cacheTime)
+    staleTime: 30 * 60 * 1000, // ✅ 30 minutos - contactos cambian poco
+    gcTime: 60 * 60 * 1000, // ✅ 60 minutos en cache
+    refetchOnWindowFocus: false, // ✅ No refetch al cambiar ventana
   });
 };
 

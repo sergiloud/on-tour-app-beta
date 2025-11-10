@@ -92,10 +92,10 @@ export class HybridContactService {
       try {
         const cloudContacts = await FirestoreContactService.getUserContacts(userId);
         
-        // Update localStorage with cloud data
-        cloudContacts.forEach(contact => {
-          contactStore.add(contact);
-        });
+        // ✅ Batch update - una sola notificación
+        if (cloudContacts.length > 0) {
+          contactStore.setAll(cloudContacts);
+        }
         
         return cloudContacts;
       } catch (error) {
@@ -135,10 +135,10 @@ export class HybridContactService {
     try {
       const cloudContacts = await FirestoreContactService.getUserContacts(userId);
       
-      // Update localStorage with cloud data
-      cloudContacts.forEach(contact => {
-        contactStore.add(contact);
-      });
+      // ✅ Batch update - una sola notificación para todos los contactos
+      contactStore.setAll(cloudContacts);
+      
+      console.log(`[HybridContactService] ✅ Synced ${cloudContacts.length} contacts from cloud`);
     } catch (error) {
       console.warn('⚠️ Failed to sync from cloud:', error);
     }
@@ -154,10 +154,11 @@ export class HybridContactService {
 
     try {
       return FirestoreContactService.subscribeToUserContacts(userId, (contacts) => {
-        // Update localStorage with real-time data
-        contacts.forEach(contact => {
-          contactStore.add(contact);
-        });
+        // ✅ Batch update - evita 454 notificaciones individuales
+        contactStore.updateMany(contacts);
+        
+        // Dispatch evento para React Query
+        window.dispatchEvent(new CustomEvent('contacts-updated', { detail: contacts }));
       });
     } catch (error) {
       console.warn('⚠️ Failed to set up real-time sync:', error);

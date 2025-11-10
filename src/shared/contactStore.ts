@@ -80,6 +80,23 @@ class ContactStore {
     this.notify();
   }
 
+  // Batch add - para sincronización masiva sin múltiples notificaciones
+  setAll(contacts: Contact[]): void {
+    this.contacts.clear();
+    contacts.forEach(contact => {
+      this.contacts.set(contact.id, contact);
+    });
+    this.notify();
+  }
+
+  // Batch update - para actualizar múltiples contactos a la vez
+  updateMany(contacts: Contact[]): void {
+    contacts.forEach(contact => {
+      this.contacts.set(contact.id, contact);
+    });
+    this.notify();
+  }
+
   update(id: string, updates: Partial<Contact>): void {
     const contact = this.contacts.get(id);
     if (contact) {

@@ -91,8 +91,13 @@ export default defineConfig({
               id.includes('node_modules/react-dom') ||
               id.includes('node_modules/react-router') ||
               id.includes('node_modules/react-is') ||
-              id.includes('node_modules/scheduler')) {
+              id.includes('node_modules/scheduler') ||
+              id.includes('node_modules/prop-types')) {
             return 'vendor-react';
+          }
+          // Recharts separate (depends on React)
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
+            return 'vendor-charts';
           }
           // UI pesado (framer-motion + lucide)
           if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react')) {
@@ -100,8 +105,7 @@ export default defineConfig({
           }
           // Bibliotecas pesadas que se cargan bajo demanda
           if (id.includes('node_modules/maplibre-gl') || id.includes('node_modules/exceljs') ||
-              id.includes('node_modules/xlsx') || id.includes('node_modules/recharts') ||
-              id.includes('node_modules/d3-')) {
+              id.includes('node_modules/xlsx')) {
             return 'vendor-heavy';
           }
           // Todo lo demás de node_modules en un solo vendor

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd on-tour-app && npm run build",
+  "buildCommand": "bash build.sh",
   "outputDirectory": "on-tour-app/dist",
-  "installCommand": "cd on-tour-app && npm install --legacy-peer-deps",
+  "installCommand": "bash install.sh",
   "framework": null,
   "rewrites": [
     {

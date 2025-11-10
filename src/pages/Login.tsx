@@ -451,9 +451,13 @@ const Login: React.FC = () => {
       let userProfile = null;
       try {
         const { FirestoreUserService } = await import('../services/firestoreUserService');
+        console.log('[LOGIN] Loading user profile from Firestore...');
         const userData = await FirestoreUserService.getUserData(authUser.uid);
+        console.log('[LOGIN] Firestore userData:', userData);
         if (userData) {
           userProfile = userData.profile;
+          console.log('[LOGIN] Extracted userProfile:', userProfile);
+          console.log('[LOGIN] userProfile.defaultOrgId:', userProfile?.defaultOrgId);
           // Update local preferences if available
           if (userData.preferences) {
             if (userData.preferences.language) {
@@ -461,13 +465,19 @@ const Login: React.FC = () => {
               setLang(userData.preferences.language);
             }
           }
+        } else {
+          console.warn('[LOGIN] ⚠️ userData is null/undefined from Firestore!');
         }
       } catch (e) {
-        console.warn('[LOGIN] Could not load user profile from Firestore:', e);
+        console.error('[LOGIN] ❌ Error loading user profile from Firestore:', e);
       }
 
       const finalOrgId = userProfile?.defaultOrgId || defaultOrg;
-      console.log('[LOGIN] Setting organization:', finalOrgId);
+      console.log('[LOGIN] 🎯 Final organization decision:', {
+        userProfileDefaultOrgId: userProfile?.defaultOrgId,
+        fallbackDefaultOrg: defaultOrg,
+        finalOrgId
+      });
 
       // Set orgId BEFORE clearing demo data (so it persists)
       setCurrentOrgId(finalOrgId);

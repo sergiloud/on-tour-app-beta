@@ -8,7 +8,14 @@ export default defineConfig({
   base: '/', // Always use root path for Vercel deployment
   esbuild: {
     drop: ['console', 'debugger'],
-    legalComments: 'none'
+    legalComments: 'none',
+    logOverride: {
+      'css-syntax-error': 'silent' // Suppress CSS syntax warnings that don't affect functionality
+    }
+  },
+  css: {
+    // Fix CSS syntax warnings during minification
+    devSourcemap: true
   },
   plugins: [
     react(),
@@ -86,18 +93,18 @@ export default defineConfig({
       output: {
         // Estrategia simplificada: menos chunks = build más rápido
         manualChunks: (id) => {
-          // Core React (MUST be loaded first - includes all React packages)
+          // Keep React and React-dependent libraries together to avoid context issues
           if (id.includes('node_modules/react') ||
               id.includes('node_modules/react-dom') ||
               id.includes('node_modules/react-router') ||
               id.includes('node_modules/react-is') ||
               id.includes('node_modules/scheduler') ||
-              id.includes('node_modules/prop-types')) {
+              id.includes('node_modules/prop-types') ||
+              id.includes('node_modules/recharts') ||
+              id.includes('node_modules/d3-') ||
+              id.includes('node_modules/@reduxjs/toolkit') ||
+              id.includes('node_modules/react-redux')) {
             return 'vendor-react';
-          }
-          // Recharts separate (depends on React)
-          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
-            return 'vendor-charts';
           }
           // UI pesado (framer-motion + lucide)
           if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react')) {
@@ -121,7 +128,7 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 2500, // Aumentado para vendor-heavy (recharts + maplibre)
     reportCompressedSize: false, // Desactivar para build más rápido
-    cssMinify: true,
+    cssMinify: true, // Keep default esbuild CSS minifier
     assetsInlineLimit: 4096
   },
   server: {

@@ -407,6 +407,8 @@ const Login: React.FC = () => {
     const p = password;
     const rec = remember;
 
+    console.log('[LOGIN] Starting login process...', { email: u, hasPassword: !!p, isFirebaseConfigured: isFirebaseConfigured() });
+
     dispatch({ type: 'START_LOADING' });
 
     try { trackEvent('login.submit', { u }); } catch { }
@@ -416,6 +418,7 @@ const Login: React.FC = () => {
     const passwordError = validatePassword(p);
 
     if (usernameOrEmailError || passwordError) {
+      console.log('[LOGIN] Validation errors:', { usernameOrEmailError, passwordError });
       setFieldErrors({ usernameOrEmail: usernameOrEmailError, password: passwordError });
       setTouched({ usernameOrEmail: true, password: true });
       dispatch({ type: 'SET_ERROR', payload: usernameOrEmailError || passwordError || '' });
@@ -435,8 +438,10 @@ const Login: React.FC = () => {
     try {
       // Try Firebase authentication first if configured
       if (isFirebaseConfigured()) {
+        console.log('[LOGIN] Attempting Firebase login...');
         try {
           const authUser = await authService.signIn(u, p);
+          console.log('[LOGIN] Firebase login successful:', { uid: authUser.uid, email: authUser.email });
 
           // Default org for new Firebase users
           const defaultOrg = ORG_AGENCY_SHALIZI;
@@ -496,6 +501,7 @@ const Login: React.FC = () => {
           return;
         } catch (firebaseError: any) {
           // Firebase auth failed - show appropriate error
+          console.log('[LOGIN] Firebase auth error:', firebaseError);
           let errorMessage = 'Login failed. Please check your credentials.';
 
           if (firebaseError.code === 'auth/user-not-found') {
@@ -506,6 +512,8 @@ const Login: React.FC = () => {
             errorMessage = 'Please enter a valid email address.';
           } else if (firebaseError.code === 'auth/too-many-requests') {
             errorMessage = 'Too many failed login attempts. Please try again later.';
+          } else if (firebaseError.code === 'auth/invalid-credential') {
+            errorMessage = 'Invalid credentials. Please check your email and password.';
           }
 
           dispatch({ type: 'SET_ERROR', payload: errorMessage });
@@ -515,6 +523,7 @@ const Login: React.FC = () => {
       }
 
       // Fallback to demo authentication if Firebase not configured
+      console.log('[LOGIN] Using demo authentication fallback...');
       await new Promise(resolve => setTimeout(resolve, 800));
 
       const match = (usersMap as any)[u] as { userId: string; orgId: string; displayName: string } | undefined;
@@ -522,8 +531,16 @@ const Login: React.FC = () => {
       // Password validation: demo users use username as password, real users have specific passwords
       const passwordMap: Record<string, string> = {
         'danny@djdannyavila.com': 'Indahouse69!',
-        'booking@prophecyofficial.com': 'Casillas123'
+        'booking@prophecyofficial.com': 'Casillas123!'
       };
+
+      console.log('[LOGIN] Demo fallback - checking credentials...', { 
+        email: u, 
+        hasMatch: !!match,
+        expectedPassword: passwordMap[u],
+        providedPassword: p,
+        passwordsMatch: passwordMap[u] === p
+      });
 
       const isValidPassword = match && (
         (passwordMap[u] && p === passwordMap[u]) || // Real user with specific password
@@ -532,6 +549,7 @@ const Login: React.FC = () => {
 
       if (!match || !isValidPassword) {
         // Provide specific error messages based on the situation
+        console.log('[LOGIN] Demo auth failed:', { hasMatch: !!match, isValidPassword });
         if (!match) {
           dispatch({ type: 'SET_ERROR', payload: "We don't recognize this email address. Don't have an account? Sign up instead." });
         } else {
@@ -540,6 +558,8 @@ const Login: React.FC = () => {
         try { trackEvent('login.error', { u }); } catch { }
         return;
       }
+
+      console.log('[LOGIN] Demo auth successful, setting user...', match);
 
       setUserId(match.userId);
       updateProfile?.({ id: match.userId, defaultOrgId: match.orgId });

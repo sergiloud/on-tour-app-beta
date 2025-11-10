@@ -5,11 +5,18 @@ import { getAnalytics, Analytics } from 'firebase/analytics';
 
 // Helper to check if Firebase is configured
 export const isFirebaseConfigured = () => {
-  return !!(
+  const configured = !!(
     import.meta.env.VITE_FIREBASE_API_KEY &&
     import.meta.env.VITE_FIREBASE_PROJECT_ID &&
     import.meta.env.VITE_FIREBASE_API_KEY !== 'your_api_key_here'
   );
+  console.log('[FIREBASE] Configuration check:', {
+    configured,
+    hasApiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
+    hasProjectId: !!import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    apiKeyValue: import.meta.env.VITE_FIREBASE_API_KEY ? 'SET' : 'MISSING'
+  });
+  return configured;
 };
 
 // Mock Firebase app for development when env vars are missing

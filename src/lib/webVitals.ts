@@ -70,8 +70,11 @@ function sendToAnalytics(metric: WebVitalsReport) {
             });
         }
 
-        // Example: Custom analytics endpoint
-        if (navigator.sendBeacon) {
+        // Custom analytics endpoint - Disabled for SPA deployment
+        // Note: This would require a backend endpoint to collect analytics
+        // For now, metrics are only stored locally and in console
+        
+        /* if (navigator.sendBeacon) {
             const body = JSON.stringify({
                 name: metric.name,
                 value: metric.value,
@@ -82,7 +85,7 @@ function sendToAnalytics(metric: WebVitalsReport) {
             });
 
             navigator.sendBeacon('/api/analytics/web-vitals', body);
-        }
+        } */
     }
 }
 

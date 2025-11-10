@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico - On Tour App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'SF Pro Display', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0 0 10px 0;
+      color: #1a202c;
+      font-size: 32px;
+      font-weight: 700;
+    }
+    h2 {
+      margin: 30px 0 15px 0;
+      color: #2d3748;
+      font-size: 20px;
+      font-weight: 600;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+    p {
+      margin: 0 0 15px 0;
+      color: #4a5568;
+      line-height: 1.6;
+    }
+    .btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    .btn:hover {
+      background: #5a67d8;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .success {
+      background: #c6f6d5;
+      color: #22543d;
+      border-left: 4px solid #38a169;
+    }
+    .error {
+      background: #fed7d7;
+      color: #742a2a;
+      border-left: 4px solid #e53e3e;
+    }
+    .info {
+      background: #bee3f8;
+      color: #2c5282;
+      border-left: 4px solid #3182ce;
+    }
+    .warning {
+      background: #feebc8;
+      color: #7c2d12;
+      border-left: 4px solid #dd6b20;
+    }
+    .hidden {
+      display: none;
+    }
+    pre {
+      background: #f7fafc;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      margin: 15px 0;
+      border: 1px solid #e2e8f0;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+    .metric {
+      display: inline-block;
+      background: #edf2f7;
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin: 5px 10px 5px 0;
+      font-weight: 600;
+    }
+    .metric-value {
+      color: #667eea;
+      font-size: 18px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>🔍 Diagnóstico de On Tour App</h1>
+      <p>Esta herramienta te ayudará a diagnosticar problemas con la aplicación.</p>
+      
+      <div class="section">
+        <button class="btn" onclick="checkServiceWorkers()">🔧 Verificar Service Workers</button>
+        <button class="btn" onclick="checkLocalStorage()">💾 Verificar LocalStorage</button>
+        <button class="btn" onclick="checkFirebase()">🔥 Verificar Firebase</button>
+        <button class="btn" onclick="checkShows()">📅 Verificar Shows</button>
+        <button class="btn" onclick="runAll()">▶️ Ejecutar Todo</button>
+      </div>
+      
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    let results = '';
+
+    function addResult(title, content, type = 'info') {
+      const html = `
+        <div class="status ${type}">
+          <h2>${title}</h2>
+          ${content}
+        </div>
+      `;
+      results += html;
+      document.getElementById('results').innerHTML = results;
+    }
+
+    function addMetric(label, value) {
+      return `<div class="metric"><span>${label}:</span> <span class="metric-value">${value}</span></div>`;
+    }
+
+    window.checkServiceWorkers = async function() {
+      try {
+        if (!('serviceWorker' in navigator)) {
+          addResult('❌ Service Workers', '<p>No soportado en este navegador</p>', 'warning');
+          return;
+        }
+
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        
+        if (registrations.length === 0) {
+          addResult('✅ Service Workers', '<p>No hay Service Workers registrados (correcto)</p>', 'success');
+        } else {
+          let html = `<p><strong>⚠️ Encontrados ${registrations.length} Service Worker(s):</strong></p><pre>`;
+          registrations.forEach((reg, i) => {
+            html += `[${i + 1}] Scope: ${reg.scope}\n`;
+            html += `    Active: ${reg.active ? 'YES' : 'NO'}\n`;
+            html += `    Waiting: ${reg.waiting ? 'YES' : 'NO'}\n`;
+            html += `    Installing: ${reg.installing ? 'YES' : 'NO'}\n\n`;
+          });
+          html += '</pre><p>Deberías visitar <code>/unregister-sw.html</code> para limpiarlos.</p>';
+          addResult('⚠️ Service Workers Activos', html, 'warning');
+        }
+      } catch (error) {
+        addResult('❌ Error', `<pre>${error.stack}</pre>`, 'error');
+      }
+    };
+
+    window.checkLocalStorage = function() {
+      try {
+        const keys = Object.keys(localStorage);
+        const total = keys.length;
+        
+        const showsKey = 'shows-store-v3';
+        const contactsKey = 'on-tour-contacts';
+        const demoKeys = keys.filter(k => k.startsWith('demo:') || k.startsWith('secure:demo:'));
+        
+        let html = addMetric('Total de claves', total);
+        html += addMetric('Claves demo', demoKeys.length);
+        
+        // Check shows
+        if (keys.includes(showsKey)) {
+          try {
+            const shows = JSON.parse(localStorage.getItem(showsKey) || '[]');
+            html += addMetric('Shows en localStorage', shows.length);
+            if (shows.length > 0) {
+              html += `<pre>Primeros 3 shows:\n${JSON.stringify(shows.slice(0, 3), null, 2).substring(0, 500)}...</pre>`;
+            }
+          } catch (e) {
+            html += '<p>❌ Error parseando shows</p>';
+          }
+        } else {
+          html += '<p>ℹ️ No hay shows en localStorage (esperado para usuarios Firebase)</p>';
+        }
+
+        // Check contacts
+        if (keys.includes(contactsKey)) {
+          try {
+            const contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
+            html += addMetric('Contactos en localStorage', contacts.length);
+          } catch (e) {
+            html += '<p>❌ Error parseando contactos</p>';
+          }
+        }
+
+        if (demoKeys.length > 0) {
+          html += '<p class="warning">⚠️ Hay datos demo en localStorage. Considera limpiarlos con <code>/unregister-sw.html</code></p>';
+          html += `<pre>Claves demo:\n${demoKeys.join('\n')}</pre>`;
+        }
+
+        addResult('💾 LocalStorage', html, total > 50 ? 'warning' : 'info');
+      } catch (error) {
+        addResult('❌ Error', `<pre>${error.stack}</pre>`, 'error');
+      }
+    };
+
+    window.checkFirebase = function() {
+      try {
+        const hasConfig = typeof window !== 'undefined' && (window).__FIREBASE_CONFIG__ !== undefined;
+        
+        if (!hasConfig) {
+          addResult('❌ Firebase', '<p>Firebase NO está configurado</p>', 'error');
+          return;
+        }
+
+        const config = (window).__FIREBASE_CONFIG__;
+        
+        let html = '<p>✅ Firebase está configurado</p>';
+        html += addMetric('Project ID', config.projectId || 'N/A');
+        html += addMetric('API Key', config.apiKey ? 'SET' : 'MISSING');
+        html += addMetric('Auth Domain', config.authDomain || 'N/A');
+        
+        addResult('🔥 Firebase', html, 'success');
+      } catch (error) {
+        addResult('❌ Error', `<pre>${error.stack}</pre>`, 'error');
+      }
+    };
+
+    window.checkShows = function() {
+      try {
+        // Check localStorage
+        const showsKey = 'shows-store-v3';
+        let localShows = [];
+        try {
+          localShows = JSON.parse(localStorage.getItem(showsKey) || '[]');
+        } catch (e) {
+          console.error('Error parsing shows:', e);
+        }
+
+        let html = addMetric('Shows en localStorage', localShows.length);
+        
+        if (localShows.length > 0) {
+          // Group by status
+          const byStatus = localShows.reduce((acc, show) => {
+            acc[show.status] = (acc[show.status] || 0) + 1;
+            return acc;
+          }, {});
+          
+          html += '<p><strong>Por estado:</strong></p><pre>';
+          Object.entries(byStatus).forEach(([status, count]) => {
+            html += `${status}: ${count}\n`;
+          });
+          html += '</pre>';
+
+          // Show date range
+          const dates = localShows.map(s => new Date(s.date).getTime()).sort();
+          const earliest = new Date(dates[0]).toISOString().split('T')[0];
+          const latest = new Date(dates[dates.length - 1]).toISOString().split('T')[0];
+          
+          html += addMetric('Rango de fechas', `${earliest} a ${latest}`);
+        } else {
+          html += '<p>ℹ️ No hay shows en localStorage. Si estás usando Firebase, esto es normal.</p>';
+          html += '<p>Los shows deberían cargarse desde Firestore al hacer login.</p>';
+        }
+
+        addResult('📅 Shows', html, localShows.length === 0 ? 'warning' : 'success');
+      } catch (error) {
+        addResult('❌ Error', `<pre>${error.stack}</pre>`, 'error');
+      }
+    };
+
+    window.runAll = async function() {
+      results = '';
+      document.getElementById('results').innerHTML = '';
+      
+      checkServiceWorkers();
+      await new Promise(r => setTimeout(r, 100));
+      
+      checkFirebase();
+      await new Promise(r => setTimeout(r, 100));
+      
+      checkLocalStorage();
+      await new Promise(r => setTimeout(r, 100));
+      
+      checkShows();
+    };
+
+    // Auto-run on load
+    window.addEventListener('load', () => {
+      setTimeout(runAll, 500);
+    });
+  </script>
+</body>
+</html>

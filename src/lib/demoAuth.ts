@@ -47,8 +47,10 @@ function set<T>(key: string, value: T) {
 }
 
 const DEFAULT_USER = 'default_user';
-import { ORG_ARTIST_DANNY } from './tenants';
+export const PROPHECY_USER = 'user_prophecy_booking';
+import { ORG_ARTIST_DANNY, ORG_ARTIST_PROPHECY } from './tenants';
 const DEFAULT_PROFILE: UserProfile = { id: DEFAULT_USER, name: 'Demo User', email: 'user@example.com', notifyEmail: true, notifySlack: false, defaultOrgId: ORG_ARTIST_DANNY };
+const PROPHECY_PROFILE: UserProfile = { id: PROPHECY_USER, name: 'Prophecy Booking', email: 'booking@prophecyofficial.com', notifyEmail: true, notifySlack: false, defaultOrgId: ORG_ARTIST_PROPHECY };
 const DEFAULT_PREFS: UserPrefs = {
   lang: 'en', theme: 'auto', highContrast: false, currency: 'EUR', unit: 'km', presentationMode: false,
   comparePrev: false, defaultRegion: 'all', defaultStatuses: ['confirmed', 'pending', 'offer']
@@ -60,8 +62,10 @@ export function ensureDemoAuth() {
     if (!cur) set(K_CURRENT, DEFAULT_USER);
     const profiles = get<Record<string, UserProfile>>(K_PROFILES, {});
     if (!profiles[DEFAULT_USER]) { profiles[DEFAULT_USER] = DEFAULT_PROFILE; set(K_PROFILES, profiles); }
+    if (!profiles[PROPHECY_USER]) { profiles[PROPHECY_USER] = PROPHECY_PROFILE; set(K_PROFILES, profiles); }
     const prefs = get<Record<string, UserPrefs>>(K_PREFS, {});
     if (!prefs[DEFAULT_USER]) { prefs[DEFAULT_USER] = DEFAULT_PREFS; set(K_PREFS, prefs); }
+    if (!prefs[PROPHECY_USER]) { prefs[PROPHECY_USER] = DEFAULT_PREFS; set(K_PREFS, prefs); }
   } catch { }
 }
 
@@ -95,6 +99,44 @@ export function upsertUserPrefs(id: string, patch: Partial<UserPrefs>) {
 
 export function readAllPrefs(id: string): UserPrefs {
   return getUserPrefs(id) ?? DEFAULT_PREFS;
+}
+
+// Demo login function for Prophecy user
+export function loginProphecy(email: string, password: string): boolean {
+  if (email === 'booking@prophecyofficial.com' && password === 'Casillas123') {
+    setCurrentUserId(PROPHECY_USER);
+    setAuthed(true);
+    
+    // Load Prophecy data when this user logs in (frontend fallback)
+    try {
+      const { loadProphecyData } = require('./prophecyDataset');
+      loadProphecyData();
+    } catch (e) {
+      console.warn('Could not load frontend Prophecy data:', e);
+    }
+
+    // Initialize backend data asynchronously
+    try {
+      import('../services/prophecyBackendService').then(({ ProphecyBackendService }) => {
+        ProphecyBackendService.initializeProphecyUser('org_artist_prophecy');
+      });
+    } catch (e) {
+      console.warn('Could not initialize backend Prophecy data:', e);
+    }
+
+    return true;
+  }
+  return false;
+}
+
+// Get available users for demo purposes
+export function getAvailableUsers(): Array<{id: string, email: string, name: string}> {
+  const profiles = get<Record<string, UserProfile>>(K_PROFILES, {});
+  return Object.values(profiles).map(p => ({
+    id: p.id,
+    email: p.email,
+    name: p.name
+  }));
 }
 
 // Auth guard helpers

@@ -29,6 +29,7 @@ const Calendar = React.lazy(() => import('../pages/dashboard/Calendar'));
 const Settings = React.lazy(() => import('../pages/dashboard/Settings'));
 const ProfilePage = React.lazy(() => import('../pages/profile/ProfilePage'));
 const Story = React.lazy(() => import('../pages/dashboard/Story'));
+const DataSecurityPage = React.lazy(() => import('../pages/DataSecurityPage'));
 import DashboardLayout from '../layouts/DashboardLayout';
 import AuthLayout from '../layouts/AuthLayout';
 const WelcomePage = React.lazy(() => import('../pages/welcome/WelcomePage'));
@@ -91,6 +92,7 @@ export const AppRouter: React.FC = () => {
           <Route path="calendar" element={<Suspense fallback={<DashboardSkeleton />}><Calendar /></Suspense>} />
           <Route path="settings" element={<Suspense fallback={<SettingsSkeleton />}><Settings /></Suspense>} />
           <Route path="profile" element={<Suspense fallback={<SettingsSkeleton />}><ProfilePage /></Suspense>} />
+          <Route path="data-security" element={<Suspense fallback={<SettingsSkeleton />}><DataSecurityPage /></Suspense>} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -14,6 +14,7 @@ import { createStripeRouter } from './routes/stripe.js';
 import { createEmailRouter } from './routes/email.js';
 import { createRealtimeRouter } from './routes/realtime.js';
 import auditRouter from './routes/audit.js';
+import organizationsRouter from './routes/organizations.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 import { logger } from './utils/logger.js';
@@ -62,6 +63,7 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
+app.use('/api/organizations', organizationsRouter);
 app.use('/api/shows', authMiddleware, showsRouter);
 app.use('/api/finance', authMiddleware, financeRouter);
 app.use('/api/travel', authMiddleware, travelRouter);

@@ -17,7 +17,7 @@ export class FinanceRecord {
   @Column("uuid")
   showId!: string;
 
-  @ManyToOne(() => Show, (show) => show.finances)
+  @ManyToOne(() => Show, (show) => show.finances, { lazy: true })
   @JoinColumn({ name: "showId" })
   show!: Show;
 

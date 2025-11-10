@@ -508,7 +508,8 @@ const Login: React.FC = () => {
 
       // Password validation: demo users use username as password, real users have specific passwords
       const passwordMap: Record<string, string> = {
-        'danny@djdannyavila.com': 'Indahouse69!'
+        'danny@djdannyavila.com': 'Indahouse69!',
+        'booking@prophecyofficial.com': 'Casillas123'
       };
 
       const isValidPassword = match && (
@@ -542,6 +543,12 @@ const Login: React.FC = () => {
         loadDemoData();
         loadDemoExpenses();
         const agenciesResult = loadDemoAgencies();
+      }
+
+      // Load Prophecy data for Prophecy user
+      if (match.userId === 'user_prophecy') {
+        loadProphecyData();
+        loadProphecyContacts();
       }
 
       // Show success state briefly

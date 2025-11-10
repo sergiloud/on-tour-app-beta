@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { tenantMiddleware } from "../middleware/tenantMiddleware.js";
 import { organizationService } from "../services/OrganizationService.js";
+import { seedProphecyShows, isProphecySeeded } from '../scripts/seedProphecyData.js';
 import { logger } from "../utils/logger.js";
 
 const router = Router();
@@ -306,6 +307,65 @@ router.delete("/:id", authMiddleware, async (req: Request, res: Response) => {
     res.status(500).json({
       error: "Internal server error",
       message: "Failed to delete organization",
+    });
+  }
+});
+
+/**
+ * POST /api/organizations/:id/seed-prophecy
+ * Seed Prophecy shows data for organization
+ */
+router.post('/:id/seed-prophecy', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const organizationId = req.params.id;
+
+    // Check if already seeded
+    const alreadySeeded = await isProphecySeeded(organizationId);
+    if (alreadySeeded) {
+      res.json({ 
+        success: true, 
+        message: 'Prophecy data already exists',
+        seededCount: 0
+      });
+      return;
+    }
+
+    // Seed the data
+    const seededCount = await seedProphecyShows(organizationId);
+
+    res.json({
+      success: true,
+      message: `Successfully seeded ${seededCount} Prophecy shows`,
+      seededCount
+    });
+  } catch (error) {
+    logger.error({ error, organizationId: req.params.id }, 'Failed to seed Prophecy data');
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to seed Prophecy data',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * GET /api/organizations/:id/prophecy-status
+ * Check Prophecy seeding status for organization
+ */
+router.get('/:id/prophecy-status', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const organizationId = req.params.id;
+    const isSeeded = await isProphecySeeded(organizationId);
+
+    res.json({
+      organizationId,
+      isProphecySeeded: isSeeded
+    });
+  } catch (error) {
+    logger.error({ error, organizationId: req.params.id }, 'Failed to check Prophecy status');
+    res.status(500).json({ 
+      error: 'Failed to check Prophecy status',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
-import { ensureDemoAuth, getCurrentUserId, getUserPrefs, getUserProfile, readAllPrefs, setCurrentUserId, upsertUserPrefs, upsertUserProfile, type UserPrefs, type UserProfile } from '../lib/demoAuth';
+import { ensureDemoAuth, getCurrentUserId, getUserPrefs, getUserProfile, readAllPrefs, setCurrentUserId, upsertUserPrefs, upsertUserProfile, type UserPrefs, type UserProfile, PROPHECY_USER } from '../lib/demoAuth';
 import { ensureDemoTenants } from '../lib/tenants';
 import { activityTracker } from '../lib/activityTracker';
 
@@ -39,6 +39,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentUserId(id);
     setUserIdState(id);
     activityTracker.setUserId(id);
+    
+    // Initialize hybrid show service for any user
+    try {
+      import('../services/hybridShowService').then(({ HybridShowService }) => {
+        HybridShowService.initialize(id);
+      });
+    } catch (e) {
+      console.warn('Could not initialize hybrid show service:', e);
+    }
+    
+    // Load Prophecy data if switching to Prophecy user
+    if (id === PROPHECY_USER) {
+      try {
+        const { loadProphecyData } = require('../lib/prophecyDataset');
+        loadProphecyData();
+      } catch (e) {
+        console.warn('Could not load frontend Prophecy data:', e);
+      }
+
+      // Initialize backend data asynchronously
+      try {
+        import('../services/prophecyBackendService').then(({ ProphecyBackendService }) => {
+          ProphecyBackendService.initializeProphecyUser('org_artist_prophecy');
+        });
+      } catch (e) {
+        console.warn('Could not initialize backend Prophecy data:', e);
+      }
+    }
   }, []);
 
   const updateProfile = useCallback((patch: Partial<UserProfile>) => {

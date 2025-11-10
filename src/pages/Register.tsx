@@ -7,6 +7,9 @@ import { trackEvent } from '../lib/telemetry';
 import { useAuth } from '../context/AuthContext';
 import { setAuthed } from '../lib/demoAuth';
 import { secureStorage } from '../lib/secureStorage';
+import { auth, isFirebaseConfigured } from '../lib/firebase';
+import { createUserWithEmailAndPassword, updateProfile as updateFirebaseProfile } from 'firebase/auth';
+import { HybridShowService } from '../services/hybridShowService';
 
 // Estados para el registro
 type RegisterState = 'idle' | 'loading' | 'error' | 'success';
@@ -161,16 +164,32 @@ const Register: React.FC = () => {
 
     try { trackEvent('register.submit', {}); } catch { }
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // For demo purposes, simulate successful registration
-    // In real app, this would call an API
     try {
-      // Create a new user ID based on email
-      const newUserId = `user_${email.split('@')[0]}_${Date.now()}`;
+      let newUserId: string;
+      
+      // Use Firebase Auth if configured, otherwise use demo mode
+      if (isFirebaseConfigured() && auth) {
+        // Real Firebase authentication for production
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const firebaseUser = userCredential.user;
+        
+        // Update Firebase profile with display name
+        await updateFirebaseProfile(firebaseUser, {
+          displayName: name
+        });
+        
+        newUserId = firebaseUser.uid;
+        console.log('✅ User registered with Firebase Auth:', newUserId);
+        
+        // Initialize hybrid show service for cloud sync
+        await HybridShowService.initialize(newUserId);
+      } else {
+        // Demo mode fallback for development
+        newUserId = `user_${email.split('@')[0]}_${Date.now()}`;
+        console.log('⚠️ Demo mode: User registered locally (Firebase not configured)');
+      }
 
-      // Authenticate the new user
+      // Update local auth context
       setUserId(newUserId);
       updateProfile?.({
         id: newUserId,
@@ -183,17 +202,30 @@ const Register: React.FC = () => {
       secureStorage.setItem('user:name', name);
       secureStorage.setItem('user:email', email);
       secureStorage.setItem('demo:authed', '1');
+      secureStorage.setItem('demo:lastUser', newUserId);
 
-      trackEvent('register.success', {});
+      trackEvent('register.success', { provider: isFirebaseConfigured() ? 'firebase' : 'demo' });
       dispatch({ type: 'SET_SUCCESS' });
 
       // Redirect to onboarding after success
       setTimeout(() => {
         navigate('/onboarding');
       }, 2000);
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Registration failed. Please try again.' });
-      try { trackEvent('register.error', {}); } catch { }
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      
+      // Handle Firebase-specific errors
+      let errorMessage = 'Registration failed. Please try again.';
+      if (error?.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered. Try logging in instead.';
+      } else if (error?.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please use a stronger password.';
+      } else if (error?.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      try { trackEvent('register.error', { error: error?.code || 'unknown' }); } catch { }
     }
   };
 

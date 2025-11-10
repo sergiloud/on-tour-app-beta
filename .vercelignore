@@ -1,3 +1,10 @@
+# Exclude root-level duplicates (project is in on-tour-app/)
+
+backend/
+build.sh
+install.sh
+on-tour-app.zip
+
 # Tests
 
 _.test._
@@ -9,7 +16,8 @@ coverage/
 
 # Storybook
 
-.storybook/ \*_/_.stories.\*
+.storybook/
+\*\*/_.stories._
 
 # Documentation
 
@@ -24,12 +32,12 @@ docs/
 .git/
 .github/
 
-# Build artifacts no necesarios
+# Build artifacts
 
 dist/stats.html
 node_modules/.cache/
 
-# Otros
+# Others
 
 \*.log
 .DS_Store

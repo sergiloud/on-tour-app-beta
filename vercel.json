@@ -1,21 +1,12 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm ci --legacy-peer-deps --prefer-offline",
-  "framework": null,
+  "buildCommand": "cd on-tour-app && npm run build",
+  "outputDirectory": "on-tour-app/dist",
+  "installCommand": "cd on-tour-app && npm install --legacy-peer-deps",
+  "framework": "vite",
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "build": {
-    "env": {
-      "NODE_VERSION": "20",
-      "NPM_CONFIG_LOGLEVEL": "error",
-      "VITE_BUILD_CACHE": "true"
-    }
-  },
-  "crons": []
+  ]
 }

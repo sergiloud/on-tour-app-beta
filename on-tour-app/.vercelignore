@@ -1,9 +1,10 @@
 # Tests
-**/__tests__
-**/*.test.ts
-**/*.test.tsx
-**/*.spec.ts
-**/*.spec.tsx
+
+**/**tests**
+**/_.test.ts
+\*\*/_.test.tsx
+**/\*.spec.ts
+**/\*.spec.tsx
 e2e/
 playwright.config.ts
 vitest.config.ts
@@ -13,8 +14,9 @@ vitest.unit.config.ts
 coverage/
 
 # Documentation
+
 docs/
-*.md
+\*.md
 !README.md
 BUILD_RESULTS.md
 CHANGELOG.md
@@ -23,11 +25,13 @@ PERFORMANCE_IMPROVEMENTS.md
 SECURITY.md
 
 # Storybook
+
 .storybook/
-**/*.stories.tsx
-**/*.stories.ts
+**/\*.stories.tsx
+**/\*.stories.ts
 
 # Development
+
 .vscode/
 .editorconfig
 .prettierrc
@@ -36,4 +40,5 @@ SECURITY.md
 backend/
 
 # Netlify (no longer used)
+
 netlify.toml

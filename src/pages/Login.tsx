@@ -443,8 +443,13 @@ const Login: React.FC = () => {
           const authUser = await authService.signIn(u, p);
           console.log('[LOGIN] Firebase login successful:', { uid: authUser.uid, email: authUser.email });
 
-          // Default org for new Firebase users
-          const defaultOrg = ORG_AGENCY_SHALIZI;
+          // Determine default org based on email
+          let defaultOrg = ORG_AGENCY_SHALIZI;
+          if (authUser.email === 'booking@prophecyofficial.com') {
+            defaultOrg = ORG_ARTIST_PROPHECY;
+          } else if (authUser.email === 'danny@djdannyavila.com') {
+            defaultOrg = ORG_ARTIST_DANNY;
+          }
 
           // Load user profile from Firestore
           let userProfile = null;
@@ -466,6 +471,8 @@ const Login: React.FC = () => {
             console.warn('Could not load user profile from Firestore:', e);
           }
 
+          const finalOrgId = userProfile?.defaultOrgId || defaultOrg;
+
           setUserId(authUser.uid);
           updateProfile?.({
             id: authUser.uid,
@@ -473,19 +480,31 @@ const Login: React.FC = () => {
             email: authUser.email || '',
             bio: userProfile?.bio,
             avatarUrl: userProfile?.avatarUrl,
-            defaultOrgId: userProfile?.defaultOrgId || defaultOrg
+            defaultOrgId: finalOrgId
           });
-          setCurrentOrgId(userProfile?.defaultOrgId || defaultOrg);
+          setCurrentOrgId(finalOrgId);
+
+          // Load demo data based on email
+          if (authUser.email === 'booking@prophecyofficial.com') {
+            console.log('[LOGIN] Loading Prophecy data...');
+            loadProphecyData();
+            loadProphecyContacts();
+          } else if (authUser.email === 'danny@djdannyavila.com') {
+            console.log('[LOGIN] Loading Danny Avila data...');
+            loadDemoData();
+            loadDemoExpenses();
+            loadDemoAgencies();
+          }
 
           if (rec) secureStorage.setItem('demo:authed', '1');
           secureStorage.setItem('demo:lastUser', authUser.uid);
-          secureStorage.setItem('demo:lastOrg', userProfile?.defaultOrgId || defaultOrg);
+          secureStorage.setItem('demo:lastOrg', finalOrgId);
 
           trackEvent('login.success.firebase', { userId: authUser.uid });
 
           dispatch({ type: 'SET_SUCCESS', payload: {
             userId: authUser.uid,
-            orgId: userProfile?.defaultOrgId || defaultOrg,
+            orgId: finalOrgId,
             displayName: userProfile?.name || authUser.displayName || authUser.email || 'User'
           }});
 

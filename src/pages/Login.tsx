@@ -222,13 +222,8 @@ const Login: React.FC = () => {
       Events.loginSelect(user.userId, user.orgId);
 
       // Load demo data for Danny Avila
-      // console.log('[Login] Loading demo data for Danny Avila...');
-      loadDemoData();
-      // console.log('[Login] Loading demo expenses...');
-      loadDemoExpenses();
-      // console.log('[Login] Loading demo agencies...');
-      const agenciesResult = loadDemoAgencies();
-      // console.log('[Login] Demo agencies loaded:', agenciesResult);
+            const expensesResult = await loadDemoExpenses();
+      const agenciesResult = await loadDemoAgencies();
     } catch { }
 
     dispatch({ type: 'SET_SUCCESS', payload: user });
@@ -269,7 +264,7 @@ const Login: React.FC = () => {
       Events.loginSelect(user.userId, user.orgId);
 
       // NOTE: No carga demo data - será importado desde HTML
-      console.log('[Login] Danny Avila 2 - Ready for HTML import');
+
     } catch { }
 
     dispatch({ type: 'SET_SUCCESS', payload: user });
@@ -310,14 +305,10 @@ const Login: React.FC = () => {
       Events.loginSelect(user.userId, user.orgId);
 
       // Load Prophecy demo data
-      console.log('[Login] Loading Prophecy tour data...');
       const showsResult = loadProphecyData();
-      console.log(`[Login] Prophecy data loaded: ${showsResult.added} shows added, ${showsResult.total} total`);
 
       // Load Prophecy CRM contacts
-      console.log('[Login] Loading Prophecy CRM contacts...');
       const contactsResult = loadProphecyContacts();
-      console.log(`[Login] Prophecy contacts loaded: ${contactsResult.added} contacts added, ${contactsResult.total} total`);
     } catch { }
 
     dispatch({ type: 'SET_SUCCESS', payload: user });
@@ -450,25 +441,47 @@ const Login: React.FC = () => {
           // Default org for new Firebase users
           const defaultOrg = ORG_AGENCY_SHALIZI;
 
+          // Load user profile from Firestore
+          let userProfile = null;
+          try {
+            const { FirestoreUserService } = await import('../services/firestoreUserService');
+            const userData = await FirestoreUserService.getUserData(authUser.uid);
+            if (userData) {
+              userProfile = userData.profile;
+              // Update local preferences if available
+              if (userData.preferences) {
+                // Apply user preferences (theme, language, etc.)
+                if (userData.preferences.language) {
+                  const { setLang } = await import('../lib/i18n');
+                  setLang(userData.preferences.language);
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('Could not load user profile from Firestore:', e);
+          }
+
           setUserId(authUser.uid);
           updateProfile?.({
             id: authUser.uid,
-            name: authUser.displayName || authUser.email || 'User',
+            name: userProfile?.name || authUser.displayName || authUser.email || 'User',
             email: authUser.email || '',
-            defaultOrgId: defaultOrg
+            bio: userProfile?.bio,
+            avatarUrl: userProfile?.avatarUrl,
+            defaultOrgId: userProfile?.defaultOrgId || defaultOrg
           });
-          setCurrentOrgId(defaultOrg);
+          setCurrentOrgId(userProfile?.defaultOrgId || defaultOrg);
 
           if (rec) secureStorage.setItem('demo:authed', '1');
           secureStorage.setItem('demo:lastUser', authUser.uid);
-          secureStorage.setItem('demo:lastOrg', defaultOrg);
+          secureStorage.setItem('demo:lastOrg', userProfile?.defaultOrgId || defaultOrg);
 
           trackEvent('login.success.firebase', { userId: authUser.uid });
 
           dispatch({ type: 'SET_SUCCESS', payload: {
             userId: authUser.uid,
-            orgId: defaultOrg,
-            displayName: authUser.displayName || authUser.email || 'User'
+            orgId: userProfile?.defaultOrgId || defaultOrg,
+            displayName: userProfile?.name || authUser.displayName || authUser.email || 'User'
           }});
 
           // Start fluid transition

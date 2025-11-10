@@ -40,13 +40,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserIdState(id);
     activityTracker.setUserId(id);
     
-    // Initialize hybrid show service for any user
-    try {
-      import('../services/hybridShowService').then(({ HybridShowService }) => {
-        HybridShowService.initialize(id);
-      });
-    } catch (e) {
-      console.warn('Could not initialize hybrid show service:', e);
+    // Skip Firebase sync for demo users
+    const isDemoUser = id.startsWith('demo_') || id.includes('@demo.com');
+    
+    if (!isDemoUser) {
+      // Initialize ALL hybrid services for real users
+      try {
+        import('../services/hybridShowService').then(({ HybridShowService }) => {
+          HybridShowService.initialize(id);
+        });
+      } catch (e) {
+        console.warn('Could not initialize hybrid show service:', e);
+      }
+      
+      try {
+        import('../services/hybridContactService').then(({ HybridContactService }) => {
+          HybridContactService.initialize(id);
+        });
+      } catch (e) {
+        console.warn('Could not initialize hybrid contact service:', e);
+      }
+
+      // TODO: Initialize finance, travel, org, and user services
+      // These will be created as hybrid services following the same pattern
+      try {
+        import('../services/firestoreUserService').then(({ FirestoreUserService }) => {
+          FirestoreUserService.migrateFromLocalStorage(id);
+        });
+      } catch (e) {
+        console.warn('Could not initialize user service:', e);
+      }
+
+      try {
+        import('../services/firestoreFinanceService').then(({ FirestoreFinanceService }) => {
+          FirestoreFinanceService.migrateFromLocalStorage(id);
+        });
+      } catch (e) {
+        console.warn('Could not initialize finance service:', e);
+      }
+
+      try {
+        import('../services/firestoreTravelService').then(({ FirestoreTravelService }) => {
+          FirestoreTravelService.migrateFromLocalStorage(id);
+        });
+      } catch (e) {
+        console.warn('Could not initialize travel service:', e);
+      }
+
+      try {
+        import('../services/firestoreOrgService').then(({ FirestoreOrgService }) => {
+          FirestoreOrgService.migrateFromLocalStorage(id);
+        });
+      } catch (e) {
+        console.warn('Could not initialize org service:', e);
+      }
     }
     
     // Load Prophecy data if switching to Prophecy user

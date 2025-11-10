@@ -155,6 +155,58 @@ export function listLinks(orgId: string): Link[] {
 }
 
 // --- Mutators to support inline Welcome actions (demo) ---
+
+/**
+ * Create organization for a new real user (not demo)
+ * This ensures real users have their own org without polluting demo data
+ */
+export function createUserOrganization(
+  userId: string, 
+  orgData: { type: OrgType; name: string; seatLimit?: number; guestLimit?: number }
+): string {
+  try {
+    const orgId = `org_${orgData.type}_${userId}_${Date.now()}`;
+    const newOrg: Org = {
+      id: orgId,
+      type: orgData.type,
+      name: orgData.name,
+      seatLimit: orgData.seatLimit || 10,
+      guestLimit: orgData.guestLimit || 5
+    };
+
+    // Add to orgs list
+    const orgs = get<Org[]>(K_ORGS, []);
+    orgs.push(newOrg);
+    set(K_ORGS, orgs);
+
+    // Create owner membership
+    const mems = get<Membership[]>(K_MEMBERS, []);
+    mems.push({ orgId, userId, role: 'owner' });
+    set(K_MEMBERS, mems);
+
+    // Add user if doesn't exist
+    const users = get<User[]>(K_USERS, []);
+    if (!users.find(u => u.id === userId)) {
+      users.push({ id: userId, name: orgData.name });
+      set(K_USERS, users);
+    }
+
+    // Set as current org
+    set(K_CURRENT, orgId);
+    
+    try { 
+      window.dispatchEvent(new CustomEvent('tenant:changed', { detail: { id: orgId } } as any));
+      window.dispatchEvent(new CustomEvent('org:membersUpdated', { detail: { orgId } } as any));
+    } catch { }
+
+    return orgId;
+  } catch (error) {
+    console.error('Failed to create user organization:', error);
+    // Fallback to temporary org ID
+    return `org_${orgData.type}_temp_${Date.now()}`;
+  }
+}
+
 export function inviteMember(orgId: string, name: string, role: 'owner' | 'manager' = 'manager'): { userId: string } | undefined {
   try {
     const users = get<User[]>(K_USERS, []);

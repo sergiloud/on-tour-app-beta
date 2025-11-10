@@ -179,14 +179,44 @@ const Register: React.FC = () => {
         });
         
         newUserId = firebaseUser.uid;
-        console.log('✅ User registered with Firebase Auth:', newUserId);
+        
+        // Create user document in Firestore
+        try {
+          const { FirestoreUserService } = await import('../services/firestoreUserService');
+          await FirestoreUserService.saveProfile({
+            id: newUserId,
+            name: name,
+            email: email,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }, newUserId);
+
+          // Save default preferences
+          await FirestoreUserService.savePreferences({
+            theme: 'dark',
+            language: 'es',
+            currency: 'EUR',
+            timezone: 'Europe/Madrid',
+            notifications: true,
+            updatedAt: new Date().toISOString()
+          }, newUserId);
+        } catch (e) {
+          console.warn('Could not create user document in Firestore:', e);
+        }
         
         // Initialize hybrid show service for cloud sync
         await HybridShowService.initialize(newUserId);
+
+        // Initialize hybrid contact service
+        try {
+          const { HybridContactService } = await import('../services/hybridContactService');
+          await HybridContactService.initialize(newUserId);
+        } catch (e) {
+          console.warn('Could not initialize contacts:', e);
+        }
       } else {
         // Demo mode fallback for development
         newUserId = `user_${email.split('@')[0]}_${Date.now()}`;
-        console.log('⚠️ Demo mode: User registered locally (Firebase not configured)');
       }
 
       // Update local auth context

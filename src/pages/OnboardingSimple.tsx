@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { trackEvent } from '../lib/telemetry';
 import { useAuth } from '../context/AuthContext';
-import { setCurrentOrgId } from '../lib/tenants';
+import { createUserOrganization, upsertOrgSettings } from '../lib/tenants';
 import { t } from '../lib/i18n';
+import { secureStorage } from '../lib/secureStorage';
 
 interface OnboardingData {
     fullName: string;
@@ -138,25 +139,39 @@ const OnboardingPage: React.FC = () => {
             });
         } catch { }
 
-        const newOrgId = `org_${data.businessType}_${Date.now()}`;
+        const { userId } = useAuth();
 
+        // Create organization for the new user
+        const newOrgId = createUserOrganization(userId, {
+            type: data.businessType as 'artist' | 'agency' | 'venue',
+            name: data.companyName || data.fullName,
+            seatLimit: 10,
+            guestLimit: 5
+        });
+
+        // Save organization settings
+        upsertOrgSettings(newOrgId, {
+            defaults: {
+                currency: data.currency as 'EUR' | 'USD' | 'GBP',
+                timezone: data.timezone
+            }
+        });
+
+        // Update user profile with default org
         updateProfile?.({
             defaultOrgId: newOrgId,
             name: data.fullName
         });
 
-        setCurrentOrgId(newOrgId);
-
-        localStorage.setItem('onboarding:completed', 'true');
-        localStorage.setItem('onboarding:data', JSON.stringify(data));
-        localStorage.setItem('demo:lastOrg', newOrgId);
-        localStorage.setItem('demo:currentOrg', newOrgId);
-        localStorage.setItem('user:businessType', data.businessType);
-        localStorage.setItem('user:companyName', data.companyName);
-        localStorage.setItem('user:country', data.country);
-        localStorage.setItem('user:timezone', data.timezone);
-        localStorage.setItem('user:currency', data.currency);
-        localStorage.setItem('user:isNew', 'true'); // Mark as new user with no demo data
+        // Store onboarding data (ENCRYPTED)
+        secureStorage.setItem('onboarding:completed', 'true');
+        secureStorage.setItem('onboarding:data', JSON.stringify(data));
+        secureStorage.setItem('user:businessType', data.businessType);
+        secureStorage.setItem('user:companyName', data.companyName);
+        secureStorage.setItem('user:country', data.country);
+        secureStorage.setItem('user:timezone', data.timezone);
+        secureStorage.setItem('user:currency', data.currency);
+        secureStorage.setItem('user:isNew', 'true'); // Mark as new user
 
         await new Promise(resolve => setTimeout(resolve, 1000));
         navigate('/dashboard');

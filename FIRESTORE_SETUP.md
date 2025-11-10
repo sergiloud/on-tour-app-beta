@@ -61,30 +61,68 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Shows collection - solo usuarios autenticados pueden leer/escribir sus propios shows
-    match /shows/{showId} {
-      allow read: if request.auth != null && 
-                     resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && 
-                       request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && 
-                               resource.data.userId == request.auth.uid;
-    }
-    
-    // Users collection - solo el dueño puede leer/escribir
+    // Users collection - all user data nested under users/{userId}
     match /users/{userId} {
+      // User can only access their own data
       allow read, write: if request.auth != null && 
                             request.auth.uid == userId;
+      
+      // Profile subcollection (user info, preferences, settings)
+      match /profile/{document=**} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
+      
+      // Shows subcollection
+      match /shows/{showId} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
+      
+      // Contacts (CRM) subcollection
+      match /contacts/{contactId} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
+      
+      // Transactions (Finance) subcollection
+      match /transactions/{transactionId} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
+      
+      // Finance targets/budgets subcollection
+      match /finance/{document=**} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
+      
+      // Travel/Itineraries subcollection
+      match /itineraries/{itineraryId} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
+      
+      // Organizations/Tenants subcollection
+      match /organizations/{orgId} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
+      
+      // Activity tracking subcollection (optional)
+      match /activity/{activityId} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
+      
+      // Settings subcollection
+      match /settings/{document=**} {
+        allow read, write: if request.auth != null && 
+                              request.auth.uid == userId;
+      }
     }
     
-    // Organizations collection
-    match /organizations/{orgId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null &&
-                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId == orgId;
-    }
-    
-    // Denegar todo lo demás por defecto
+    // Deny all other access by default
     match /{document=**} {
       allow read, write: if false;
     }
@@ -120,22 +158,52 @@ npm run dev
 
 ```
 firestore/
-├── shows/
-│   ├── {showId}/
-│   │   ├── userId: string
-│   │   ├── band: string
-│   │   ├── venue: string
-│   │   ├── date: string
-│   │   ├── fee: number
-│   │   ├── ...otros campos
-│   └── ...
 ├── users/
 │   ├── {userId}/
 │   │   ├── email: string
 │   │   ├── displayName: string
 │   │   ├── createdAt: timestamp
+│   │   │
+│   │   ├── shows/ (subcollection)
+│   │   │   ├── {showId}/
+│   │   │   │   ├── band: string
+│   │   │   │   ├── venue: string
+│   │   │   │   ├── date: string
+│   │   │   │   ├── fee: number
+│   │   │   │   └── ...otros campos
+│   │   │   └── ...
+│   │   │
+│   │   ├── contacts/ (subcollection - CRM)
+│   │   │   ├── {contactId}/
+│   │   │   │   ├── firstName: string
+│   │   │   │   ├── lastName: string
+│   │   │   │   ├── type: string (promoter, venue_manager, etc.)
+│   │   │   │   ├── email: string
+│   │   │   │   └── ...otros campos
+│   │   │   └── ...
+│   │   │
+│   │   ├── transactions/ (subcollection - Finance)
+│   │   │   ├── {transactionId}/
+│   │   │   │   ├── type: string (income|expense)
+│   │   │   │   ├── amount: number
+│   │   │   │   ├── showId: string
+│   │   │   │   └── ...otros campos
+│   │   │   └── ...
+│   │   │
+│   │   ├── itineraries/ (subcollection - Travel)
+│   │   │   ├── {itineraryId}/
+│   │   │   │   ├── events: array
+│   │   │   │   ├── startDate: timestamp
+│   │   │   │   └── ...otros campos
+│   │   │   └── ...
+│   │   │
+│   │   └── organizations/ (subcollection - Tenants)
+│   │       ├── {orgId}/
+│   │       │   ├── name: string
+│   │       │   ├── type: string (artist|agency|venue)
+│   │       │   └── ...otros campos
+│   │       └── ...
 │   └── ...
-└── organizations/ (futuro)
 ```
 
 ---

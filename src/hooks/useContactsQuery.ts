@@ -1,12 +1,15 @@
 /**
  * useContactsQuery - React Query hook para gestión de contactos
  * Sigue el patrón de useShowsQuery para consistencia en el proyecto
+ * Ahora con sincronización híbrida (localStorage + Firestore)
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import type { Contact } from '../types/crm';
 import { contactStore } from '../shared/contactStore';
+import { HybridContactService } from '../services/hybridContactService';
+import { useAuth } from '../context/AuthContext';
 
 // Query keys para invalidación y caching
 export const contactKeys = {
@@ -23,11 +26,11 @@ export const contactKeys = {
  */
 export const useContactsQuery = () => {
   const queryClient = useQueryClient();
+  const { userId } = useAuth();
 
   // Escuchar evento de recarga de contactos (cuando se cargan datos demo de Prophecy)
   useEffect(() => {
     const handleContactsReloaded = () => {
-      console.log('[useContactsQuery] Contacts reloaded event received, invalidating cache');
       queryClient.invalidateQueries({ queryKey: contactKeys.lists() });
       queryClient.invalidateQueries({ queryKey: contactKeys.stats() });
     };
@@ -39,9 +42,8 @@ export const useContactsQuery = () => {
   return useQuery({
     queryKey: contactKeys.lists(),
     queryFn: async () => {
-      // Simular latencia de red para testing (remover en producción)
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return contactStore.getAll();
+      // Use hybrid service for cloud sync
+      return await HybridContactService.getAllContacts(userId);
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos (antes era cacheTime)
@@ -82,17 +84,19 @@ export const useContactStatsQuery = () => {
  */
 export const useCreateContactMutation = () => {
   const queryClient = useQueryClient();
+  const { userId } = useAuth();
 
   return useMutation({
     mutationFn: async (newContact: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => {
-      await new Promise(resolve => setTimeout(resolve, 300));
       const contact: Contact = {
         ...newContact,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      contactStore.add(contact);
+      
+      // Save to hybrid service (localStorage + Firestore)
+      await HybridContactService.saveContact(contact, userId);
       return contact;
     },
     onMutate: async (newContact) => {
@@ -134,11 +138,12 @@ export const useCreateContactMutation = () => {
  */
 export const useUpdateContactMutation = () => {
   const queryClient = useQueryClient();
+  const { userId } = useAuth();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Contact> }) => {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      contactStore.update(id, data);
+      // Update via hybrid service (localStorage + Firestore)
+      await HybridContactService.updateContact(id, data, userId);
       return contactStore.getById(id);
     },
     onMutate: async ({ id, data }) => {
@@ -185,11 +190,12 @@ export const useUpdateContactMutation = () => {
  */
 export const useDeleteContactMutation = () => {
   const queryClient = useQueryClient();
+  const { userId } = useAuth();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      contactStore.delete(id);
+      // Delete via hybrid service (localStorage + Firestore)
+      await HybridContactService.deleteContact(id, userId);
       return id;
     },
     onMutate: async (id) => {

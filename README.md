@@ -129,17 +129,37 @@ The app works without Firebase using localStorage. To enable cloud features:
 3. Add your Firebase credentials to `.env`
 4. Enable Authentication and Firestore in Firebase Console
 
-### For Production (Vercel)
-If you see OAuth errors on Vercel:
+See [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for detailed setup instructions.
+
+### ⚠️ Common Production Issues
+
+#### Issue 1: Firestore 400 Bad Request Errors
+
+**Error**: `GET https://firestore.googleapis.com/.../Listen/channel 400 (Bad Request)`
+
+**Cause**: Firestore database not enabled in Firebase Console
+
+**Fix**: 
+1. Go to Firebase Console → Firestore Database
+2. Click "Create database"
+3. Choose Production Mode + select region
+4. Configure security rules
+
+See [FIRESTORE_SETUP.md](./FIRESTORE_SETUP.md) for step-by-step guide.
+
+#### Issue 2: OAuth Domain Not Authorized
 
 **Error**: `The current domain is not authorized for OAuth operations`
+
+**Cause**: Vercel domain not whitelisted in Firebase
 
 **Fix**: Add your Vercel domain to Firebase authorized domains:
 1. Go to Firebase Console → Authentication → Settings → Authorized domains
 2. Add: `your-app.vercel.app` and `*.vercel.app`
-3. See [FIREBASE_OAUTH_SETUP.md](./FIREBASE_OAUTH_SETUP.md) for detailed steps
 
-**Note**: Email/password authentication works without authorized domains.
+See [FIREBASE_OAUTH_SETUP.md](./FIREBASE_OAUTH_SETUP.md) for detailed steps.
+
+**Note**: Email/password authentication works without authorized domains. Only Google/Apple sign-in requires this.
 
 ## 🏗️ Project Structure
 

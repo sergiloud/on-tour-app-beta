@@ -117,28 +117,29 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 ```bash
 # Install dependencies
 npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests
-npm run test
-
-# Run linting
-npm run lint
-
-# Fix linting issues
-npm run lint:fix
-
-# Format code
-npm run format
-
-# Type checking
-npm run type-check
 ```
+
+## 🔥 Firebase Configuration
+
+### For Development (Optional)
+The app works without Firebase using localStorage. To enable cloud features:
+
+1. Create a Firebase project at https://console.firebase.google.com/
+2. Copy `.env.example` to `.env`
+3. Add your Firebase credentials to `.env`
+4. Enable Authentication and Firestore in Firebase Console
+
+### For Production (Vercel)
+If you see OAuth errors on Vercel:
+
+**Error**: `The current domain is not authorized for OAuth operations`
+
+**Fix**: Add your Vercel domain to Firebase authorized domains:
+1. Go to Firebase Console → Authentication → Settings → Authorized domains
+2. Add: `your-app.vercel.app` and `*.vercel.app`
+3. See [FIREBASE_OAUTH_SETUP.md](./FIREBASE_OAUTH_SETUP.md) for detailed steps
+
+**Note**: Email/password authentication works without authorized domains.
 
 ## 🏗️ Project Structure
 

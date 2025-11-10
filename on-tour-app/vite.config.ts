@@ -63,7 +63,8 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
-      'react-router-dom'
+      'react-router-dom',
+      'react-is'
     ],
     exclude: ['exceljs', 'xlsx'] // Excluir librerías pesadas del pre-bundling
   },
@@ -85,8 +86,12 @@ export default defineConfig({
       output: {
         // Estrategia simplificada: menos chunks = build más rápido
         manualChunks: (id) => {
-          // Core React (carga inicial)
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
+          // Core React (MUST be loaded first - includes all React packages)
+          if (id.includes('node_modules/react') || 
+              id.includes('node_modules/react-dom') || 
+              id.includes('node_modules/react-router') ||
+              id.includes('node_modules/react-is') ||
+              id.includes('node_modules/scheduler')) {
             return 'vendor-react';
           }
           // UI pesado (framer-motion + lucide)

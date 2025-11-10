@@ -33,35 +33,33 @@ export default defineConfig({
       }),
     ]),
     VitePWA({
-      strategies: 'injectManifest', // Usar nuestro SW personalizado
+      strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw-advanced.ts',
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'favicon.svg', 'robots.txt', 'maplibre-gl.css'],
+      includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'OnTour - Tour Management Platform',
+        name: 'OnTour',
         short_name: 'OnTour',
-        description: 'Professional tour management platform for artists and agencies',
         theme_color: '#bfff00',
         background_color: '#0b0f14',
         display: 'standalone',
-        scope: '/',
         start_url: '/',
         icons: [
           {
             src: '/favicon.svg',
             sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any maskable'
+            type: 'image/svg+xml'
           }
         ]
       },
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,ico,svg,png,jpg,webp,woff,woff2}'],
-        globIgnores: ['**/node_modules/**/*', '**/sw-*.js', '**/workbox-*.js']
+        globPatterns: ['**/*.{js,css,html}'], // Reducido para build más rápido
+        globIgnores: ['**/node_modules/**/*', '**/stats.html'],
+        maximumFileSizeToCacheInBytes: 3000000 // 3MB límite
       },
       devOptions: {
-        enabled: false, // Disable in dev for faster HMR
+        enabled: false,
         type: 'module'
       }
     })
@@ -73,13 +71,11 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      '@tanstack/react-virtual',
-      '@tanstack/react-query',
       'react',
       'react-dom',
       'react-router-dom'
     ],
-    exclude: ['exceljs'] // Removed maplibre-gl to fix Module export issues
+    exclude: ['exceljs', 'xlsx'] // Excluir librerías pesadas del pre-bundling
   },
   ssr: {
     // Packages that should be processed by Vite instead of treated as external
@@ -97,127 +93,37 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
+        // Estrategia simplificada: menos chunks = build más rápido
         manualChunks: (id) => {
-          // React core (stable, cache-friendly)
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+          // Core React (carga inicial)
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
             return 'vendor-react';
           }
-          // Router (stable)
-          if (id.includes('node_modules/react-router')) {
-            return 'vendor-router';
+          // UI pesado (framer-motion + lucide)
+          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react')) {
+            return 'vendor-ui';
           }
-          // UI Libraries - split motion separately (it's large)
-          if (id.includes('node_modules/framer-motion')) {
-            return 'vendor-motion';
+          // Bibliotecas pesadas que se cargan bajo demanda
+          if (id.includes('node_modules/maplibre-gl') || id.includes('node_modules/exceljs') || 
+              id.includes('node_modules/xlsx') || id.includes('node_modules/recharts') ||
+              id.includes('node_modules/d3-')) {
+            return 'vendor-heavy';
           }
-          if (id.includes('node_modules/lucide-react')) {
-            return 'vendor-icons';
-          }
-          // Data Libraries
-          if (id.includes('node_modules/@tanstack')) {
-            return 'vendor-query';
-          }
-          // Heavy libraries - CRITICALLY IMPORTANT: Split into smaller chunks
-          // ExcelJS is huge, lazy load it and split dependencies
-          if (id.includes('node_modules/exceljs')) {
-            return 'vendor-exceljs';
-          }
-          if (id.includes('node_modules/xlsx')) {
-            return 'vendor-xlsx';
-          }
-          // MapLibre is huge (933KB!), lazy load it
-          if (id.includes('node_modules/maplibre-gl') || id.includes('node_modules/@maplibre') || id.includes('node_modules/supercluster')) {
-            return 'vendor-map';
-          }
-          // Recharts/charts (if used - also heavy)
-          // Split recharts into smaller sub-chunks for better caching
-          if (id.includes('node_modules/recharts')) {
-            return 'vendor-recharts';
-          }
-          if (id.includes('node_modules/d3-')) {
-            // Group all d3 modules together (recharts dependency)
-            return 'vendor-d3';
-          }
-          // CSV parsing (papaparse para Finance)
-          if (id.includes('node_modules/papaparse')) {
-            return 'vendor-csv';
-          }
-          // Date/time libraries (if used)
-          if (id.includes('node_modules/date-fns') || id.includes('node_modules/dayjs')) {
-            return 'vendor-dates';
-          }
-          // Feature modules - More granular splitting for better caching
-          // Dashboard pages (código específico por página)
-          if (id.includes('src/pages/dashboard/Finance') ||
-              id.includes('src/hooks/useFinance') ||
-              id.includes('src/hooks/useRawTransactions') ||
-              id.includes('src/contexts/FinanceTargets') ||
-              id.includes('src/contexts/FinancePeriod') ||
-              id.includes('src/workers/financeCalculations')) {
-            return 'pages-dashboard-finance';
-          }
-          if (id.includes('src/components/finance')) {
-            return 'components-finance';
-          }
-          if (id.includes('src/pages/dashboard/Travel') || id.includes('src/services/flight')) {
-            return 'pages-dashboard-travel';
-          }
-          if (id.includes('src/components/travel')) {
-            return 'components-travel';
-          }
-          if (id.includes('src/pages/dashboard/Shows')) {
-            return 'pages-dashboard-shows';
-          }
-          if (id.includes('src/components/shows')) {
-            return 'components-shows';
-          }
-          if (id.includes('src/pages/dashboard/Mission')) {
-            return 'pages-dashboard-mission';
-          }
-          if (id.includes('src/components/mission')) {
-            return 'components-mission';
-          }
-          // Home/landing page components
-          if (id.includes('src/components/home') || id.includes('src/pages/Landing') || id.includes('src/pages/welcome')) {
-            return 'feature-landing';
-          }
-          // Context providers (keep separate for reusability)
-          if (id.includes('src/context/') || id.includes('src/contexts/')) {
-            return 'core-context';
-          }
-          // Common/shared utilities - separate from main for better caching
-          if (id.includes('src/lib/') || id.includes('src/hooks/') &&
-              !id.includes('src/hooks/useFinance') &&
-              !id.includes('src/hooks/useRawTransactions')) {
-            return 'core-utils';
-          }
-          // Org pages (separados para lazy loading)
-          if (id.includes('src/pages/org/')) {
-            return 'pages-org';
-          }
-          // Pages (split by route for better lazy loading)
-          if (id.includes('src/pages/dashboard/') &&
-              !id.includes('src/pages/dashboard/Settings') &&
-              !id.includes('src/pages/dashboard/Finance') &&
-              !id.includes('src/pages/dashboard/Travel') &&
-              !id.includes('src/pages/dashboard/Shows') &&
-              !id.includes('src/pages/dashboard/Mission')) {
-            return 'pages-dashboard';
-          }
-          if (id.includes('src/pages/org/')) {
-            return 'pages-org';
+          // Todo lo demás de node_modules en un solo vendor
+          if (id.includes('node_modules')) {
+            return 'vendor';
           }
         },
-        // Optimize chunk naming for better caching
+        // Nombres optimizados para caching
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    chunkSizeWarningLimit: 600, // Slightly higher for vendor chunks
-    reportCompressedSize: true, // Show gzip sizes
-    cssMinify: true, // Minify CSS
-    assetsInlineLimit: 4096 // Inline assets < 4KB as base64
+    chunkSizeWarningLimit: 800, // Chunks más grandes, menos splits
+    reportCompressedSize: false, // Desactivar para build más rápido
+    cssMinify: true,
+    assetsInlineLimit: 4096
   },
   server: {
     host: true,

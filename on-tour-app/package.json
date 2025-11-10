@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit || true && vite build",
+    "build": "vite build",
+    "build:check": "tsc --noEmit || true && vite build",
     "build:strict": "tsc && vite build",
     "build:analyze": "npm run build && node scripts/analyze-bundle.js",
     "preview": "vite preview",

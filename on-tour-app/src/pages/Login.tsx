@@ -15,6 +15,8 @@ import { DashboardTeaser } from '../components/home/DashboardTeaser';
 import { Button } from '../ui/Button';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle, Zap, Chrome, Apple } from 'lucide-react';
 import { secureStorage } from '../lib/secureStorage';
+import * as authService from '../services/authService';
+import { isFirebaseConfigured } from '../lib/firebase';
 
 // Animation timing - fast in development, full experience in production
 const ANIMATION_DELAYS = {
@@ -97,25 +99,69 @@ const Login: React.FC = () => {
     'demo': { userId: 'user_demo', orgId: ORG_AGENCY_SHALIZI, displayName: 'Demo User' }
   }), []);
 
-  // Generic SSO handler
+  // Generic SSO handler - uses Firebase if configured
   const handleSSOLogin = React.useCallback(async (provider: 'google' | 'apple' | 'microsoft') => {
     if (loginState.state === 'loading') return;
 
     dispatch({ type: 'START_LOADING' });
     try { trackEvent(`login.sso.${provider}`, {}); } catch { }
 
-    // Simulate SSO delay (fast in dev, realistic in prod)
-    await new Promise(resolve => setTimeout(resolve, ANIMATION_DELAYS.ssoSimulation));
-
-    // Map provider to demo user
-    const userKey = {
-      google: 'agency@demo.com' as const,
-      apple: 'artist@demo.com' as const,
-      microsoft: 'demo@demo.com' as const
-    }[provider];
-
-    const user = usersMap[userKey];
     try {
+      // Try Firebase SSO if configured
+      if (isFirebaseConfigured() && (provider === 'google' || provider === 'apple')) {
+        let authUser;
+
+        if (provider === 'google') {
+          authUser = await authService.signInWithGoogle();
+        } else if (provider === 'apple') {
+          authUser = await authService.signInWithApple();
+        }
+
+        if (authUser) {
+          const defaultOrg = ORG_AGENCY_SHALIZI;
+
+          setUserId(authUser.uid);
+          updateProfile?.({
+            id: authUser.uid,
+            name: authUser.displayName || authUser.email || 'User',
+            email: authUser.email || '',
+            defaultOrgId: defaultOrg
+          });
+          setCurrentOrgId(defaultOrg);
+          secureStorage.setItem('demo:lastUser', authUser.uid);
+          secureStorage.setItem('demo:lastOrg', defaultOrg);
+
+          trackEvent(`login.sso.success.${provider}`, { userId: authUser.uid });
+
+          dispatch({ type: 'SET_SUCCESS', payload: {
+            userId: authUser.uid,
+            orgId: defaultOrg,
+            displayName: authUser.displayName || authUser.email || 'User'
+          }});
+
+          setTimeout(() => {
+            dispatch({ type: 'START_FLUID_TRANSITION' });
+          }, ANIMATION_DELAYS.fluidTransition);
+
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
+          }, ANIMATION_DELAYS.authTransition);
+
+          return;
+        }
+      }
+
+      // Fallback to demo SSO
+      await new Promise(resolve => setTimeout(resolve, ANIMATION_DELAYS.ssoSimulation));
+
+      // Map provider to demo user
+      const userKey = {
+        google: 'agency@demo.com' as const,
+        apple: 'artist@demo.com' as const,
+        microsoft: 'demo@demo.com' as const
+      }[provider];
+
+      const user = usersMap[userKey];
       setUserId(user.userId);
       updateProfile?.({ id: user.userId, defaultOrgId: user.orgId });
       setCurrentOrgId(user.orgId);
@@ -124,17 +170,29 @@ const Login: React.FC = () => {
       secureStorage.setItem('demo:lastOrg', user.orgId);
       trackEvent('login.sso.success', { provider, userId: user.userId });
       Events.loginSelect(user.userId, user.orgId);
-    } catch { }
 
-    dispatch({ type: 'SET_SUCCESS', payload: user });
+      dispatch({ type: 'SET_SUCCESS', payload: user });
 
-    setTimeout(() => {
-      dispatch({ type: 'START_FLUID_TRANSITION' });
-    }, ANIMATION_DELAYS.fluidTransition);
+      setTimeout(() => {
+        dispatch({ type: 'START_FLUID_TRANSITION' });
+      }, ANIMATION_DELAYS.fluidTransition);
 
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
-    }, ANIMATION_DELAYS.authTransition);
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
+      }, ANIMATION_DELAYS.authTransition);
+    } catch (error: any) {
+      console.error('SSO error:', error);
+      let errorMessage = `${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in failed. Please try again.`;
+
+      if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Pop-up blocked. Please allow pop-ups for this site and try again.';
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Sign-in cancelled. Please try again.';
+      }
+
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      trackEvent(`login.sso.error.${provider}`, { code: error.code });
+    }
   }, [loginState.state, setUserId, updateProfile, usersMap]);
 
   // SSO handlers
@@ -349,7 +407,7 @@ const Login: React.FC = () => {
     setFieldErrors(prev => ({ ...prev, password: error }));
   }, [password, validatePassword]);
 
-  // Submit handler per spec
+  // Submit handler - uses Firebase if configured, falls back to demo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loginState.state === 'loading') return; // Prevent multiple submissions
@@ -369,6 +427,7 @@ const Login: React.FC = () => {
     if (usernameOrEmailError || passwordError) {
       setFieldErrors({ usernameOrEmail: usernameOrEmailError, password: passwordError });
       setTouched({ usernameOrEmail: true, password: true });
+      dispatch({ type: 'SET_ERROR', payload: usernameOrEmailError || passwordError || '' });
       return;
     }
 
@@ -382,33 +441,92 @@ const Login: React.FC = () => {
       return;
     }
 
-    // Simulate network delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const match = (usersMap as any)[u] as { userId: string; orgId: string; displayName: string } | undefined;
-
-    // Password validation: demo users use username as password, real users have specific passwords
-    const passwordMap: Record<string, string> = {
-      'danny@djdannyavila.com': 'Indahouse69!'
-    };
-
-    const isValidPassword = match && (
-      (passwordMap[u] && p === passwordMap[u]) || // Real user with specific password
-      (!passwordMap[u] && p === u) // Demo user with username as password
-    );
-
-    if (!match || !isValidPassword) {
-      // Provide specific error messages based on the situation
-      if (!match) {
-        dispatch({ type: 'SET_ERROR', payload: "We don't recognize this email address. Don't have an account? Sign up instead." });
-      } else {
-        dispatch({ type: 'SET_ERROR', payload: 'Incorrect password. Please try again or reset your password.' });
-      }
-      try { trackEvent('login.error', { u }); } catch { }
-      return;
-    }
-
     try {
+      // Try Firebase authentication first if configured
+      if (isFirebaseConfigured()) {
+        try {
+          const authUser = await authService.signIn(u, p);
+
+          // Default org for new Firebase users
+          const defaultOrg = ORG_AGENCY_SHALIZI;
+
+          setUserId(authUser.uid);
+          updateProfile?.({
+            id: authUser.uid,
+            name: authUser.displayName || authUser.email || 'User',
+            email: authUser.email || '',
+            defaultOrgId: defaultOrg
+          });
+          setCurrentOrgId(defaultOrg);
+
+          if (rec) secureStorage.setItem('demo:authed', '1');
+          secureStorage.setItem('demo:lastUser', authUser.uid);
+          secureStorage.setItem('demo:lastOrg', defaultOrg);
+
+          trackEvent('login.success.firebase', { userId: authUser.uid });
+
+          dispatch({ type: 'SET_SUCCESS', payload: {
+            userId: authUser.uid,
+            orgId: defaultOrg,
+            displayName: authUser.displayName || authUser.email || 'User'
+          }});
+
+          // Start fluid transition
+          setTimeout(() => {
+            dispatch({ type: 'START_FLUID_TRANSITION' });
+          }, 1000);
+
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
+          }, 2500);
+
+          return;
+        } catch (firebaseError: any) {
+          // Firebase auth failed - show appropriate error
+          let errorMessage = 'Login failed. Please check your credentials.';
+
+          if (firebaseError.code === 'auth/user-not-found') {
+            errorMessage = "We don't recognize this email address. Don't have an account? Sign up instead.";
+          } else if (firebaseError.code === 'auth/wrong-password') {
+            errorMessage = 'Incorrect password. Please try again or reset your password.';
+          } else if (firebaseError.code === 'auth/invalid-email') {
+            errorMessage = 'Please enter a valid email address.';
+          } else if (firebaseError.code === 'auth/too-many-requests') {
+            errorMessage = 'Too many failed login attempts. Please try again later.';
+          }
+
+          dispatch({ type: 'SET_ERROR', payload: errorMessage });
+          trackEvent('login.error.firebase', { code: firebaseError.code });
+          return;
+        }
+      }
+
+      // Fallback to demo authentication if Firebase not configured
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      const match = (usersMap as any)[u] as { userId: string; orgId: string; displayName: string } | undefined;
+
+      // Password validation: demo users use username as password, real users have specific passwords
+      const passwordMap: Record<string, string> = {
+        'danny@djdannyavila.com': 'Indahouse69!'
+      };
+
+      const isValidPassword = match && (
+        (passwordMap[u] && p === passwordMap[u]) || // Real user with specific password
+        (!passwordMap[u] && p === u) // Demo user with username as password
+      );
+
+      if (!match || !isValidPassword) {
+        // Provide specific error messages based on the situation
+        if (!match) {
+          dispatch({ type: 'SET_ERROR', payload: "We don't recognize this email address. Don't have an account? Sign up instead." });
+        } else {
+          dispatch({ type: 'SET_ERROR', payload: 'Incorrect password. Please try again or reset your password.' });
+        }
+        try { trackEvent('login.error', { u }); } catch { }
+        return;
+      }
+
       setUserId(match.userId);
       updateProfile?.({ id: match.userId, defaultOrgId: match.orgId });
       setCurrentOrgId(match.orgId);
@@ -421,28 +539,28 @@ const Login: React.FC = () => {
 
       // Load demo data for Danny Avila
       if (match.userId === 'danny_avila') {
-        // console.log('[Login] Loading demo data for user:', match.userId);
         loadDemoData();
-        // console.log('[Login] Loading demo expenses...');
         loadDemoExpenses();
-        // console.log('[Login] Loading demo agencies...');
         const agenciesResult = loadDemoAgencies();
-        // console.log('[Login] Demo agencies loaded:', agenciesResult);
       }
-    } catch { }
 
-    // Show success state briefly
-    dispatch({ type: 'SET_SUCCESS', payload: match });
+      // Show success state briefly
+      dispatch({ type: 'SET_SUCCESS', payload: match });
 
-    // Start fluid transition: form fades out, teaser expands
-    setTimeout(() => {
-      dispatch({ type: 'START_FLUID_TRANSITION' });
-    }, 1000);
+      // Start fluid transition: form fades out, teaser expands
+      setTimeout(() => {
+        dispatch({ type: 'START_FLUID_TRANSITION' });
+      }, 1000);
 
-    // Complete transition and navigate
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
-    }, 2500);
+      // Complete transition and navigate
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
+      }, 2500);
+
+    } catch (error) {
+      console.error('Login error:', error);
+      dispatch({ type: 'SET_ERROR', payload: 'An unexpected error occurred. Please try again.' });
+    }
   };
 
   return (

@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from '../pages/LandingPage';
+import Login from '../pages/Login';
 import { CommandPalette } from '../components/CommandPalette';
 import { RouteLoading, InlineRouteLoading } from '../components/common/RouteLoading';
 import {
@@ -13,7 +14,6 @@ import {
 } from '../components/skeletons/PageSkeletons';
 
 // Placeholder future lazy routes
-const Login = React.lazy(() => import('../pages/Login'));
 const Register = React.lazy(() => import('../pages/Register'));
 const OnboardingPage = React.lazy(() => import('../pages/OnboardingSimple'));
 const DashboardOverview = React.lazy(() => import('../pages/Dashboard'));
@@ -55,7 +55,7 @@ export const AppRouter: React.FC = () => {
           path="/"
           element={<LandingPage />}
         />
-        <Route path="/login" element={<Suspense fallback={<RouteLoading message="Loading login..." />}><Login /></Suspense>} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Suspense fallback={<RouteLoading message="Loading register..." />}><Register /></Suspense>} />
         <Route path="/onboarding" element={<Suspense fallback={<RouteLoading message="Loading onboarding..." />}><OnboardingPage /></Suspense>} />
         <Route path="/welcome" element={<Navigate to="/dashboard/org" replace />} />

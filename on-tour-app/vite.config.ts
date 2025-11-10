@@ -6,7 +6,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
 export default defineConfig({
-  base: process.env.VITE_BASE || (process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITORY.split('/').pop()}/` : '/'),
+  base: '/', // Always use root path for Vercel deployment
   plugins: [
     react(),
     // Bundle analyzer (genera stats.html en build)

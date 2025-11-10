@@ -8,8 +8,8 @@ To deploy this monorepo correctly, you MUST configure the following in your Verc
 
 1. **Root Directory**: `on-tour-app`
    - This tells Vercel where the actual application code lives
-   
 2. **Framework Preset**: `Vite`
+
    - Auto-detected, but verify it's set to Vite
 
 3. **Build Command**: `npm run build` (default is fine)
@@ -26,6 +26,7 @@ To deploy this monorepo correctly, you MUST configure the following in your Verc
 ## Why this configuration?
 
 The repository has this structure:
+
 ```
 /
 ├── on-tour-app/          ← Main application

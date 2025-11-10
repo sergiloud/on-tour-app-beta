@@ -5,6 +5,7 @@ import type { FinanceShow, FinanceSnapshot } from '../features/finance/types';
 import { buildFinanceSnapshotFromShows, buildFinanceSnapshot } from '../features/finance/snapshot';
 import { getCurrentOrgId } from '../lib/tenants';
 import { secureStorage } from '../lib/secureStorage';
+import { showStore } from '../shared/showStore';
 
 export type FinanceTargetsDTO = {
   yearNet: number;
@@ -19,7 +20,6 @@ export type FinanceTargetsDTO = {
 export async function fetchShows(): Promise<FinanceShow[]> {
   // TODO: wire to backend
   // For now, mirror local store content as a placeholder
-  const { showStore } = await import('../shared/showStore');
   const org = getCurrentOrgId();
   return (showStore.getAll() as unknown as FinanceShow[]).filter((s: any) => !s.tenantId || s.tenantId === org);
 }
@@ -69,16 +69,11 @@ export type SnapshotEvent = { type: 'snapshot.updated'; payload: FinanceSnapshot
 export function subscribeSnapshot(onEvent: (e: SnapshotEvent) => void): () => void {
   // TODO: connect to SSE/ws and emit onEvent(e). Return unsubscribe.
   // For now, proxy local showStore updates as server-driven snapshot events
-  let unsub: (() => void) | null = null;
-  (async () => {
-    const mod = await import('../shared/showStore');
-    const ss = mod.showStore;
-    unsub = ss.subscribe((shows: FinanceShow[]) => {
-      const org = getCurrentOrgId();
-      const scoped = (shows as any[]).filter(s => !s.tenantId || s.tenantId === org);
-      const snap = buildFinanceSnapshotFromShows(scoped as FinanceShow[], new Date());
-      onEvent({ type: 'snapshot.updated', payload: snap });
-    });
-  })();
+  const unsub = showStore.subscribe((shows: FinanceShow[]) => {
+    const org = getCurrentOrgId();
+    const scoped = (shows as any[]).filter(s => !s.tenantId || s.tenantId === org);
+    const snap = buildFinanceSnapshotFromShows(scoped as FinanceShow[], new Date());
+    onEvent({ type: 'snapshot.updated', payload: snap });
+  });
   return () => { try { unsub && unsub(); } catch { } };
 }

@@ -4,8 +4,7 @@
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "vite",
   "rewrites": [
-    { "source": "/assets/(.*)", "destination": "/assets/$1" },
-    { "source": "/((?!api).*)", "destination": "/index.html" }
+    { "source": "/((?!api|assets|.*\\.(js|mjs|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

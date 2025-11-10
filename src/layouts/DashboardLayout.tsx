@@ -23,29 +23,24 @@ function useNavItems(collapsed: boolean) {
   const { org } = useOrg();
   if (!org) return [] as Array<{ to: string; labelKey: string; end?: boolean; section?: string }>;
   const commonStart = [{ to: '/dashboard', labelKey: 'nav.dashboard', end: true }];
-  if (org.type === 'agency') {
-    return [
-      ...commonStart,
-      { to: '/dashboard/org', labelKey: 'nav.overview', section: 'org' },
-      { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
-      { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },
-      { to: '/dashboard/org/clients', labelKey: 'nav.clients', section: 'org' },
-      { to: '/dashboard/org/branding', labelKey: 'nav.branding', section: 'org' },
-      { to: '/dashboard/org/billing', labelKey: 'nav.billing', section: 'org' },
-      { to: '/dashboard/org/integrations', labelKey: 'nav.integrations', section: 'org' },
-      { to: '/dashboard/org/documents', labelKey: 'nav.documents', section: 'org' },
-      { to: '/dashboard/org/reports', labelKey: 'nav.reports', section: 'org' },
-      { to: '/dashboard/org/links', labelKey: 'nav.links', section: 'org' },
-    ];
-  }
+  // Both artist and agency get full access to all sections
   return [
     ...commonStart,
-    { to: '/dashboard/org', labelKey: 'nav.overview' },
+    { to: '/dashboard/org', labelKey: 'nav.overview', section: 'org' },
     { to: '/dashboard/shows', labelKey: 'nav.shows' },
     { to: '/dashboard/travel', labelKey: 'nav.travel' },
     { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
     { to: '/dashboard/finance', labelKey: 'nav.finance' },
     { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
+    { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
+    { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },
+    { to: '/dashboard/org/clients', labelKey: 'nav.clients', section: 'org' },
+    { to: '/dashboard/org/branding', labelKey: 'nav.branding', section: 'org' },
+    { to: '/dashboard/org/billing', labelKey: 'nav.billing', section: 'org' },
+    { to: '/dashboard/org/integrations', labelKey: 'nav.integrations', section: 'org' },
+    { to: '/dashboard/org/documents', labelKey: 'nav.documents', section: 'org' },
+    { to: '/dashboard/org/reports', labelKey: 'nav.reports', section: 'org' },
+    { to: '/dashboard/org/links', labelKey: 'nav.links', section: 'org' },
   ];
 }
 

@@ -10,10 +10,10 @@ const OrgBranding: React.FC = () => {
   const [color, setColor] = useState(settings.branding?.color || '#9ae6b4');
   const [saved, setSaved] = useState(false);
 
-  if (!org || org.type !== 'artist') {
+  if (!org) {
     return (
       <motion.div className="max-w-[1400px] mx-auto px-3 md:px-4 flex items-center justify-center py-12" layoutId="org-branding">
-        <p className="text-xs text-slate-500 dark:text-white/70">Branding settings available for artists only</p>
+        <p className="text-xs text-slate-500 dark:text-white/70">Loading organization...</p>
       </motion.div>
     );
   }

@@ -43,6 +43,7 @@ const SEED = {
     { id: 'user_danny', name: 'Danny Avila' },
     { id: 'user_danny_v2', name: 'Danny Avila 2' },
     { id: 'user_prophecy', name: 'Prophecy' },
+    { id: 'user_artist', name: 'Artist Demo' },
     { id: 'user_adam', name: 'Adam' },
     { id: 'user_mike', name: 'Mike' },
     { id: 'user_sergio', name: 'Sergio' },

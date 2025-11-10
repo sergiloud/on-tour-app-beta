@@ -20,7 +20,24 @@ export function useShows() {
     return current;
   });
   const [orgId, setOrgId] = useState<string>(()=>{ try { return getCurrentOrgId(); } catch { return ''; } });
+  
+  // Subscribe to showStore updates
   useEffect(() => showStore.subscribe(setAllShows), []);
+  
+  // Subscribe to Firebase real-time updates
+  useEffect(() => {
+    const handleShowsUpdated = (e: Event) => {
+      const shows = (e as CustomEvent).detail as Show[];
+      if (Array.isArray(shows)) {
+        showStore.setAll(shows);
+        setAllShows(shows);
+      }
+    };
+    
+    window.addEventListener('shows-updated', handleShowsUpdated);
+    return () => window.removeEventListener('shows-updated', handleShowsUpdated);
+  }, []);
+  
   // React to tenant switch within the same tab
   useEffect(() => {
     const onTenant = (e: Event) => {

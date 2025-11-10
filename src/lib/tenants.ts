@@ -341,9 +341,12 @@ export function findLink(agencyOrgId: string, artistOrgId: string): Link | undef
   return get<Link[]>(K_LINKS, []).find(l => l.agencyOrgId === agencyOrgId && l.artistOrgId === artistOrgId);
 }
 
-// Convenience: identify if the current org is the agency link
+// Convenience: identify if the current org is an agency
 export function isAgencyCurrent(): boolean {
-  try { return getCurrentOrgId() === ORG_AGENCY_SHALIZI; } catch { return false; }
+  try { 
+    const currentOrg = getOrgById(getCurrentOrgId());
+    return currentOrg?.type === 'agency';
+  } catch { return false; }
 }
 
 // --- View-as support (agency viewing an artist dashboard) ---

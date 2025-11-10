@@ -24,10 +24,10 @@ if (!el) {
 initTelemetry();
 try { ensureDemoTenants(); } catch { }
 
-// Initialize Web Vitals monitoring
-initWebVitals();
-trackResourceTiming();
-trackLongTasks();
+// Initialize Web Vitals monitoring - TEMPORARILY DISABLED TO FIX 405 ERRORS
+// initWebVitals();
+// trackResourceTiming();
+// trackLongTasks();
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -47,8 +47,9 @@ if (isFirebaseConfigured()) {
     // Initialize Firestore
     db = getFirestore(app);
 
-    // Initialize Analytics (optional)
-    analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+    // Initialize Analytics (DISABLED to prevent 405 errors in SPA deployment)
+    // analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+    analytics = null;
   } catch (error) {
     console.error('Failed to initialize Firebase:', error);
     app = null;

@@ -45,48 +45,36 @@ function getRating(name: string, value: number): 'good' | 'needs-improvement' | 
 }
 
 /**
- * Send metrics to analytics (implement your analytics service)
+ * Send metrics to analytics (DISABLED for SPA deployment)
  */
 function sendToAnalytics(metric: WebVitalsReport) {
-    // Log to console in development
+    // Analytics completely disabled to prevent 405 errors in SPA deployment
+    // Store metrics locally for debugging if needed
+    
     if (import.meta.env.DEV) {
         const emoji = metric.rating === 'good' ? '✅' : metric.rating === 'needs-improvement' ? '⚠️' : '❌';
-        // console.log(
-        //     `${emoji} [Web Vitals] ${metric.name}:`,
-        //     `${metric.value.toFixed(0)}ms`,
-        //     `(${metric.rating})`
-        // );
+        console.log(
+            `${emoji} [Web Vitals] ${metric.name}:`,
+            `${metric.value.toFixed(0)}ms`,
+            `(${metric.rating})`
+        );
     }
-
-    // Send to analytics service in production
-    if (import.meta.env.PROD) {
-        // Example: Google Analytics 4
-        if (typeof (window as any).gtag !== 'undefined') {
-            (window as any).gtag('event', metric.name, {
-                value: Math.round(metric.value),
-                metric_rating: metric.rating,
-                metric_delta: Math.round(metric.delta),
-                metric_id: metric.id
-            });
-        }
-
-        // Custom analytics endpoint - Disabled for SPA deployment
-        // Note: This would require a backend endpoint to collect analytics
-        // For now, metrics are only stored locally and in console
+    
+    // Store in localStorage for potential debugging
+    try {
+        const key = `webvitals-${metric.name}-${Date.now()}`;
+        localStorage.setItem(key, JSON.stringify(metric));
         
-        /* if (navigator.sendBeacon) {
-            const body = JSON.stringify({
-                name: metric.name,
-                value: metric.value,
-                rating: metric.rating,
-                url: window.location.href,
-                userAgent: navigator.userAgent,
-                timestamp: Date.now()
-            });
-
-            navigator.sendBeacon('/api/analytics/web-vitals', body);
-        } */
+        // Keep only last 10 entries per metric to prevent storage bloat
+        const keys = Object.keys(localStorage).filter(k => k.startsWith(`webvitals-${metric.name}-`));
+        if (keys.length > 10) {
+            keys.sort().slice(0, -10).forEach(oldKey => localStorage.removeItem(oldKey));
+        }
+    } catch (e) {
+        // Ignore localStorage errors
     }
+    
+    // NO ANALYTICS CALLS - ALL DISABLED TO PREVENT 405 ERRORS
 }
 
 /**

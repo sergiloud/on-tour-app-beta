@@ -1,0 +1,13 @@
+{
+  "name": "on-tour-app-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install": "cd on-tour-app && npm install --legacy-peer-deps",
+    "build": "cd on-tour-app && npm run build",
+    "postinstall": "cd on-tour-app && npm install --legacy-peer-deps"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

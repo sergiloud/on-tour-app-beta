@@ -492,11 +492,16 @@ const Login: React.FC = () => {
           // Start fluid transition
           setTimeout(() => {
             dispatch({ type: 'START_FLUID_TRANSITION' });
-          }, 1000);
+          }, ANIMATION_DELAYS.fluidTransition);
 
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
-          }, 2500);
+          }, ANIMATION_DELAYS.authTransition);
+
+          // Navigate to dashboard after login (fast in dev, smooth in prod)
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, ANIMATION_DELAYS.navigationDelay);
 
           return;
         } catch (firebaseError: any) {

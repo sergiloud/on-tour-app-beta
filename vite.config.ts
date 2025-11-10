@@ -32,6 +32,9 @@ export default defineConfig({
         template: 'treemap',
       }),
     ]),
+    // PWA TEMPORARILY DISABLED - causes MIME type errors on Vercel
+    // TODO: Re-enable after fixing Vercel configuration
+    /*
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',
@@ -54,8 +57,8 @@ export default defineConfig({
         ]
       },
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html}'], // Reducido para build más rápido
-        globIgnores: ['**/node_modules/**/*', '**/stats.html'],
+        globPatterns: ['**\/*.{js,css,html}'], // Reducido para build más rápido
+        globIgnores: ['**\/node_modules/**\/*', '**\/stats.html'],
         maximumFileSizeToCacheInBytes: 3000000 // 3MB límite
       },
       devOptions: {
@@ -63,6 +66,7 @@ export default defineConfig({
         type: 'module'
       }
     })
+    */
   ],
   resolve: {
     alias: {

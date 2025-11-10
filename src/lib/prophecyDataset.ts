@@ -91,15 +91,44 @@ function getShowDefaults(city: string, date: string, currency: 'EUR' | 'USD' | '
 
 /**
  * Load Prophecy demo data into the shows store
- * Replaces all existing shows with Prophecy shows for a clean demo
+ * For Firebase users: migrates to Firestore
+ * For demo users: loads to localStorage
  */
-export function loadProphecyData(): { added: number; total: number } {
+export async function loadProphecyData(): Promise<{ added: number; total: number }> {
   try {
-    // Clear existing shows and load only Prophecy shows
-    localStorage.setItem('shows-store-v3', JSON.stringify(PROPHECY_SHOWS));
-
-    console.log(`[Prophecy Dataset] Loaded ${PROPHECY_SHOWS.length} Prophecy shows (clean slate)`);
-    return { added: PROPHECY_SHOWS.length, total: PROPHECY_SHOWS.length };
+    const { isFirebaseConfigured } = await import('./firebase');
+    const { getCurrentUserId } = await import('./demoAuth');
+    
+    // If Firebase is configured, migrate directly to Firestore
+    if (isFirebaseConfigured()) {
+      const userId = getCurrentUserId();
+      const { FirestoreShowService } = await import('../services/firestoreShowService');
+      
+      // Update shows with correct userId for Firestore
+      const showsWithUserId = PROPHECY_SHOWS.map(show => ({
+        ...show,
+        __modifiedBy: userId // Use Firebase UID instead of 'user_prophecy'
+      }));
+      
+      // Save each show to Firestore
+      let savedCount = 0;
+      for (const show of showsWithUserId) {
+        try {
+          await FirestoreShowService.saveShow(show, userId);
+          savedCount++;
+        } catch (error) {
+          console.warn(`[Prophecy Dataset] Failed to save show ${show.id}:`, error);
+        }
+      }
+      
+      console.log(`[Prophecy Dataset] Migrated ${savedCount}/${PROPHECY_SHOWS.length} Prophecy shows to Firestore`);
+      return { added: savedCount, total: PROPHECY_SHOWS.length };
+    } else {
+      // Demo mode: load to localStorage
+      localStorage.setItem('shows-store-v3', JSON.stringify(PROPHECY_SHOWS));
+      console.log(`[Prophecy Dataset] Loaded ${PROPHECY_SHOWS.length} Prophecy shows to localStorage (demo mode)`);
+      return { added: PROPHECY_SHOWS.length, total: PROPHECY_SHOWS.length };
+    }
   } catch (error) {
     console.error('[Prophecy Dataset] Error loading data:', error);
     return { added: 0, total: 0 };

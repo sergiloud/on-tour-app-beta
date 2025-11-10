@@ -8677,29 +8677,56 @@ export const PROPHECY_CONTACTS: Omit<Contact, 'id'>[] = [
 
 /**
  * Carga los contactos de Prophecy en el contactStore
+ * For Firebase users: migrates to Firestore
+ * For demo users: loads to localStorage
  */
-export function loadProphecyContacts(): { added: number; total: number } {
-  // Generar IDs únicos para los nuevos contactos
-  const newContacts = PROPHECY_CONTACTS.map((contact, index) => ({
-    ...contact,
-    id: `prophecy-contact-${index + 1}`,
-    tenantId: 'org_artist_prophecy'
-  }));
+export async function loadProphecyContacts(): Promise<{ added: number; total: number }> {
+  try {
+    const { isFirebaseConfigured } = await import('./firebase');
+    const { getCurrentUserId } = await import('./demoAuth');
+    
+    // If Firebase is configured, migrate directly to Firestore
+    if (isFirebaseConfigured()) {
+      const userId = getCurrentUserId();
+      const { FirestoreContactService } = await import('../services/firestoreContactService');
+      
+      // Generate contacts with correct IDs
+      const contactsWithIds = PROPHECY_CONTACTS.map((contact, index) => ({
+        ...contact,
+        id: `prophecy-contact-${index + 1}`,
+        tenantId: 'org_artist_prophecy'
+      }));
+      
+      // Save each contact to Firestore
+      let savedCount = 0;
+      for (const contact of contactsWithIds) {
+        try {
+          await FirestoreContactService.saveContact(contact as any, userId);
+          savedCount++;
+        } catch (error) {
+          console.warn(`[Prophecy Contacts Dataset] Failed to save contact ${contact.id}:`, error);
+        }
+      }
+      
+      console.log(`[Prophecy Contacts Dataset] Migrated ${savedCount}/${contactsWithIds.length} Prophecy contacts to Firestore`);
+      return { added: savedCount, total: contactsWithIds.length };
+    } else {
+      // Demo mode: load to localStorage
+      const newContacts = PROPHECY_CONTACTS.map((contact, index) => ({
+        ...contact,
+        id: `prophecy-contact-${index + 1}`,
+        tenantId: 'org_artist_prophecy'
+      }));
 
-  // Reemplazar todos los contactos con los de Prophecy (clean slate)
-  // IMPORTANTE: Usar 'on-tour-contacts' que es la clave que lee contactStore
-  localStorage.setItem('on-tour-contacts', JSON.stringify(newContacts));
+      localStorage.setItem('on-tour-contacts', JSON.stringify(newContacts));
+      contactStore.reload();
+      window.dispatchEvent(new CustomEvent('contactsReloaded'));
 
-  // CRÍTICO: Forzar al contactStore a recargar desde localStorage
-  contactStore.reload();
-
-  // Disparar evento para que React Query invalide su cache
-  window.dispatchEvent(new CustomEvent('contactsReloaded'));
-
-  console.log(`[Prophecy Contacts Dataset] Loaded ${newContacts.length} Prophecy contacts (clean slate)`);
-
-  return {
-    added: newContacts.length,
-    total: newContacts.length
-  };
+      console.log(`[Prophecy Contacts Dataset] Loaded ${newContacts.length} Prophecy contacts to localStorage (demo mode)`);
+      return { added: newContacts.length, total: newContacts.length };
+    }
+  } catch (error) {
+    console.error('[Prophecy Contacts Dataset] Error loading contacts:', error);
+    return { added: 0, total: 0 };
+  }
 }

@@ -487,8 +487,17 @@ const Login: React.FC = () => {
           // Load demo data based on email
           if (authUser.email === 'booking@prophecyofficial.com') {
             console.log('[LOGIN] Loading Prophecy data...');
-            loadProphecyData();
-            loadProphecyContacts();
+            // Load data asynchronously but don't wait (will complete in background)
+            loadProphecyData().then(result => {
+              console.log(`[LOGIN] Prophecy shows loaded: ${result.added}/${result.total}`);
+            }).catch(err => {
+              console.error('[LOGIN] Failed to load Prophecy shows:', err);
+            });
+            loadProphecyContacts().then(result => {
+              console.log(`[LOGIN] Prophecy contacts loaded: ${result.added}/${result.total}`);
+            }).catch(err => {
+              console.error('[LOGIN] Failed to load Prophecy contacts:', err);
+            });
           } else if (authUser.email === 'danny@djdannyavila.com') {
             console.log('[LOGIN] Loading Danny Avila data...');
             loadDemoData();

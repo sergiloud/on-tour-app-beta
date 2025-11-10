@@ -153,11 +153,6 @@ const Travel: React.FC = () => {
                   {tab === 'search' ? (t('common.search') || 'Search') : tab === 'compare' ? (t('travel.compare') || 'Compare') : tab === 'calendar' ? (t('calendar') || 'Calendar') : (t('travel.trips') || 'Trips')}
                 </button>
               ))}
-              {!can('travel:book') && (
-                <span className="px-1.5 py-0.5 text-[10px] rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 ml-2">
-                  {t('access.readOnly') || 'read-only'}
-                </span>
-              )}
             </nav>
             <div className="ml-2 flex items-center gap-2 text-xs">
               {chips.map(c => (

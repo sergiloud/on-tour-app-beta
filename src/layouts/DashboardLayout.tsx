@@ -229,9 +229,6 @@ export const DashboardLayout: React.FC = () => {
                   <>
                     <span className="flex items-center gap-2">
                       <span>{t('layout.team')}: {getOrgName(orgId)}</span>
-                      {isAgencyCurrent() && (
-                        <span className="px-1.5 py-0.5 text-[10px] rounded bg-amber-500/20 text-amber-300 border border-amber-400/30" title={t('access.readOnly.tooltip') || 'Finance exports disabled for agency demo'}>{t('access.readOnly') || 'read-only'}</span>
-                      )}
                     </span>
                     {/* Organization switcher */}
                     <select

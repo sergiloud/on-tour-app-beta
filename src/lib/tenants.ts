@@ -378,50 +378,14 @@ export function endViewAs(): void {
   } catch { }
 }
 
-// Permission: for the demo, agency has finance read-only; artist has full (including export)
+// Permission: ALL users have full access to everything (no restrictions)
 export function canExportFinance(): boolean {
-  try {
-    const cur = getCurrentOrgId();
-    if (cur === ORG_ARTIST_DANNY) return true; // full control in artist org
-    if (cur === ORG_AGENCY_SHALIZI) {
-      const link = getLinkAgencyToArtist();
-      // Even with finance: 'read', exporting is disabled in demo
-      return false;
-    }
-    return true;
-  } catch { return true; }
+  return true; // Full access for all organizations
 }
 
-// Permission facade for demo scopes
+// Permission facade: ALL permissions granted for all users
 export function can(permission: 'finance:export' | 'shows:write' | 'travel:book'): boolean {
-  try {
-    const cur = getCurrentOrgId();
-    const org = getOrgById(cur);
-    if (!org) return false;
-    const viewAs = getViewAs();
-    if (viewAs) {
-      // Agency viewing artist: restrict by link scopes between prevOrg (agency) and artist
-      const link = findLink(viewAs.prevOrgId, viewAs.artistOrgId);
-      if (!link || link.status !== 'active') return false;
-      if (permission === 'finance:export') return false; // never export in demo from agency
-      if (permission === 'shows:write') return link.scopes.shows === 'write';
-      if (permission === 'travel:book') return link.scopes.travel === 'book';
-      return true;
-    }
-    if (org.type === 'artist') {
-      if (permission === 'finance:export') return true;
-      if (permission === 'shows:write') return true;
-      if (permission === 'travel:book') return true;
-      return true;
-    }
-    // agency (not viewing-as): fall back to primary demo link policy
-    const link = getLinkAgencyToArtist();
-    if (!link || link.status !== 'active') return false;
-    if (permission === 'finance:export') return false; // no export in demo
-    if (permission === 'shows:write') return link.scopes.shows === 'write';
-    if (permission === 'travel:book') return link.scopes.travel === 'book';
-    return true;
-  } catch { return false; }
+  return true; // Full access for all organizations - no restrictions
 }
 
 // Consumers can listen to: window.addEventListener('tenant:changed', (e) => ...)

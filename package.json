@@ -27,7 +27,9 @@
     "type-check": "tsc --noEmit",
     "validate": "npm run type-check && npm run lint && npm run test:run",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "migrate:prophecy": "node scripts/migrate-prophecy-to-firestore.mjs",
+    "migrate:contacts": "node scripts/migrate-contacts-only.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

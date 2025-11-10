@@ -398,16 +398,16 @@ const Login: React.FC = () => {
     setFieldErrors(prev => ({ ...prev, password: error }));
   }, [password, validatePassword]);
 
-  // Submit handler - uses Firebase if configured, falls back to demo
+  // Submit handler - ALWAYS uses Firebase (no demo fallback)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loginState.state === 'loading') return; // Prevent multiple submissions
+    if (loginState.state === 'loading') return;
 
     const u = (usernameOrEmail || '').trim().toLowerCase();
     const p = password;
     const rec = remember;
 
-    console.log('[LOGIN] Starting login process...', { email: u, hasPassword: !!p, isFirebaseConfigured: isFirebaseConfigured() });
+    console.log('[LOGIN] Starting Firebase login...', { email: u, hasPassword: !!p });
 
     dispatch({ type: 'START_LOADING' });
 
@@ -425,9 +425,8 @@ const Login: React.FC = () => {
       return;
     }
 
-    // Enhanced error messages
     if (!u) {
-      dispatch({ type: 'SET_ERROR', payload: 'Please enter your username or email address to continue.' });
+      dispatch({ type: 'SET_ERROR', payload: 'Please enter your email address to continue.' });
       return;
     }
     if (!p) {
@@ -436,203 +435,101 @@ const Login: React.FC = () => {
     }
 
     try {
-      // Try Firebase authentication first if configured
-      if (isFirebaseConfigured()) {
-        console.log('[LOGIN] Attempting Firebase login...');
-        try {
-          const authUser = await authService.signIn(u, p);
-          console.log('[LOGIN] Firebase login successful:', { uid: authUser.uid, email: authUser.email });
+      // Clear any corrupted localStorage data before Firebase login
+      const { clearDemoData } = await import('../lib/clearDemoData');
+      clearDemoData();
+      
+      console.log('[LOGIN] Attempting Firebase authentication...');
+      const authUser = await authService.signIn(u, p);
+      console.log('[LOGIN] Firebase login successful:', { uid: authUser.uid, email: authUser.email });
 
-          // Determine default org based on email
-          let defaultOrg = ORG_AGENCY_SHALIZI;
-          if (authUser.email === 'booking@prophecyofficial.com') {
-            defaultOrg = ORG_ARTIST_PROPHECY;
-          } else if (authUser.email === 'danny@djdannyavila.com') {
-            defaultOrg = ORG_ARTIST_DANNY;
-          }
+      // Determine default org based on email
+      let defaultOrg = ORG_AGENCY_SHALIZI;
+      if (authUser.email === 'booking@prophecyofficial.com') {
+        defaultOrg = ORG_ARTIST_PROPHECY;
+      } else if (authUser.email === 'danny@djdannyavila.com') {
+        defaultOrg = ORG_ARTIST_DANNY;
+      }
 
-          // Load user profile from Firestore
-          let userProfile = null;
-          try {
-            const { FirestoreUserService } = await import('../services/firestoreUserService');
-            const userData = await FirestoreUserService.getUserData(authUser.uid);
-            if (userData) {
-              userProfile = userData.profile;
-              // Update local preferences if available
-              if (userData.preferences) {
-                // Apply user preferences (theme, language, etc.)
-                if (userData.preferences.language) {
-                  const { setLang } = await import('../lib/i18n');
-                  setLang(userData.preferences.language);
-                }
-              }
+      // Load user profile from Firestore
+      let userProfile = null;
+      try {
+        const { FirestoreUserService } = await import('../services/firestoreUserService');
+        const userData = await FirestoreUserService.getUserData(authUser.uid);
+        if (userData) {
+          userProfile = userData.profile;
+          // Update local preferences if available
+          if (userData.preferences) {
+            if (userData.preferences.language) {
+              const { setLang } = await import('../lib/i18n');
+              setLang(userData.preferences.language);
             }
-          } catch (e) {
-            console.warn('Could not load user profile from Firestore:', e);
           }
-
-          const finalOrgId = userProfile?.defaultOrgId || defaultOrg;
-
-          setUserId(authUser.uid);
-          updateProfile?.({
-            id: authUser.uid,
-            name: userProfile?.name || authUser.displayName || authUser.email || 'User',
-            email: authUser.email || '',
-            bio: userProfile?.bio,
-            avatarUrl: userProfile?.avatarUrl,
-            defaultOrgId: finalOrgId
-          });
-          setCurrentOrgId(finalOrgId);
-
-          // Load demo data based on email
-          if (authUser.email === 'booking@prophecyofficial.com') {
-            console.log('[LOGIN] Loading Prophecy data...');
-            // Load data asynchronously but don't wait (will complete in background)
-            loadProphecyData().then(result => {
-              console.log(`[LOGIN] Prophecy shows loaded: ${result.added}/${result.total}`);
-            }).catch(err => {
-              console.error('[LOGIN] Failed to load Prophecy shows:', err);
-            });
-            loadProphecyContacts().then(result => {
-              console.log(`[LOGIN] Prophecy contacts loaded: ${result.added}/${result.total}`);
-            }).catch(err => {
-              console.error('[LOGIN] Failed to load Prophecy contacts:', err);
-            });
-          } else if (authUser.email === 'danny@djdannyavila.com') {
-            console.log('[LOGIN] Loading Danny Avila data...');
-            loadDemoData();
-            loadDemoExpenses();
-            loadDemoAgencies();
-          }
-
-          if (rec) secureStorage.setItem('demo:authed', '1');
-          secureStorage.setItem('demo:lastUser', authUser.uid);
-          secureStorage.setItem('demo:lastOrg', finalOrgId);
-
-          trackEvent('login.success.firebase', { userId: authUser.uid });
-
-          dispatch({ type: 'SET_SUCCESS', payload: {
-            userId: authUser.uid,
-            orgId: finalOrgId,
-            displayName: userProfile?.name || authUser.displayName || authUser.email || 'User'
-          }});
-
-          // Start fluid transition
-          setTimeout(() => {
-            dispatch({ type: 'START_FLUID_TRANSITION' });
-          }, ANIMATION_DELAYS.fluidTransition);
-
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
-          }, ANIMATION_DELAYS.authTransition);
-
-          // Navigate to dashboard after login (fast in dev, smooth in prod)
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, ANIMATION_DELAYS.navigationDelay);
-
-          return;
-        } catch (firebaseError: any) {
-          // Firebase auth failed - show appropriate error
-          console.log('[LOGIN] Firebase auth error:', firebaseError);
-          let errorMessage = 'Login failed. Please check your credentials.';
-
-          if (firebaseError.code === 'auth/user-not-found') {
-            errorMessage = "We don't recognize this email address. Don't have an account? Sign up instead.";
-          } else if (firebaseError.code === 'auth/wrong-password') {
-            errorMessage = 'Incorrect password. Please try again or reset your password.';
-          } else if (firebaseError.code === 'auth/invalid-email') {
-            errorMessage = 'Please enter a valid email address.';
-          } else if (firebaseError.code === 'auth/too-many-requests') {
-            errorMessage = 'Too many failed login attempts. Please try again later.';
-          } else if (firebaseError.code === 'auth/invalid-credential') {
-            errorMessage = 'Invalid credentials. Please check your email and password.';
-          }
-
-          dispatch({ type: 'SET_ERROR', payload: errorMessage });
-          trackEvent('login.error.firebase', { code: firebaseError.code });
-          return;
         }
+      } catch (e) {
+        console.warn('[LOGIN] Could not load user profile from Firestore:', e);
       }
 
-      // Fallback to demo authentication if Firebase not configured
-      console.log('[LOGIN] Using demo authentication fallback...');
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const finalOrgId = userProfile?.defaultOrgId || defaultOrg;
 
-      const match = (usersMap as any)[u] as { userId: string; orgId: string; displayName: string } | undefined;
-
-      // Password validation: demo users use username as password, real users have specific passwords
-      const passwordMap: Record<string, string> = {
-        'danny@djdannyavila.com': 'Indahouse69!',
-        'booking@prophecyofficial.com': 'Casillas123!'
-      };
-
-      console.log('[LOGIN] Demo fallback - checking credentials...', { 
-        email: u, 
-        hasMatch: !!match,
-        expectedPassword: passwordMap[u],
-        providedPassword: p,
-        passwordsMatch: passwordMap[u] === p
+      setUserId(authUser.uid);
+      updateProfile?.({
+        id: authUser.uid,
+        name: userProfile?.name || authUser.displayName || authUser.email || 'User',
+        email: authUser.email || '',
+        bio: userProfile?.bio,
+        avatarUrl: userProfile?.avatarUrl,
+        defaultOrgId: finalOrgId
       });
+      setCurrentOrgId(finalOrgId);
 
-      const isValidPassword = match && (
-        (passwordMap[u] && p === passwordMap[u]) || // Real user with specific password
-        (!passwordMap[u] && p === u) // Demo user with username as password
-      );
+      // NO loading demo data - everything comes from Firestore
+      console.log('[LOGIN] User authenticated. Data will load from Firestore.');
 
-      if (!match || !isValidPassword) {
-        // Provide specific error messages based on the situation
-        console.log('[LOGIN] Demo auth failed:', { hasMatch: !!match, isValidPassword });
-        if (!match) {
-          dispatch({ type: 'SET_ERROR', payload: "We don't recognize this email address. Don't have an account? Sign up instead." });
-        } else {
-          dispatch({ type: 'SET_ERROR', payload: 'Incorrect password. Please try again or reset your password.' });
-        }
-        try { trackEvent('login.error', { u }); } catch { }
-        return;
-      }
-
-      console.log('[LOGIN] Demo auth successful, setting user...', match);
-
-      setUserId(match.userId);
-      updateProfile?.({ id: match.userId, defaultOrgId: match.orgId });
-      setCurrentOrgId(match.orgId);
-      setAuthed(true);
       if (rec) secureStorage.setItem('demo:authed', '1');
-      secureStorage.setItem('demo:lastUser', match.userId);
-      secureStorage.setItem('demo:lastOrg', match.orgId);
-      trackEvent('login.success', { userId: match.userId, orgId: match.orgId });
-      Events.loginSelect(match.userId, match.orgId);
+      secureStorage.setItem('demo:lastUser', authUser.uid);
+      secureStorage.setItem('demo:lastOrg', finalOrgId);
 
-      // Load demo data for Danny Avila
-      if (match.userId === 'danny_avila') {
-        loadDemoData();
-        loadDemoExpenses();
-        const agenciesResult = loadDemoAgencies();
-      }
+      trackEvent('login.success.firebase', { userId: authUser.uid });
 
-      // Load Prophecy data for Prophecy user
-      if (match.userId === 'user_prophecy') {
-        loadProphecyData();
-        loadProphecyContacts();
-      }
+      dispatch({ type: 'SET_SUCCESS', payload: {
+        userId: authUser.uid,
+        orgId: finalOrgId,
+        displayName: userProfile?.name || authUser.displayName || authUser.email || 'User'
+      }});
 
-      // Show success state briefly
-      dispatch({ type: 'SET_SUCCESS', payload: match });
-
-      // Start fluid transition: form fades out, teaser expands
+      // Start fluid transition
       setTimeout(() => {
         dispatch({ type: 'START_FLUID_TRANSITION' });
-      }, 1000);
+      }, ANIMATION_DELAYS.fluidTransition);
 
-      // Complete transition and navigate
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('authTransition', { detail: { type: 'loginSuccess' } }));
-      }, 2500);
+      }, ANIMATION_DELAYS.authTransition);
 
-    } catch (error) {
-      console.error('Login error:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'An unexpected error occurred. Please try again.' });
+      // Navigate to dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, ANIMATION_DELAYS.navigationDelay);
+
+    } catch (firebaseError: any) {
+      console.error('[LOGIN] Firebase authentication failed:', firebaseError);
+      let errorMessage = 'Login failed. Please check your credentials.';
+
+      if (firebaseError.code === 'auth/user-not-found') {
+        errorMessage = "We don't recognize this email address. Don't have an account? Sign up instead.";
+      } else if (firebaseError.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password. Please try again or reset your password.';
+      } else if (firebaseError.code === 'auth/invalid-email') {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (firebaseError.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed login attempts. Please try again later.';
+      } else if (firebaseError.code === 'auth/invalid-credential') {
+        errorMessage = 'Invalid credentials. Please check your email and password.';
+      }
+
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      trackEvent('login.error.firebase', { code: firebaseError.code });
     }
   };
 

@@ -58,6 +58,16 @@ const DEFAULT_PREFS: UserPrefs = {
 
 export function ensureDemoAuth() {
   try {
+    // Skip demo auth setup if Firebase is configured
+    // Firebase users have their own authentication
+    const isFirebase = typeof window !== 'undefined' && 
+                       (window as any).__FIREBASE_CONFIG__ !== undefined;
+    
+    if (isFirebase) {
+      console.log('[DemoAuth] Firebase mode detected - skipping demo auth setup');
+      return;
+    }
+    
     const cur = get<string | undefined>(K_CURRENT, undefined as any);
     if (!cur) set(K_CURRENT, DEFAULT_USER);
     const profiles = get<Record<string, UserProfile>>(K_PROFILES, {});

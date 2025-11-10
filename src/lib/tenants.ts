@@ -83,6 +83,16 @@ function set(key: string, value: any) { try { secureStorage.setItem(key, value);
 // Idempotent seed: merges by id without duplicating. Only runs client-side.
 export function ensureDemoTenants() {
   try {
+    // Skip demo tenant setup if Firebase is configured
+    // Firebase users don't need demo data in localStorage
+    const isFirebase = typeof window !== 'undefined' && 
+                       (window as any).__FIREBASE_CONFIG__ !== undefined;
+    
+    if (isFirebase) {
+      console.log('[Tenants] Firebase mode detected - skipping demo tenant setup');
+      return;
+    }
+    
     const orgs = mergeById(get<Org[]>(K_ORGS, []), SEED.orgs);
     const users = mergeById(get<User[]>(K_USERS, []), SEED.users);
     const mems = mergeMemberships(get<Membership[]>(K_MEMBERS, []), SEED.memberships);

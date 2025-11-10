@@ -91,38 +91,16 @@ function getShowDefaults(city: string, date: string, currency: 'EUR' | 'USD' | '
 
 /**
  * Load Prophecy demo data into the shows store
- * For Firebase users: migrates to Firestore
+ * For Firebase users: does NOT auto-load, use migration script instead
  * For demo users: loads to localStorage
  */
 export async function loadProphecyData(): Promise<{ added: number; total: number }> {
   try {
     const { isFirebaseConfigured } = await import('./firebase');
-    const { getCurrentUserId } = await import('./demoAuth');
     
-    // If Firebase is configured, migrate directly to Firestore
     if (isFirebaseConfigured()) {
-      const userId = getCurrentUserId();
-      const { FirestoreShowService } = await import('../services/firestoreShowService');
-      
-      // Update shows with correct userId for Firestore
-      const showsWithUserId = PROPHECY_SHOWS.map(show => ({
-        ...show,
-        __modifiedBy: userId // Use Firebase UID instead of 'user_prophecy'
-      }));
-      
-      // Save each show to Firestore
-      let savedCount = 0;
-      for (const show of showsWithUserId) {
-        try {
-          await FirestoreShowService.saveShow(show, userId);
-          savedCount++;
-        } catch (error) {
-          console.warn(`[Prophecy Dataset] Failed to save show ${show.id}:`, error);
-        }
-      }
-      
-      console.log(`[Prophecy Dataset] Migrated ${savedCount}/${PROPHECY_SHOWS.length} Prophecy shows to Firestore`);
-      return { added: savedCount, total: PROPHECY_SHOWS.length };
+      console.warn('[Prophecy Dataset] Firebase detected. Use migration script to import data to Firestore.');
+      return { added: 0, total: PROPHECY_SHOWS.length };
     } else {
       // Demo mode: load to localStorage
       localStorage.setItem('shows-store-v3', JSON.stringify(PROPHECY_SHOWS));

@@ -435,10 +435,6 @@ const Login: React.FC = () => {
     }
 
     try {
-      // Clear any corrupted localStorage data before Firebase login
-      const { clearDemoData } = await import('../lib/clearDemoData');
-      clearDemoData();
-      
       console.log('[LOGIN] Attempting Firebase authentication...');
       const authUser = await authService.signIn(u, p);
       console.log('[LOGIN] Firebase login successful:', { uid: authUser.uid, email: authUser.email });
@@ -471,6 +467,14 @@ const Login: React.FC = () => {
       }
 
       const finalOrgId = userProfile?.defaultOrgId || defaultOrg;
+      console.log('[LOGIN] Setting organization:', finalOrgId);
+
+      // Set orgId BEFORE clearing demo data (so it persists)
+      setCurrentOrgId(finalOrgId);
+
+      // Clear any corrupted localStorage data AFTER setting orgId
+      const { clearDemoData } = await import('../lib/clearDemoData');
+      clearDemoData();
 
       setUserId(authUser.uid);
       updateProfile?.({
@@ -481,6 +485,8 @@ const Login: React.FC = () => {
         avatarUrl: userProfile?.avatarUrl,
         defaultOrgId: finalOrgId
       });
+      
+      // Ensure orgId is set again after clearDemoData
       setCurrentOrgId(finalOrgId);
 
       // NO loading demo data - everything comes from Firestore

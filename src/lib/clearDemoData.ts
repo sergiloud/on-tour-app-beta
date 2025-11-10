@@ -17,13 +17,13 @@ export function clearDemoData() {
       'demo:usersPrefs',
       'demo:authed',
       
-      // Tenants
+      // Tenants (but NOT demo:currentOrg - that's set by Firebase login)
       'demo:orgs',
       'demo:users',
       'demo:memberships',
       'demo:teams',
       'demo:agencyLinks',
-      'demo:currentOrg',
+      // DON'T CLEAR: 'demo:currentOrg' - this is set before clearDemoData is called
       
       // Shows
       'shows-store-v3',
@@ -44,7 +44,7 @@ export function clearDemoData() {
       'secure:demo:memberships',
       'secure:demo:teams',
       'secure:demo:agencyLinks',
-      'secure:demo:currentOrg',
+      // DON'T CLEAR: 'secure:demo:currentOrg' - this is set before clearDemoData is called
     ];
     
     let cleared = 0;

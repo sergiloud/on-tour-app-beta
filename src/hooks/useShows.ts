@@ -19,7 +19,13 @@ export function useShows() {
     } catch {}
     return current;
   });
-  const [orgId, setOrgId] = useState<string>(()=>{ try { return getCurrentOrgId(); } catch { return ''; } });
+  const [orgId, setOrgId] = useState<string>(()=>{ 
+    try { 
+      const id = getCurrentOrgId(); 
+      console.log('[useShows] 🔑 Initial orgId:', id);
+      return id;
+    } catch { return ''; } 
+  });
   
   // Subscribe to showStore updates
   useEffect(() => showStore.subscribe(setAllShows), []);
@@ -28,6 +34,7 @@ export function useShows() {
   useEffect(() => {
     const handleShowsUpdated = (e: Event) => {
       const shows = (e as CustomEvent).detail as Show[];
+      console.log('[useShows] 🔄 Firebase sync event received:', shows.length, 'shows');
       if (Array.isArray(shows)) {
         showStore.setAll(shows);
         setAllShows(shows);
@@ -41,13 +48,28 @@ export function useShows() {
   // React to tenant switch within the same tab
   useEffect(() => {
     const onTenant = (e: Event) => {
-      try { const id = (e as CustomEvent).detail?.id as string | undefined; setOrgId(id || getCurrentOrgId()); } catch { setOrgId(getCurrentOrgId()); }
+      try { 
+        const id = (e as CustomEvent).detail?.id as string | undefined; 
+        const newOrgId = id || getCurrentOrgId();
+        console.log('[useShows] 🔄 Tenant changed:', newOrgId);
+        setOrgId(newOrgId);
+      } catch { setOrgId(getCurrentOrgId()); }
     };
     window.addEventListener('tenant:changed' as any, onTenant);
     return () => window.removeEventListener('tenant:changed' as any, onTenant);
   }, []);
+  
   // Derive tenant-scoped shows; default to artist data if missing tenantId for backward compat
-  const shows = useMemo(() => allShows.filter(s => !s.tenantId || s.tenantId === orgId), [allShows, orgId]);
+  const shows = useMemo(() => {
+    console.log('[useShows] 🔍 Filtering shows:', { 
+      total: allShows.length, 
+      currentOrgId: orgId,
+      firstShow: allShows[0] ? { id: allShows[0].id, tenantId: allShows[0].tenantId } : null 
+    });
+    const filtered = allShows.filter(s => !s.tenantId || s.tenantId === orgId);
+    console.log('[useShows] ✅ Filtered shows:', filtered.length);
+    return filtered;
+  }, [allShows, orgId]);
   const add = (s: Show) => showStore.addShow(s);
   const setAll = (list: Show[]) => showStore.setAll(list);
   const update = (id: string, patch: Partial<Show> & Record<string, unknown>) => showStore.updateShow(id, patch);

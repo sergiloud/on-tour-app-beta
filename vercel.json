@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd on-tour-app && npm run build",
+  "outputDirectory": "on-tour-app/dist",
+  "installCommand": "cd on-tour-app && npm install --legacy-peer-deps",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

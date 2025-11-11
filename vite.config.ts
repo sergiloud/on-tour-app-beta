@@ -100,16 +100,7 @@ export default defineConfig({
     minify: 'esbuild',
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     cssCodeSplit: true,
-    modulePreload: {
-      polyfill: true,
-      resolveDependencies: (filename, deps) => {
-        // Prioritize critical chunks
-        return deps.filter(dep => 
-          !dep.includes('heavy') && 
-          !dep.includes('charts')
-        );
-      },
-    },
+    modulePreload: false, // Disable modulePreload to avoid MIME type issues
     rollupOptions: {
       preserveEntrySignatures: 'strict',
       output: {

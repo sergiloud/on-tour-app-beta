@@ -29,10 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://firestore.googleapis.com" />
   
-  <!-- Preload critical assets -->
-  <link rel="modulepreload" href="/src/main.tsx" />
-  <link rel="modulepreload" href="/src/App.tsx" />
-
+  <!-- Note: Vite will automatically inject modulepreload and prefetch tags during build -->
   <!-- Note: maplibre-gl.css is loaded dynamically by InteractiveMap component on demand -->
   <!-- Removed preload to avoid unused resource warning -->
 
@@ -74,9 +71,6 @@
       color: #fff;
     }
   </style>
-
-  <!-- Prefetch critical routes -->
-  <link rel="prefetch" href="/assets/vendor" as="script" />
 </head>
 
 <body>

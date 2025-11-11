@@ -54,6 +54,24 @@ if (isFirebaseConfigured()) {
     // Initialize Firestore
     db = getFirestore(app);
 
+    // Suppress harmless ERR_BLOCKED_BY_CLIENT errors from ad blockers
+    if (typeof window !== 'undefined') {
+      const originalError = console.error;
+      console.error = (...args: any[]) => {
+        // Filter out benign Firestore connection errors caused by browser extensions
+        const message = args[0]?.toString() || '';
+        if (
+          message.includes('ERR_BLOCKED_BY_CLIENT') ||
+          message.includes('net::ERR_BLOCKED_BY_CLIENT') ||
+          (message.includes('Firestore') && message.includes('Listen/channel'))
+        ) {
+          // Silently ignore - this is caused by ad blockers/privacy extensions
+          return;
+        }
+        originalError.apply(console, args);
+      };
+    }
+
     // Initialize Analytics (DISABLED to prevent 405 errors in SPA deployment)
     // analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
     analytics = null;

@@ -104,6 +104,30 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [managementAgencies, setManagementAgencies] = useState<AgencyConfig[]>(() => (legacyInitial as any).managementAgencies || []);
   const [kpiTickerHidden, setKpiTickerHiddenState] = useState<boolean>(!!(legacyInitial as any).kpiTickerHidden);
 
+  // Load agencies from Firestore on mount
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const { FirestoreUserService } = await import('../services/firestoreUserService');
+        const settings = await FirestoreUserService.getSettings(userId);
+        if (isMounted && settings) {
+          if (settings.bookingAgencies) {
+            console.log('[SettingsContext] Loaded booking agencies from Firestore:', settings.bookingAgencies);
+            setBookingAgencies(settings.bookingAgencies);
+          }
+          if (settings.managementAgencies) {
+            console.log('[SettingsContext] Loaded management agencies from Firestore:', settings.managementAgencies);
+            setManagementAgencies(settings.managementAgencies);
+          }
+        }
+      } catch (e) {
+        console.warn('[SettingsContext] Could not load agencies from Firestore:', e);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, [userId]);
+
   // Initial load migrated above via initial
 
   // Storage versioning: store a version and allow future migrations to branch cleanly
@@ -127,6 +151,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // @ts-ignore
       __version: SETTINGS_VERSION
     } as any);
+    
+    // Sync agencies to Firestore for real users
+    (async () => {
+      try {
+        const { FirestoreUserService } = await import('../services/firestoreUserService');
+        await FirestoreUserService.saveSettings({
+          bookingAgencies,
+          managementAgencies,
+          updatedAt: new Date().toISOString()
+        }, userId);
+        console.log('[SettingsContext] Agencies synced to Firestore');
+      } catch (e) {
+        console.warn('[SettingsContext] Could not sync agencies to Firestore:', e);
+      }
+    })();
+    
     try { window.dispatchEvent(new CustomEvent('prefs:updated', { detail: { id: userId } } as any)); } catch { }
   }, [userId, currency, unit, lang, maskAmounts, region, dateRange, presentationMode, dashboardView, periodPreset, comparePrev, selectedStatuses, bookingAgencies, managementAgencies, kpiTickerHidden]);
 

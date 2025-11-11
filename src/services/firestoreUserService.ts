@@ -35,6 +35,19 @@ export interface UserPreferences {
   updatedAt: string;
 }
 
+export type AgencyTerritoryMode = 'worldwide' | 'continents' | 'countries';
+export type ContinentCode = 'NA' | 'SA' | 'EU' | 'AF' | 'AS' | 'OC';
+export interface AgencyConfig {
+  id: string;
+  name: string;
+  type: 'booking' | 'management';
+  commissionPct: number;
+  territoryMode: AgencyTerritoryMode;
+  continents?: ContinentCode[];
+  countries?: string[];
+  notes?: string;
+}
+
 export interface UserSettings {
   showPreferences?: {
     defaultView: 'grid' | 'list' | 'calendar';
@@ -50,6 +63,8 @@ export interface UserSettings {
     collapsedPanels: string[];
     sidebarWidth: number;
   };
+  bookingAgencies?: AgencyConfig[];
+  managementAgencies?: AgencyConfig[];
   updatedAt: string;
 }
 

@@ -611,9 +611,9 @@ const OrgOverview: React.FC = () => {
                   onClick={(e) => {
                     try { Events.welcomeCta('dashboard'); } catch { }
                     try {
-                      const href = `${(((import.meta as any).env?.BASE_URL ?? '/').replace(/\/$/, ''))}/dashboard?landing=1`;
+                      const targetUrl = `${(((import.meta as any).env?.BASE_URL ?? '/').replace(/\/$/, ''))}/dashboard?landing=1`;
                       e.preventDefault();
-                      window.location.assign(href);
+                      window.location.assign(targetUrl);
                     } catch { }
                   }}
                 >

@@ -13,6 +13,7 @@
     "build:check": "tsc --noEmit || true && vite build",
     "build:strict": "tsc && vite build",
     "build:analyze": "npm run build && node scripts/analyze-bundle.js",
+    "build:perf": "npm run build && node scripts/analyze-performance.js",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",

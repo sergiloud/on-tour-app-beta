@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Test</title>
+</head>
+<body>
+    <h1>Firestore Connection Test</h1>
+    <div id="status">Loading...</div>
+    <div id="user-info"></div>
+    <button id="test-write">Test Write</button>
+    <button id="test-read">Test Read</button>
+    <pre id="result"></pre>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Your Firebase config (from .env)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDOFKhbZ7B8gZQxwGQl8rJGy6H8l0uKbpA",
+            authDomain: "on-tour-app-712e2.firebaseapp.com",
+            projectId: "on-tour-app-712e2",
+            storageBucket: "on-tour-app-712e2.firebasestorage.app",
+            messagingSenderId: "649639976056",
+            appId: "1:649639976056:web:f5e7cd43a78d38cdbb8b60",
+            measurementId: "G-S3H4QF8TC4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const statusDiv = document.getElementById('status');
+        const userInfoDiv = document.getElementById('user-info');
+        const resultDiv = document.getElementById('result');
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                statusDiv.textContent = '✅ User logged in';
+                userInfoDiv.innerHTML = `
+                    <p><strong>UID:</strong> ${user.uid}</p>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                `;
+                console.log('User:', user);
+            } else {
+                statusDiv.textContent = '❌ No user logged in';
+                userInfoDiv.textContent = 'Please log in to the main app first';
+                currentUser = null;
+            }
+        });
+
+        document.getElementById('test-write').addEventListener('click', async () => {
+            if (!currentUser) {
+                resultDiv.textContent = 'Error: No user logged in';
+                return;
+            }
+
+            try {
+                const testData = {
+                    bookingAgencies: [
+                        {
+                            id: 'test-booking-1',
+                            name: 'Test Booking Agency',
+                            type: 'booking',
+                            commissionPct: 15,
+                            territoryMode: 'worldwide',
+                            notes: 'Test agency created from diagnostic page'
+                        }
+                    ],
+                    managementAgencies: [],
+                    updatedAt: new Date().toISOString()
+                };
+
+                const settingsRef = doc(db, `users/${currentUser.uid}/profile/settings`);
+                await setDoc(settingsRef, testData, { merge: true });
+                
+                resultDiv.textContent = '✅ Write successful!\n' + JSON.stringify(testData, null, 2);
+                console.log('Write successful:', testData);
+            } catch (error) {
+                resultDiv.textContent = '❌ Write failed:\n' + error.message;
+                console.error('Write error:', error);
+            }
+        });
+
+        document.getElementById('test-read').addEventListener('click', async () => {
+            if (!currentUser) {
+                resultDiv.textContent = 'Error: No user logged in';
+                return;
+            }
+
+            try {
+                const settingsRef = doc(db, `users/${currentUser.uid}/profile/settings`);
+                const settingsSnap = await getDoc(settingsRef);
+
+                if (settingsSnap.exists()) {
+                    const data = settingsSnap.data();
+                    resultDiv.textContent = '✅ Read successful!\n' + JSON.stringify(data, null, 2);
+                    console.log('Read successful:', data);
+                } else {
+                    resultDiv.textContent = '⚠️ No document found at: users/' + currentUser.uid + '/profile/settings';
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ Read failed:\n' + error.message;
+                console.error('Read error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

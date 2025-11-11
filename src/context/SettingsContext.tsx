@@ -182,9 +182,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       __version: SETTINGS_VERSION
     } as any);
     
-    // Sync agencies to Firestore for real users
+    // Sync agencies to Firestore for real users (only if Firebase Auth is available)
     (async () => {
       try {
+        // Skip if using demo user
+        if (!auth || !auth.currentUser || userId === 'default_user' || userId.startsWith('demo_')) {
+          console.log('[SettingsContext] Skipping Firestore sync - no Firebase Auth user');
+          return;
+        }
+
+        console.log('[SettingsContext] Firebase Auth user detected:', auth.currentUser.uid);
         console.log('[SettingsContext] Syncing agencies to Firestore for userId:', userId);
         console.log('[SettingsContext] Booking agencies:', bookingAgencies);
         console.log('[SettingsContext] Management agencies:', managementAgencies);
@@ -198,6 +205,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         console.log('[SettingsContext] ✅ Agencies successfully synced to Firestore');
       } catch (e) {
         console.error('[SettingsContext] ❌ Error syncing agencies to Firestore:', e);
+        console.error('[SettingsContext] Error details:', {
+          name: (e as any)?.name,
+          message: (e as any)?.message,
+          code: (e as any)?.code,
+          stack: (e as any)?.stack
+        });
       }
     })();
     

@@ -1522,6 +1522,27 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
           )}
           {tab === 'finance' && (
             <div id="panel-finance" role="tabpanel" aria-labelledby="tab-finance" className="text-sm space-y-4 max-w-7xl mx-auto">
+              {/* Fee Input Field - ADDED */}
+              <div className="glass rounded-lg border border-slate-200 dark:border-white/10 p-4 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/60">
+                  {t('shows.editor.label.fee') || 'Fee Amount'}
+                </h4>
+                <FeeFieldAdvanced
+                  fee={draft.fee}
+                  onFeeChange={(newFee) => setDraft((d: ShowDraft) => ({ ...d, fee: newFee }))}
+                  currency={(draft as any).feeCurrency || baseCurrency}
+                  currencySymbol={(() => {
+                    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', AUD: 'A$' };
+                    return symbols[(draft as any).feeCurrency || baseCurrency] || '€';
+                  })()}
+                  costs={(draft as any).costs || []}
+                  whtPct={(draft as any).whtPct || 0}
+                  fmtMoney={fmtMoney}
+                  error={validation.fee ? String(t(validation.fee) || 'Invalid fee') : undefined}
+                  disabled={false}
+                />
+              </div>
+
               <div className="glass rounded-md p-3 border border-white/10">
                 <div className="flex items-center gap-2 text-slate-400 dark:text-white/60 text-xs">
                   <svg className="w-3.5 h-3.5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

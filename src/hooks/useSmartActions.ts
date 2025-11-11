@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useFilteredShows } from '../features/shows/selectors';
 import { useSettings } from '../context/SettingsContext';
+import { useAuth } from '../context/AuthContext';
+import { FirestoreActionsService } from '../services/firestoreActionsService';
 
 type ActionPriority = 'critical' | 'high' | 'medium' | 'low';
 type ActionCategory = 'urgent' | 'financial' | 'logistics' | 'opportunity';
@@ -33,11 +35,34 @@ const DAY = 24 * 60 * 60 * 1000;
 export const useSmartActions = () => {
     const { shows } = useFilteredShows();
     const { fmtMoney } = useSettings();
+    const { userId } = useAuth();
     const [completedActions, setCompletedActions] = useState<Set<string>>(() => {
-        // Cargar del localStorage
+        // Cargar del localStorage como fallback inicial
         const saved = localStorage.getItem('on-tour-completed-actions');
         return saved ? new Set(JSON.parse(saved)) : new Set();
     });
+
+    // Migrar desde localStorage y suscribirse a cambios de Firestore
+    useEffect(() => {
+        if (!userId) return;
+
+        // Migrar datos de localStorage a Firestore si es necesario
+        FirestoreActionsService.migrateFromLocalStorage(userId).catch(error => {
+            console.error('[useSmartActions] Migration error:', error);
+        });
+
+        // Suscribirse a cambios en tiempo real
+        const unsubscribe = FirestoreActionsService.subscribeToCompletedActions(
+            userId,
+            (actionIds) => {
+                setCompletedActions(new Set(actionIds));
+                // Sincronizar con localStorage como backup
+                localStorage.setItem('on-tour-completed-actions', JSON.stringify(actionIds));
+            }
+        );
+
+        return () => unsubscribe();
+    }, [userId]);
 
     const actions = useMemo((): SmartAction[] => {
         const now = Date.now();
@@ -138,23 +163,57 @@ export const useSmartActions = () => {
         });
     }, [shows, fmtMoney, completedActions]);
 
-    const markCompleted = (actionId: string) => {
+    const markCompleted = async (actionId: string) => {
+        if (!userId) return;
+
+        // Actualización optimista
         const newSet = new Set(completedActions);
         newSet.add(actionId);
         setCompletedActions(newSet);
         localStorage.setItem('on-tour-completed-actions', JSON.stringify([...newSet]));
+
+        // Sincronizar con Firebase
+        try {
+            await FirestoreActionsService.markActionCompleted(userId, actionId);
+        } catch (error) {
+            console.error('[useSmartActions] Error marking completed:', error);
+            // Revertir en caso de error
+            setCompletedActions(completedActions);
+        }
     };
 
-    const unmarkCompleted = (actionId: string) => {
+    const unmarkCompleted = async (actionId: string) => {
+        if (!userId) return;
+
+        // Actualización optimista
         const newSet = new Set(completedActions);
         newSet.delete(actionId);
         setCompletedActions(newSet);
         localStorage.setItem('on-tour-completed-actions', JSON.stringify([...newSet]));
+
+        // Sincronizar con Firebase
+        try {
+            await FirestoreActionsService.unmarkActionCompleted(userId, actionId);
+        } catch (error) {
+            console.error('[useSmartActions] Error unmarking:', error);
+            // Revertir en caso de error
+            setCompletedActions(completedActions);
+        }
     };
 
-    const clearCompleted = () => {
+    const clearCompleted = async () => {
+        if (!userId) return;
+
+        // Actualización optimista
         setCompletedActions(new Set());
         localStorage.removeItem('on-tour-completed-actions');
+
+        // Sincronizar con Firebase
+        try {
+            await FirestoreActionsService.clearCompletedActions(userId);
+        } catch (error) {
+            console.error('[useSmartActions] Error clearing:', error);
+        }
     };
 
     return {

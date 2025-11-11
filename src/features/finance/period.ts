@@ -1,5 +1,6 @@
 // Period utilities: month keys, closed-state persistence, and helpers
 import type { DateRange } from '../../context/SettingsContext';
+import FirestoreUserPreferencesService from '../../services/firestoreUserPreferencesService';
 
 export function monthKeyFromDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -16,6 +17,7 @@ export function monthKeyFromRange(range: DateRange): string {
 
 const CLOSED_KEY_PREFIX = 'finance:closed:';
 
+// Sync functions for backwards compatibility and tests
 export function isMonthClosed(key: string): boolean {
   try { return localStorage.getItem(CLOSED_KEY_PREFIX + key) === '1'; } catch { return false; }
 }
@@ -25,6 +27,31 @@ export function setMonthClosed(key: string, closed: boolean) {
     if (closed) localStorage.setItem(CLOSED_KEY_PREFIX + key, '1');
     else localStorage.removeItem(CLOSED_KEY_PREFIX + key);
   } catch {}
+}
+
+// Async Firebase functions (preferred)
+export async function isMonthClosedFirebase(userId: string, key: string): Promise<boolean> {
+  try {
+    const prefs = await FirestoreUserPreferencesService.getUserPreferences(userId);
+    return prefs?.finance?.closedPeriods?.includes(key) || false;
+  } catch {
+    return false;
+  }
+}
+
+export async function setMonthClosedFirebase(userId: string, key: string, closed: boolean): Promise<void> {
+  try {
+    // Also update localStorage for backwards compatibility
+    if (closed) {
+      localStorage.setItem(CLOSED_KEY_PREFIX + key, '1');
+      await FirestoreUserPreferencesService.addClosedPeriod(userId, key);
+    } else {
+      localStorage.removeItem(CLOSED_KEY_PREFIX + key);
+      await FirestoreUserPreferencesService.removeClosedPeriod(userId, key);
+    }
+  } catch (err) {
+    console.warn('[period] Failed to sync closed period to Firebase:', err);
+  }
 }
 
 export type PeriodPreset = 'MTD'|'LAST_MONTH'|'YTD'|'CUSTOM';

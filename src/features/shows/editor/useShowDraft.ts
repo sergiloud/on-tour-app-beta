@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Show } from '../../../lib/shows';
 import type { Cost } from '../../../types/shows';
+import { useAuth } from '../../../context/AuthContext';
+import FirestoreUserPreferencesService from '../../../services/firestoreUserPreferencesService';
 
 export type ShowDraft = Partial<Show> & {
   whtPct?: number;
@@ -38,6 +40,7 @@ export function validateDraft(d: ShowDraft): ValidationErrors {
 }
 
 export function useShowDraft(initial: ShowDraft){
+  const { userId } = useAuth();
   const [draft, setDraft] = useState<ShowDraft>(initial);
   const initialSnap = useRef(stableStringify(normalize(initial)));
   const prevIdRef = useRef<string|undefined>((initial as any).id);
@@ -110,24 +113,52 @@ export function useShowDraft(initial: ShowDraft){
       reset(initial);
     }
     storageKeyRef.current = `shows.editor.draft.${currentId}`;
-    try {
-      const raw = localStorage.getItem(storageKeyRef.current);
-      if (raw){
-        try {
-          const payload = JSON.parse(raw) as { v:number; ts:number; data: ShowDraft };
-          if (payload && payload.data){
-            // Only restore if it differs from current initial (i.e., truly unsaved work)
-            const normalizedSaved = normalize(payload.data);
+    
+    // Try Firebase first
+    if (userId && currentId) {
+      FirestoreUserPreferencesService.getShowDraft(userId, currentId)
+        .then(firebaseDraft => {
+          if (firebaseDraft) {
+            const normalizedSaved = normalize(firebaseDraft);
             if (stableStringify(normalize(initial)) !== stableStringify(normalizedSaved)){
               setDraft((prev: ShowDraft)=> ({ ...prev, ...normalizedSaved }));
               setRestored(true);
+              // Also update localStorage for backwards compatibility
+              const payload = { v: 1, ts: Date.now(), data: firebaseDraft };
+              localStorage.setItem(storageKeyRef.current, JSON.stringify(payload));
             }
           }
-        } catch { /* ignore corrupted payload */ }
-      }
-    } catch { /* SSR/tests/localStorage unavailable */ }
+        })
+        .catch(err => {
+          console.warn('[useShowDraft] Firebase restore failed, trying localStorage:', err);
+          // Fallback to localStorage
+          tryLocalStorageRestore();
+        });
+    } else {
+      // No userId - fallback to localStorage
+      tryLocalStorageRestore();
+    }
+    
+    function tryLocalStorageRestore() {
+      try {
+        const raw = localStorage.getItem(storageKeyRef.current);
+        if (raw){
+          try {
+            const payload = JSON.parse(raw) as { v:number; ts:number; data: ShowDraft };
+            if (payload && payload.data){
+              // Only restore if it differs from current initial (i.e., truly unsaved work)
+              const normalizedSaved = normalize(payload.data);
+              if (stableStringify(normalize(initial)) !== stableStringify(normalizedSaved)){
+                setDraft((prev: ShowDraft)=> ({ ...prev, ...normalizedSaved }));
+                setRestored(true);
+              }
+            }
+          } catch { /* ignore corrupted payload */ }
+        }
+      } catch { /* SSR/tests/localStorage unavailable */ }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ (initial as any).id ]);
+  }, [ (initial as any).id, userId ]);
 
   // Autosave with debounce when draft changes
   const saveTimerRef = useRef<number|undefined>(undefined);
@@ -137,20 +168,37 @@ export function useShowDraft(initial: ShowDraft){
       clearTimeout(saveTimerRef.current);
       saveTimerRef.current = undefined;
     }
+    
+    const currentId = (draft as any).id;
+    
     // If content matches baseline, clear saved draft
-    try {
-      if (!dirty){
+    if (!dirty){
+      try {
         localStorage.removeItem(storageKeyRef.current);
-        return;
+      } catch { /* ignore */ }
+      
+      // Also remove from Firebase
+      if (userId && currentId) {
+        FirestoreUserPreferencesService.removeShowDraft(userId, currentId)
+          .catch(err => console.warn('[useShowDraft] Failed to remove Firebase draft:', err));
       }
-    } catch { /* ignore */ }
+      return;
+    }
 
     // Debounce write to avoid excessive churn while typing
     saveTimerRef.current = window.setTimeout(()=>{
       try {
         const data = normalize(draft);
         const payload = { v: 1, ts: Date.now(), data };
+        
+        // Save to localStorage (backwards compatibility)
         localStorage.setItem(storageKeyRef.current, JSON.stringify(payload));
+        
+        // Also save to Firebase
+        if (userId && currentId) {
+          FirestoreUserPreferencesService.saveShowDraft(userId, currentId, data)
+            .catch(err => console.warn('[useShowDraft] Failed to save to Firebase:', err));
+        }
       } catch { /* ignore */ }
     }, 600);
 
@@ -160,10 +208,18 @@ export function useShowDraft(initial: ShowDraft){
         saveTimerRef.current = undefined;
       }
     };
-  }, [draft, dirty]);
+  }, [draft, dirty, userId]);
 
   function discardSavedDraft(){
     try { localStorage.removeItem(storageKeyRef.current); } catch { /* ignore */ }
+    
+    // Also remove from Firebase
+    const currentId = (draft as any).id;
+    if (userId && currentId) {
+      FirestoreUserPreferencesService.removeShowDraft(userId, currentId)
+        .catch(err => console.warn('[useShowDraft] Failed to remove Firebase draft:', err));
+    }
+    
     setRestored(false);
   }
 

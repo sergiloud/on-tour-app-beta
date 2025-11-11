@@ -258,6 +258,9 @@ export function agenciesForShow(
  * - UTA: 10% of gross fee on Americas
  * - Shushi 3000: 10% after UTA on Americas, 15% gross on other regions
  * - Creative Primates: 15% after UTA on Americas, 15% gross on other regions
+ * 
+ * IMPORTANT: Only applies commission if the show has an agency selected (mgmtAgency or bookingAgency).
+ * If no agency is selected in the show modal selector, commission = 0.
  */
 export function computeCommission(show: any, agencies: AgencyConfig[]): number {
   if (!show || !agencies || agencies.length === 0) return 0;
@@ -265,6 +268,10 @@ export function computeCommission(show: any, agencies: AgencyConfig[]): number {
 
   const fee = show.fee || 0;
   if (fee <= 0) return 0;
+
+  // NEW: Only apply commission if show has an agency selected
+  const hasAgencySelected = !!(show.mgmtAgency || show.bookingAgency);
+  if (!hasAgencySelected) return 0;
 
   // Determine if show is in Americas
   const getContinent = (countryCode: string): ContinentCode | null => {

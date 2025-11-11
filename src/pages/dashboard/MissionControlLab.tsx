@@ -7,6 +7,8 @@ import { useSettings } from '../../context/SettingsContext';
 import { type Widget, defaultViews, resolveView, type ViewDefinition } from '../../features/dashboard/viewConfig';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../ui/Toast';
+import { useAuth } from '../../context/AuthContext';
+import FirestoreUserPreferencesService from '../../services/firestoreUserPreferencesService';
 
 const ArrowUpIcon = () => (
   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,16 +60,47 @@ function makeTilesFromView(cfg: ViewDefinition): Tile[] {
 }
 
 function usePersistedTiles(key: string, fallback: () => Tile[]) {
+  const { userId } = useAuth();
   const [tiles, setTiles] = React.useState<Tile[]>(() => {
     try { const raw = localStorage.getItem(key); if (raw) return JSON.parse(raw) as Tile[]; } catch { }
     return fallback();
   });
-  React.useEffect(() => { try { localStorage.setItem(key, JSON.stringify(tiles)); } catch { } }, [key, tiles]);
+  
+  // Load from Firebase on mount
+  React.useEffect(() => {
+    if (!userId) return;
+    
+    FirestoreUserPreferencesService.getUserPreferences(userId)
+      .then(prefs => {
+        if (prefs?.missionControl?.currentLayout) {
+          setTiles(prefs.missionControl.currentLayout as Tile[]);
+        }
+      })
+      .catch(err => console.warn('[MissionControlLab] Failed to load layout from Firebase:', err));
+  }, [userId]);
+  
+  // Sync to Firebase when tiles change
+  React.useEffect(() => {
+    if (!userId || tiles.length === 0) return;
+    
+    const timeout = setTimeout(() => {
+      // Also update localStorage for backwards compatibility
+      try { localStorage.setItem(key, JSON.stringify(tiles)); } catch { }
+      
+      FirestoreUserPreferencesService.saveMissionControlLayout(userId, {
+        currentLayout: tiles
+      }).catch(err => console.warn('[MissionControlLab] Failed to save layout to Firebase:', err));
+    }, 500);
+    
+    return () => clearTimeout(timeout);
+  }, [key, tiles, userId]);
+  
   return [tiles, setTiles] as const;
 }
 
 export const MissionControlLab: React.FC = () => {
   const { dashboardView, setDashboardView } = useSettings();
+  const { userId } = useAuth();
   const toast = useToast();
   const views = React.useMemo(() => ([
     { id: 'default', label: 'Default' },
@@ -79,8 +112,34 @@ export const MissionControlLab: React.FC = () => {
   const cfg = React.useMemo<ViewDefinition>(() => resolveView(defaultViews, dashboardView), [dashboardView]);
   const [tiles, setTiles] = usePersistedTiles('dash:labLayout', () => makeTilesFromView(cfg));
   const [savedName, setSavedName] = React.useState('');
-  const [savedLayouts, setSavedLayouts] = React.useState<Record<string, Tile[]>>(() => { try { return JSON.parse(localStorage.getItem('dash:labSaved') || '{}'); } catch { return {}; } });
-  const persistSaved = (next: Record<string, Tile[]>) => { setSavedLayouts(next); try { localStorage.setItem('dash:labSaved', JSON.stringify(next)); } catch { } };
+  const [savedLayouts, setSavedLayouts] = React.useState<Record<string, Tile[]>>(() => { 
+    try { return JSON.parse(localStorage.getItem('dash:labSaved') || '{}'); } catch { return {}; } 
+  });
+  
+  // Load saved layouts from Firebase
+  React.useEffect(() => {
+    if (!userId) return;
+    
+    FirestoreUserPreferencesService.getUserPreferences(userId)
+      .then(prefs => {
+        if (prefs?.missionControl?.savedLayouts) {
+          setSavedLayouts(prefs.missionControl.savedLayouts as Record<string, Tile[]>);
+        }
+      })
+      .catch(err => console.warn('[MissionControlLab] Failed to load saved layouts from Firebase:', err));
+  }, [userId]);
+  
+  const persistSaved = (next: Record<string, Tile[]>) => { 
+    setSavedLayouts(next); 
+    try { localStorage.setItem('dash:labSaved', JSON.stringify(next)); } catch { }
+    
+    // Sync to Firebase
+    if (userId) {
+      FirestoreUserPreferencesService.saveMissionControlLayout(userId, {
+        savedLayouts: next
+      }).catch(err => console.warn('[MissionControlLab] Failed to save layouts to Firebase:', err));
+    }
+  };
 
   // If view changes, offer to reset layout to new template (non-destructive prompt)
   React.useEffect(() => {

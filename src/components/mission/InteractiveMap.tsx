@@ -13,6 +13,8 @@ import { t } from '../../lib/i18n';
 import { useTheme } from '../../hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
 import { escapeHtml } from '../../lib/escape';
+import { useAuth } from '../../context/AuthContext';
+import { geocodeLocation } from '../../services/geocodingService';
 
 // Light Leaflet dynamic integration; keeps bundle lean until loaded.
 
@@ -77,6 +79,9 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const [ready, setReady] = useState(false);
   const [cssWarning, setCssWarning] = useState(false);
   const { highContrast, toggleHC } = useHighContrast();
+  const { profile } = useAuth();
+  const [homeLocation, setHomeLocation] = useState<{ lng: number; lat: number } | null>(null);
+  
   // Use useShows directly to show all shows without date/region filters from SettingsContext
   const { shows: allShows } = useShows();
   
@@ -132,6 +137,41 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
 
   // Clean up any previous persisted style choice (we now lock to the themed style)
   useEffect(() => { try { localStorage.removeItem('map-style-v1'); } catch { } }, []);
+
+  // Geocode home location from profile
+  useEffect(() => {
+    if (!profile?.location) {
+      setHomeLocation(null);
+      return;
+    }
+
+    // Parse location string (e.g., "Madrid, Spain" or "Barcelona, ES")
+    const parseLocation = async () => {
+      try {
+        const location = profile.location;
+        if (!location) return;
+
+        const parts = location.split(',').map(p => p.trim());
+        if (parts.length < 2) return;
+
+        const city = parts[0];
+        const country = parts[parts.length - 1];
+
+        if (!city || !country) return;
+
+        const result = await geocodeLocation(city, country);
+        if (result) {
+          setHomeLocation({ lng: result.lng, lat: result.lat });
+          console.log(`[InteractiveMap] Home location geocoded: ${city}, ${country} → (${result.lat}, ${result.lng})`);
+        }
+      } catch (error) {
+        console.error('[InteractiveMap] Failed to geocode home location:', error);
+        setHomeLocation(null);
+      }
+    };
+
+    parseLocation();
+  }, [profile?.location]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -421,51 +461,12 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           }, 900);
         }
 
-        // Shows markers (+ financial heat properties)
-        const computeNet = (fee: number, status: string) => {
-          const factor = status === 'confirmed' ? 0.72 : status === 'pending' ? 0.55 : 0.5; // simple heuristic
-          return Math.max(0, Math.round(fee * factor));
-        };
-        const nets = shows.map(s => computeNet(s.fee, s.status));
-        const maxNet = Math.max(1, ...nets);
-        const toCategory = (n: number) => {
-          const r = n / maxNet;
-          if (n <= 0) return 'neg';
-          if (r > 0.66) return 'high';
-          if (r > 0.3) return 'mid';
-          return 'low';
-        };
-        const showFc = {
-          type: 'FeatureCollection', features: shows.map((s, idx) => {
-            const net = nets[idx] ?? 0;
-            const category = toCategory(net);
-            
-            // Use show coordinates if available, otherwise approximate from country
-            let lng = s.lng;
-            let lat = s.lat;
-            if (!lng || !lat || (lng === 0 && lat === 0)) {
-              const [approxLng, approxLat] = getCountryCoordinates(s.country || '');
-              lng = approxLng;
-              lat = approxLat;
-            }
-            
-            return ({
-              type: 'Feature', properties: {
-                id: s.id,
-                title: `${s.city}, ${new Date(s.date).toLocaleDateString()}`,
-                city: s.city,
-                country: s.country,
-                date: s.date,
-                status: s.status,
-                fee: s.fee,
-                net,
-                category
-              }, geometry: { type: 'Point', coordinates: [lng, lat] }
-            });
-          })
-        } as any;
-        // Disable clustering - show each show individually
-        map.addSource('shows', { type: 'geojson', data: showFc, cluster: false } as any);
+        // Shows markers - initialize with empty data, will be populated by separate useEffect
+        map.addSource('shows', { 
+          type: 'geojson', 
+          data: { type: 'FeatureCollection', features: [] }, 
+          cluster: false 
+        } as any);
         
         // Outer glow ring for markers (enhanced halo effect)
         map.addLayer({
@@ -525,7 +526,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           minzoom: 6, // Only show labels when zoomed in
           layout: {
             'text-field': ['get', 'city'],
-            'text-font': ['Open Sans Regular'],
+            // Removed 'text-font' to use browser default instead of external font server
             'text-size': 11,
             'text-offset': [0, 1.5],
             'text-anchor': 'top'
@@ -537,12 +538,79 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           }
         } as any);
 
+        // Home location marker - initialize empty, will be populated when profile location is geocoded
+        map.addSource('home', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] }
+        } as any);
+
+        // Home marker outer glow
+        map.addLayer({
+          id: 'home-halo', type: 'circle', source: 'home',
+          paint: {
+            'circle-radius': [
+              'interpolate', ['linear'], ['zoom'],
+              1, 10,
+              4, 16,
+              8, 24,
+              12, 32
+            ],
+            'circle-color': theme === 'light' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.25)',
+            'circle-opacity': 0.7,
+            'circle-blur': 1
+          }
+        } as any);
+
+        // Home marker main circle (house icon will be a circle with distinctive color)
+        map.addLayer({
+          id: 'home-marker', type: 'circle', source: 'home',
+          paint: {
+            'circle-radius': [
+              'interpolate', ['linear'], ['zoom'],
+              1, 5,
+              4, 8,
+              8, 12,
+              12, 18
+            ],
+            'circle-color': '#3b82f6', // Blue color for home
+            'circle-stroke-width': [
+              'interpolate', ['linear'], ['zoom'],
+              1, 2,
+              8, 3,
+              12, 4
+            ],
+            'circle-stroke-color': theme === 'light' ? '#ffffff' : '#0f172a',
+            'circle-opacity': 1
+          }
+        } as any);
+
+        // Home label (optional, shows "Home")
+        map.addLayer({
+          id: 'home-label', type: 'symbol', source: 'home',
+          minzoom: 4,
+          layout: {
+            'text-field': '🏠 Home',
+            'text-size': 12,
+            'text-offset': [0, 1.8],
+            'text-anchor': 'top'
+          },
+          paint: {
+            'text-color': theme === 'light' ? '#0f172a' : '#f1f5f9',
+            'text-halo-color': theme === 'light' ? '#ffffff' : '#0f172a',
+            'text-halo-width': 2
+          }
+        } as any);
+
         // Financial HEAT layer removed for clarity
         // Revenue heatmap layer is now managed by useEffect (see below)
 
-        // Route line from first 3 shows
-        const routeCoords = shows.slice(0, 3).map(s => [s.lng, s.lat]);
-        map.addSource('route', { type: 'geojson', lineMetrics: true, data: { type: 'Feature', geometry: { type: 'LineString', coordinates: routeCoords }, properties: {} } as any });
+        // Route line - initialize empty, will be populated by separate useEffect
+        map.addSource('route', { 
+          type: 'geojson', 
+          lineMetrics: true, 
+          data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] }, properties: {} } 
+        } as any);
+        
         // Base route stroke
         map.addLayer({ id: 'route', type: 'line', source: 'route', layout: { visibility: layers?.route ? 'visible' : 'none' }, paint: { 'line-color': '#22c55e', 'line-width': highContrast ? 3 : 2, 'line-dasharray': [2, 4], 'line-opacity': highContrast ? 0.9 : 0.7 } as any } as any);
         // Animated progress glow using line-gradient along line-progress
@@ -563,18 +631,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           } as any
         });
 
-        // Fit to bounds of shows with better padding and max zoom
-        if (shows.length) {
-          const bounds = new mlib.LngLatBounds();
-          shows.forEach(s => bounds.extend([s.lng, s.lat] as [number, number]));
-          map.fitBounds(bounds as any, { 
-            padding: { top: 80, bottom: 80, left: 80, right: 80 }, 
-            duration: 500,
-            maxZoom: 8 
-          });
-          try { const first = shows[0]; if (first) announce(`Showing ${shows.length} shows, starting at ${first.city}`); } catch { }
-        }
-
+        // Map is ready - shows data will be populated by separate useEffect
         setReady(true);
       });
       // Fallback: if 'load' not firing for some reason, mark ready on first idle
@@ -799,7 +856,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       }
     };
     return void boot();
-  }, [shows]);
+  }, []); // Initialize map only once, not on every shows change
 
   // Update data sources when filtered shows change
   useEffect(() => {
@@ -830,17 +887,28 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       type: 'FeatureCollection', features: shows.map((s, idx) => {
         const net = nets[idx] ?? 0;
         const category = toCategory(net);
+        
+        // Use show coordinates if available, otherwise approximate from country
+        let lng = s.lng;
+        let lat = s.lat;
+        if (!lng || !lat || (lng === 0 && lat === 0)) {
+          const [approxLng, approxLat] = getCountryCoordinates(s.country || '');
+          lng = approxLng;
+          lat = approxLat;
+        }
+        
         return ({
           type: 'Feature', properties: {
             id: s.id,
             title: `${s.city}, ${new Date(s.date).toLocaleDateString()}`,
             city: s.city,
+            country: s.country,
             date: s.date,
             status: s.status,
             fee: s.fee,
             net,
             category
-          }, geometry: { type: 'Point', coordinates: [s.lng, s.lat] }
+          }, geometry: { type: 'Point', coordinates: [lng, lat] }
         });
       })
     } as any;
@@ -853,10 +921,61 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     // Fit bounds to new set
     try {
       const bounds = new mlib.LngLatBounds();
-      shows.forEach(s => bounds.extend([s.lng, s.lat] as [number, number]));
-      if (!bounds.isEmpty()) map.fitBounds(bounds as any, { padding: 40, duration: 400 });
+      shows.forEach(s => {
+        let lng = s.lng;
+        let lat = s.lat;
+        if (!lng || !lat || (lng === 0 && lat === 0)) {
+          const [approxLng, approxLat] = getCountryCoordinates(s.country || '');
+          lng = approxLng;
+          lat = approxLat;
+        }
+        if (lng && lat) bounds.extend([lng, lat] as [number, number]);
+      });
+      if (!bounds.isEmpty()) {
+        map.fitBounds(bounds as any, { 
+          padding: { top: 80, bottom: 80, left: 80, right: 80 }, 
+          duration: 500,
+          maxZoom: 8 
+        });
+        try { const first = shows[0]; if (first) announce(`Showing ${shows.length} shows, starting at ${first.city}`); } catch { }
+      }
     } catch { }
-  }, [shows]);
+  }, [shows, ready]); // Re-run when shows change OR when map becomes ready
+
+  // Update home location marker when homeLocation changes
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+
+    try {
+      const src: any = map.getSource('home');
+      if (!src) return;
+
+      if (!homeLocation) {
+        // Clear home marker if no location
+        src.setData({ type: 'FeatureCollection', features: [] } as any);
+        return;
+      }
+
+      // Add home marker
+      const homeFeature = {
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          properties: { type: 'home' },
+          geometry: {
+            type: 'Point',
+            coordinates: [homeLocation.lng, homeLocation.lat]
+          }
+        }]
+      } as any;
+
+      src.setData(homeFeature);
+      console.log(`[InteractiveMap] Home marker updated at (${homeLocation.lat}, ${homeLocation.lng})`);
+    } catch (error) {
+      console.error('[InteractiveMap] Failed to update home marker:', error);
+    }
+  }, [homeLocation, ready]);
 
   // Layer toggles removed; always show clusters, markers, and route
 

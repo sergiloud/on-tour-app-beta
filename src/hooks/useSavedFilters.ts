@@ -1,12 +1,12 @@
 /**
  * useSavedFilters Hook - Persistent Filter Views
  *
- * Gestiona vistas de filtros guardadas con localStorage persistence.
+ * Gestiona vistas de filtros guardadas con Firebase + localStorage persistence.
  * Permite a power users guardar, renombrar y eliminar configuraciones
  * de filtros personalizadas.
  *
  * FEATURES:
- * - localStorage persistence
+ * - Firebase + localStorage persistence
  * - Default presets (All, Last Month, High Value, Pending)
  * - Custom user views
  * - Rename/delete functionality
@@ -17,6 +17,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
+import FirestoreUserPreferencesService from '../services/firestoreUserPreferencesService';
 
 /**
  * Vista de filtros guardada
@@ -108,32 +110,57 @@ const ACTIVE_VIEW_KEY = 'finance-active-filter-view';
 export function useSavedFilters() {
   const [userViews, setUserViews] = useState<SavedFilterView[]>([]);
   const [activeViewId, setActiveViewId] = useState<string>('preset-all');
+  const { userId } = useAuth();
 
-  // Cargar vistas desde localStorage al montar
+  // Cargar vistas desde Firebase (priority) o localStorage al montar
   useEffect(() => {
-    try {
-      const savedViews = localStorage.getItem(STORAGE_KEY);
-      if (savedViews) {
-        setUserViews(JSON.parse(savedViews));
+    if (userId) {
+      FirestoreUserPreferencesService.getUserPreferences(userId)
+        .then(prefs => {
+          if (prefs?.savedViews) {
+            setUserViews(prefs.savedViews);
+            // Sync to localStorage for backwards compat
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs.savedViews));
+          }
+        })
+        .catch(err => console.error('[useSavedFilters] Error loading saved views from Firebase:', err));
+    } else {
+      // Fallback to localStorage if not logged in
+      try {
+        const savedViews = localStorage.getItem(STORAGE_KEY);
+        if (savedViews) {
+          setUserViews(JSON.parse(savedViews));
+        }
+      } catch (error) {
+        console.error('[useSavedFilters] Error loading saved views from localStorage:', error);
       }
+    }
 
+    // Always load active view from localStorage (user preference)
+    try {
       const savedActiveView = localStorage.getItem(ACTIVE_VIEW_KEY);
       if (savedActiveView) {
         setActiveViewId(savedActiveView);
       }
     } catch (error) {
-      console.error('[useSavedFilters] Error loading saved views:', error);
+      console.error('[useSavedFilters] Error loading active view:', error);
     }
-  }, []);
+  }, [userId]);
 
-  // Guardar vistas en localStorage cuando cambien
+  // Guardar vistas en localStorage + Firebase cuando cambien
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userViews));
+      
+      // Sync to Firebase
+      if (userId && userViews.length > 0) {
+        FirestoreUserPreferencesService.saveSavedViews(userId, userViews)
+          .catch(err => console.error('[useSavedFilters] Error syncing views to Firebase:', err));
+      }
     } catch (error) {
       console.error('[useSavedFilters] Error saving views:', error);
     }
-  }, [userViews]);
+  }, [userViews, userId]);
 
   // Guardar vista activa en localStorage
   useEffect(() => {

@@ -34,6 +34,8 @@ import DatePickerAdvanced from './DatePickerAdvanced';
 import StatusSelector from './StatusSelector';
 import FeeFieldAdvanced from './FeeFieldAdvanced';
 import NotesEditor from './NotesEditor';
+import { useAuth } from '../../../context/AuthContext';
+import FirestoreUserPreferencesService from '../../../services/firestoreUserPreferencesService';
 
 export type ShowEditorMode = 'add' | 'edit';
 
@@ -94,6 +96,7 @@ export interface ShowEditorDrawerProps {
 export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, initial, onSave, onDelete, onRestore, hasTripAroundDate, onPlanTravel, onOpenTrip, onRequestClose, allShows = [] }) => {
   const { draft, setDraft, validation, isValid, dirty, reset, restored, discardSavedDraft } = useShowDraft(initial);
   const { lang, fmtMoney, managementAgencies, bookingAgencies } = useSettings();
+  const { userId } = useAuth();
   // Persist + restore last active tab
   const initialTab = (() => {
     try { const v = localStorage.getItem('showEditor.lastTab'); if (v === 'details' || v === 'finance' || v === 'costs') return v as 'details' | 'finance' | 'costs'; } catch { /* ignore */ }
@@ -211,28 +214,64 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
   // Recent city/venue suggestions (persisted)
   const [recentCities, setRecentCities] = useState<string[]>([]);
   const [recentVenues, setRecentVenues] = useState<string[]>([]);
+  
+  // Load from Firebase on mount
   useEffect(() => {
-    try {
-      const c = JSON.parse(localStorage.getItem('shows.recentCities.v1') || '[]');
-      const v = JSON.parse(localStorage.getItem('shows.recentVenues.v1') || '[]');
-      if (Array.isArray(c)) setRecentCities(c.filter(x => typeof x === 'string'));
-      if (Array.isArray(v)) setRecentVenues(v.filter(x => typeof x === 'string'));
-    } catch { /* ignore */ }
-  }, []);
+    if (userId) {
+      FirestoreUserPreferencesService.getUserPreferences(userId)
+        .then(prefs => {
+          if (prefs?.shows) {
+            if (prefs.shows.recentCities) {
+              setRecentCities(prefs.shows.recentCities);
+              localStorage.setItem('shows.recentCities.v1', JSON.stringify(prefs.shows.recentCities));
+            }
+            if (prefs.shows.recentVenues) {
+              setRecentVenues(prefs.shows.recentVenues);
+              localStorage.setItem('shows.recentVenues.v1', JSON.stringify(prefs.shows.recentVenues));
+            }
+          }
+        })
+        .catch(err => console.error('Failed to load shows preferences:', err));
+    }
+  }, [userId]);
+  
+  // Fallback to localStorage if not logged in
+  useEffect(() => {
+    if (!userId) {
+      try {
+        const c = JSON.parse(localStorage.getItem('shows.recentCities.v1') || '[]');
+        const v = JSON.parse(localStorage.getItem('shows.recentVenues.v1') || '[]');
+        if (Array.isArray(c)) setRecentCities(c.filter(x => typeof x === 'string'));
+        if (Array.isArray(v)) setRecentVenues(v.filter(x => typeof x === 'string'));
+      } catch { /* ignore */ }
+    }
+  }, [userId]);
+  
   const recordCity = useCallback((city: string) => {
     setRecentCities(prev => {
       const next = [city, ...prev.filter(x => x.toLowerCase() !== city.toLowerCase())].slice(0, 8);
       try { localStorage.setItem('shows.recentCities.v1', JSON.stringify(next)); } catch { /* ignore */ }
+      // Sync to Firebase
+      if (userId) {
+        FirestoreUserPreferencesService.saveShowsPreferences(userId, { recentCities: next })
+          .catch(err => console.error('Failed to sync recent cities:', err));
+      }
       return next;
     });
-  }, []);
+  }, [userId]);
+  
   const recordVenue = useCallback((venue: string) => {
     setRecentVenues(prev => {
       const next = [venue, ...prev.filter(x => x.toLowerCase() !== venue.toLowerCase())].slice(0, 8);
       try { localStorage.setItem('shows.recentVenues.v1', JSON.stringify(next)); } catch { /* ignore */ }
+      // Sync to Firebase
+      if (userId) {
+        FirestoreUserPreferencesService.saveShowsPreferences(userId, { recentVenues: next })
+          .catch(err => console.error('Failed to sync recent venues:', err));
+      }
       return next;
     });
-  }, []);
+  }, [userId]);
   // Tab refs for roving tabindex keyboard navigation
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
@@ -463,6 +502,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
       fee: draft.fee || 0,
       feeCurrency: draft.feeCurrency || 'EUR',
       status: draft.status || 'confirmed',
+      mgmtAgency: draft.mgmtAgency,       // Include selected agencies
+      bookingAgency: draft.bookingAgency, // for commission calculation
       __version: 1,
       __modifiedAt: Date.now(),
       __modifiedBy: ''
@@ -470,7 +511,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);
     const allAgencies = [...applicable.booking, ...applicable.management];
     return allAgencies.length > 0 ? computeCommission(demoShow, allAgencies) : 0;
-  }, [draft.date, draft.country, draft.fee, draft.feeCurrency, draft.id, draft.city, draft.status, bookingAgencies, managementAgencies]);
+  }, [draft.date, draft.country, draft.fee, draft.feeCurrency, draft.id, draft.city, draft.status, draft.mgmtAgency, draft.bookingAgency, bookingAgencies, managementAgencies]);
 
   const net = computeNet({ fee, whtPct: draft.whtPct, costs: draft.costs });
   const marginPct = fee > 0 ? (net / fee) * 100 : 0;
@@ -534,15 +575,34 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
   const [recentCostTypes, setRecentCostTypes] = useState<string[]>([]);
   const [justAddedCostId, setJustAddedCostId] = useState<string | null>(null);
   const [justAppliedQuick, setJustAppliedQuick] = useState(false);
+  
+  // Load from Firebase on mount (only cost types, cities/venues loaded above)
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('shows.recentCostTypes.v1');
-      if (raw) {
-        const arr = JSON.parse(raw);
-        if (Array.isArray(arr)) setRecentCostTypes(arr.filter(x => typeof x === 'string'));
-      }
-    } catch { /* ignore */ }
-  }, []);
+    if (userId) {
+      FirestoreUserPreferencesService.getUserPreferences(userId)
+        .then(prefs => {
+          if (prefs?.shows?.recentCostTypes) {
+            setRecentCostTypes(prefs.shows.recentCostTypes);
+            localStorage.setItem('shows.recentCostTypes.v1', JSON.stringify(prefs.shows.recentCostTypes));
+          }
+        })
+        .catch(err => console.error('Failed to load cost types preferences:', err));
+    }
+  }, [userId]);
+  
+  // Fallback to localStorage if not logged in
+  useEffect(() => {
+    if (!userId) {
+      try {
+        const raw = localStorage.getItem('shows.recentCostTypes.v1');
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) setRecentCostTypes(arr.filter(x => typeof x === 'string'));
+        }
+      } catch { /* ignore */ }
+    }
+  }, [userId]);
+  
   const recordCostType = useCallback((type: string) => {
     const val = (type || '').trim();
     if (!val) return;
@@ -550,9 +610,14 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
       if (prev[0] === val) return prev; // already most recent
       const updated = [val, ...prev.filter(p => p !== val)].slice(0, 8);
       try { localStorage.setItem('shows.recentCostTypes.v1', JSON.stringify(updated)); } catch { /* ignore */ }
+      // Sync to Firebase
+      if (userId) {
+        FirestoreUserPreferencesService.saveShowsPreferences(userId, { recentCostTypes: updated })
+          .catch(err => console.error('Failed to sync cost types:', err));
+      }
       return updated;
     });
-  }, []);
+  }, [userId]);
 
   // Enhanced parser: date, city, country, fee (k/m + currency symbols + spaced), wht %, name in quotes, spaced multipliers ("12 k"), IRPF alias
   const parseQuickEntry = useCallback((text: string) => {
@@ -689,10 +754,15 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     track(TE.TAB_CHANGE, { from: tab, to: next });
     setTab(next);
     try { localStorage.setItem('showEditor.lastTab', next); } catch { /* ignore */ }
+    // Sync to Firebase
+    if (userId) {
+      FirestoreUserPreferencesService.saveShowsPreferences(userId, { lastTab: next })
+        .catch(err => console.error('Failed to sync last tab:', err));
+    }
     const label = t(`shows.editor.tab.${next}`) || next.charAt(0).toUpperCase() + next.slice(1);
     const template = t('shows.editor.tab.active') || 'Active tab: {label}';
     announce(template.replace('{label}', label), 'polite');
-  }, [tab, announce, t]);
+  }, [tab, announce, t, userId]);
 
   useEffect(() => {
     if (open && !restoredTabRef.current) {
@@ -1580,6 +1650,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   fee: feeVal,
                   feeCurrency: draft.feeCurrency || 'EUR',
                   status: draft.status || 'confirmed',
+                  mgmtAgency: draft.mgmtAgency,       // Include selected agencies
+                  bookingAgency: draft.bookingAgency, // for commission calculation
                   __version: 1,
                   __modifiedAt: Date.now(),
                   __modifiedBy: ''

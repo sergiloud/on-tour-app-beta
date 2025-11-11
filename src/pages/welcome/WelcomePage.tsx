@@ -19,6 +19,7 @@ import IntegrationsModal from './components/IntegrationsModal';
 import ArtistQuickPanel from './components/ArtistQuickPanel';
 import { useNavigate } from 'react-router-dom';
 import { setCurrentOrgId } from '../../lib/tenants';
+import FirestoreUserPreferencesService from '../../services/firestoreUserPreferencesService';
 
 // Activity tracking utilities
 const trackActivity = (userId: string, activity: { type: string; item: string; timestamp: number }) => {
@@ -362,7 +363,7 @@ const AssignmentMatrix: React.FC<{ orgId: string }> = ({ orgId }) => {
 };
 
 const WelcomePage: React.FC = () => {
-  const { profile } = useAuth();
+  const { profile, userId } = useAuth();
   const { orgId, org } = useOrg();
   const navigate = useNavigate();
   const h1Ref = useRef<HTMLHeadingElement>(null);
@@ -397,6 +398,38 @@ const WelcomePage: React.FC = () => {
   const checklistTotal = checklistItems.length;
   const isChecklistComplete = checklistCompleted === checklistTotal;
   const [checklistExpanded, setChecklistExpanded] = useState(!isChecklistComplete);
+
+  // Load onboarding progress from Firebase on mount
+  useEffect(() => {
+    if (!userId) return;
+    
+    FirestoreUserPreferencesService.getUserPreferences(userId)
+      .then(prefs => {
+        if (prefs?.onboarding?.welcomeSteps && prefs.onboarding.welcomeSteps.length > 0) {
+          // Convert step IDs to boolean array based on indices
+          const stepIds = prefs.onboarding.welcomeSteps;
+          const boolArray = [0, 1, 2].map(i => stepIds.includes(String(i)));
+          setChecklistDone(boolArray);
+        }
+      })
+      .catch(err => console.warn('[WelcomePage] Failed to load onboarding from Firebase:', err));
+  }, [userId]);
+
+  // Sync checklist to Firebase when it changes
+  useEffect(() => {
+    if (userId && checklistDone.length > 0) {
+      // Convert boolean array to step IDs
+      const stepIds = checklistDone.map((done, i) => done ? String(i) : '').filter(Boolean);
+      const timeout = setTimeout(() => {
+        FirestoreUserPreferencesService.saveOnboardingProgress(userId, {
+          welcomeSteps: stepIds,
+          lastVisit: Date.now(),
+          activities: []
+        }).catch(err => console.warn('[WelcomePage] Failed to save onboarding to Firebase:', err));
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [checklistDone, userId]);
 
   // Track page view activity
   useEffect(() => {

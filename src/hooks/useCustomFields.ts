@@ -1,40 +1,66 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { CustomEventTypeConfig } from '../components/calendar/CustomFieldsModal';
 import { trackEvent } from '../lib/telemetry';
+import { useAuth } from '../context/AuthContext';
+import FirestoreUserPreferencesService, { type CustomFieldConfig } from '../services/firestoreUserPreferencesService';
 
 const STORAGE_KEY = 'calendar:custom-fields';
 
 export function useCustomFields() {
   const [configurations, setConfigurations] = useState<Map<string, CustomEventTypeConfig>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
+  const { userId } = useAuth();
 
-  // Load from localStorage
+  // Load from Firebase on mount (priority over localStorage)
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const configs = JSON.parse(stored) as CustomEventTypeConfig[];
-        const map = new Map(configs.map((c) => [c.typeId, c]));
-        setConfigurations(map);
+    if (userId) {
+      FirestoreUserPreferencesService.getUserPreferences(userId)
+        .then(prefs => {
+          if (prefs?.customFields) {
+            const map = new Map(prefs.customFields.map((c: CustomFieldConfig) => [c.typeId, c as any]));
+            setConfigurations(map);
+            // Sync to localStorage for backwards compat
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs.customFields));
+          }
+        })
+        .catch(err => console.error('Failed to load custom fields from Firebase:', err))
+        .finally(() => setIsLoading(false));
+    } else {
+      // Fallback to localStorage if not logged in
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const configs = JSON.parse(stored) as CustomEventTypeConfig[];
+          const map = new Map(configs.map((c) => [c.typeId, c]));
+          setConfigurations(map);
+        }
+      } catch (err) {
+        console.error('Failed to load custom field configurations:', err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to load custom field configurations:', err);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [userId]);
 
-  // Save to localStorage whenever configurations change
+  // Save to localStorage + Firebase whenever configurations change
   useEffect(() => {
     if (!isLoading) {
+      const configs = Array.from(configurations.values());
+      
+      // Save to localStorage
       try {
-        const configs = Array.from(configurations.values());
         localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
       } catch (err) {
-        console.error('Failed to save custom field configurations:', err);
+        console.error('Failed to save custom field configurations to localStorage:', err);
+      }
+
+      // Sync to Firebase (cast to CustomFieldConfig which is compatible)
+      if (userId) {
+        FirestoreUserPreferencesService.saveCustomFields(userId, configs as any as CustomFieldConfig[])
+          .catch(err => console.error('Failed to sync custom fields to Firebase:', err));
       }
     }
-  }, [configurations, isLoading]);
+  }, [configurations, isLoading, userId]);
 
   const saveConfiguration = useCallback((config: CustomEventTypeConfig) => {
     setConfigurations((prev) => {

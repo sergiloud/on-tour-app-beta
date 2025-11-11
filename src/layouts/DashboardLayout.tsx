@@ -18,6 +18,7 @@ import UserMenu from '../components/common/UserMenu';
 import { useAuth } from '../context/AuthContext';
 import { useOrg } from '../context/OrgContext';
 import SubNav from '../components/common/SubNav';
+import FirestoreUserPreferencesService from '../services/firestoreUserPreferencesService';
 
 function useNavItems(collapsed: boolean) {
   const { org } = useOrg();
@@ -84,7 +85,7 @@ export const DashboardLayout: React.FC = () => {
   const { /* theme, */ toggle } = useTheme();
   const { /* highContrast, */ toggleHC } = useHighContrast();
   const { /* lang, setLang */ } = useSettings();
-  const { prefs } = useAuth();
+  const { prefs, userId } = useAuth();
   const { org } = useOrg();
   const navigate = useNavigate();
   const location = useLocation();
@@ -163,17 +164,34 @@ export const DashboardLayout: React.FC = () => {
     try { trackEvent('org.switch', { orgId }); } catch { }
   }, [orgId]);
 
-  // Sidebar collapsed state
+  // Sidebar collapsed state - Load from Firebase first, fallback to localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('dash-sidebar-collapsed');
-    if (stored) setCollapsed(stored === '1');
-  }, []);
+    if (userId) {
+      FirestoreUserPreferencesService.getUserPreferences(userId)
+        .then(prefs => {
+          if (prefs?.ui?.sidebarCollapsed !== undefined) {
+            setCollapsed(prefs.ui.sidebarCollapsed);
+            localStorage.setItem('dash-sidebar-collapsed', prefs.ui.sidebarCollapsed ? '1' : '0');
+          }
+        })
+        .catch(err => console.error('Failed to load UI preferences:', err));
+    } else {
+      // Fallback to localStorage if not logged in
+      const stored = localStorage.getItem('dash-sidebar-collapsed');
+      if (stored) setCollapsed(stored === '1');
+    }
+  }, [userId]);
+  
+  // Sync sidebar state to Firebase + localStorage
   useEffect(() => {
     localStorage.setItem('dash-sidebar-collapsed', collapsed ? '1' : '0');
-  }, [collapsed]);
-  useEffect(() => {
-    localStorage.setItem('dash-sidebar-collapsed', collapsed ? '1' : '0');
-  }, [collapsed]);
+    
+    if (userId) {
+      FirestoreUserPreferencesService.saveUIPreferences(userId, { sidebarCollapsed: collapsed })
+        .catch(err => console.error('Failed to sync sidebar state:', err));
+    }
+  }, [collapsed, userId]);
+  
   // Global shortcuts: Cmd/Ctrl+K for command palette; '?' for shortcuts overlay; 'g' then key to navigate
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import FirestoreUserPreferencesService from '../services/firestoreUserPreferencesService';
 
 type DateRange = '30' | '60' | '90' | 'all';
 type ShowStatus = 'confirmed' | 'pending' | 'offer' | 'all';
@@ -26,11 +28,46 @@ const defaultFilters: DashboardFilters = {
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
 export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const { userId } = useAuth();
     const [filters, setFilters] = useState<DashboardFilters>(() => {
         // Load from localStorage if available
         const saved = localStorage.getItem('on-tour-dashboard-filters');
         return saved ? JSON.parse(saved) : defaultFilters;
     });
+
+    // Sync with Firebase when filters change
+    useEffect(() => {
+        if (userId) {
+            // Debounce para no hacer demasiadas escrituras
+            const timeoutId = setTimeout(() => {
+                FirestoreUserPreferencesService.saveDashboardFilters(userId, {
+                    dateRange: filters.dateRange,
+                    status: filters.status,
+                    searchQuery: filters.searchQuery
+                }).catch(err => {
+                    console.error('Failed to sync dashboard filters to Firebase:', err);
+                });
+            }, 500);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [userId, filters]);
+
+    // Load from Firebase on mount
+    useEffect(() => {
+        if (userId) {
+            FirestoreUserPreferencesService.getUserPreferences(userId)
+                .then(prefs => {
+                    if (prefs?.dashboard) {
+                        setFilters(prefs.dashboard as any);
+                        localStorage.setItem('on-tour-dashboard-filters', JSON.stringify(prefs.dashboard));
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to load dashboard filters from Firebase:', err);
+                });
+        }
+    }, [userId]);
 
     const updateFilters = useCallback((newFilters: Partial<DashboardFilters>) => {
         setFilters(prev => {
@@ -55,7 +92,12 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     const resetFilters = useCallback(() => {
         setFilters(defaultFilters);
         localStorage.removeItem('on-tour-dashboard-filters');
-    }, []);
+        if (userId) {
+            FirestoreUserPreferencesService.saveDashboardFilters(userId, defaultFilters).catch(err => {
+                console.error('Failed to reset dashboard filters in Firebase:', err);
+            });
+        }
+    }, [userId]);
 
     return (
         <DashboardContext.Provider

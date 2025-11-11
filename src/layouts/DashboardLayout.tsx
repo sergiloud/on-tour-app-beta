@@ -220,40 +220,6 @@ export const DashboardLayout: React.FC = () => {
           <header className="px-3 md:px-5 py-3 md:py-3.5 flex items-center justify-between border-b border-slate-100 dark:border-white/5 backdrop-blur-xl bg-ink-900/25">
             <h1 className="text-base md:text-lg font-semibold tracking-tight">{t('nav.dashboard')}</h1>
             <div className="flex items-center gap-3.5 text-[11px] md:text-xs opacity-85">
-              {/* Show org selector if user has multiple orgs */}
-              {(() => {
-                const userOrgs = getOrgs();
-                const showOrgSelector = userOrgs.length > 1;
-
-                return showOrgSelector && (
-                  <>
-                    <span className="flex items-center gap-2">
-                      <span>{t('layout.team')}: {getOrgName(orgId)}</span>
-                    </span>
-                    {/* Organization switcher */}
-                    <select
-                      id="org-switcher"
-                      aria-label={t('layout.tenant') || 'Tenant'}
-                      className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded px-2 py-1 text-[11px] hover:border-slate-300 dark:hover:border-white/20 motion-safe:transition-colors"
-                      value={orgId}
-                      onChange={(e) => setOrgId(e.target.value)}
-                    >
-                      {userOrgs.map(org => (
-                        <option key={org.id} value={org.id}>{org.name}</option>
-                      ))}
-                    </select>
-                  </>
-                );
-              })()}
-              {/* Prophecy account info */}
-              {orgId === ORG_ARTIST_PROPHECY && (
-                <span className="flex items-center gap-2">
-                  <span>{t('layout.team')}: {getOrgName(orgId)}</span>
-                  <span className="px-2 py-0.5 text-[10px] rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                    Managed by A2G Management
-                  </span>
-                </span>
-              )}
               {/* Quick Search Hint */}
               <button
                 onClick={() => {

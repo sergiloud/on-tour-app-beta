@@ -366,7 +366,7 @@ export const ProfileSettings: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-dark-900">
+    <div className="min-h-screen">
       <PageHeader
         title={t('profile.settings.title') || 'Settings'}
       />

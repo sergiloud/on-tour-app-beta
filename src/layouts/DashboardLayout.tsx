@@ -179,7 +179,7 @@ export const DashboardLayout: React.FC = () => {
   const navItems = useNavItems(collapsed);
   return (
     <MissionControlProvider>
-      <div className="min-h-screen flex">
+      <div className="min-h-screen flex bg-slate-50 dark:bg-dark-900">
         {/* Skip to content for keyboard users */}
         <a href="#dash-main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:rounded-md focus:bg-accent-500 focus:text-black">{t('common.skipToContent') || 'Skip to content'}</a>
         {/* Persistent View-As Banner */}

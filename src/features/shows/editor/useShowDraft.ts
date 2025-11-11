@@ -83,7 +83,14 @@ export function useShowDraft(initial: ShowDraft){
   // sort costs for stable compare: by type then description then id to avoid false dirty when ids differ ordering
   costs.sort((a: Cost, b: Cost)=> (a.type||'').localeCompare(b.type||'') || (a.desc||'').localeCompare(b.desc||'') || a.id.localeCompare(b.id));
   const feeCurrency = (d as any).feeCurrency as ('EUR'|'USD'|'GBP'|'AUD'|undefined);
-  return { ...d, date, fee, feeCurrency, whtPct, mgmtPct, bookingPct, costs };
+  
+  // Preserve promoter/venue fields
+  const promoter = (d as any).promoter;
+  const promoterId = (d as any).promoterId;
+  const venue = (d as any).venue;
+  const venueId = (d as any).venueId;
+  
+  return { ...d, date, fee, feeCurrency, whtPct, mgmtPct, bookingPct, costs, promoter, promoterId, venue, venueId };
   }
 
   function reset(newInitial: ShowDraft){

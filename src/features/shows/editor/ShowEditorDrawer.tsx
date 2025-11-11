@@ -1308,53 +1308,57 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 </div>
 
                 {/* Promoter Field with Autocomplete */}
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
-                    {t('shows.editor.label.promoter') || 'Promoter'}
-                  </span>
-                  <PromoterAutocomplete
-                    value={(draft as any).promoter || ''}
-                    onChange={(name, contactId) => {
-                      setDraft((d: ShowDraft) => ({ 
-                        ...d, 
-                        promoter: name,
-                        promoterId: contactId 
-                      } as any));
-                    }}
-                    className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
-                  />
-                </label>
+                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-4">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                      {t('shows.editor.label.promoter') || 'Promoter'}
+                    </span>
+                    <PromoterAutocomplete
+                      value={(draft as any).promoter || ''}
+                      onChange={(name, contactId) => {
+                        setDraft((d: ShowDraft) => ({ 
+                          ...d, 
+                          promoter: name,
+                          promoterId: contactId 
+                        } as any));
+                      }}
+                      className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
+                    />
+                  </label>
+                </div>
 
                 {/* Venue with Autocomplete */}
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70 flex items-center gap-2">
-                    {t('shows.editor.label.venue') || 'Venue'}
-                    <span className="text-[9px] lowercase tracking-normal opacity-50 font-normal">
-                      {t('shows.editor.help.venue') || 'venue/room name'}
+                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-4">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70 flex items-center gap-2">
+                      {t('shows.editor.label.venue') || 'Venue'}
+                      <span className="text-[9px] lowercase tracking-normal opacity-50 font-normal">
+                        {t('shows.editor.help.venue') || 'venue/room name'}
+                      </span>
                     </span>
-                  </span>
-                  <VenueAutocomplete
-                    value={(draft as any).venue || ''}
-                    onChange={(name, venueId) => {
-                      setDraft((d: ShowDraft) => ({ 
-                        ...d, 
-                        venue: name,
-                        venueId: venueId 
-                      } as any));
-                      if (name.trim()) recordVenue(name.trim());
-                    }}
-                    city={draft.city}
-                    country={draft.country}
-                    className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
-                  />
-                  {recentVenues.length > 0 && (
-                    <div className="hidden md:flex items-center gap-0.5" aria-label={t('shows.editor.venue.recent') || 'Recent venues'}>
-                      {recentVenues.slice(0, 3).map(rv => (
-                        <button key={rv} type="button" className="px-1.5 py-1 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
-                      ))}
-                    </div>
-                  )}
-                </label>
+                    <VenueAutocomplete
+                      value={(draft as any).venue || ''}
+                      onChange={(name, venueId) => {
+                        setDraft((d: ShowDraft) => ({ 
+                          ...d, 
+                          venue: name,
+                          venueId: venueId 
+                        } as any));
+                        if (name.trim()) recordVenue(name.trim());
+                      }}
+                      city={draft.city}
+                      country={draft.country}
+                      className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
+                    />
+                    {recentVenues.length > 0 && (
+                      <div className="hidden md:flex items-center gap-0.5" aria-label={t('shows.editor.venue.recent') || 'Recent venues'}>
+                        {recentVenues.slice(0, 3).map(rv => (
+                          <button key={rv} type="button" className="px-1.5 py-1 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
+                        ))}
+                      </div>
+                    )}
+                  </label>
+                </div>
 
                 {/* Notes - Large & Prominent */}
                 <NotesEditor

@@ -272,8 +272,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
         const active = document.activeElement as HTMLElement | null;
         if (active && (active.getAttribute('aria-describedby')?.includes('quick') || active.getAttribute('placeholder')?.toLowerCase().includes('quick'))) {
           e.preventDefault();
-          // call apply directly
-          (applyQuickPreview as any)();
+          applyQuickPreview();
         }
       }
       if (e.key === 'Escape') {
@@ -434,11 +433,11 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
   }
 
   // Simple cost aggregation for summary
-  const totalCosts = (draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0);
+  const totalCosts = (draft.costs || []).reduce((s: number, c: Cost) => s + (c.amount || 0), 0);
   const { currency: baseCurrency } = useSettings();
-  const feeCurrency = (draft as any).feeCurrency as SupportedCurrency || baseCurrency as SupportedCurrency;
+  const feeCurrency = (draft.feeCurrency as SupportedCurrency) || (baseCurrency as SupportedCurrency);
   const fee = Number(draft.fee) || 0;
-  const fx = convertToBase(fee, draft.date as any, feeCurrency, baseCurrency as any);
+  const fx = convertToBase(fee, draft.date || '', feeCurrency, baseCurrency as SupportedCurrency);
   const convertedFee = fx?.value;
   const effectiveRate = fx?.rate; // multiplier from original -> base
   const fxUnavailableTracked = useRef(false);
@@ -510,7 +509,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
       const cur = arr[idx];
       if (!cur) return d;
       const newId = crypto.randomUUID();
-      const dup = { id: newId, type: cur.type, amount: cur.amount, desc: cur.desc } as any;
+      const dup: Cost = { id: newId, type: cur.type, amount: cur.amount, desc: cur.desc };
       arr.splice(idx + 1, 0, dup);
       manualCostAdds.current += 1;
       track(TE.COST_ADD, { id: newId, duplicate: true });
@@ -1229,7 +1228,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       type="time"
                       data-field="startTime"
                       className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-sm"
-                      value={(draft as any).startTime || ''}
+                      value={draft.startTime || ''}
                       onChange={e => setDraft((d: ShowDraft) => ({ ...d, startTime: e.target.value }))}
                     />
                   </label>
@@ -1406,8 +1405,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', AUD: 'A$' };
                       return symbols[feeCurrency || baseCurrency] || '€';
                     })()}
-                    costs={(draft as any).costs || []}
-                    whtPct={(draft as any).whtPct || 0}
+                    costs={draft.costs || []}
+                    whtPct={draft.whtPct || 0}
                     fmtMoney={fmtMoney}
                     error={validation.fee ? String(t(validation.fee) || 'Invalid fee') : undefined}
                     disabled={false}

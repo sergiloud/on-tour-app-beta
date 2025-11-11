@@ -26,7 +26,20 @@ import { trackPageView } from '../../lib/activityTracker';
 import { logger } from '../../lib/logger';
 import { agenciesForShow, computeCommission } from '../../lib/agencies';
 
-export type DraftShow = DemoShow & { venue?: string; whtPct?: number; mgmtAgency?: string; bookingAgency?: string; notes?: string; costs?: any[] };
+// Extended types for Shows with optional fields
+type Cost = { id: string; type: string; amount: number; desc?: string };
+type ShowWithExtras = Show & { 
+  venue?: string; 
+  whtPct?: number; 
+  mgmtAgency?: string; 
+  bookingAgency?: string; 
+  notes?: string; 
+  costs?: Cost[];
+  createdAt?: string;
+  archivedAt?: string;
+};
+
+export type DraftShow = DemoShow & { venue?: string; whtPct?: number; mgmtAgency?: string; bookingAgency?: string; notes?: string; costs?: Cost[] };
 type ViewMode = 'list' | 'board';
 type SortKey = 'date' | 'fee' | 'net';
 
@@ -56,15 +69,15 @@ const Shows: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [mode, setMode] = useState<'add' | 'edit'>('add');
   const [draft, setDraft] = useState<DraftShow | null>(null);
-  const [costs, setCosts] = useState<any[]>([]);
+  const [costs, setCosts] = useState<Cost[]>([]);
   const lastTriggerRef = useRef<HTMLElement | null>(null);
-  const [whtVisible, setWhtVisible] = useState<boolean>(() => (boot as any).whtVisible ?? true);
-  const [totalsVisible, setTotalsVisible] = useState<boolean>(() => (boot as any).totalsVisible ?? true);
-  const [totalsPinned, setTotalsPinned] = useState<boolean>(() => (boot as any).totalsPinned ?? false);
+  const [whtVisible, setWhtVisible] = useState<boolean>(() => boot.whtVisible ?? true);
+  const [totalsVisible, setTotalsVisible] = useState<boolean>(() => boot.totalsVisible ?? true);
+  const [totalsPinned, setTotalsPinned] = useState<boolean>(() => boot.totalsPinned ?? false);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const [quickFilter, setQuickFilter] = useState<'all' | 'upcoming' | 'thisMonth' | 'highValue'>('all');
-  const [statsVisible, setStatsVisible] = useState<boolean>(() => (boot as any).statsVisible ?? false);
+  const [statsVisible, setStatsVisible] = useState<boolean>(() => boot.statsVisible ?? false);
 
   // Native HTML5 Drag & Drop state (much faster than @dnd-kit)
   const [draggedShow, setDraggedShow] = useState<DemoShow | null>(null);
@@ -94,7 +107,8 @@ const Shows: React.FC = () => {
     const s = q.trim().toLowerCase();
     let result = shows.filter(x => {
       // Filter to only show real Shows (not Personal, Meeting, etc. events stored as Shows)
-      const btnType = (x as any).notes?.match(/__btnType:(\w+)/)?.[1];
+      const xShow = x as ShowWithExtras;
+      const btnType = xShow.notes?.match(/__btnType:(\w+)/)?.[1];
       if (btnType && btnType !== 'show') return false; // Skip non-show events
 
       if (!statusOn[x.status as keyof typeof statusOn]) return false;
@@ -107,8 +121,9 @@ const Shows: React.FC = () => {
       if (typeof feeRange.min === 'number' && x.fee < feeRange.min) return false;
       if (typeof feeRange.max === 'number' && x.fee > feeRange.max) return false;
       if (!s) return true;
-      const notes = String((x as any).notes || '').toLowerCase();
-      const venue = String((x as any).venue || '').toLowerCase();
+      const searchShow = x as ShowWithExtras;
+      const notes = String(searchShow.notes || '').toLowerCase();
+      const venue = String(searchShow.venue || '').toLowerCase();
       return x.city.toLowerCase().includes(s) || x.country.toLowerCase().includes(s) || venue.includes(s) || notes.includes(s);
     });
 
@@ -144,7 +159,8 @@ const Shows: React.FC = () => {
   const statusCounts = useMemo(() => {
     const base = shows.filter(x => {
       // Filter to only show real Shows (not Personal, Meeting, etc. events stored as Shows)
-      const btnType = (x as any).notes?.match(/__btnType:(\w+)/)?.[1];
+      const show = x as ShowWithExtras;
+      const btnType = show.notes?.match(/__btnType:(\w+)/)?.[1];
       if (btnType && btnType !== 'show') return false; // Skip non-show events
 
       // exclude status gating; reuse other filters only
@@ -158,8 +174,8 @@ const Shows: React.FC = () => {
       if (typeof feeRange.max === 'number' && x.fee > feeRange.max) return false;
       const s = q.trim().toLowerCase();
       if (!s) return true;
-      const notes = String((x as any).notes || '').toLowerCase();
-      const venue = String((x as any).venue || '').toLowerCase();
+      const notes = String(show.notes || '').toLowerCase();
+      const venue = String(show.venue || '').toLowerCase();
       return x.city.toLowerCase().includes(s) || x.country.toLowerCase().includes(s) || venue.includes(s) || notes.includes(s);
     });
     const counts: Record<string, number> = { confirmed: 0, pending: 0, offer: 0, canceled: 0, archived: 0, postponed: 0 };
@@ -170,7 +186,8 @@ const Shows: React.FC = () => {
   // rows + net
   const rows = useMemo(() => {
     const calcNet = (s: Show) => {
-      const whtPct = (s as any).whtPct || 0;
+      const show = s as ShowWithExtras;
+      const whtPct = show.whtPct || 0;
       const wht = s.fee * (whtPct / 100);
 
       // Calculate agency commissions dynamically
@@ -185,7 +202,7 @@ const Shows: React.FC = () => {
         console.error('[Shows] Error calculating agency commission:', e);
       }
 
-      const costsTotal = (((s as any).costs) || []).reduce((n: number, c: any) => n + (c.amount || 0), 0);
+      const costsTotal = (show.costs || []).reduce((n: number, c: Cost) => n + (c.amount || 0), 0);
       return s.fee - wht - agencyCommission - costsTotal;
     };
     const r = filtered.map(s => ({ s, net: calcNet(s) }));
@@ -220,7 +237,8 @@ const Shows: React.FC = () => {
     if (!rows.length) return { totalFee: 0, totalNet: 0, avgWht: 0, avgFee: 0, avgMarginPct: 0 };
     let fee = 0, net = 0, wSum = 0, marginSum = 0, marginCount = 0;
     for (const r of rows) {
-      fee += r.s.fee; net += r.net; wSum += ((r.s as any).whtPct || 0);
+      const show = r.s as ShowWithExtras;
+      fee += r.s.fee; net += r.net; wSum += (show.whtPct || 0);
       if (r.s.fee > 0) { const pct = (r.net / r.s.fee) * 100; if (Number.isFinite(pct)) { marginSum += pct; marginCount++; } }
     }
     const avgFeeVal = fee / rows.length;
@@ -234,8 +252,8 @@ const Shows: React.FC = () => {
     const stats: Record<string, { count: number; net: number }> = {};
     for (const st of boardStatuses) stats[st] = { count: 0, net: 0 };
     for (const r of rows) {
-      const st = r.s.status as any;
-      if (boardStatuses.includes(st) && stats[st]) {
+      const st = r.s.status;
+      if (boardStatuses.includes(st as 'offer' | 'pending' | 'confirmed') && stats[st]) {
         stats[st].count++;
         stats[st].net += r.net;
       }
@@ -245,14 +263,14 @@ const Shows: React.FC = () => {
 
   // export
   const exportCsv = (selectedOnly?: boolean) => {
-    const { count, cols } = exportShowsCsv(rows as any, exportCols, selectedOnly ? selected : undefined, 'shows');
+    const { count, cols } = exportShowsCsv(rows, exportCols, selectedOnly ? selected : undefined, 'shows');
     trackEvent('shows.csv.export', { count, cols });
     toast.success(t('shows.export.csv.success') || 'Exported ✓');
   };
   const exportXlsx = async (selectedOnly?: boolean) => {
     setExporting(true);
     try {
-      const { count, cols } = await exportShowsXlsx(rows as any, exportCols, selectedOnly ? selected : undefined, 'shows');
+      const { count, cols } = await exportShowsXlsx(rows, exportCols, selectedOnly ? selected : undefined, 'shows');
       trackEvent('shows.xlsx.export', { count, cols });
       toast.success(t('shows.export.xlsx.success') || 'Exported ✓');
     } catch (e) {
@@ -286,21 +304,21 @@ const Shows: React.FC = () => {
     }
   };
   const applyBulkStatus = () => {
-    for (const id of selected) update(id, { status: bulkStatus } as any);
+    for (const id of selected) update(id, { status: bulkStatus });
     const msg = (t('shows.toast.bulk.status') || 'Status: {status} ({n})').replace('{status}', String(bulkStatus)).replace('{n}', String(selected.size));
     toast.show(msg, { tone: 'success' });
     trackEvent('shows.bulk.setStatus', { count: selected.size, status: bulkStatus });
     setSelected(new Set());
   };
   const applyBulkConfirm = () => {
-    for (const id of selected) update(id, { status: 'confirmed' } as any);
+    for (const id of selected) update(id, { status: 'confirmed' });
     const msg = (t('shows.toast.bulk.confirmed') || 'Confirmed ({n})').replace('{n}', String(selected.size));
     toast.show(msg, { tone: 'success' });
     trackEvent('shows.bulk.confirm', { count: selected.size });
     setSelected(new Set());
   };
   const applyBulkWht = (pct: number) => {
-    for (const id of selected) update(id, { whtPct: pct } as any);
+    for (const id of selected) update(id, { whtPct: pct });
     const msg = (t('shows.toast.bulk.wht') || 'WHT {pct}% ({n})').replace('{pct}', String(pct)).replace('{n}', String(selected.size));
     toast.show(msg, { tone: 'success' });
     trackEvent('shows.bulk.setWht', { count: selected.size, pct });
@@ -308,10 +326,37 @@ const Shows: React.FC = () => {
   };
 
   // drawer
-  const openAdd = () => { lastTriggerRef.current = document.activeElement as HTMLElement; setMode('add'); setDraft({ city: '', country: '', date: new Date().toISOString().slice(0, 10), fee: 5000, lat: 0, lng: 0, status: 'pending', whtPct: 0 } as any); setCosts([]); setModalOpen(true); announce('Add show'); trackEvent('shows.drawer.open', { mode: 'add' }); };
-  const openEdit = (s: Show) => { lastTriggerRef.current = document.activeElement as HTMLElement; setMode('edit'); setDraft({ ...(s as any) }); setCosts(((s as any).costs) || []); setModalOpen(true); announce('Edit show: ' + s.city); trackEvent('shows.drawer.open', { mode: 'edit' }); };
+  const openAdd = () => { 
+    lastTriggerRef.current = document.activeElement as HTMLElement; 
+    setMode('add'); 
+    setDraft({ city: '', country: '', date: new Date().toISOString().slice(0, 10), fee: 5000, lat: 0, lng: 0, status: 'pending', whtPct: 0 } as DraftShow); 
+    setCosts([]); 
+    setModalOpen(true); 
+    announce('Add show'); 
+    trackEvent('shows.drawer.open', { mode: 'add' }); 
+  };
+  const openEdit = (s: Show) => { 
+    lastTriggerRef.current = document.activeElement as HTMLElement; 
+    setMode('edit'); 
+    const show = s as ShowWithExtras;
+    setDraft({ ...show }); 
+    setCosts(show.costs || []); 
+    setModalOpen(true); 
+    announce('Edit show: ' + s.city); 
+    trackEvent('shows.drawer.open', { mode: 'edit' }); 
+  };
   const closeDrawer = () => { setModalOpen(false); trackEvent('shows.drawer.close'); try { lastTriggerRef.current?.focus(); } catch { } if (searchParams.get('add') || searchParams.get('edit')) navigate('/dashboard/shows', { replace: true }); };
-  const saveDraft = (d: DraftShow) => { if (mode === 'add') { const id = (() => { try { return crypto.randomUUID(); } catch { return 's' + Date.now(); } })(); add({ ...(d as any), id, costs }); } else if (mode === 'edit' && d.id) { update(d.id, { ...(d as any), costs } as any); } announce('Saved'); trackEvent('shows.drawer.save', { mode }); };
+  const saveDraft = (d: DraftShow) => { 
+    if (mode === 'add') { 
+      const id = (() => { try { return crypto.randomUUID(); } catch { return 's' + Date.now(); } })(); 
+      // Cast to ShowWithExtras to allow costs property
+      add({ ...d, id, costs } as ShowWithExtras); 
+    } else if (mode === 'edit' && d.id) { 
+      update(d.id, { ...d, costs } as ShowWithExtras); 
+    } 
+    announce('Saved'); 
+    trackEvent('shows.drawer.save', { mode }); 
+  };
   const deleteDraft = (d: DraftShow) => { if (mode === 'edit' && d.id) { remove(d.id); trackEvent('shows.drawer.delete'); } };
 
   // deep link
@@ -361,7 +406,7 @@ const Shows: React.FC = () => {
     if (!draggedShow) return;
 
     if (draggedShow.status !== newStatus) {
-      update(draggedShow.id, { status: newStatus } as any);
+      update(draggedShow.id, { status: newStatus });
       toast.show(`Moved to ${newStatus}`, { tone: 'success' });
       trackEvent('shows.dragDrop.status', { from: draggedShow.status, to: newStatus });
     }
@@ -439,7 +484,7 @@ const Shows: React.FC = () => {
                 </motion.button>
                 <div className="flex items-center gap-2 glass px-3 py-2 rounded-lg border border-theme">
                   <label className="text-xs text-theme-secondary">{t('shows.bulk.setStatus') || 'Status'}:</label>
-                  <select className="bg-interactive-hover rounded px-2 py-1 text-xs border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:outline-none" value={bulkStatus} onChange={e => setBulkStatus(e.target.value as any)}>
+                  <select className="bg-interactive-hover rounded px-2 py-1 text-xs border border-slate-200 dark:border-white/10 focus:border-accent-500/50 focus:outline-none" value={bulkStatus} onChange={e => setBulkStatus(e.target.value as Show['status'])}>
                     <option value="offer">offer</option>
                     <option value="pending">pending</option>
                     <option value="confirmed">confirmed</option>
@@ -821,14 +866,14 @@ const Shows: React.FC = () => {
                           <span className="text-theme-primary group-hover:text-accent-500 transition-colors">{s.date.slice(0, 10)}</span>
                         </td>
                         <td className="px-4 py-3.5 max-w-[200px]">
-                          <div className="truncate font-medium text-theme-primary group-hover:text-white transition-colors" title={s.name || (s as any).venue || ''}>
-                            {s.name || (s as any).venue || <span className="opacity-40">—</span>}
+                          <div className="truncate font-medium text-theme-primary group-hover:text-white transition-colors" title={s.name || (s as ShowWithExtras).venue || ''}>
+                            {s.name || (s as ShowWithExtras).venue || <span className="opacity-40">—</span>}
                           </div>
                         </td>
                         <td className="px-4 py-3.5 text-slate-600 dark:text-white/80">{s.city}</td>
                         <td className="px-4 py-3.5 text-theme-secondary">{countryLabel(s.country, lang)}</td>
                         <td className="px-4 py-3.5 text-right tabular-nums font-semibold">{fmtMoney(s.fee)}</td>
-                        {whtVisible && <td className="px-4 py-3.5 text-right tabular-nums text-theme-secondary text-sm">{(s as any).whtPct ?? 0}%</td>}
+                        {whtVisible && <td className="px-4 py-3.5 text-right tabular-nums text-theme-secondary text-sm">{(s as ShowWithExtras).whtPct ?? 0}%</td>}
                         <td className="px-4 py-3.5 text-right tabular-nums">
                           <span
                             className="inline-block px-2.5 py-1 rounded-lg bg-accent-500/10 border border-accent-500/25 text-accent-400 tabular-nums font-bold group-hover:bg-accent-500/20 group-hover:border-accent-500/40 transition-all"
@@ -846,7 +891,7 @@ const Shows: React.FC = () => {
                           )}
                         </td>
                         <td className="px-3 py-2 flex items-center gap-2 relative" onClick={(e) => e.stopPropagation()}>
-                          <StatusBadge status={s.status as any}>{s.status}</StatusBadge>
+                          <StatusBadge status={s.status}>{s.status}</StatusBadge>
 
                           {/* Quick Actions - visible on hover */}
                           <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
@@ -857,7 +902,7 @@ const Shows: React.FC = () => {
                                 e.stopPropagation();
                                 const next = s.status === 'offer' ? 'pending' : s.status === 'pending' ? 'confirmed' : s.status;
                                 if (next !== s.status) {
-                                  update(s.id, { status: next } as any);
+                                  update(s.id, { status: next });
                                   toast.show(`Status → ${next}`, { tone: 'success' });
                                 }
                               }}
@@ -875,11 +920,12 @@ const Shows: React.FC = () => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const id = (() => { try { return crypto.randomUUID(); } catch { return 's' + Date.now(); } })();
-                                const costsClone = Array.isArray((s as any).costs) ? (s as any).costs.map((c: any) => ({ ...c })) : [];
-                                const clone: any = {
-                                  ...(s as any),
+                                const show = s as ShowWithExtras;
+                                const costsClone = Array.isArray(show.costs) ? show.costs.map((c: Cost) => ({ ...c })) : [];
+                                const clone: ShowWithExtras = {
+                                  ...show,
                                   id,
-                                  name: (s.name || (s as any).venue || s.city) + ' (copy)',
+                                  name: (s.name || show.venue || s.city) + ' (copy)',
                                   status: s.status === 'archived' ? 'offer' : s.status,
                                   costs: costsClone,
                                   createdAt: new Date().toISOString(),
@@ -917,21 +963,21 @@ const Shows: React.FC = () => {
                             onPromote={() => {
                               const next = s.status === 'offer' ? 'pending' : s.status === 'pending' ? 'confirmed' : s.status;
                               if (next !== s.status) {
-                                update(s.id, { status: next } as any);
+                                update(s.id, { status: next });
                                 toast.show((t('shows.editor.status.promote') || 'Promoted to') + ': ' + next, { tone: 'success' });
                                 trackEvent('shows.promote.row', { from: s.status, to: next });
                               }
                             }}
                             onDuplicate={() => {
                               const id = (() => { try { return crypto.randomUUID(); } catch { return 's' + Date.now(); } })();
-                              // Deep clone costs to avoid mutating original
-                              const costsClone = Array.isArray((s as any).costs) ? (s as any).costs.map((c: any) => ({ ...c })) : [];
+                              const show = s as ShowWithExtras;
+                              const costsClone = Array.isArray(show.costs) ? show.costs.map((c: Cost) => ({ ...c })) : [];
                               const nowIso = new Date().toISOString();
-                              const clone: any = {
-                                ...(s as any),
+                              const clone: ShowWithExtras = {
+                                ...show,
                                 id,
-                                name: (s.name || (s as any).venue || s.city) + ' (copy)',
-                                status: s.status === 'archived' ? 'offer' : s.status, // copies of archived start fresh
+                                name: (s.name || show.venue || s.city) + ' (copy)',
+                                status: s.status === 'archived' ? 'offer' : s.status,
                                 costs: costsClone,
                                 createdAt: nowIso,
                                 archivedAt: undefined
@@ -940,8 +986,8 @@ const Shows: React.FC = () => {
                               toast.success(t('shows.action.duplicate') || 'Duplicate');
                               trackEvent('shows.duplicate', { source: s.id, new: id });
                             }}
-                            onArchive={() => { if (s.status !== 'archived') { update(s.id, { status: 'archived', archivedAt: new Date().toISOString() } as any); trackEvent('shows.archive', { id: s.id }); toast.warn(t('shows.action.archive') || 'Archive'); } }}
-                            onRestore={() => { if (s.status === 'archived') { update(s.id, { status: 'pending', archivedAt: undefined } as any); trackEvent('shows.restore', { id: s.id }); toast.success(t('shows.action.restore') || 'Restore'); } }}
+                            onArchive={() => { if (s.status !== 'archived') { update(s.id, { status: 'archived', archivedAt: new Date().toISOString() }); trackEvent('shows.archive', { id: s.id }); toast.warn(t('shows.action.archive') || 'Archive'); } }}
+                            onRestore={() => { if (s.status === 'archived') { update(s.id, { status: 'pending', archivedAt: undefined }); trackEvent('shows.restore', { id: s.id }); toast.success(t('shows.action.restore') || 'Restore'); } }}
                             onDelete={() => { const ok = window.confirm((t('shows.action.delete') || 'Delete') + '?'); if (!ok) return; remove(s.id); trackEvent('shows.delete', { id: s.id }); toast.error(t('shows.action.delete') || 'Delete'); }}
                           />
                         </td>
@@ -1080,9 +1126,9 @@ const Shows: React.FC = () => {
                         fee: 5000,
                         lat: 0,
                         lng: 0,
-                        status: st as any,
+                        status: st as Show['status'],
                         whtPct: 0
-                      } as any);
+                      } as DraftShow);
                       setCosts([]);
                       setModalOpen(true);
                       announce('Add show');

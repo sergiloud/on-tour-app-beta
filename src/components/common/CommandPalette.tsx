@@ -6,7 +6,7 @@ import {
   Settings, Building2, Link as LinkIcon, BarChart3,
   UserCircle, Palette, CreditCard, Zap, ShieldCheck
 } from 'lucide-react';
-import { useSettings } from '../../context/SettingsContext';
+import { useSettings, type DashboardView } from '../../context/SettingsContext';
 import { t, getLang } from '../../lib/i18n';
 import { countryLabel } from '../../lib/countries';
 import { useFilteredShows } from '../../features/shows/selectors';
@@ -14,6 +14,7 @@ import { useOrg } from '../../context/OrgContext';
 import { prefetchByPath } from '../../routes/prefetch';
 import { getOrgById } from '../../lib/tenants';
 import { useDebounce } from '../../hooks/useDebounce';
+import type { Show } from '../../lib/shows';
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -44,10 +45,10 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
     const actions: Item[] = [
       { id: 'act:filters', type: 'quick-action', icon: <Search className="w-4 h-4" />, label: t('cmd.openFilters'), run: ()=>{ window.dispatchEvent(new CustomEvent('global-filters:open')); onClose(); } },
       { id: 'act:shortcuts', type: 'quick-action', icon: <Zap className="w-4 h-4" />, label: t('cmd.shortcuts'), run: ()=>{ window.dispatchEvent(new CustomEvent('shortcuts:open')); onClose(); } },
-      { id: 'view:default', type: 'quick-action', icon: <BarChart3 className="w-4 h-4" />, label: t('cmd.switch.default'), run: ()=>{ setDashboardView('default' as any); onClose(); } },
-      { id: 'view:finance', type: 'quick-action', icon: <DollarSign className="w-4 h-4" />, label: t('cmd.switch.finance'), run: ()=>{ setDashboardView('finance' as any); onClose(); } },
-      { id: 'view:operations', type: 'quick-action', icon: <Settings className="w-4 h-4" />, label: t('cmd.switch.operations'), run: ()=>{ setDashboardView('operations' as any); onClose(); } },
-      { id: 'view:promo', type: 'quick-action', icon: <Palette className="w-4 h-4" />, label: t('cmd.switch.promo'), run: ()=>{ setDashboardView('promo' as any); onClose(); } },
+      { id: 'view:default', type: 'quick-action', icon: <BarChart3 className="w-4 h-4" />, label: t('cmd.switch.default'), run: ()=>{ setDashboardView('default' satisfies DashboardView); onClose(); } },
+      { id: 'view:finance', type: 'quick-action', icon: <DollarSign className="w-4 h-4" />, label: t('cmd.switch.finance'), run: ()=>{ setDashboardView('finance' satisfies DashboardView); onClose(); } },
+      { id: 'view:operations', type: 'quick-action', icon: <Settings className="w-4 h-4" />, label: t('cmd.switch.operations'), run: ()=>{ setDashboardView('operations' satisfies DashboardView); onClose(); } },
+      { id: 'view:promo', type: 'quick-action', icon: <Palette className="w-4 h-4" />, label: t('cmd.switch.promo'), run: ()=>{ setDashboardView('promo' satisfies DashboardView); onClose(); } },
       { id: 'open:alerts', type: 'quick-action', icon: <ShieldCheck className="w-4 h-4" />, label: t('cmd.openAlerts'), run: ()=>{ window.dispatchEvent(new CustomEvent('alerts:open')); onClose(); } },
       { id: 'nav:shows', type: 'navigation', icon: <Calendar className="w-4 h-4" />, label: t('cmd.go.shows'), run: ()=>{ prefetchByPath('/dashboard/shows'); navigate('/dashboard/shows'); onClose(); } },
       { id: 'nav:travel', type: 'navigation', icon: <Calendar className="w-4 h-4" />, label: t('cmd.go.travel'), run: ()=>{ prefetchByPath('/dashboard/travel'); navigate('/dashboard/travel'); onClose(); } },
@@ -65,7 +66,12 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
       ...(org?.type === 'artist' ? [{ id: 'nav:org:branding', type: 'org' as const, icon: <Palette className="w-4 h-4" />, label: t('cmd.go.branding'), run: ()=>{ prefetchByPath('/dashboard/org/branding'); navigate('/dashboard/org/branding'); onClose(); } }] : []),
     ];
   const lang = getLang();
-  const showItems: Item[] = (shows as any[]).map((s:any)=> ({ id: String(s.id), type:'show', icon: <Calendar className="w-4 h-4" />, label: `${s.city}, ${countryLabel(s.country, lang)} — ${new Date(s.date).toLocaleDateString()}` }));
+  const showItems: Item[] = shows.map((s: Show) => ({ 
+    id: String(s.id), 
+    type: 'show', 
+    icon: <Calendar className="w-4 h-4" />, 
+    label: `${s.city}, ${countryLabel(s.country, lang)} — ${new Date(s.date).toLocaleDateString()}` 
+  }));
     // Org entities discoverability
     const artistItems: Item[] = org?.type==='agency'
       ? (links||[]).filter(l=> l.agencyOrgId===org.id).map(l => {

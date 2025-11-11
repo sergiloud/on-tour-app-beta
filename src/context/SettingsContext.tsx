@@ -5,6 +5,7 @@ import type { PeriodPreset } from '../features/finance/period';
 import { setLang as setI18nLang } from '../lib/i18n';
 import { ensureDemoAuth, getCurrentUserId } from '../lib/demoAuth';
 import { upsertUserPrefs, readAllPrefs } from '../lib/demoAuth';
+import { auth } from '../lib/firebase';
 
 type Currency = 'EUR' | 'USD' | 'GBP';
 type DistanceUnit = 'km' | 'mi';
@@ -64,17 +65,42 @@ const SettingsContext = createContext<Settings | null>(null);
 const LS_KEY = SETTINGS_KEY;
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Determine current user and load their preferences (fallback to legacy settings)
-  const [userId] = useState<string>(() => {
+  // Get current user - prefer Firebase Auth user over demo user
+  const [userId, setUserId] = useState<string>(() => {
     try {
-      // DISABLED FOR PRODUCTION - demo auth no longer used
-      // ensureDemoAuth();
-      return getCurrentUserId();
+      // Try to get Firebase Auth user first
+      if (auth?.currentUser) {
+        console.log('[SettingsContext] Using Firebase Auth user:', auth.currentUser.uid);
+        return auth.currentUser.uid;
+      }
+      // Fallback to demo auth
+      const demoUser = getCurrentUserId();
+      console.log('[SettingsContext] Using demo user:', demoUser);
+      return demoUser;
     } catch {
-      // Fallback to a default if no user is set
+      console.log('[SettingsContext] Fallback to default_user');
       return 'default_user';
     }
   });
+
+  // Listen for auth state changes
+  useEffect(() => {
+    if (!auth) return;
+    
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('[SettingsContext] Auth state changed - user logged in:', user.uid);
+        setUserId(user.uid);
+      } else {
+        console.log('[SettingsContext] Auth state changed - user logged out');
+        // Fallback to demo user
+        const demoUser = getCurrentUserId();
+        setUserId(demoUser || 'default_user');
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Load initial settings
   const legacyInitial = (() => {

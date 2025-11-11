@@ -11,6 +11,8 @@ import { trackEvent as track } from '../../../lib/telemetry';
 import { agenciesForShow, computeCommission } from '../../../lib/agencies';
 import type { Show } from '../../../lib/shows';
 import { sanitizeName } from '../../../lib/sanitize';
+import { PromoterAutocomplete } from '../../../components/shows/PromoterAutocomplete';
+import { VenueAutocomplete } from '../../../components/shows/VenueAutocomplete';
 
 const ArrowUpIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1287,21 +1289,25 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   </div>
                 </div>
 
-                {/* Promoter Field */}
+                {/* Promoter Field with Autocomplete */}
                 <label className="flex flex-col gap-1.5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
                     {t('shows.editor.label.promoter') || 'Promoter'}
                   </span>
-                  <input
-                    data-field="promoter"
-                    className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
+                  <PromoterAutocomplete
                     value={(draft as any).promoter || ''}
-                    placeholder={t('shows.editor.placeholder.promoter') || 'Enter promoter name...'}
-                    onChange={e => setDraft((d: ShowDraft) => ({ ...d, promoter: e.target.value }))}
+                    onChange={(name, contactId) => {
+                      setDraft((d: ShowDraft) => ({ 
+                        ...d, 
+                        promoter: name,
+                        promoterId: contactId 
+                      } as any));
+                    }}
+                    className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
                   />
                 </label>
 
-                {/* Venue */}
+                {/* Venue with Autocomplete */}
                 <label className="flex flex-col gap-1.5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70 flex items-center gap-2">
                     {t('shows.editor.label.venue') || 'Venue'}
@@ -1309,25 +1315,27 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       {t('shows.editor.help.venue') || 'venue/room name'}
                     </span>
                   </span>
-                  <input
-                    list="venue-suggestions"
-                    data-field="venue"
-                    className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
+                  <VenueAutocomplete
                     value={(draft as any).venue || ''}
-                    placeholder={t('shows.editor.placeholder.venue') || 'Venue name'}
-                    onChange={e => setDraft((d: ShowDraft) => ({ ...d, venue: e.target.value }))}
-                    onBlur={e => { const v = e.target.value.trim(); if (v) recordVenue(v); }}
+                    onChange={(name, venueId) => {
+                      setDraft((d: ShowDraft) => ({ 
+                        ...d, 
+                        venue: name,
+                        venueId: venueId 
+                      } as any));
+                      if (name.trim()) recordVenue(name.trim());
+                    }}
+                    city={draft.city}
+                    country={draft.country}
+                    className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
                   />
                   {recentVenues.length > 0 && (
                     <div className="hidden md:flex items-center gap-0.5" aria-label={t('shows.editor.venue.recent') || 'Recent venues'}>
                       {recentVenues.slice(0, 3).map(rv => (
-                        <button key={rv} type="button" className="px-1.5 py-1 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
+                        <button key={rv} type="button" className="px-1.5 py-1 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
                       ))}
                     </div>
                   )}
-                  <datalist id="venue-suggestions">
-                    {recentVenues.map(v => <option key={'venue-' + v} value={v} />)}
-                  </datalist>
                 </label>
 
                 {/* Notes - Large & Prominent */}
@@ -1704,6 +1712,50 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   </label>
                 </div>;
               })()}
+
+              {/* WHT Field */}
+              <div className="glass border border-slate-200 dark:border-white/10 rounded-[10px] p-4">
+                <label className="flex flex-col gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                    {t('shows.editor.label.wht') || 'WHT %'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      data-field="whtPct"
+                      aria-invalid={!!validation.whtPct}
+                      aria-describedby={(validation.whtPct ? 'err-whtPct-finance ' : '') + 'wht-help-finance'}
+                      type="number"
+                      step={1}
+                      min={0}
+                      max={50}
+                      className="px-3 py-2 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-sm flex-1"
+                      value={draft.whtPct ?? ''}
+                      placeholder="0"
+                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, whtPct: e.target.value === '' ? undefined : Math.max(0, Math.min(50, Number(e.target.value) || 0)) }))}
+                    />
+                    {(() => {
+                      if (!draft.country) return null;
+                      const defaults: Record<string, number> = { ES: 15, FR: 15, DE: 15, MX: 10, BR: 15, US: 0 };
+                      const sug = defaults[draft.country];
+                      if (sug == null) return null;
+                      const isApplied = draft.whtPct === sug;
+                      const show = draft.whtPct == null || (!isApplied && draft.whtPct !== sug);
+                      if (!show) return null;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => { setDraft((d: ShowDraft) => ({ ...d, whtPct: sug })); announce((t('shows.editor.wht.suggest.applied') || 'WHT suggestion applied') + ': ' + sug + '%'); track(TE.WHT_SUGGEST_APPLY, { country: draft.country, pct: sug }); }}
+                          className={`px-2 py-1 rounded text-[10px] border whitespace-nowrap ${isApplied ? 'border-green-500/40 text-green-300 bg-green-500/10' : 'border-accent-500/40 text-accent-200 bg-accent-500/10 hover:bg-accent-500/20'}`}
+                          aria-pressed={isApplied}
+                        >{sug}%</button>
+                      );
+                    })()}
+                  </div>
+                  {validation.whtPct && <p id="err-whtPct-finance" className="text-[10px] text-red-400">{t(validation.whtPct) || 'Out of range'}</p>}
+                  <p id="wht-help-finance" className="text-[10px] text-slate-400 dark:text-white/50">{t('shows.editor.wht.hint') || 'Withholding tax percentage (0-50%)'}</p>
+                </label>
+              </div>
+
               {(() => {
                 const b = breakdownNet({ fee: draft.fee, whtPct: draft.whtPct, mgmtPct: draft.mgmtPct, bookingPct: draft.bookingPct, costs: draft.costs });
                 return (

@@ -20,7 +20,10 @@ export type Show = {
   status: 'confirmed' | 'pending' | 'offer' | 'canceled' | 'archived' | 'postponed';
   paid?: boolean;           // Payment status
   // Optional extended metadata
-  venue?: string;
+  venue?: string;          // Venue name (string for backward compatibility)
+  venueId?: string;        // Venue ID (links to venueStore)
+  promoter?: string;       // Promoter name (string for backward compatibility)
+  promoterId?: string;     // Promoter contact ID (links to contactStore)
   whtPct?: number;         // Withholding tax percent (0-100)
   mgmtAgency?: string;     // Management agency name
   bookingAgency?: string;  // Booking agency name

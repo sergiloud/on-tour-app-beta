@@ -30,7 +30,7 @@ export function validateDraft(d: ShowDraft): ValidationErrors {
   if (!d.country) errs.country = 'shows.editor.validation.countryRequired';
   const date = String(d.date||'').slice(0,10);
   if (!date) errs.date = 'shows.editor.validation.dateRequired';
-  if (d.fee == null || Number(d.fee) <= 0) errs.fee = 'shows.editor.validation.feeGtZero';
+  if (d.fee == null || Number(d.fee) < 0) errs.fee = 'shows.editor.validation.feeGtEqZero';
   if (d.whtPct!=null){
     if (d.whtPct < 0 || d.whtPct > 50) errs.whtPct = 'shows.editor.validation.whtRange';
   }

@@ -311,44 +311,69 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const handleAddAgency = useCallback((a: Omit<AgencyConfig, 'id'>) => {
+    console.log('[SettingsContext] handleAddAgency called with:', a);
     const max = 3;
     if (a.type === 'booking') {
       let added: AgencyConfig | undefined;
       setBookingAgencies(prev => {
-        if (prev.length >= max) return prev; // limit reached
+        console.log('[SettingsContext] Current booking agencies:', prev);
+        if (prev.length >= max) {
+          console.warn('[SettingsContext] Booking agencies limit reached:', max);
+          return prev;
+        }
         const pct = Math.max(0, Math.min(100, a.commissionPct));
         const id = `booking-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         added = { ...a, commissionPct: pct, id };
+        console.log('[SettingsContext] Adding booking agency:', added);
         return [...prev, added];
       });
-      if (!added) { try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }; return { ok: false, reason: 'limit' } as const; }
+      if (!added) { 
+        console.error('[SettingsContext] Failed to add booking agency - limit reached');
+        try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }
+        return { ok: false, reason: 'limit' } as const;
+      }
+      console.log('[SettingsContext] ✅ Booking agency added successfully:', added);
       try { trackEvent('settings.agency.add', { type: a.type, commission: added.commissionPct, territoryMode: added.territoryMode }); } catch { }
       return { ok: true, agency: added } as const;
     } else {
       let added: AgencyConfig | undefined;
       setManagementAgencies(prev => {
-        if (prev.length >= max) return prev;
+        console.log('[SettingsContext] Current management agencies:', prev);
+        if (prev.length >= max) {
+          console.warn('[SettingsContext] Management agencies limit reached:', max);
+          return prev;
+        }
         const pct = Math.max(0, Math.min(100, a.commissionPct));
         const id = `management-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         added = { ...a, commissionPct: pct, id };
+        console.log('[SettingsContext] Adding management agency:', added);
         return [...prev, added];
       });
-      if (!added) { try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }; return { ok: false, reason: 'limit' } as const; }
+      if (!added) {
+        console.error('[SettingsContext] Failed to add management agency - limit reached');
+        try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }
+        return { ok: false, reason: 'limit' } as const;
+      }
+      console.log('[SettingsContext] ✅ Management agency added successfully:', added);
       try { trackEvent('settings.agency.add', { type: a.type, commission: added.commissionPct, territoryMode: added.territoryMode }); } catch { }
       return { ok: true, agency: added } as const;
     }
   }, []);
 
   const handleUpdateAgency = useCallback((id: string, patch: Partial<AgencyConfig>) => {
+    console.log('[SettingsContext] handleUpdateAgency called:', id, patch);
     const apply = (arr: AgencyConfig[]) => arr.map(a => a.id === id ? { ...a, ...patch, commissionPct: patch.commissionPct != null ? Math.max(0, Math.min(100, patch.commissionPct)) : a.commissionPct } : a);
     setBookingAgencies(a => apply(a));
     setManagementAgencies(a => apply(a));
+    console.log('[SettingsContext] ✅ Agency updated');
     try { trackEvent('settings.agency.update', { id, ...patch }); } catch { }
   }, []);
 
   const handleRemoveAgency = useCallback((id: string) => {
+    console.log('[SettingsContext] handleRemoveAgency called:', id);
     setBookingAgencies(a => a.filter(x => x.id !== id));
     setManagementAgencies(a => a.filter(x => x.id !== id));
+    console.log('[SettingsContext] ✅ Agency removed');
     try { trackEvent('settings.agency.remove', { id }); } catch { }
   }, []);
 

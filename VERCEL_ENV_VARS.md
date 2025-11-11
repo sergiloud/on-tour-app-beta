@@ -34,8 +34,9 @@ VITE_RAPIDAPI_KEY=your_rapidapi_key_here
 - **Con esta key**: Búsquedas reales de vuelos con precios actuales
 - Conseguir key: https://rapidapi.com/skyscanner/api/skyscanner-flight-search
 - Free tier: 500 llamadas/mes
+- **Estado**: Alternativa. Límite bajo.
 
-### Amadeus Flight API (alternativa a RapidAPI)
+### Amadeus Flight API (Opción recomendada para empezar)
 
 ```bash
 VITE_AMADEUS_API_KEY=your_api_key_here

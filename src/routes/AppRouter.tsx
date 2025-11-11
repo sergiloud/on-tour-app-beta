@@ -2,7 +2,6 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from '../pages/LandingPage';
 import Login from '../pages/Login';
-import { CommandPalette } from '../components/CommandPalette';
 import { RouteLoading, InlineRouteLoading } from '../components/common/RouteLoading';
 import {
   DashboardSkeleton,
@@ -50,7 +49,6 @@ const ArtistHub = React.lazy(() => import('../pages/org/ArtistHub'));
 export const AppRouter: React.FC = () => {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <CommandPalette />
       <Routes>
         <Route
           path="/"

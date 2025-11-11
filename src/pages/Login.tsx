@@ -407,8 +407,6 @@ const Login: React.FC = () => {
     const p = password;
     const rec = remember;
 
-    console.log('[LOGIN] Starting Firebase login...', { email: u, hasPassword: !!p });
-
     dispatch({ type: 'START_LOADING' });
 
     try { trackEvent('login.submit', { u }); } catch { }
@@ -435,9 +433,7 @@ const Login: React.FC = () => {
     }
 
     try {
-      console.log('[LOGIN] Attempting Firebase authentication...');
       const authUser = await authService.signIn(u, p);
-      console.log('[LOGIN] Firebase login successful:', { uid: authUser.uid, email: authUser.email });
 
       // Determine default org based on email
       let defaultOrg = ORG_AGENCY_SHALIZI;
@@ -489,7 +485,6 @@ const Login: React.FC = () => {
       setCurrentOrgId(finalOrgId);
 
       // NO loading demo data - everything comes from Firestore
-      console.log('[LOGIN] User authenticated. Data will load from Firestore.');
 
       if (rec) secureStorage.setItem('demo:authed', '1');
       secureStorage.setItem('demo:lastUser', authUser.uid);
@@ -878,7 +873,7 @@ const Login: React.FC = () => {
         >
           <Link
             to="/"
-            className="text-sm text-slate-300 dark:text-white/50 hover:text-slate-600 dark:text-white/80 transition-colors inline-flex items-center gap-1"
+            className="text-sm text-slate-300 hover:text-slate-600 dark:text-white/50 dark:hover:text-white/80 transition-colors inline-flex items-center gap-1"
           >
             ← Back to home
           </Link>
@@ -930,7 +925,7 @@ const Login: React.FC = () => {
                           setResetError('');
                         }}
                         placeholder="your@email.com"
-                        className="w-full pl-11 pr-4 py-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl placeholder:text-slate-400 focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder:text-slate-300 dark:focus:bg-white/10 transition-all"
                         disabled={resetState === 'sending'}
                       />
                     </div>
@@ -952,7 +947,7 @@ const Login: React.FC = () => {
                         setResetError('');
                       }}
                       disabled={resetState === 'sending'}
-                      className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-white font-medium hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 py-3 rounded-xl bg-slate-100 border border-slate-200 font-medium hover:bg-slate-200 dark:bg-white/5 dark:border-white/10 dark:text-white dark:hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </button>

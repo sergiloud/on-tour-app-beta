@@ -34,14 +34,10 @@ const useFirebase = () => isFirebaseConfigured();
 
 // Sign in with email and password
 export const signIn = async (email: string, password: string): Promise<AuthUser> => {
-  console.log('[AUTH] signIn called:', { email, hasPassword: !!password, useFirebase: useFirebase(), hasAuth: !!auth });
-  
   if (useFirebase() && auth) {
-    console.log('[AUTH] Attempting Firebase signInWithEmailAndPassword...');
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const authUser = toAuthUser(result.user);
-      console.log('[AUTH] Firebase sign-in successful:', { uid: authUser.uid, email: authUser.email });
 
       // Sync with local storage
       secureStorage.setItem('auth:userId', authUser.uid);
@@ -53,7 +49,6 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
       throw error;
     }
   } else {
-    console.log('[AUTH] Using demo mode fallback');
     // Demo mode - fallback to existing demo auth
     setAuthed(true);
     setCurrentUserId(email);

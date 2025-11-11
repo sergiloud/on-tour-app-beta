@@ -48,6 +48,11 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 export const EsteMes: Story = {
+  args: {
+    value: 'thisMonth',
+    dateRange: { startDate: '2024-01-01', endDate: '2024-01-31' },
+    onChange: () => {}
+  },
   render: () => {
     const [period, setPeriod] = useState<PeriodPreset>('thisMonth');
     const [range, setRange] = useState<DateRange>({
@@ -69,6 +74,11 @@ export const EsteMes: Story = {
 };
 
 export const Ultimos30Dias: Story = {
+  args: {
+    value: 'last30days',
+    dateRange: { startDate: '2024-01-01', endDate: '2024-01-31' },
+    onChange: () => {}
+  },
   render: () => {
     const [period, setPeriod] = useState<PeriodPreset>('last30days');
     const now = new Date();
@@ -94,6 +104,11 @@ export const Ultimos30Dias: Story = {
 };
 
 export const RangoPersonalizado: Story = {
+  args: {
+    value: 'custom',
+    dateRange: { startDate: '2023-12-01', endDate: '2024-01-15' },
+    onChange: () => {}
+  },
   render: () => {
     const [period, setPeriod] = useState<PeriodPreset>('custom');
     const [range, setRange] = useState<DateRange>({
@@ -115,6 +130,11 @@ export const RangoPersonalizado: Story = {
 };
 
 export const EsteTrimestre: Story = {
+  args: {
+    value: 'thisQuarter',
+    dateRange: { startDate: '2024-01-01', endDate: '2024-03-31' },
+    onChange: () => {}
+  },
   render: () => {
     const [period, setPeriod] = useState<PeriodPreset>('thisQuarter');
     const now = new Date();
@@ -145,6 +165,11 @@ export const EsteTrimestre: Story = {
 // ============================================================================
 
 export const ConComparacion: Story = {
+  args: {
+    value: 'thisMonth',
+    dateRange: { startDate: '2024-01-01', endDate: '2024-01-31' },
+    onChange: () => {}
+  },
   render: () => {
     const [period, setPeriod] = useState<PeriodPreset>('thisMonth');
     const [range, setRange] = useState<DateRange>({
@@ -186,6 +211,11 @@ export const ConComparacion: Story = {
 // ============================================================================
 
 export const EnHeaderDashboard: Story = {
+  args: {
+    value: 'thisMonth',
+    dateRange: { startDate: '2024-01-01', endDate: '2024-01-31' },
+    onChange: () => {}
+  },
   render: () => {
     const [period, setPeriod] = useState<PeriodPreset>('thisMonth');
     const [range, setRange] = useState<DateRange>({

@@ -347,7 +347,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
 
   // Detect date conflicts with other shows
   useEffect(() => {
-    const conflict = detectDateConflict(draft.date, draft.endDate, allShows, initial.id);
+    const conflict = detectDateConflict(draft.date, draft.endDate, allShows, initial.id || '');
     setDateConflict(conflict);
   }, [draft.date, draft.endDate, allShows, initial.id]);
 
@@ -463,7 +463,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
       feeCurrency: draft.feeCurrency || 'EUR',
       status: draft.status || 'confirmed',
       __version: 1,
-      __modifiedAt: new Date().toISOString(),
+      __modifiedAt: Date.now(),
       __modifiedBy: ''
     };
     const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);
@@ -1584,7 +1584,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   feeCurrency: draft.feeCurrency || 'EUR',
                   status: draft.status || 'confirmed',
                   __version: 1,
-                  __modifiedAt: new Date().toISOString(),
+                  __modifiedAt: Date.now(),
                   __modifiedBy: ''
                 };
                 const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);

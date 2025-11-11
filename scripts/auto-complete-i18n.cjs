@@ -22,7 +22,7 @@ function extractKeys(startLine, endLine) {
   return keys;
 }
 
-const enKeys = extract Keys(enStart, esStart - 2);
+const enKeys = extractKeys(enStart, esStart - 2);
 const esKeys = extractKeys(esStart, frStart - 1);
 
 console.log(`EN keys: ${enKeys.size}`);

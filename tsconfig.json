@@ -19,11 +19,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vitest/globals", "node", "@testing-library/jest-dom"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "types": ["vitest/globals", "node", "@testing-library/jest-dom"]
   },
   "include": ["src", "vitest.setup.ts"],
   "exclude": ["node_modules", "dist"],

@@ -89,7 +89,6 @@ export function VenueAutocomplete({
     setSearch(venue.name);
     onChange(venue.name, venue.id);
     setIsOpen(false);
-    inputRef.current?.blur(); // Close dropdown
   };
 
   const handleCreateNew = () => {
@@ -109,7 +108,6 @@ export function VenueAutocomplete({
     setSearch(search.trim());
     onChange(search.trim(), newVenue.id);
     setIsOpen(false);
-    inputRef.current?.blur(); // Close dropdown
   };
 
   const handleInputChange = (newValue: string) => {
@@ -137,7 +135,6 @@ export function VenueAutocomplete({
         value={search}
         onChange={e => handleInputChange(e.target.value)}
         onFocus={() => setIsOpen(true)}
-        onBlur={onBlur}
         onKeyDown={handleKeyDown}
         placeholder={placeholder || t('shows.editor.placeholder.venue') || 'Enter venue name...'}
         className={className}
@@ -159,7 +156,10 @@ export function VenueAutocomplete({
                   <button
                     key={venue.id}
                     type="button"
-                    onClick={() => handleSelect(venue)}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelect(venue);
+                    }}
                     className="w-full px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex flex-col gap-1 border-b border-slate-100 dark:border-white/5 last:border-0"
                   >
                     <span className="font-semibold text-slate-900 dark:text-white text-sm">
@@ -182,7 +182,10 @@ export function VenueAutocomplete({
           ) : search.trim() && (
             <button
               type="button"
-              onClick={handleCreateNew}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleCreateNew();
+              }}
               className="w-full px-4 py-4 text-left hover:bg-accent-500/10 transition-all flex items-center gap-3 text-accent-500 dark:text-accent-400"
             >
               <div className="w-8 h-8 rounded-full bg-accent-500/10 flex items-center justify-center">

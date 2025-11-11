@@ -1289,6 +1289,24 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   </div>
                 </div>
 
+                {/* Fee Input */}
+                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-4 space-y-3">
+                  <FeeFieldAdvanced
+                    fee={draft.fee}
+                    onFeeChange={(newFee) => setDraft((d: ShowDraft) => ({ ...d, fee: newFee }))}
+                    currency={feeCurrency || baseCurrency}
+                    currencySymbol={(() => {
+                      const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', AUD: 'A$' };
+                      return symbols[feeCurrency || baseCurrency] || '€';
+                    })()}
+                    costs={draft.costs || []}
+                    whtPct={draft.whtPct || 0}
+                    fmtMoney={fmtMoney}
+                    error={validation.fee ? String(t(validation.fee) || 'Invalid fee') : undefined}
+                    disabled={false}
+                  />
+                </div>
+
                 {/* Promoter Field with Autocomplete */}
                 <label className="flex flex-col gap-1.5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
@@ -1401,24 +1419,6 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       )}
                     </div>
                   )}
-                </div>
-
-                {/* Fee Input */}
-                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-4 space-y-3">
-                  <FeeFieldAdvanced
-                    fee={draft.fee}
-                    onFeeChange={(newFee) => setDraft((d: ShowDraft) => ({ ...d, fee: newFee }))}
-                    currency={feeCurrency || baseCurrency}
-                    currencySymbol={(() => {
-                      const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', AUD: 'A$' };
-                      return symbols[feeCurrency || baseCurrency] || '€';
-                    })()}
-                    costs={draft.costs || []}
-                    whtPct={draft.whtPct || 0}
-                    fmtMoney={fmtMoney}
-                    error={validation.fee ? String(t(validation.fee) || 'Invalid fee') : undefined}
-                    disabled={false}
-                  />
                 </div>
 
                 {/* Agencies & Commissions */}

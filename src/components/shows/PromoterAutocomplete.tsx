@@ -85,7 +85,6 @@ export function PromoterAutocomplete({
     setSearch(displayName);
     onChange(displayName, promoter.id);
     setIsOpen(false);
-    inputRef.current?.blur(); // Close dropdown by removing focus
   };
 
   const handleCreateNew = () => {
@@ -115,7 +114,6 @@ export function PromoterAutocomplete({
     setSearch(displayName);
     onChange(displayName, newContact.id);
     setIsOpen(false);
-    inputRef.current?.blur(); // Close dropdown
   };
 
   const handleInputChange = (newValue: string) => {
@@ -143,7 +141,6 @@ export function PromoterAutocomplete({
         value={search}
         onChange={e => handleInputChange(e.target.value)}
         onFocus={() => setIsOpen(true)}
-        onBlur={onBlur}
         onKeyDown={handleKeyDown}
         placeholder={placeholder || t('shows.editor.placeholder.promoter') || 'Enter promoter name...'}
         className={className}
@@ -167,7 +164,10 @@ export function PromoterAutocomplete({
                     <button
                       key={promoter.id}
                       type="button"
-                      onClick={() => handleSelect(promoter)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSelect(promoter);
+                      }}
                       className="w-full px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex flex-col gap-1 border-b border-slate-100 dark:border-white/5 last:border-0"
                     >
                       <span className="font-semibold text-slate-900 dark:text-white text-sm">
@@ -191,7 +191,10 @@ export function PromoterAutocomplete({
           ) : search.trim() && (
             <button
               type="button"
-              onClick={handleCreateNew}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleCreateNew();
+              }}
               className="w-full px-4 py-4 text-left hover:bg-accent-500/10 transition-all flex items-center gap-3 text-accent-500 dark:text-accent-400"
             >
               <div className="w-8 h-8 rounded-full bg-accent-500/10 flex items-center justify-center">

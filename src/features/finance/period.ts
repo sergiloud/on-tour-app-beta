@@ -45,7 +45,7 @@ export function rangeForPreset(preset: PeriodPreset, now = new Date()): DateRang
   }
   if (preset === 'YTD') {
     const from = new Date(y, 0, 1);
-    const to = now;
+    const to = new Date(y, 11, 31); // Full year: Dec 31
     return { from: `${from.getFullYear()}-${pad(from.getMonth()+1)}-${pad(from.getDate())}`, to: `${to.getFullYear()}-${pad(to.getMonth()+1)}-${pad(to.getDate())}` };
   }
   // CUSTOM: return current range by default; caller should override

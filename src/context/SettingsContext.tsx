@@ -93,11 +93,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [maskAmounts, _setMaskAmounts] = useState<boolean>(false);
   const [presentationMode, setPresentationMode] = useState<boolean>(userPrefs?.presentationMode ?? !!legacyInitial.presentationMode);
   const [dashboardView, setDashboardView] = useState<DashboardView>((legacyInitial.dashboardView as DashboardView) || 'default');
-  // Build default range using local date parts to avoid UTC date shifts
-  const defaultRange = (() => { const now = new Date(); const y = now.getFullYear(); const m = now.getMonth(); const pad = (n: number) => String(n).padStart(2, '0'); const from = `${y}-${pad(m + 1)}-01`; const to = `${y}-${pad(m + 1)}-${pad(new Date(y, m + 1, 0).getDate())}`; return { from, to }; })();
+  // Build default range for THIS YEAR (Jan 1 - Dec 31 of current year)
+  const defaultRange = (() => { const now = new Date(); const y = now.getFullYear(); const from = `${y}-01-01`; const to = `${y}-12-31`; return { from, to }; })();
   const [region, setRegion] = useState<Region>((userPrefs?.defaultRegion as any) || (legacyInitial.region as any) || 'all');
   const [dateRange, setDateRange] = useState<DateRange>(legacyInitial.dateRange && legacyInitial.dateRange.from && legacyInitial.dateRange.to ? legacyInitial.dateRange : defaultRange);
-  const [periodPreset, setPeriodPresetState] = useState<PeriodPreset>(((legacyInitial as any).periodPreset as PeriodPreset) || 'MTD');
+  const [periodPreset, setPeriodPresetState] = useState<PeriodPreset>(((legacyInitial as any).periodPreset as PeriodPreset) || 'YTD');
   const [comparePrev, setComparePrevState] = useState<boolean>(userPrefs?.comparePrev ?? !!(legacyInitial as any).comparePrev);
   const [selectedStatuses, setSelectedStatusesState] = useState<Array<'confirmed' | 'pending' | 'offer' | 'canceled' | 'archived' | 'postponed'>>(userPrefs?.defaultStatuses || (legacyInitial as any).selectedStatuses || ['confirmed', 'pending', 'offer']);
   const [bookingAgencies, setBookingAgencies] = useState<AgencyConfig[]>(() => (legacyInitial as any).bookingAgencies || []);

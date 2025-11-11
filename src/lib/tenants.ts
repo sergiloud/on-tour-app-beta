@@ -55,20 +55,57 @@ function set(key: string, value: any) { try { secureStorage.setItem(key, value);
 // Idempotent seed: merges by id without duplicating. Only runs client-side.
 export function ensureDemoTenants() {
   try {
-    // PRODUCTION BETA: Clear all demo data from localStorage
-    // All data should now come from Firestore only
-    console.log('[Tenants] Production mode - clearing demo data from localStorage');
+    // PRODUCTION BETA: Remove ONLY demo orgs, preserve user orgs
+    // User data should come from Firestore but may also be in localStorage
+    console.log('[Tenants] Production mode - removing demo orgs only');
+    
+    // Only remove KNOWN demo org IDs, not ALL orgs
+    const DEMO_ORG_IDS = [
+      ORG_ARTIST_DANNY,
+      ORG_ARTIST_DANNY_V2,
+      ORG_ARTIST_PROPHECY,
+      ORG_AGENCY_SHALIZI,
+      ORG_AGENCY_A2G,
+    ];
     
     try {
-      secureStorage.removeItem(K_ORGS);
-      secureStorage.removeItem(K_USERS);
-      secureStorage.removeItem(K_MEMBERS);
-      secureStorage.removeItem(K_TEAMS);
-      secureStorage.removeItem(K_LINKS);
-      // Don't clear K_CURRENT as it might be a real user's org ID
-      console.log('[Tenants] Demo data cleared successfully');
+      // Filter out demo orgs, keep user orgs
+      const orgs = get<Org[]>(K_ORGS, []);
+      const userOrgs = orgs.filter(o => !DEMO_ORG_IDS.includes(o.id));
+      set(K_ORGS, userOrgs);
+      
+      // Get set of user org IDs for filtering related data
+      const userOrgIds = new Set(userOrgs.map(o => o.id));
+      
+      // Keep users only (Users don't have orgId, they're shared across orgs via memberships)
+      // We'll clean them up via memberships
+      const users = get<User[]>(K_USERS, []);
+      
+      // Filter out demo memberships - keep only memberships for user orgs
+      const members = get<Membership[]>(K_MEMBERS, []);
+      const userMembers = members.filter(m => userOrgIds.has(m.orgId));
+      set(K_MEMBERS, userMembers);
+      
+      // Get set of user IDs still referenced in memberships
+      const userIdsInUse = new Set(userMembers.map(m => m.userId));
+      const userUsers = users.filter(u => userIdsInUse.has(u.id));
+      set(K_USERS, userUsers);
+      
+      // Filter out demo teams
+      const teams = get<Team[]>(K_TEAMS, []);
+      const userTeams = teams.filter(t => userOrgIds.has(t.orgId));
+      set(K_TEAMS, userTeams);
+      
+      // Filter out demo links - keep only links where both agency and artist are user orgs
+      const links = get<Link[]>(K_LINKS, []);
+      const userLinks = links.filter(l => 
+        userOrgIds.has(l.agencyOrgId) || userOrgIds.has(l.artistOrgId)
+      );
+      set(K_LINKS, userLinks);
+      
+      console.log('[Tenants] Demo data removed, user data preserved');
     } catch (e) {
-      console.warn('[Tenants] Could not clear demo data:', e);
+      console.warn('[Tenants] Could not remove demo data:', e);
     }
     
     return;

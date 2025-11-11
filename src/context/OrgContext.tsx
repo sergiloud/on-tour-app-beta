@@ -9,12 +9,14 @@ import {
   getSeatsUsage,
   getOrgSettings,
   upsertOrgSettings,
+  setCurrentOrgId,
   type Org,
   type OrgSettings,
   type Link,
   type Team,
 } from '../lib/tenants';
 import { secureStorage } from '../lib/secureStorage';
+import { useAuth } from './AuthContext';
 
 interface OrgCtx {
   orgId: string;
@@ -31,8 +33,74 @@ interface OrgCtx {
 const OrgContext = createContext<OrgCtx | null>(null);
 
 export const OrgProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { userId } = useAuth();
   const [orgId, setOrgId] = useState<string>(() => { try { ensureDemoTenants(); return getCurrentOrgId(); } catch { return ''; } });
   const [version, setVersion] = useState(0);
+  const [firestoreLoaded, setFirestoreLoaded] = useState(false);
+
+  // Load orgs from Firestore if localStorage is empty
+  useEffect(() => {
+    if (!userId || firestoreLoaded) return;
+    
+    const currentOrg = getOrgById(orgId);
+    
+    // If we have an orgId but no org data, try loading from Firestore
+    if (orgId && !currentOrg) {
+      console.log('[OrgContext] No org found in localStorage, loading from Firestore...');
+      
+      import('../services/firestoreOrgService').then(async ({ FirestoreOrgService }) => {
+        try {
+          const orgs = await FirestoreOrgService.getUserOrganizations(userId);
+          
+          if (orgs.length > 0) {
+            console.log(`[OrgContext] Loaded ${orgs.length} organizations from Firestore`);
+            
+            // Sync to localStorage
+            const K_ORGS = 'demo:orgs';
+            const existingOrgs = secureStorage.getItem<Org[]>(K_ORGS) || [];
+            const mergedOrgs = [...existingOrgs];
+            
+            orgs.forEach(fsOrg => {
+              const localOrg: Org = {
+                id: fsOrg.id,
+                type: fsOrg.type,
+                name: fsOrg.name,
+                seatLimit: fsOrg.seatLimit,
+                guestLimit: fsOrg.guestLimit
+              };
+              
+              const existingIndex = mergedOrgs.findIndex(o => o.id === fsOrg.id);
+              if (existingIndex >= 0) {
+                mergedOrgs[existingIndex] = localOrg;
+              } else {
+                mergedOrgs.push(localOrg);
+              }
+            });
+            
+            secureStorage.setItem(K_ORGS, mergedOrgs);
+            
+            // Set current org if not set
+            const firstOrg = orgs[0];
+            if (!orgId && firstOrg) {
+              setCurrentOrgId(firstOrg.id);
+              setOrgId(firstOrg.id);
+            }
+            
+            setVersion(v => v + 1);
+            setFirestoreLoaded(true);
+          } else {
+            console.log('[OrgContext] No organizations found in Firestore');
+            setFirestoreLoaded(true);
+          }
+        } catch (err) {
+          console.error('[OrgContext] Failed to load from Firestore:', err);
+          setFirestoreLoaded(true);
+        }
+      });
+    } else {
+      setFirestoreLoaded(true);
+    }
+  }, [userId, orgId, firestoreLoaded]);
 
   useEffect(() => {
     const onTenant = (e: any) => { try { setOrgId(e?.detail?.id); setVersion(v => v + 1); } catch { } };

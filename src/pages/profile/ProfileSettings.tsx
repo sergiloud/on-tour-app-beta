@@ -18,7 +18,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useHighContrast } from '../../context/HighContrastContext';
 import PageHeader from '../../components/common/PageHeader';
 
-type Tab = 'profile' | 'account' | 'preferences' | 'notifications' | 'privacy' | 'integrations' | 'data';
+type Tab = 'profile' | 'account' | 'preferences' | 'agencies' | 'notifications' | 'privacy' | 'integrations' | 'data';
 
 // Modern Toggle Switch
 const Toggle: React.FC<{ 
@@ -154,6 +154,251 @@ const Section: React.FC<{
     </div>
   </div>
 );
+
+// Agencies Manager Component
+const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type }) => {
+  const { bookingAgencies, managementAgencies, addAgency, updateAgency, removeAgency } = useSettings();
+  const agencies = type === 'booking' ? bookingAgencies : managementAgencies;
+  const maxAgencies = 5;
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    commissionPct: 15,
+    territoryMode: 'worldwide' as 'worldwide' | 'continents' | 'countries',
+    continents: [] as string[],
+    countries: [] as string[],
+    notes: ''
+  });
+
+  const handleAdd = () => {
+    if (agencies.length >= maxAgencies) {
+      alert(`Maximum ${maxAgencies} ${type} agencies allowed`);
+      return;
+    }
+
+    const result = addAgency({
+      name: formData.name || `${type} Agency ${agencies.length + 1}`,
+      type,
+      commissionPct: formData.commissionPct,
+      territoryMode: formData.territoryMode,
+      continents: formData.continents.length > 0 ? formData.continents as any : undefined,
+      countries: formData.countries.length > 0 ? formData.countries : undefined,
+      notes: formData.notes || undefined
+    });
+
+    if (result.ok) {
+      resetForm();
+    } else {
+      alert(result.reason || 'Could not add agency');
+    }
+  };
+
+  const handleUpdate = (id: string) => {
+    updateAgency(id, {
+      name: formData.name,
+      commissionPct: formData.commissionPct,
+      territoryMode: formData.territoryMode,
+      continents: formData.continents.length > 0 ? formData.continents as any : undefined,
+      countries: formData.countries.length > 0 ? formData.countries : undefined,
+      notes: formData.notes || undefined
+    });
+    setEditingId(null);
+    resetForm();
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Delete this agency?')) {
+      removeAgency(id);
+    }
+  };
+
+  const handleEdit = (agency: any) => {
+    setEditingId(agency.id);
+    setFormData({
+      name: agency.name,
+      commissionPct: agency.commissionPct,
+      territoryMode: agency.territoryMode || 'worldwide',
+      continents: agency.continents || [],
+      countries: agency.countries || [],
+      notes: agency.notes || ''
+    });
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      commissionPct: 15,
+      territoryMode: 'worldwide',
+      continents: [],
+      countries: [],
+      notes: ''
+    });
+    setEditingId(null);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Agency List */}
+      <div className="space-y-3">
+        {agencies.map((agency) => (
+          <div key={agency.id} className="p-4 rounded-lg bg-white/5 border border-white/10 hover:border-accent-500/30 transition-colors">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <h4 className="font-medium text-slate-900 dark:text-white">{agency.name}</h4>
+                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-accent-500/20 text-accent-700 dark:text-accent-300">
+                    {agency.commissionPct}%
+                  </span>
+                </div>
+                <div className="mt-1 text-xs text-slate-600 dark:text-white/60 space-y-0.5">
+                  <div>Territory: {agency.territoryMode === 'worldwide' ? 'Worldwide' : agency.territoryMode === 'continents' ? `Continents (${agency.continents?.length || 0})` : `Countries (${agency.countries?.length || 0})`}</div>
+                  {agency.notes && <div>Notes: {agency.notes}</div>}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleEdit(agency)}
+                  className="p-2 rounded-lg hover:bg-white/10 text-slate-600 dark:text-white/70 hover:text-accent-500"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(agency.id)}
+                  className="p-2 rounded-lg hover:bg-red-500/10 text-slate-600 dark:text-white/70 hover:text-red-500"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add/Edit Form */}
+      {(agencies.length < maxAgencies || editingId) && (
+        <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-slate-900 dark:text-white">
+              {editingId ? 'Edit Agency' : `Add ${type.charAt(0).toUpperCase() + type.slice(1)} Agency`}
+            </h4>
+            {editingId && (
+              <button onClick={resetForm} className="text-xs text-slate-600 dark:text-white/60 hover:text-accent-500">
+                Cancel
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Agency Name"
+              value={formData.name}
+              onChange={(value) => setFormData({ ...formData, name: value })}
+              placeholder={`e.g., ${type === 'booking' ? 'CAA' : 'Management Co'}`}
+            />
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-white/90">
+                Commission %
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.5"
+                value={formData.commissionPct}
+                onChange={(e) => setFormData({ ...formData, commissionPct: parseFloat(e.target.value) || 0 })}
+                className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all"
+              />
+            </div>
+          </div>
+
+          {type === 'booking' && (
+            <div className="space-y-3">
+              <Select
+                label="Territory Mode"
+                value={formData.territoryMode}
+                onChange={(value) => setFormData({ ...formData, territoryMode: value as any })}
+                options={[
+                  { value: 'worldwide', label: 'Worldwide' },
+                  { value: 'continents', label: 'Specific Continents' },
+                  { value: 'countries', label: 'Specific Countries' }
+                ]}
+              />
+
+              {formData.territoryMode === 'continents' && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/90">
+                    Continents (comma-separated: NA, SA, EU, AF, AS, OC)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.continents.join(', ')}
+                    onChange={(e) => setFormData({ ...formData, continents: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                    placeholder="e.g., NA, EU"
+                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all"
+                  />
+                </div>
+              )}
+
+              {formData.territoryMode === 'countries' && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/90">
+                    Countries (comma-separated ISO2 codes)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.countries.join(', ')}
+                    onChange={(e) => setFormData({ ...formData, countries: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                    placeholder="e.g., US, GB, FR"
+                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-white/90">
+              Notes (optional)
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={2}
+              placeholder="Additional notes..."
+              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all resize-none"
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={editingId ? () => handleUpdate(editingId) : handleAdd}
+              disabled={!formData.name.trim()}
+              className="px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {editingId ? 'Update' : 'Add'} Agency
+            </button>
+          </div>
+        </div>
+      )}
+
+      {agencies.length === 0 && !editingId && (
+        <div className="text-center py-8 text-slate-500 dark:text-white/50">
+          <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No {type} agencies added yet</p>
+          <p className="text-xs mt-1">Add up to {maxAgencies} agencies</p>
+        </div>
+      )}
+
+      {agencies.length >= maxAgencies && !editingId && (
+        <p className="text-xs text-center text-slate-500 dark:text-white/50">
+          Maximum {maxAgencies} {type} agencies reached
+        </p>
+      )}
+    </div>
+  );
+};
 
 export const ProfileSettings: React.FC = () => {
   const { profile, updateProfile, updatePrefs, prefs, userId } = useAuth();
@@ -360,6 +605,7 @@ export const ProfileSettings: React.FC = () => {
     { id: 'profile' as Tab, label: 'Profile', icon: User },
     { id: 'account' as Tab, label: 'Account', icon: Settings },
     { id: 'preferences' as Tab, label: 'Preferences', icon: Palette },
+    { id: 'agencies' as Tab, label: 'Agencies & Commissions', icon: Users },
     { id: 'notifications' as Tab, label: 'Notifications', icon: Bell },
     { id: 'privacy' as Tab, label: 'Privacy & Security', icon: Shield },
     { id: 'data' as Tab, label: 'Data & Export', icon: Database },
@@ -1080,6 +1326,27 @@ export const ProfileSettings: React.FC = () => {
                     )}
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Agencies & Commissions Tab */}
+            {activeTab === 'agencies' && (
+              <div className="space-y-6">
+                <Section
+                  title="Management Agencies"
+                  description="Add up to 5 management agencies with their commission rates"
+                  icon={<Users className="w-5 h-5" />}
+                >
+                  <AgenciesManager type="management" />
+                </Section>
+
+                <Section
+                  title="Booking Agencies"
+                  description="Add up to 5 booking agencies with their commission rates and territories"
+                  icon={<Users className="w-5 h-5" />}
+                >
+                  <AgenciesManager type="booking" />
+                </Section>
               </div>
             )}
 

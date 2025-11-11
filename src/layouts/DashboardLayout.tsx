@@ -21,8 +21,42 @@ import SubNav from '../components/common/SubNav';
 
 function useNavItems(collapsed: boolean) {
   const { org } = useOrg();
-  if (!org) return [] as Array<{ to: string; labelKey: string; end?: boolean; section?: string; separator?: boolean; separatorLabel?: string }>;
-  const commonStart = [{ to: '/dashboard', labelKey: 'nav.dashboard', end: true }];
+  
+  // Type for navigation items
+  type NavItem = { 
+    to: string; 
+    labelKey: string; 
+    end?: boolean; 
+    section?: string; 
+    separator?: boolean; 
+    separatorLabel?: string;
+  };
+  
+  // Always show basic navigation items, even without org
+  const commonStart: NavItem[] = [{ to: '/dashboard', labelKey: 'nav.dashboard', end: true }];
+  
+  // If no org, show minimal navigation (user can still access dashboard/onboarding)
+  if (!org) {
+    return [
+      ...commonStart,
+      { to: '/dashboard/shows', labelKey: 'nav.shows' },
+      { to: '/dashboard/travel', labelKey: 'nav.travel' },
+      { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
+      { to: '/dashboard/finance', labelKey: 'nav.finance' },
+      { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
+      { to: '', labelKey: '', separator: true, separatorLabel: collapsed ? '' : 'En desarrollo' },
+      { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
+      { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },
+      { to: '/dashboard/org/clients', labelKey: 'nav.clients', section: 'org' },
+      { to: '/dashboard/org/branding', labelKey: 'nav.branding', section: 'org' },
+      { to: '/dashboard/org/billing', labelKey: 'nav.billing', section: 'org' },
+      { to: '/dashboard/org/integrations', labelKey: 'nav.integrations', section: 'org' },
+      { to: '/dashboard/org/documents', labelKey: 'nav.documents', section: 'org' },
+      { to: '/dashboard/org/reports', labelKey: 'nav.reports', section: 'org' },
+      { to: '/dashboard/org/links', labelKey: 'nav.links', section: 'org' },
+    ] as NavItem[];
+  }
+  
   // Both artist and agency get full access to all sections
   return [
     ...commonStart,
@@ -42,7 +76,7 @@ function useNavItems(collapsed: boolean) {
     { to: '/dashboard/org/documents', labelKey: 'nav.documents', section: 'org' },
     { to: '/dashboard/org/reports', labelKey: 'nav.reports', section: 'org' },
     { to: '/dashboard/org/links', labelKey: 'nav.links', section: 'org' },
-  ];
+  ] as NavItem[];
 }
 
 export const DashboardLayout: React.FC = () => {

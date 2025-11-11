@@ -118,7 +118,7 @@ const Checklist: React.FC<{ items: string[]; storageKey: string; done: boolean[]
         {isComplete && onToggleExpanded && (
           <button
             onClick={onToggleExpanded}
-            className="text-xs text-slate-400 dark:text-white/60 hover:text-slate-700 dark:text-slate-700 dark:text-white/90 transition-colors"
+            className="text-xs text-slate-400 dark:text-white/60 hover:text-white/90 transition-colors"
           >
             {expanded ? '−' : '+'}
           </button>
@@ -132,7 +132,7 @@ const Checklist: React.FC<{ items: string[]; storageKey: string; done: boolean[]
           {onToggleExpanded && (
             <button
               onClick={onToggleExpanded}
-              className="text-xs text-slate-400 dark:text-white/60 hover:text-slate-700 dark:text-slate-700 dark:text-white/90 transition-colors ml-auto"
+              className="text-xs text-slate-400 dark:text-white/60 hover:text-white/90 transition-colors ml-auto"
             >
               Show details
             </button>
@@ -247,52 +247,56 @@ const AssignmentMatrix: React.FC<{ orgId: string; orgName: string }> = ({ orgId,
 };
 
 const PriorityActionsInbox: React.FC<{ isAgency: boolean; onActionClick: (action: string) => void; orgName: string }> = ({ isAgency, onActionClick, orgName }) => {
-  // Mock priority actions - in real app, these would come from business logic
-  const actions = isAgency ? [
-    {
-      id: 'contract_expiring',
-      priority: 'high' as const,
-      title: 'Show contract expires in 3 days',
-      description: `Review and sign the updated contract for ${orgName}'s upcoming performance`,
-      action: 'Review contract',
-    },
-    {
-      id: 'invoice_overdue',
-      priority: 'high' as const,
-      title: 'Show invoice is 15 days overdue',
-      description: 'Send payment reminder to the venue for the completed show',
-      action: 'Send reminder',
-    },
-    {
-      id: 'flight_alert',
-      priority: 'medium' as const,
-      title: 'Tour flights have price drop alert',
-      description: 'Flight prices for upcoming shows have dropped by 12%. Consider rebooking.',
-      action: 'Check flights',
-    }
-  ] : [
-    {
-      id: 'contract_pending',
-      priority: 'high' as const,
-      title: 'Show contract needs your review',
-      description: 'Your manager has sent a show contract for your approval',
-      action: 'Review contract',
-    },
-    {
-      id: 'payment_due',
-      priority: 'medium' as const,
-      title: 'Outstanding payment from recent show',
-      description: 'Payment for a recent performance is 7 days overdue from the venue',
-      action: 'Follow up',
-    },
-    {
-      id: 'calendar_sync',
-      priority: 'low' as const,
-      title: 'Calendar integration needs attention',
-      description: 'Your Google Calendar hasn\'t synced for 2 days. Some events may be missing.',
-      action: 'Fix sync',
-    }
-  ];
+  const { shows } = useFilteredShows();
+  
+  // Generate real priority actions based on shows data
+  const actions = useMemo(() => {
+    const now = Date.now();
+    const DAY = 86400000;
+    const result: Array<{
+      id: string;
+      priority: 'high' | 'medium' | 'low';
+      title: string;
+      description: string;
+      action: string;
+    }> = [];
+    
+    // Check for shows without confirmed contracts in next 7 days
+    shows.forEach((show) => {
+      if (!show.date) return;
+      const showDate = new Date(show.date).getTime();
+      const daysUntil = Math.floor((showDate - now) / DAY);
+      
+      if (daysUntil > 0 && daysUntil <= 7 && show.status !== 'confirmed') {
+        result.push({
+          id: `contract_${show.id}`,
+          priority: daysUntil <= 3 ? 'high' : 'medium',
+          title: `Show needs confirmation in ${daysUntil} days`,
+          description: `${show.city || 'Venue'} show on ${new Date(show.date).toLocaleDateString()} requires contract confirmation`,
+          action: 'Review contract'
+        });
+      }
+      
+      // Check for shows with missing fee/cost data
+      if (daysUntil > 0 && daysUntil <= 30 && (!show.fee || !show.cost)) {
+        result.push({
+          id: `finance_${show.id}`,
+          priority: 'low',
+          title: `Missing financial data for ${show.city || 'show'}`,
+          description: `Complete fee and cost information for better budget tracking`,
+          action: 'Update finances'
+        });
+      }
+    });
+    
+    // Limit to 3 most urgent actions
+    return result
+      .sort((a, b) => {
+        const priority = { high: 0, medium: 1, low: 2 };
+        return priority[a.priority] - priority[b.priority];
+      })
+      .slice(0, 3);
+  }, [shows]);
 
   return (
     <motion.div
@@ -302,30 +306,40 @@ const PriorityActionsInbox: React.FC<{ isAgency: boolean; onActionClick: (action
       className="glass rounded-xl border border-slate-200 dark:border-white/10 p-4 md:p-5 bg-gradient-to-br from-slate-100 dark:from-white/8 to-white/3 hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300 space-y-4"
     >
       <OrgSectionHeader
-        title="Acciones Rápidas"
-        subtitle="Tareas críticas que requieren tu atención"
+        title={t('welcome.priorityActions') || 'Priority Actions'}
+        subtitle={t('welcome.priorityActions.subtitle') || 'Critical tasks requiring attention'}
       />
       <div className="space-y-3">
-        {actions.map((action) => (
-          <OrgActionCard
-            key={action.id}
-            id={action.id}
-            priority={action.priority}
-            title={action.title}
-            description={action.description}
-            action={action.action}
-            onAction={() => onActionClick(action.id)}
+        {actions.length === 0 ? (
+          <EmptyState
+            icon={<CheckCircle2 className="w-5 h-5" />}
+            title={t('welcome.noPriorityActions') || 'All caught up!'}
+            desc={t('welcome.noPriorityActions.desc') || 'No urgent actions at the moment'}
           />
-        ))}
+        ) : (
+          actions.map((action) => (
+            <OrgActionCard
+              key={action.id}
+              id={action.id}
+              priority={action.priority}
+              title={action.title}
+              description={action.description}
+              action={action.action}
+              onAction={() => onActionClick(action.id)}
+            />
+          ))
+        )}
       </div>
-      <div className="pt-3 border-t border-white/10">
-        <button
-          onClick={() => onActionClick('view_all')}
-          className="text-xs text-slate-400 dark:text-white/60 hover:text-slate-700 dark:text-slate-700 dark:text-white/90 hover:text-accent-300 transition-colors duration-300 font-semibold cursor-pointer"
-        >
-          Ver todas las tareas →
-        </button>
-      </div>
+      {actions.length > 0 && (
+        <div className="pt-3 border-t border-white/10">
+          <button
+            onClick={() => onActionClick('view_all')}
+            className="text-xs text-slate-400 dark:text-white/60 hover:text-accent-300 transition-colors duration-300 font-semibold cursor-pointer"
+          >
+            {t('welcome.viewAllTasks') || 'View all tasks'} →
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -395,23 +409,30 @@ const OrgOverview: React.FC = () => {
   // Build current and previous month snapshots for KPIs
   const snapshot = useMemo(() => buildFinanceSnapshot(), []);
   const prevSnapshot = useMemo(() => {
-    // For demo, create a previous snapshot with ~80% of current values
+    if (!snapshot) return null;
+    const now = new Date();
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    
+    const prevMonthShows = shows.filter(s => {
+      const showDate = new Date(s.date);
+      return showDate >= prevMonthDate && showDate <= prevMonthEnd;
+    });
+    
+    const prevMonthNet = prevMonthShows.reduce((sum, s) => sum + (s.fee || 0) - (s.cost || 0), 0);
+    const prevMonthIncome = prevMonthShows.reduce((sum, s) => sum + (s.fee || 0), 0);
+    const prevMonthExpenses = prevMonthShows.reduce((sum, s) => sum + (s.cost || 0), 0);
+    
     return {
-      ...snapshot,
       month: {
-        ...snapshot.month,
-        net: Math.round(snapshot.month.net * 0.8),
-        income: Math.round(snapshot.month.income * 0.8),
-        expenses: Math.round(snapshot.month.expenses * 0.8)
+        net: prevMonthNet,
+        income: prevMonthIncome,
+        expenses: prevMonthExpenses
       },
-      year: {
-        ...snapshot.year,
-        net: Math.round(snapshot.year.net * 0.8),
-        income: Math.round(snapshot.year.income * 0.8),
-        expenses: Math.round(snapshot.year.expenses * 0.8)
-      }
+      year: snapshot.year // Year data remains the same
     };
-  }, [snapshot]);
+  }, [snapshot, shows]);
+
 
   // Calculate show counts for current and previous month
   const currentMonthStats = useMemo(() => {
@@ -773,8 +794,8 @@ const OrgOverview: React.FC = () => {
                   </motion.span>
                 </motion.div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 dark:text-white/70">Avg. attendance</span>
-                  <span className="font-semibold text-slate-700 dark:text-white/90">2,450</span>
+                  <span className="text-slate-500 dark:text-white/70">{t('kpi.avgAttendance') || 'Avg. attendance'}</span>
+                  <span className="font-semibold text-slate-700 dark:text-white/90">N/A</span>
                 </div>
               </div>
             )}

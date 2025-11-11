@@ -471,43 +471,38 @@ export const Contacts: React.FC = () => {
             </div>
           ) : (
             <div ref={tableContainerRef} className="flex-1 overflow-auto">
-              <table className="w-full" style={{ tableLayout: 'fixed' }}>
-                <thead className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 z-10">
-                  <tr>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '20%' }}>Contacto</th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '20%' }}>Empresa / Cargo</th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '22%' }}>Info</th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '15%' }}>Ubicación</th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '11%' }}>Prioridad</th>
-                    <th className="text-right px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '12%' }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody 
-                  className="divide-y divide-slate-200 dark:divide-white/5"
-                  style={{
-                    height: `${rowVirtualizer.getTotalSize()}px`,
-                    position: 'relative',
-                  }}
-                >
-                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const contact = categoryFilteredContacts[virtualRow.index];
-                    if (!contact) return null;
-                    return (
-                      <tr 
-                        key={contact.id} 
-                        onClick={() => handleViewContact(contact)}
-                        className={`hover:bg-interactive-hover cursor-pointer transition-all duration-150 ${selectedContact?.id === contact.id ? 'bg-accent-500/10 border-l-2 border-accent-500' : ''}`}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: `${virtualRow.size}px`,
-                          transform: `translateY(${virtualRow.start}px)`,
-                        }}
-                      >
-                    <td className="px-6 py-4" style={{ width: '20%', maxWidth: '20%' }}>
-                      <div className="flex items-center gap-3 min-w-0">
+              {/* Header Grid */}
+              <div className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 z-10 grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4">
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Contacto</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Empresa / Cargo</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Info</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Ubicación</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Prioridad</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider text-right">Acciones</div>
+              </div>
+
+              {/* Virtual Rows */}
+              <div 
+                className="relative"
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const contact = categoryFilteredContacts[virtualRow.index];
+                  if (!contact) return null;
+                  return (
+                    <div
+                      key={contact.id} 
+                      onClick={() => handleViewContact(contact)}
+                      className={`absolute top-0 left-0 w-full grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4 border-b border-slate-200 dark:border-white/5 hover:bg-interactive-hover cursor-pointer transition-all duration-150 ${selectedContact?.id === contact.id ? 'bg-accent-500/10 border-l-2 border-accent-500' : ''}`}
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      {/* Contacto */}
+                      <div className="flex items-center gap-3 min-w-0 pr-4">
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-sm font-semibold shadow-lg shadow-accent-500/20 flex-shrink-0">
                           {contact.firstName[0]}{contact.lastName[0]}
                         </div>
@@ -518,31 +513,39 @@ export const Contacts: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4" style={{ width: '20%', maxWidth: '20%' }}>
-                      <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || '—'}</p>
-                      <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || 'Sin cargo'}</p>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-theme-secondary" style={{ width: '22%', maxWidth: '22%' }}>
-                      {contact.email && <div className="flex items-center gap-2 mb-1 min-w-0"><Mail className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.email}</span></div>}
-                      {contact.phone && <div className="flex items-center gap-2 min-w-0"><Phone className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.phone}</span></div>}
-                    </td>
-                    <td className="px-6 py-4" style={{ width: '15%', maxWidth: '15%' }}>
-                      {contact.city || contact.country ? (
-                        <div className="flex items-center gap-2 text-sm text-theme-secondary min-w-0">
-                          <MapPin className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" />
-                          <span className="truncate">{contact.city ? `${contact.city}, ` : ''}{contact.country}</span>
-                        </div>
-                      ) : <span className="text-slate-400 dark:text-white/40 text-xs">—</span>}
-                    </td>
-                    <td className="px-6 py-4" style={{ width: '11%', maxWidth: '11%' }}>
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold inline-block ${
-                        contact.priority === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
-                        contact.priority === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
-                        'bg-green-500/15 text-green-400 border border-green-500/30'
-                      }`}>{contact.priority === 'high' ? 'Alta' : contact.priority === 'medium' ? 'Media' : 'Baja'}</span>
-                    </td>
-                    <td className="px-6 py-4" style={{ width: '12%', maxWidth: '12%' }}>
+
+                      {/* Empresa / Cargo */}
+                      <div className="min-w-0 pr-4">
+                        <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || '—'}</p>
+                        <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || 'Sin cargo'}</p>
+                      </div>
+
+                      {/* Info */}
+                      <div className="min-w-0 pr-4 text-sm text-theme-secondary">
+                        {contact.email && <div className="flex items-center gap-2 mb-1 min-w-0"><Mail className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.email}</span></div>}
+                        {contact.phone && <div className="flex items-center gap-2 min-w-0"><Phone className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.phone}</span></div>}
+                      </div>
+
+                      {/* Ubicación */}
+                      <div className="min-w-0 pr-4">
+                        {contact.city || contact.country ? (
+                          <div className="flex items-center gap-2 text-sm text-theme-secondary min-w-0">
+                            <MapPin className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" />
+                            <span className="truncate">{contact.city ? `${contact.city}, ` : ''}{contact.country}</span>
+                          </div>
+                        ) : <span className="text-slate-400 dark:text-white/40 text-xs">—</span>}
+                      </div>
+
+                      {/* Prioridad */}
+                      <div className="pr-4">
+                        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold inline-block ${
+                          contact.priority === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
+                          contact.priority === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
+                          'bg-green-500/15 text-green-400 border border-green-500/30'
+                        }`}>{contact.priority === 'high' ? 'Alta' : contact.priority === 'medium' ? 'Media' : 'Baja'}</span>
+                      </div>
+
+                      {/* Acciones */}
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={(e) => { e.stopPropagation(); handleViewContact(contact!); }}
                           className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400 transition-all duration-150" title="Ver">
@@ -557,12 +560,10 @@ export const Contacts: React.FC = () => {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

@@ -1396,6 +1396,24 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   )}
                 </div>
 
+                {/* Fee Input */}
+                <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-4 space-y-3">
+                  <FeeFieldAdvanced
+                    fee={draft.fee}
+                    onFeeChange={(newFee) => setDraft((d: ShowDraft) => ({ ...d, fee: newFee }))}
+                    currency={feeCurrency || baseCurrency}
+                    currencySymbol={(() => {
+                      const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', AUD: 'A$' };
+                      return symbols[feeCurrency || baseCurrency] || '€';
+                    })()}
+                    costs={(draft as any).costs || []}
+                    whtPct={(draft as any).whtPct || 0}
+                    fmtMoney={fmtMoney}
+                    error={validation.fee ? String(t(validation.fee) || 'Invalid fee') : undefined}
+                    disabled={false}
+                  />
+                </div>
+
                 {/* Agencies & Commissions */}
                 <div className="glass rounded-[10px] border border-slate-200 dark:border-white/10 p-3 space-y-2">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/60">

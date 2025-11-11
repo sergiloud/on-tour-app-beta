@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useShowModal } from '../context/ShowModalContext';
-import { useShows } from '../hooks/useShows';
-import ShowEditorDrawer from '../features/shows/editor/ShowEditorDrawer';
-import { trackEvent } from '../lib/telemetry';
-import { announce } from '../lib/announcer';
+import { useShowModal } from '../../context/ShowModalContext';
+import { useShows } from '../../hooks/useShows';
+import ShowEditorDrawer from '../../features/shows/editor/ShowEditorDrawer';
+import { trackEvent } from '../../lib/telemetry';
+import { announce } from '../../lib/announcer';
 
 export const GlobalShowModal: React.FC = () => {
     const { isOpen, mode, draft, close } = useShowModal();

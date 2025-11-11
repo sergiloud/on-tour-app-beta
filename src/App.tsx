@@ -4,7 +4,7 @@ import { AppRouter } from './routes/AppRouter';
 import { ToastProvider } from './ui/Toast';
 import { AuthProvider } from './context/AuthContext';
 import { ShowModalProvider } from './context/ShowModalContext';
-import { GlobalShowModal } from './components/GlobalShowModal';
+import { GlobalShowModal } from './components/common/GlobalShowModal';
 import { PWAComponents } from './components/pwa/PWAComponents';
 import { prefetch } from './routes/prefetch';
 import { useNetworkStatus } from './hooks/useNetworkStatus';

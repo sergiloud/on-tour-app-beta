@@ -10,11 +10,37 @@ export type UserProfile = {
   email: string;
   avatarUrl?: string;
   bio?: string;
-  // demo notification toggles
+  // Contact info
+  phone?: string;
+  location?: string;
+  website?: string;
+  // Social links
+  twitter?: string;
+  instagram?: string;
+  facebook?: string;
+  linkedin?: string;
+  spotify?: string;
+  // Notification preferences
   notifyEmail?: boolean;
   notifySlack?: boolean;
+  notifyPush?: boolean;
+  notifyInApp?: boolean;
+  // Notification granular settings
+  notifyShowUpdates?: boolean;
+  notifyFinanceAlerts?: boolean;
+  notifyTravelChanges?: boolean;
+  notifyTeamActivity?: boolean;
+  notifySystemUpdates?: boolean;
+  // Privacy settings
+  profileVisibility?: 'public' | 'team' | 'private';
+  showEmail?: boolean;
+  showPhone?: boolean;
   // preferred default organization for multi-tenant demo
   defaultOrgId?: string;
+  // Account metadata
+  createdAt?: string;
+  lastLoginAt?: string;
+  timezone?: string;
 };
 
 export type UserPrefs = {
@@ -27,6 +53,15 @@ export type UserPrefs = {
   comparePrev: boolean;
   defaultRegion: 'all' | 'AMER' | 'EMEA' | 'APAC';
   defaultStatuses: Array<'confirmed' | 'pending' | 'offer' | 'canceled' | 'archived' | 'postponed'>;
+  // Additional preferences
+  dateFormat?: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
+  timeFormat?: '12h' | '24h';
+  firstDayOfWeek?: 0 | 1; // 0 = Sunday, 1 = Monday
+  autoSaveInterval?: number; // in minutes
+  compactView?: boolean;
+  showTutorials?: boolean;
+  enableAnalytics?: boolean;
+  enableCrashReports?: boolean;
 };
 
 const K_CURRENT = 'demo:currentUser';
@@ -53,7 +88,9 @@ const DEFAULT_PROFILE: UserProfile = { id: DEFAULT_USER, name: 'Demo User', emai
 const PROPHECY_PROFILE: UserProfile = { id: PROPHECY_USER, name: 'Prophecy Booking', email: 'booking@prophecyofficial.com', notifyEmail: true, notifySlack: false, defaultOrgId: ORG_ARTIST_PROPHECY };
 const DEFAULT_PREFS: UserPrefs = {
   lang: 'en', theme: 'auto', highContrast: false, currency: 'EUR', unit: 'km', presentationMode: false,
-  comparePrev: false, defaultRegion: 'all', defaultStatuses: ['confirmed', 'pending', 'offer']
+  comparePrev: false, defaultRegion: 'all', defaultStatuses: ['confirmed', 'pending', 'offer'],
+  dateFormat: 'DD/MM/YYYY', timeFormat: '24h', firstDayOfWeek: 1, autoSaveInterval: 5,
+  compactView: false, showTutorials: true, enableAnalytics: true, enableCrashReports: true
 };
 
 export function ensureDemoAuth() {
@@ -88,8 +125,24 @@ export function getUserProfile(id: string): UserProfile | undefined {
 }
 export function upsertUserProfile(p: UserProfile) {
   const map = get<Record<string, UserProfile>>(K_PROFILES, {});
-  // migrate missing notification flags to safe defaults
-  const next: UserProfile = { notifyEmail: true, notifySlack: false, defaultOrgId: p.defaultOrgId ?? DEFAULT_PROFILE.defaultOrgId, ...p };
+  // migrate missing fields to safe defaults
+  const next: UserProfile = { 
+    notifyEmail: true, 
+    notifySlack: false, 
+    notifyPush: true,
+    notifyInApp: true,
+    notifyShowUpdates: true,
+    notifyFinanceAlerts: true,
+    notifyTravelChanges: true,
+    notifyTeamActivity: false,
+    notifySystemUpdates: true,
+    profileVisibility: 'team',
+    showEmail: false,
+    showPhone: false,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    defaultOrgId: p.defaultOrgId ?? DEFAULT_PROFILE.defaultOrgId, 
+    ...p 
+  };
   map[p.id] = next; set(K_PROFILES, map);
   try { window.dispatchEvent(new CustomEvent('profile:updated', { detail: { id: p.id } } as any)); } catch { }
 }
@@ -98,10 +151,10 @@ export function getUserPrefs(id: string): UserPrefs | undefined {
   const map = get<Record<string, UserPrefs>>(K_PREFS, {});
   return map[id];
 }
-export function upsertUserPrefs(id: string, patch: Partial<UserPrefs>) {
+export function upsertUserPrefs(id: string, patch: Partial<UserPrefs>): UserPrefs {
   const map = get<Record<string, UserPrefs>>(K_PREFS, {});
-  const cur = map[id] ?? DEFAULT_PREFS;
-  const next: UserPrefs = { ...cur, ...patch } as UserPrefs;
+  const prev = map[id] || { ...DEFAULT_PREFS };
+  const next = { ...prev, ...patch };
   map[id] = next; set(K_PREFS, map);
   try { window.dispatchEvent(new CustomEvent('prefs:updated', { detail: { id } } as any)); } catch { }
   return next;

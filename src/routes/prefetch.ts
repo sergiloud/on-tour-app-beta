@@ -15,7 +15,7 @@ const loaders: Record<string, Loader> = {
   '/dashboard/mission/lab': () => import('../pages/dashboard/MissionControlLab'),
   '/dashboard/calendar': () => import('../pages/dashboard/Calendar'),
   '/dashboard/settings': () => import('../pages/dashboard/Settings'),
-  '/dashboard/profile': () => import('../pages/profile/ProfilePage'),
+  '/dashboard/profile': () => import('../pages/profile/ProfileSettings'),
   '/dashboard/org': () => import('../pages/org/OrgOverviewNew'),
   // '/login' is statically imported in AppRouter, no need to prefetch
   '/register': () => import('../pages/Register'),

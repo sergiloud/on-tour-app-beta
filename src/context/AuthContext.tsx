@@ -44,6 +44,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isDemoUser = id.startsWith('demo_') || id.includes('@demo.com');
     
     if (!isDemoUser) {
+      // Initialize profile service for real users
+      try {
+        import('../services/firestoreProfileService').then(({ FirestoreProfileService }) => {
+          FirestoreProfileService.initialize(id);
+        });
+      } catch (e) {
+        console.warn('Could not initialize profile service:', e);
+      }
+
       // Initialize ALL hybrid services for real users
       try {
         import('../services/hybridShowService').then(({ HybridShowService }) => {

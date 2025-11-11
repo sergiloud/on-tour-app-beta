@@ -30,7 +30,7 @@ const TravelWorkspacePage = React.lazy(() => import('../pages/dashboard/TravelWo
 const MissionControlLab = React.lazy(() => import('../pages/dashboard/MissionControlLab'));
 const Calendar = React.lazy(() => import('../pages/dashboard/Calendar'));
 const Settings = React.lazy(() => import('../pages/dashboard/Settings'));
-const ProfilePage = React.lazy(() => import('../pages/profile/ProfilePage'));
+const ProfilePage = React.lazy(() => import('../pages/profile/ProfileSettings'));
 const Story = React.lazy(() => import('../pages/dashboard/Story'));
 const DataSecurityPage = React.lazy(() => import('../pages/DataSecurityPage'));
 const WelcomePage = React.lazy(() => import('../pages/welcome/WelcomePage'));

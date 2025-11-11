@@ -366,7 +366,7 @@ export const ProfileSettings: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-dark-800/30">
       <PageHeader
         title={t('profile.settings.title') || 'Settings'}
       />
@@ -650,7 +650,7 @@ export const ProfileSettings: React.FC = () => {
                   icon={<User className="w-5 h-5" />}
                 >
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <div className="flex items-center justify-between p-4 rounded-lg glass border border-white/10">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
                           <User className="w-5 h-5 text-accent-500" />
@@ -671,7 +671,7 @@ export const ProfileSettings: React.FC = () => {
                       </button>
                     </div>
                     {profile.createdAt && (
-                      <div className="flex items-center gap-3 p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="flex items-center gap-3 p-4 rounded-lg glass border border-white/10">
                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                           <Calendar className="w-5 h-5 text-blue-500" />
                         </div>
@@ -688,7 +688,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     )}
                     {profile.lastLoginAt && (
-                      <div className="flex items-center gap-3 p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="flex items-center gap-3 p-4 rounded-lg glass border border-white/10">
                         <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
                           <Activity className="w-5 h-5 text-emerald-500" />
                         </div>
@@ -707,7 +707,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     )}
                     {profile.timezone && (
-                      <div className="flex items-center gap-3 p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="flex items-center gap-3 p-4 rounded-lg glass border border-white/10">
                         <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
                           <Globe className="w-5 h-5 text-purple-500" />
                         </div>
@@ -728,7 +728,7 @@ export const ProfileSettings: React.FC = () => {
                   <div className="space-y-3">
                     <button 
                       onClick={() => setShowPasswordChange(true)}
-                      className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all group"
+                      className="w-full flex items-center justify-between p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all group"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
@@ -744,7 +744,7 @@ export const ProfileSettings: React.FC = () => {
                       </svg>
                     </button>
 
-                    <button className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all group">
+                    <button className="w-full flex items-center justify-between p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all group">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                           <Shield className="w-5 h-5 text-blue-500" />
@@ -762,7 +762,7 @@ export const ProfileSettings: React.FC = () => {
                       </svg>
                     </button>
 
-                    <button className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all group">
+                    <button className="w-full flex items-center justify-between p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all group">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
                           <Activity className="w-5 h-5 text-purple-500" />
@@ -834,7 +834,7 @@ export const ProfileSettings: React.FC = () => {
                             <div className="flex gap-3 pt-2">
                               <button
                                 onClick={() => setShowPasswordChange(false)}
-                                className="flex-1 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/90 font-medium hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-white dark:bg-dark-800 text-slate-700 dark:text-white/90 font-medium hover:bg-white/10 transition-all"
                               >
                                 Cancel
                               </button>
@@ -879,7 +879,7 @@ export const ProfileSettings: React.FC = () => {
                       description="Choose your preferred color theme"
                     />
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
@@ -899,7 +899,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -986,7 +986,7 @@ export const ProfileSettings: React.FC = () => {
                   icon={<Zap className="w-5 h-5" />}
                 >
                   <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
@@ -1006,7 +1006,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -1026,7 +1026,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
@@ -1092,7 +1092,7 @@ export const ProfileSettings: React.FC = () => {
                   icon={<Bell className="w-5 h-5" />}
                 >
                   <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -1112,7 +1112,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
@@ -1132,7 +1132,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
@@ -1152,7 +1152,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
@@ -1180,7 +1180,7 @@ export const ProfileSettings: React.FC = () => {
                   icon={<AlertCircle className="w-5 h-5" />}
                 >
                   <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
@@ -1200,7 +1200,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
@@ -1220,7 +1220,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -1240,7 +1240,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
@@ -1260,7 +1260,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
@@ -1325,7 +1325,7 @@ export const ProfileSettings: React.FC = () => {
                   icon={<Eye className="w-5 h-5" />}
                 >
                   <div className="space-y-4">
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <div className="p-4 rounded-lg glass border border-white/10">
                       <Select
                         label="Profile Visibility"
                         value={privacy.profileVisibility}
@@ -1341,7 +1341,7 @@ export const ProfileSettings: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -1361,7 +1361,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <div className="p-4 rounded-lg glass border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
@@ -1417,7 +1417,7 @@ export const ProfileSettings: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="p-4 rounded-lg glass border border-white/10">
                         <div className="flex items-center gap-3 mb-2">
                           <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
                             <Lock className="w-4 h-4 text-purple-500" />
@@ -1429,7 +1429,7 @@ export const ProfileSettings: React.FC = () => {
                         </p>
                       </div>
 
-                      <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="p-4 rounded-lg glass border border-white/10">
                         <div className="flex items-center gap-3 mb-2">
                           <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
                             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -1441,7 +1441,7 @@ export const ProfileSettings: React.FC = () => {
                         </p>
                       </div>
 
-                      <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="p-4 rounded-lg glass border border-white/10">
                         <div className="flex items-center gap-3 mb-2">
                           <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
                             <Eye className="w-4 h-4 text-blue-500" />
@@ -1453,7 +1453,7 @@ export const ProfileSettings: React.FC = () => {
                         </p>
                       </div>
 
-                      <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="p-4 rounded-lg glass border border-white/10">
                         <div className="flex items-center gap-3 mb-2">
                           <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
                             <AlertCircle className="w-4 h-4 text-orange-500" />
@@ -1533,7 +1533,7 @@ export const ProfileSettings: React.FC = () => {
                   icon={<Database className="w-5 h-5" />}
                 >
                   <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <div className="p-4 rounded-lg glass border border-white/10">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
@@ -1560,7 +1560,7 @@ export const ProfileSettings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <div className="p-4 rounded-lg glass border border-white/10">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">

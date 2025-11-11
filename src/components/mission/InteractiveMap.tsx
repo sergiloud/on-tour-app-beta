@@ -3,8 +3,9 @@ import { useMissionControl } from '../../context/MissionControlContext';
 import { useHighContrast } from '../../context/HighContrastContext';
 import { trackEvent } from '../../lib/telemetry';
 import { Card } from '../../ui/Card';
+import maplibregl from 'maplibre-gl';
 import type * as MapLibreNS from 'maplibre-gl';
-// import 'maplibre-gl/dist/maplibre-gl.css'; // Eager CSS import removed
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { useFilteredShows } from '../../features/shows/selectors';
 import { announce } from '../../lib/announcer';
 import { useSettings } from '../../context/SettingsContext';
@@ -583,32 +584,28 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
 
     const boot = async () => {
       try {
-        // dynamic import to code-split
-        const lib = await import('maplibre-gl');
-
-        // Handle both default and named exports
-        const mapLibre = (lib as any).default || lib;
+        // ✅ Use static import - already loaded at top of file
+        const mapLibre = maplibregl;
 
         // Debug logging in development
         if (import.meta.env.DEV) {
           console.log('[InteractiveMap] MapLibre loaded:', {
             hasMap: !!mapLibre.Map,
             mapType: typeof mapLibre.Map,
-            keys: Object.keys(mapLibre).filter(k => k.includes('Map'))
+            constructorName: mapLibre.Map?.name
           });
         }
 
         // Ensure the library loaded correctly
-        if (!mapLibre || typeof mapLibre.Map !== 'function') {
-          console.error('[InteractiveMap] MapLibre loaded but Map constructor not found', {
-            lib,
+        if (!mapLibre || !mapLibre.Map || typeof mapLibre.Map !== 'function') {
+          console.error('[InteractiveMap] MapLibre not loaded correctly', {
             mapLibre,
-            allKeys: Object.keys(mapLibre)
+            hasMap: !!mapLibre?.Map
           });
           return undefined;
         }
 
-        mlibRef.current = mapLibre;
+        mlibRef.current = mapLibre as any;
         const rect = el.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) {
           const ro = new ResizeObserver(() => {
@@ -887,7 +884,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         aria-label={`Tour map showing ${shows.length} shows across different locations`}
         tabIndex={0}
       />
-      {!ready && <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100/10 to-transparent dark:from-slate-100 dark:from-white/5 dark:to-white/0 animate-pulse text-[10px] tracking-widest uppercase text-slate-300 dark:text-white/40">Loading map…</div>}
+      {!ready && <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100/10 to-transparent dark:from-white/5 dark:to-white/0 animate-pulse text-[10px] tracking-widest uppercase text-slate-300 dark:text-white/40">Loading map…</div>}
       {cssWarning && (
         <div className="absolute top-2 right-2 text-[11px] px-2 py-1 rounded bg-amber-400/90 text-black border border-amber-900/20 shadow">
           {t('map.cssWarning')}

@@ -914,14 +914,7 @@ export const ProfileSettings: React.FC = () => {
                         </div>
                         <Toggle
                           checked={prefs.compactView || false}
-                          onChange={async (v) => {
-                            updatePrefs({ compactView: v });
-                            try {
-                              await FirestoreProfileService.savePreferences(userId, { ...prefs, compactView: v });
-                            } catch (error) {
-                              console.log('Firestore save failed (demo mode):', error);
-                            }
-                          }}
+                          onChange={(v) => updatePrefs({ compactView: v })}
                         />
                       </div>
                     </div>
@@ -1008,14 +1001,7 @@ export const ProfileSettings: React.FC = () => {
                         </div>
                         <Toggle
                           checked={prefs.showTutorials ?? true}
-                          onChange={async (v) => {
-                            updatePrefs({ showTutorials: v });
-                            try {
-                              await FirestoreProfileService.savePreferences(userId, { ...prefs, showTutorials: v });
-                            } catch (error) {
-                              console.log('Firestore save failed (demo mode):', error);
-                            }
-                          }}
+                          onChange={(v) => updatePrefs({ showTutorials: v })}
                         />
                       </div>
                     </div>
@@ -1035,14 +1021,7 @@ export const ProfileSettings: React.FC = () => {
                         </div>
                         <Toggle
                           checked={prefs.enableAnalytics ?? true}
-                          onChange={async (v) => {
-                            updatePrefs({ enableAnalytics: v });
-                            try {
-                              await FirestoreProfileService.savePreferences(userId, { ...prefs, enableAnalytics: v });
-                            } catch (error) {
-                              console.log('Firestore save failed (demo mode):', error);
-                            }
-                          }}
+                          onChange={(v) => updatePrefs({ enableAnalytics: v })}
                         />
                       </div>
                     </div>
@@ -1062,14 +1041,7 @@ export const ProfileSettings: React.FC = () => {
                         </div>
                         <Toggle
                           checked={prefs.enableCrashReports ?? true}
-                          onChange={async (v) => {
-                            updatePrefs({ enableCrashReports: v });
-                            try {
-                              await FirestoreProfileService.savePreferences(userId, { ...prefs, enableCrashReports: v });
-                            } catch (error) {
-                              console.log('Firestore save failed (demo mode):', error);
-                            }
-                          }}
+                          onChange={(v) => updatePrefs({ enableCrashReports: v })}
                         />
                       </div>
                     </div>

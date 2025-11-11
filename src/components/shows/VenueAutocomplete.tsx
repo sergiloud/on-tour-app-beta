@@ -3,11 +3,17 @@
  * - Searches existing venues from venueStore
  * - Allows creating new venues inline
  * - Syncs bidirectionally with venueStore
+ * - Also creates a venue_manager contact for centralized CRM
  */
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { venueStore } from '../../shared/venueStore';
+import { HybridContactService } from '../../services/hybridContactService';
+import { useAuth } from '../../context/AuthContext';
+import { contactKeys } from '../../hooks/useContactsQuery';
 import type { Venue } from '../../types/venue';
+import type { Contact } from '../../types/crm';
 import { t } from '../../lib/i18n';
 
 interface VenueAutocompleteProps {
@@ -34,6 +40,9 @@ export function VenueAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  
+  const { userId } = useAuth();
+  const queryClient = useQueryClient();
 
   // Update dropdown position when opening
   useEffect(() => {
@@ -105,7 +114,7 @@ export function VenueAutocomplete({
     setIsOpen(false);
   };
 
-  const handleCreateNew = () => {
+  const handleCreateNew = async () => {
     if (!search.trim()) return;
 
     // Create new venue
@@ -118,7 +127,37 @@ export function VenueAutocomplete({
       updatedAt: new Date().toISOString(),
     };
 
+    // ✅ Save venue to venueStore (localStorage)
     venueStore.add(newVenue);
+    
+    // ✅ Also create a contact entry for centralized CRM
+    const venueContact: Contact = {
+      id: crypto.randomUUID(),
+      firstName: search.trim(),
+      lastName: '',
+      email: '',
+      phone: '',
+      company: search.trim(),
+      position: 'Venue Manager',
+      type: 'venue_manager',
+      priority: 'medium',
+      status: 'active',
+      tags: ['venue'],
+      city: city,
+      country: country,
+      notes: [],
+      interactions: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // ✅ Save contact to both localStorage AND Firestore
+    await HybridContactService.saveContact(venueContact, userId);
+    
+    // ✅ Invalidate React Query cache to refresh Contacts page
+    queryClient.invalidateQueries({ queryKey: contactKeys.lists() });
+    queryClient.invalidateQueries({ queryKey: contactKeys.stats() });
+    
     setSearch(search.trim());
     onChange(search.trim(), newVenue.id);
     setIsOpen(false);

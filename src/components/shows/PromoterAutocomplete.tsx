@@ -2,11 +2,15 @@
  * Smart Autocomplete for Promoters
  * - Searches existing promoter contacts
  * - Allows creating new promoter contacts inline
- * - Syncs bidirectionally with contactStore
+ * - Syncs bidirectionally with contactStore + Firestore
  */
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { contactStore } from '../../shared/contactStore';
+import { HybridContactService } from '../../services/hybridContactService';
+import { useAuth } from '../../context/AuthContext';
+import { contactKeys } from '../../hooks/useContactsQuery';
 import type { Contact } from '../../types/crm';
 import { t } from '../../lib/i18n';
 
@@ -30,6 +34,9 @@ export function PromoterAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  
+  const { userId } = useAuth();
+  const queryClient = useQueryClient();
 
   // Update dropdown position when opening
   useEffect(() => {
@@ -101,7 +108,7 @@ export function PromoterAutocomplete({
     setIsOpen(false);
   };
 
-  const handleCreateNew = () => {
+  const handleCreateNew = async () => {
     if (!search.trim()) return;
 
     // Create new promoter contact
@@ -123,7 +130,13 @@ export function PromoterAutocomplete({
       updatedAt: new Date().toISOString(),
     };
 
-    contactStore.add(newContact);
+    // ✅ Save to both localStorage AND Firestore
+    await HybridContactService.saveContact(newContact, userId);
+    
+    // ✅ Invalidate React Query cache to refresh Contacts page
+    queryClient.invalidateQueries({ queryKey: contactKeys.lists() });
+    queryClient.invalidateQueries({ queryKey: contactKeys.stats() });
+    
     const displayName = search.trim();
     setSearch(displayName);
     onChange(displayName, newContact.id);

@@ -50,6 +50,7 @@ export const DashboardLayout: React.FC = () => {
   const { /* theme, */ toggle } = useTheme();
   const { /* highContrast, */ toggleHC } = useHighContrast();
   const { /* lang, setLang */ } = useSettings();
+  const { prefs } = useAuth();
   const { org } = useOrg();
   const navigate = useNavigate();
   const location = useLocation();
@@ -255,7 +256,7 @@ export const DashboardLayout: React.FC = () => {
           </header>
           <UrlFilterSync />
           <GlobalFilters />
-          <main className="flex-1 overflow-y-auto pr-2 md:pr-3 pl-2 md:pl-3 py-6 md:py-8 pb-20 md:pb-8" id="dash-main">
+          <main className={`flex-1 overflow-y-auto pr-2 md:pr-3 pl-2 md:pl-3 ${prefs.compactView ? 'py-3 md:py-4 pb-16 md:pb-4' : 'py-6 md:py-8 pb-20 md:pb-8'}`} id="dash-main">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
@@ -266,7 +267,7 @@ export const DashboardLayout: React.FC = () => {
                   duration: 0.3,
                   ease: [0.25, 0.46, 0.45, 0.94] // easeOutQuart for smooth animation
                 }}
-                className="h-full"
+                className={`h-full ${prefs.compactView ? 'compact-view' : ''}`}
               >
                 <Outlet />
               </motion.div>

@@ -506,43 +506,43 @@ export const Contacts: React.FC = () => {
                           transform: `translateY(${virtualRow.start}px)`,
                         }}
                       >
-                    <td className="px-6 py-4" style={{ width: '20%' }}>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-sm font-semibold shadow-lg shadow-accent-500/20">
+                    <td className="px-6 py-4" style={{ width: '20%', maxWidth: '20%' }}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-sm font-semibold shadow-lg shadow-accent-500/20 flex-shrink-0">
                           {contact.firstName[0]}{contact.lastName[0]}
                         </div>
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <p className="font-semibold text-slate-900 dark:text-white text-sm">{contact.firstName} {contact.lastName}</p>
-                            {contact.priority === 'high' && <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse shadow-lg shadow-red-400/50" />}
+                            <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{contact.firstName} {contact.lastName}</p>
+                            {contact.priority === 'high' && <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse shadow-lg shadow-red-400/50 flex-shrink-0" />}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4" style={{ width: '20%' }}>
-                      <p className="text-slate-900 dark:text-white text-sm font-medium">{contact.company || '—'}</p>
-                      <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5">{contact.position || 'Sin cargo'}</p>
+                    <td className="px-6 py-4" style={{ width: '20%', maxWidth: '20%' }}>
+                      <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || '—'}</p>
+                      <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || 'Sin cargo'}</p>
                     </td>
-                    <td className="px-6 py-4 text-sm text-theme-secondary" style={{ width: '22%' }}>
-                      {contact.email && <div className="flex items-center gap-2 mb-1"><Mail className="w-3.5 h-3.5 text-slate-300 dark:text-white/40" /><span className="text-theme-secondary">{contact.email}</span></div>}
-                      {contact.phone && <div className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-slate-300 dark:text-white/40" /><span className="text-theme-secondary">{contact.phone}</span></div>}
+                    <td className="px-6 py-4 text-sm text-theme-secondary" style={{ width: '22%', maxWidth: '22%' }}>
+                      {contact.email && <div className="flex items-center gap-2 mb-1 min-w-0"><Mail className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.email}</span></div>}
+                      {contact.phone && <div className="flex items-center gap-2 min-w-0"><Phone className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.phone}</span></div>}
                     </td>
-                    <td className="px-6 py-4" style={{ width: '15%' }}>
+                    <td className="px-6 py-4" style={{ width: '15%', maxWidth: '15%' }}>
                       {contact.city || contact.country ? (
-                        <div className="flex items-center gap-2 text-sm text-theme-secondary">
-                          <MapPin className="w-3.5 h-3.5 text-slate-300 dark:text-white/40" />
-                          <span>{contact.city ? `${contact.city}, ` : ''}{contact.country}</span>
+                        <div className="flex items-center gap-2 text-sm text-theme-secondary min-w-0">
+                          <MapPin className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" />
+                          <span className="truncate">{contact.city ? `${contact.city}, ` : ''}{contact.country}</span>
                         </div>
                       ) : <span className="text-slate-400 dark:text-white/40 text-xs">—</span>}
                     </td>
-                    <td className="px-6 py-4" style={{ width: '11%' }}>
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                    <td className="px-6 py-4" style={{ width: '11%', maxWidth: '11%' }}>
+                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold inline-block ${
                         contact.priority === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
                         contact.priority === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
                         'bg-green-500/15 text-green-400 border border-green-500/30'
                       }`}>{contact.priority === 'high' ? 'Alta' : contact.priority === 'medium' ? 'Media' : 'Baja'}</span>
                     </td>
-                    <td className="px-6 py-4" style={{ width: '12%' }}>
+                    <td className="px-6 py-4" style={{ width: '12%', maxWidth: '12%' }}>
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={(e) => { e.stopPropagation(); handleViewContact(contact!); }}
                           className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400 transition-all duration-150" title="Ver">

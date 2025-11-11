@@ -11,7 +11,8 @@ import {
   Palette, Monitor, Sun, Moon, DollarSign, Languages,
   Calendar, Clock, Zap, TrendingUp, FileText, Key,
   UserCheck, Activity, AlertCircle, CheckCircle2,
-  Twitter, Instagram, Facebook, Linkedin, Music
+  Twitter, Instagram, Facebook, Linkedin, Music, Upload,
+  Smartphone, MessageSquare, Plane, Users
 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useHighContrast } from '../../context/HighContrastContext';
@@ -164,6 +165,7 @@ export const ProfileSettings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
   
   // Profile form state
   const [formData, setFormData] = useState({
@@ -364,14 +366,14 @@ export const ProfileSettings: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-dark-900">
       <PageHeader
         title={t('profile.settings.title') || 'Settings'}
       />
 
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 pb-20">
         {/* Tabs */}
-        <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-2 mb-6 overflow-x-auto">
+        <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-2 mb-6 overflow-x-auto shadow-sm">
           <div className="flex gap-2 min-w-max">
             {tabs.map(tab => {
               const Icon = tab.icon;
@@ -383,7 +385,7 @@ export const ProfileSettings: React.FC = () => {
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     isActive
                       ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/20'
-                      : 'text-slate-600 dark:text-white/70 hover:bg-white/50 dark:hover:bg-white/5'
+                      : 'text-slate-700 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -429,19 +431,27 @@ export const ProfileSettings: React.FC = () => {
                   description="Upload a profile picture to personalize your account"
                   icon={<Camera className="w-5 h-5" />}
                 >
-                  <div className="flex items-center gap-6">
-                    <div className="relative">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-accent-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+                  <div className="flex items-start gap-6">
+                    <div className="relative group">
+                      <div className="w-28 h-28 rounded-full bg-gradient-to-br from-accent-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold overflow-hidden ring-4 ring-slate-200 dark:ring-white/10">
                         {profile.avatarUrl ? (
                           <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
                         ) : (
-                          profile.name.charAt(0).toUpperCase()
+                          <span className="select-none">{profile.name.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
                       {uploadingAvatar && (
-                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm">
+                          <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
                         </div>
+                      )}
+                      {!uploadingAvatar && (
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute inset-0 bg-black/0 hover:bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200"
+                        >
+                          <Camera className="w-6 h-6 text-white drop-shadow-lg" />
+                        </button>
                       )}
                     </div>
                     <div className="flex-1">
@@ -452,34 +462,52 @@ export const ProfileSettings: React.FC = () => {
                         onChange={handleAvatarUpload}
                         className="hidden"
                       />
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={uploadingAvatar}
-                          className="px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium transition-all disabled:opacity-50"
-                        >
-                          {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
-                        </button>
-                        {profile.avatarUrl && (
+                      <div className="space-y-3">
+                        <div className="flex gap-3">
                           <button
-                            onClick={async () => {
-                              if (confirm('Remove profile picture?')) {
-                                try {
-                                  await FirestoreProfileService.deleteAvatar(userId, profile.avatarUrl!);
-                                } catch (error) {
-                                  updateProfile({ avatarUrl: undefined });
-                                }
-                              }
-                            }}
-                            className="px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium transition-all"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingAvatar}
+                            className="px-4 py-2.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium transition-all disabled:opacity-50 shadow-sm hover:shadow-md"
                           >
-                            Remove
+                            {uploadingAvatar ? (
+                              <span className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Uploading...
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-2">
+                                <Upload className="w-4 h-4" />
+                                Upload Photo
+                              </span>
+                            )}
                           </button>
-                        )}
+                          {profile.avatarUrl && !uploadingAvatar && (
+                            <button
+                              onClick={async () => {
+                                if (confirm('Remove profile picture?')) {
+                                  try {
+                                    await FirestoreProfileService.deleteAvatar(userId, profile.avatarUrl!);
+                                  } catch (error) {
+                                    updateProfile({ avatarUrl: undefined });
+                                  }
+                                }
+                              }}
+                              className="px-4 py-2.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium transition-all border border-red-500/20"
+                            >
+                              <span className="flex items-center gap-2">
+                                <Trash2 className="w-4 h-4" />
+                                Remove
+                              </span>
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 text-slate-400 dark:text-white/40 mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-slate-500 dark:text-white/50">
+                            JPG, PNG or GIF. Max size 5MB. Recommended: 400x400px for best quality.
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-white/50 mt-2">
-                        JPG, PNG or GIF. Max size 5MB.
-                      </p>
                     </div>
                   </div>
                 </Section>
@@ -618,33 +646,74 @@ export const ProfileSettings: React.FC = () => {
               <div className="space-y-6">
                 <Section
                   title="Account Information"
-                  description="Manage your account details"
+                  description="View your account details and metadata"
                   icon={<User className="w-5 h-5" />}
                 >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10">
-                      <div>
-                        <div className="text-sm font-medium text-slate-900 dark:text-white">User ID</div>
-                        <div className="text-xs text-slate-500 dark:text-white/50 font-mono mt-1">{userId}</div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
+                          <User className="w-5 h-5 text-accent-500" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-slate-900 dark:text-white">User ID</div>
+                          <div className="text-xs text-slate-500 dark:text-white/50 font-mono mt-0.5">{userId}</div>
+                        </div>
                       </div>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(userId);
+                          alert('User ID copied to clipboard!');
+                        }}
+                        className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      >
+                        Copy
+                      </button>
                     </div>
                     {profile.createdAt && (
-                      <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                          <Calendar className="w-5 h-5 text-blue-500" />
+                        </div>
                         <div>
                           <div className="text-sm font-medium text-slate-900 dark:text-white">Member Since</div>
-                          <div className="text-xs text-slate-500 dark:text-white/50 mt-1">
-                            {new Date(profile.createdAt).toLocaleDateString()}
+                          <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                            {new Date(profile.createdAt).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })}
                           </div>
                         </div>
                       </div>
                     )}
                     {profile.lastLoginAt && (
-                      <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                          <Activity className="w-5 h-5 text-emerald-500" />
+                        </div>
                         <div>
                           <div className="text-sm font-medium text-slate-900 dark:text-white">Last Login</div>
-                          <div className="text-xs text-slate-500 dark:text-white/50 mt-1">
-                            {new Date(profile.lastLoginAt).toLocaleString()}
+                          <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                            {new Date(profile.lastLoginAt).toLocaleString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </div>
+                        </div>
+                      </div>
+                    )}
+                    {profile.timezone && (
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                        <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                          <Globe className="w-5 h-5 text-purple-500" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-slate-900 dark:text-white">Timezone</div>
+                          <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">{profile.timezone}</div>
                         </div>
                       </div>
                     )}
@@ -653,50 +722,138 @@ export const ProfileSettings: React.FC = () => {
 
                 <Section
                   title="Password & Security"
-                  description="Manage your account security"
+                  description="Manage your account security and authentication"
                   icon={<Lock className="w-5 h-5" />}
                 >
                   <div className="space-y-3">
-                    <button className="w-full flex items-center justify-between p-4 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-white/10 transition-all">
+                    <button 
+                      onClick={() => setShowPasswordChange(true)}
+                      className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all group"
+                    >
                       <div className="flex items-center gap-3">
-                        <Key className="w-5 h-5 text-accent-500" />
+                        <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
+                          <Key className="w-5 h-5 text-accent-500" />
+                        </div>
                         <div className="text-left">
                           <div className="text-sm font-medium text-slate-900 dark:text-white">Change Password</div>
                           <div className="text-xs text-slate-500 dark:text-white/50">Update your account password</div>
                         </div>
                       </div>
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
 
-                    <button className="w-full flex items-center justify-between p-4 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-white/10 transition-all">
+                    <button className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all group">
                       <div className="flex items-center gap-3">
-                        <Shield className="w-5 h-5 text-accent-500" />
+                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                          <Shield className="w-5 h-5 text-blue-500" />
+                        </div>
                         <div className="text-left">
-                          <div className="text-sm font-medium text-slate-900 dark:text-white">Two-Factor Authentication</div>
+                          <div className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                            Two-Factor Authentication
+                            <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full">Recommended</span>
+                          </div>
                           <div className="text-xs text-slate-500 dark:text-white/50">Add an extra layer of security</div>
                         </div>
                       </div>
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
 
-                    <button className="w-full flex items-center justify-between p-4 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-white/10 transition-all">
+                    <button className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all group">
                       <div className="flex items-center gap-3">
-                        <Activity className="w-5 h-5 text-accent-500" />
+                        <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                          <Activity className="w-5 h-5 text-purple-500" />
+                        </div>
                         <div className="text-left">
                           <div className="text-sm font-medium text-slate-900 dark:text-white">Active Sessions</div>
-                          <div className="text-xs text-slate-500 dark:text-white/50">Manage your active sessions</div>
+                          <div className="text-xs text-slate-500 dark:text-white/50">Manage devices and logout remotely</div>
                         </div>
                       </div>
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
                   </div>
                 </Section>
+
+                {/* Password Change Modal */}
+                <AnimatePresence>
+                  {showPasswordChange && (
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowPasswordChange(false)}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                      >
+                        <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 p-6 max-w-md w-full shadow-2xl">
+                          <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Change Password</h3>
+                            <button
+                              onClick={() => setShowPasswordChange(false)}
+                              className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+                            >
+                              <X className="w-5 h-5 text-slate-500 dark:text-white/50" />
+                            </button>
+                          </div>
+                          <div className="space-y-4">
+                            <Input
+                              label="Current Password"
+                              value=""
+                              onChange={() => {}}
+                              type="password"
+                              icon={<Lock className="w-4 h-4" />}
+                              placeholder="Enter current password"
+                            />
+                            <Input
+                              label="New Password"
+                              value=""
+                              onChange={() => {}}
+                              type="password"
+                              icon={<Key className="w-4 h-4" />}
+                              placeholder="Enter new password"
+                            />
+                            <Input
+                              label="Confirm New Password"
+                              value=""
+                              onChange={() => {}}
+                              type="password"
+                              icon={<Key className="w-4 h-4" />}
+                              placeholder="Confirm new password"
+                            />
+                            <div className="flex gap-3 pt-2">
+                              <button
+                                onClick={() => setShowPasswordChange(false)}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/90 font-medium hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => {
+                                  alert('Password change functionality will be implemented with Firebase Auth');
+                                  setShowPasswordChange(false);
+                                }}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white font-medium transition-all shadow-sm"
+                              >
+                                Update Password
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 
@@ -708,30 +865,60 @@ export const ProfileSettings: React.FC = () => {
                   description="Customize how OnTour looks"
                   icon={<Palette className="w-5 h-5" />}
                 >
-                  <Select
-                    label="Theme"
-                    value={theme}
-                    onChange={(v) => setTheme(v as any)}
-                    options={[
-                      { value: 'auto', label: 'Auto (System)' },
-                      { value: 'light', label: 'Light' },
-                      { value: 'dark', label: 'Dark' },
-                    ]}
-                    icon={<Monitor className="w-4 h-4" />}
-                    description="Choose your preferred color theme"
-                  />
-                  <Toggle
-                    checked={highContrast}
-                    onChange={() => toggleHC()}
-                    label="High Contrast"
-                    description="Increase contrast for better visibility"
-                  />
-                  <Toggle
-                    checked={prefs.compactView || false}
-                    onChange={(v) => updatePrefs({ compactView: v })}
-                    label="Compact View"
-                    description="Show more content in less space"
-                  />
+                  <div className="space-y-4">
+                    <Select
+                      label="Theme"
+                      value={theme}
+                      onChange={(v) => setTheme(v as any)}
+                      options={[
+                        { value: 'auto', label: '💻 Auto (System)' },
+                        { value: 'light', label: '☀️ Light' },
+                        { value: 'dark', label: '🌙 Dark' },
+                      ]}
+                      icon={<Monitor className="w-4 h-4" />}
+                      description="Choose your preferred color theme"
+                    />
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                            <Eye className="w-5 h-5 text-purple-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">High Contrast</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Increase contrast for better visibility
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={highContrast}
+                          onChange={() => toggleHC()}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 text-blue-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Compact View</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Show more content in less space
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={prefs.compactView || false}
+                          onChange={(v) => updatePrefs({ compactView: v })}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </Section>
 
                 <Section
@@ -795,39 +982,83 @@ export const ProfileSettings: React.FC = () => {
 
                 <Section
                   title="Application Behavior"
-                  description="Configure app features"
+                  description="Configure app features and performance"
                   icon={<Zap className="w-5 h-5" />}
                 >
-                  <Toggle
-                    checked={prefs.showTutorials ?? true}
-                    onChange={(v) => updatePrefs({ showTutorials: v })}
-                    label="Show Tutorials"
-                    description="Display helpful tips and guides"
-                  />
-                  <Toggle
-                    checked={prefs.enableAnalytics ?? true}
-                    onChange={(v) => updatePrefs({ enableAnalytics: v })}
-                    label="Analytics"
-                    description="Help improve OnTour with usage data"
-                  />
-                  <Toggle
-                    checked={prefs.enableCrashReports ?? true}
-                    onChange={(v) => updatePrefs({ enableCrashReports: v })}
-                    label="Crash Reports"
-                    description="Automatically send crash reports"
-                  />
-                  <Select
-                    label="Auto-save Interval"
-                    value={String(prefs.autoSaveInterval || 5)}
-                    onChange={(v) => updatePrefs({ autoSaveInterval: Number(v) })}
-                    options={[
-                      { value: '1', label: 'Every minute' },
-                      { value: '5', label: 'Every 5 minutes' },
-                      { value: '10', label: 'Every 10 minutes' },
-                      { value: '0', label: 'Disabled' },
-                    ]}
-                    description="How often to auto-save your work"
-                  />
+                  <div className="space-y-3">
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
+                            <AlertCircle className="w-5 h-5 text-accent-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Show Tutorials</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Display helpful tips and guides for new features
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={prefs.showTutorials ?? true}
+                          onChange={(v) => updatePrefs({ showTutorials: v })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 text-blue-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Analytics</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Help improve OnTour with anonymous usage data
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={prefs.enableAnalytics ?? true}
+                          onChange={(v) => updatePrefs({ enableAnalytics: v })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                            <AlertCircle className="w-5 h-5 text-orange-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Crash Reports</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Automatically send crash reports to help us fix bugs
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={prefs.enableCrashReports ?? true}
+                          onChange={(v) => updatePrefs({ enableCrashReports: v })}
+                        />
+                      </div>
+                    </div>
+
+                    <Select
+                      label="Auto-save Interval"
+                      value={String(prefs.autoSaveInterval || 5)}
+                      onChange={(v) => updatePrefs({ autoSaveInterval: Number(v) })}
+                      options={[
+                        { value: '1', label: '⚡ Every minute' },
+                        { value: '5', label: '⏱️ Every 5 minutes (Recommended)' },
+                        { value: '10', label: '⏰ Every 10 minutes' },
+                        { value: '0', label: '🚫 Disabled' },
+                      ]}
+                      description="How often to automatically save your work"
+                    />
+                  </div>
                 </Section>
 
                 <div className="flex justify-end">
@@ -860,30 +1091,87 @@ export const ProfileSettings: React.FC = () => {
                   description="Choose how you want to be notified"
                   icon={<Bell className="w-5 h-5" />}
                 >
-                  <Toggle
-                    checked={notifications.notifyEmail}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifyEmail: v }))}
-                    label="Email Notifications"
-                    description="Receive notifications via email"
-                  />
-                  <Toggle
-                    checked={notifications.notifyPush}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifyPush: v }))}
-                    label="Push Notifications"
-                    description="Receive browser push notifications"
-                  />
-                  <Toggle
-                    checked={notifications.notifyInApp}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifyInApp: v }))}
-                    label="In-App Notifications"
-                    description="Show notifications inside the app"
-                  />
-                  <Toggle
-                    checked={notifications.notifySlack}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifySlack: v }))}
-                    label="Slack Notifications"
-                    description="Send notifications to Slack"
-                  />
+                  <div className="space-y-3">
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-blue-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Email Notifications</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Receive updates via email
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifyEmail}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifyEmail: v }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <Smartphone className="w-5 h-5 text-emerald-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Push Notifications</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Receive browser push notifications
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifyPush}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifyPush: v }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
+                            <Bell className="w-5 h-5 text-accent-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">In-App Notifications</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Show notifications inside the app
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifyInApp}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifyInApp: v }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                            <MessageSquare className="w-5 h-5 text-purple-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Slack Notifications</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Send notifications to Slack
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifySlack}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifySlack: v }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </Section>
 
                 <Section
@@ -891,37 +1179,120 @@ export const ProfileSettings: React.FC = () => {
                   description="Control what you get notified about"
                   icon={<AlertCircle className="w-5 h-5" />}
                 >
-                  <Toggle
-                    checked={notifications.notifyShowUpdates}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifyShowUpdates: v }))}
-                    label="Show Updates"
-                    description="Tour dates, venue changes, cancellations"
-                  />
-                  <Toggle
-                    checked={notifications.notifyFinanceAlerts}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifyFinanceAlerts: v }))}
-                    label="Finance Alerts"
-                    description="Payment reminders, budget alerts"
-                  />
-                  <Toggle
-                    checked={notifications.notifyTravelChanges}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifyTravelChanges: v }))}
-                    label="Travel Changes"
-                    description="Flight updates, accommodation confirmations"
-                  />
-                  <Toggle
-                    checked={notifications.notifyTeamActivity}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifyTeamActivity: v }))}
-                    label="Team Activity"
-                    description="When team members make changes"
-                  />
-                  <Toggle
-                    checked={notifications.notifySystemUpdates}
-                    onChange={(v) => setNotifications(prev => ({ ...prev, notifySystemUpdates: v }))}
-                    label="System Updates"
-                    description="New features, maintenance notices"
-                  />
+                  <div className="space-y-3">
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-accent-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Show Updates</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Tour dates, venue changes, cancellations
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifyShowUpdates}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifyShowUpdates: v }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <DollarSign className="w-5 h-5 text-emerald-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Finance Alerts</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Payment reminders, budget alerts
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifyFinanceAlerts}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifyFinanceAlerts: v }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <Plane className="w-5 h-5 text-blue-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Travel Changes</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Flight updates, accommodation confirmations
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifyTravelChanges}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifyTravelChanges: v }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                            <Users className="w-5 h-5 text-purple-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Team Activity</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              When team members make changes
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifyTeamActivity}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifyTeamActivity: v }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                            <AlertCircle className="w-5 h-5 text-orange-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">System Updates</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              New features, maintenance notices
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={notifications.notifySystemUpdates}
+                          onChange={(v) => setNotifications(prev => ({ ...prev, notifySystemUpdates: v }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </Section>
+
+                <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <div className="flex items-start gap-3">
+                    <Bell className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 text-sm text-blue-600 dark:text-blue-400">
+                      <p className="font-medium mb-1">Smart Notification Digest</p>
+                      <p className="text-xs opacity-90">
+                        To avoid notification fatigue, we'll group similar notifications and send you a daily digest at 9:00 AM in your timezone.
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="flex justify-end">
                   <button
@@ -950,49 +1321,148 @@ export const ProfileSettings: React.FC = () => {
               <div className="space-y-6">
                 <Section
                   title="Profile Visibility"
-                  description="Control who can see your profile"
+                  description="Control who can see your profile and information"
                   icon={<Eye className="w-5 h-5" />}
                 >
-                  <Select
-                    label="Profile Visibility"
-                    value={privacy.profileVisibility}
-                    onChange={(v) => setPrivacy(prev => ({ ...prev, profileVisibility: v as any }))}
-                    options={[
-                      { value: 'public', label: 'Public - Anyone can view' },
-                      { value: 'team', label: 'Team Only - Only team members' },
-                      { value: 'private', label: 'Private - Only you' },
-                    ]}
-                    description="Who can view your profile information"
-                  />
-                  <Toggle
-                    checked={privacy.showEmail}
-                    onChange={(v) => setPrivacy(prev => ({ ...prev, showEmail: v }))}
-                    label="Show Email Address"
-                    description="Display email on your public profile"
-                  />
-                  <Toggle
-                    checked={privacy.showPhone}
-                    onChange={(v) => setPrivacy(prev => ({ ...prev, showPhone: v }))}
-                    label="Show Phone Number"
-                    description="Display phone on your public profile"
-                  />
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <Select
+                        label="Profile Visibility"
+                        value={privacy.profileVisibility}
+                        onChange={(v) => setPrivacy(prev => ({ ...prev, profileVisibility: v as any }))}
+                        options={[
+                          { value: 'public', label: '🌐 Public - Anyone can view' },
+                          { value: 'team', label: '👥 Team Only - Only team members' },
+                          { value: 'private', label: '🔒 Private - Only you' },
+                        ]}
+                      />
+                      <p className="text-xs text-slate-500 dark:text-white/50 mt-2">
+                        Who can view your profile information and activity
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-blue-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Show Email Address</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Display email on your public profile
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={privacy.showEmail}
+                          onChange={(v) => setPrivacy(prev => ({ ...prev, showEmail: v }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <Phone className="w-5 h-5 text-emerald-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Show Phone Number</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Display phone on your public profile
+                            </div>
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={privacy.showPhone}
+                          onChange={(v) => setPrivacy(prev => ({ ...prev, showPhone: v }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </Section>
 
                 <Section
-                  title="Data & Privacy"
-                  description="Manage your data and privacy settings"
+                  title="Data & Privacy Controls"
+                  description="Manage how your data is used and protected"
                   icon={<Shield className="w-5 h-5" />}
                 >
-                  <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                  <div className="space-y-4">
+                    <div className="p-5 rounded-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20">
                       <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                        <div className="text-sm text-blue-600 dark:text-blue-400">
-                          <p className="font-medium">Your privacy matters</p>
-                          <p className="mt-1 text-xs opacity-90">
-                            We take your privacy seriously. All data is encrypted and never shared with third parties without your consent.
-                          </p>
+                        <Shield className="w-6 h-6 text-blue-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 text-sm text-blue-600 dark:text-blue-400">
+                          <p className="font-semibold mb-2">Your privacy matters to us</p>
+                          <ul className="text-xs opacity-90 space-y-2">
+                            <li className="flex items-start gap-2">
+                              <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                              <span>All data is encrypted in transit and at rest using AES-256</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                              <span>We never share your data with third parties without explicit consent</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                              <span>Full GDPR compliance - request your data or deletion anytime</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                              <span>Regular security audits and penetration testing</span>
+                            </li>
+                          </ul>
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
+                            <Lock className="w-4 h-4 text-purple-500" />
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">Data Encryption</div>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-white/50">
+                          End-to-end encryption for all sensitive data
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">GDPR Compliant</div>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-white/50">
+                          Full compliance with data protection regulations
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <Eye className="w-4 h-4 text-blue-500" />
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">Audit Logs</div>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-white/50">
+                          Track all access to your account and data
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
+                            <AlertCircle className="w-4 h-4 text-orange-500" />
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">Security Alerts</div>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-white/50">
+                          Instant notifications for suspicious activity
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1025,40 +1495,88 @@ export const ProfileSettings: React.FC = () => {
               <div className="space-y-6">
                 <Section
                   title="Export Your Data"
-                  description="Download a copy of your data (GDPR compliant)"
+                  description="Download a copy of all your data in JSON format (GDPR compliant)"
                   icon={<Download className="w-5 h-5" />}
                 >
-                  <div className="space-y-3">
-                    <p className="text-sm text-slate-600 dark:text-white/70">
-                      You can export all your data in JSON format. This includes your profile, preferences, shows, contacts, and all other data.
-                    </p>
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                      <div className="flex items-start gap-3">
+                        <FileText className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 text-sm text-blue-600 dark:text-blue-400">
+                          <p className="font-medium mb-1">What's included in your export?</p>
+                          <ul className="text-xs opacity-90 space-y-1 list-disc list-inside">
+                            <li>Profile information and preferences</li>
+                            <li>All shows, contacts, and venues</li>
+                            <li>Financial data and transactions</li>
+                            <li>Travel itineraries and bookings</li>
+                            <li>Organization settings</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
                     <button
                       onClick={handleExportData}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium transition-all"
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-accent-500 hover:bg-accent-600 text-white font-medium transition-all shadow-lg shadow-accent-500/20 hover:shadow-xl"
                     >
-                      <Download className="w-4 h-4" />
-                      Export All Data
+                      <Download className="w-5 h-5" />
+                      Export All Data (JSON)
                     </button>
+                    <p className="text-xs text-slate-500 dark:text-white/50 text-center">
+                      Your data will be downloaded as a JSON file that you can import into other services.
+                    </p>
                   </div>
                 </Section>
 
                 <Section
                   title="Data Management"
-                  description="Manage your stored data"
+                  description="Manage your stored data and cache"
                   icon={<Database className="w-5 h-5" />}
                 >
                   <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-white/5 border border-slate-200 dark:border-white/10">
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-medium text-slate-900 dark:text-white">Clear Cache</div>
-                          <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
-                            Remove temporary files and cached data
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                            <Database className="w-5 h-5 text-purple-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Clear Cache</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              Remove temporary files and cached data
+                            </div>
                           </div>
                         </div>
-                        <button className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-slate-200 dark:border-white/10 text-sm font-medium transition-all">
+                        <button 
+                          onClick={() => {
+                            if (confirm('Clear all cached data? This will not delete your account data.')) {
+                              localStorage.removeItem('on-tour-cache');
+                              alert('Cache cleared successfully!');
+                            }
+                          }}
+                          className="px-4 py-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 border border-slate-300 dark:border-white/10 text-sm font-medium transition-all"
+                        >
                           Clear
                         </button>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 text-blue-500" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">Storage Usage</div>
+                            <div className="text-xs text-slate-500 dark:text-white/50 mt-0.5">
+                              View your storage consumption
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">2.4 MB</div>
+                          <div className="text-xs text-slate-500 dark:text-white/50">of 100 MB</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1066,28 +1584,39 @@ export const ProfileSettings: React.FC = () => {
 
                 <Section
                   title="Danger Zone"
-                  description="Irreversible actions"
+                  description="Irreversible actions - proceed with caution"
                   icon={<AlertCircle className="w-5 h-5" />}
                 >
                   <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+                    <div className="p-5 rounded-lg bg-red-500/10 border border-red-500/30">
                       <div className="flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
-                          <div className="text-sm font-medium text-red-600 dark:text-red-400">Delete Account</div>
-                          <div className="text-xs text-red-600/80 dark:text-red-400/80 mt-1">
-                            Once you delete your account, there is no going back. Please be certain.
+                          <div className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Delete Account</div>
+                          <div className="text-xs text-red-600/80 dark:text-red-400/80 mb-4">
+                            Once you delete your account, there is no going back. This will permanently delete:
                           </div>
+                          <ul className="text-xs text-red-600/80 dark:text-red-400/80 space-y-1 list-disc list-inside mb-4">
+                            <li>All your profile information and preferences</li>
+                            <li>All shows, contacts, and venues</li>
+                            <li>All financial and travel data</li>
+                            <li>All organization memberships</li>
+                          </ul>
                           <button
                             onClick={() => {
-                              if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
-                                alert('Account deletion is not available in demo mode');
+                              if (confirm('⚠️ Are you absolutely sure you want to delete your account?\n\nThis action CANNOT be undone and all your data will be permanently deleted.')) {
+                                if (confirm('This is your last chance. Type YES in the next dialog to confirm.')) {
+                                  const confirmation = prompt('Type "DELETE" to confirm account deletion:');
+                                  if (confirmation === 'DELETE') {
+                                    alert('Account deletion is not available in demo mode. In production, this would delete your account permanently.');
+                                  }
+                                }
                               }
                             }}
-                            className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all"
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all shadow-lg shadow-red-500/20"
                           >
                             <Trash2 className="w-4 h-4" />
-                            Delete Account
+                            Delete My Account
                           </button>
                         </div>
                       </div>

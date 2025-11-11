@@ -5,6 +5,7 @@
  * - Syncs bidirectionally with contactStore
  */
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { contactStore } from '../../shared/contactStore';
 import type { Contact } from '../../types/crm';
 import { t } from '../../lib/i18n';
@@ -28,6 +29,19 @@ export function PromoterAutocomplete({
   const [search, setSearch] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  // Update dropdown position when opening
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  }, [isOpen]);
 
   // Sync search with value prop when it changes externally
   useEffect(() => {
@@ -134,7 +148,7 @@ export function PromoterAutocomplete({
   };
 
   return (
-    <div className="relative">
+    <>
       <input
         ref={inputRef}
         type="text"
@@ -147,10 +161,15 @@ export function PromoterAutocomplete({
         autoComplete="off"
       />
       
-      {isOpen && (search.length > 0 || filteredPromoters.length > 0) && (
+      {isOpen && (search.length > 0 || filteredPromoters.length > 0) && createPortal(
         <div
           ref={dropdownRef}
-          className="absolute z-[10001] mt-2 w-full glass border border-slate-200 dark:border-white/10 rounded-[10px] shadow-xl backdrop-blur-xl max-h-80 overflow-hidden flex flex-col"
+          className="fixed z-[10001] glass border border-slate-200 dark:border-white/10 rounded-[10px] shadow-xl backdrop-blur-xl max-h-80 overflow-hidden flex flex-col"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`
+          }}
         >
           {filteredPromoters.length > 0 ? (
             <>
@@ -210,8 +229,9 @@ export function PromoterAutocomplete({
               </div>
             </button>
           )}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }

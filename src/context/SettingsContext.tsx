@@ -92,6 +92,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (user) {
         console.log('🔥 [SettingsContext] Auth state changed - user logged in:', user.uid);
         console.log('🔥 [SettingsContext] User email:', user.email);
+        // Set loading flag to prevent save before Firestore load completes
+        setIsLoadingFromFirestore(true);
         setUserId(user.uid);
       } else {
         console.log('⚠️ [SettingsContext] Auth state changed - user logged out');
@@ -131,7 +133,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [bookingAgencies, setBookingAgencies] = useState<AgencyConfig[]>(() => (legacyInitial as any).bookingAgencies || []);
   const [managementAgencies, setManagementAgencies] = useState<AgencyConfig[]>(() => (legacyInitial as any).managementAgencies || []);
   const [kpiTickerHidden, setKpiTickerHiddenState] = useState<boolean>(!!(legacyInitial as any).kpiTickerHidden);
-  const [isLoadingFromFirestore, setIsLoadingFromFirestore] = useState<boolean>(false);
+  // Start as true to prevent save effect from running before Firestore load completes
+  const [isLoadingFromFirestore, setIsLoadingFromFirestore] = useState<boolean>(true);
 
   // Load agencies from Firestore on mount
   useEffect(() => {
@@ -349,7 +352,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
         const pct = Math.max(0, Math.min(100, a.commissionPct));
         const id = `booking-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        added = { ...a, commissionPct: pct, id };
+        // Only include defined fields to avoid Firestore rejecting undefined values
+        added = {
+          id,
+          name: a.name,
+          type: a.type,
+          commissionPct: pct,
+          territoryMode: a.territoryMode,
+          ...(a.continents !== undefined && { continents: a.continents }),
+          ...(a.countries !== undefined && { countries: a.countries }),
+          ...(a.notes !== undefined && { notes: a.notes })
+        } as AgencyConfig;
         console.log('[SettingsContext] Adding booking agency:', added);
         return [...prev, added];
       });
@@ -371,7 +384,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
         const pct = Math.max(0, Math.min(100, a.commissionPct));
         const id = `management-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        added = { ...a, commissionPct: pct, id };
+        // Only include defined fields to avoid Firestore rejecting undefined values
+        added = {
+          id,
+          name: a.name,
+          type: a.type,
+          commissionPct: pct,
+          territoryMode: a.territoryMode,
+          ...(a.continents !== undefined && { continents: a.continents }),
+          ...(a.countries !== undefined && { countries: a.countries }),
+          ...(a.notes !== undefined && { notes: a.notes })
+        } as AgencyConfig;
         console.log('[SettingsContext] Adding management agency:', added);
         return [...prev, added];
       });

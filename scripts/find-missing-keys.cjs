@@ -10,8 +10,8 @@ for (let i = 126; i <= 1591; i++) {
   if (m) enKeys.add(m[1]);
 }
 
-// ES section: lines 1592-2954
-for (let i = 1592; i <= 2954; i++) {
+// ES section: lines 1592-3002 (updated)
+for (let i = 1592; i <= 3002; i++) {
   const m = lines[i].match(/'([^']+)'\s*:/);
   if (m) esKeys.add(m[1]);
 }

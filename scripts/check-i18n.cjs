@@ -3,31 +3,50 @@ const fs = require('fs');
 const content = fs.readFileSync('src/lib/i18n.ts', 'utf-8');
 const lines = content.split('\n');
 
-// Language sections based on grep findings
-const sections = {
-  en: [125, 1591],
-  es: [1591, 2873],
-  fr: [2876, 3125],
-  de: [3128, 3377],
-  it: [3380, 3629],
-  pt: [3632, 3881]
-};
-
-function extractKeys(startLine, endLine) {
-  const sectionContent = lines.slice(startLine, endLine).join('\n');
+function extractKeys(lang) {
   const keys = new Set();
-  const keyRegex = /'([^']+)'\s*:/g;
-  let match;
-  while ((match = keyRegex.exec(sectionContent)) !== null) {
-    keys.add(match[1]);
+  let inLang = false;
+  let braceCount = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Detect start of language section
+    if (line.trim().startsWith(`${lang}:`)) {
+      inLang = true;
+      braceCount = 0;
+      continue;
+    }
+    
+    if (!inLang) continue;
+    
+    // Count braces to know when section ends
+    braceCount += (line.match(/\{/g) || []).length;
+    braceCount -= (line.match(/\}/g) || []).length;
+    
+    // Extract keys
+    const match = line.match(/'([^']+)'\s*:/);
+    if (match) {
+      keys.add(match[1]);
+    }
+    
+    // If we close all braces, section ended
+    if (inLang && braceCount < 0) {
+      break;
+    }
   }
+  
   return keys;
 }
 
-const languageKeys = {};
-for (const [lang, [start, end]] of Object.entries(sections)) {
-  languageKeys[lang] = extractKeys(start, end);
-}
+const languageKeys = {
+  en: extractKeys('en'),
+  es: extractKeys('es'),
+  fr: extractKeys('fr'),
+  de: extractKeys('de'),
+  it: extractKeys('it'),
+  pt: extractKeys('pt')
+};
 
 const enKeys = languageKeys.en;
 console.log('📊 Translation Coverage Report\n');

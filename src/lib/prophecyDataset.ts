@@ -91,10 +91,13 @@ function getShowDefaults(city: string, date: string, currency: 'EUR' | 'USD' | '
 
 /**
  * Load Prophecy demo data into the shows store
- * For Firebase users: does NOT auto-load, use migration script instead
- * For demo users: loads to localStorage
+ * DISABLED FOR PRODUCTION BETA - all data should come from Firestore
  */
 export async function loadProphecyData(): Promise<{ added: number; total: number }> {
+  console.log('[Prophecy Dataset] Demo data loading disabled for production');
+  return { added: 0, total: 0 };
+  
+  /* COMMENTED OUT FOR PRODUCTION
   try {
     const { isFirebaseConfigured } = await import('./firebase');
     
@@ -111,4 +114,5 @@ export async function loadProphecyData(): Promise<{ added: number; total: number
     console.error('[Prophecy Dataset] Error loading data:', error);
     return { added: 0, total: 0 };
   }
+  */
 }

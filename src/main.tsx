@@ -11,7 +11,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import './styles/index.css';
 import './styles/performance.css';
-import { ensureDemoTenants } from './lib/tenants';
+// DISABLED FOR PRODUCTION BETA - all data comes from Firestore now
+// import { ensureDemoTenants } from './lib/tenants';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { logger } from './lib/logger';
 import { initWebVitals, trackResourceTiming, trackLongTasks } from './lib/webVitals';
@@ -22,7 +23,8 @@ if (!el) {
 }
 
 initTelemetry();
-try { ensureDemoTenants(); } catch { }
+// DISABLED FOR PRODUCTION BETA - all data comes from Firestore now
+// try { ensureDemoTenants(); } catch { }
 
 // Initialize Web Vitals monitoring - TEMPORARILY DISABLED TO FIX 405 ERRORS
 // initWebVitals();

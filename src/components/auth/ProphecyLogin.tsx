@@ -35,12 +35,14 @@ export const ProphecyLogin: React.FC<ProphecyLoginProps> = ({ onLoginSuccess, cl
     }
   };
 
-  const handleDemoLogin = () => {
-    setEmail('booking@prophecyofficial.com');
-    setPassword('Casillas123');
-  };
+  // DISABLED FOR PRODUCTION - no demo login
+  // const handleDemoLogin = () => {
+  //   setEmail('booking@prophecyofficial.com');
+  //   setPassword('Casillas123');
+  // };
 
-  const availableUsers = getAvailableUsers();
+  // DISABLED FOR PRODUCTION - no demo users list
+  // const availableUsers = getAvailableUsers();
 
   return (
     <div className={`max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg ${className}`}>
@@ -92,26 +94,9 @@ export const ProphecyLogin: React.FC<ProphecyLoginProps> = ({ onLoginSuccess, cl
         >
           {isLoading ? 'Logging in...' : 'Login'}
         </button>
-
-        <button
-          type="button"
-          onClick={handleDemoLogin}
-          className="w-full flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Fill Prophecy Credentials
-        </button>
       </form>
 
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Available Users:</h3>
-        <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-          {availableUsers.map(user => (
-            <div key={user.id}>
-              <span className="font-medium">{user.name}</span> - {user.email}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* DISABLED FOR PRODUCTION - no demo login button or available users list */}
     </div>
   );
 };

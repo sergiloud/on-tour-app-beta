@@ -6,11 +6,12 @@ import { t } from '../lib/i18n';
 import { ORG_AGENCY_SHALIZI, ORG_ARTIST_DANNY, ORG_ARTIST_DANNY_V2, ORG_ARTIST_PROPHECY, setCurrentOrgId } from '../lib/tenants';
 import { trackEvent, Events } from '../lib/telemetry';
 import { setAuthed } from '../lib/demoAuth';
-import { loadDemoData } from '../lib/demoDataset';
-import { loadDemoExpenses } from '../lib/expenses';
-import { loadDemoAgencies } from '../lib/agencies';
-import { loadProphecyData } from '../lib/prophecyDataset';
-import { loadProphecyContacts } from '../lib/prophecyContactsDataset';
+// DEMO DATA IMPORTS DISABLED FOR PRODUCTION BETA
+// import { loadDemoData } from '../lib/demoDataset';
+// import { loadDemoExpenses } from '../lib/expenses';
+// import { loadDemoAgencies } from '../lib/agencies';
+// import { loadProphecyData } from '../lib/prophecyDataset';
+// import { loadProphecyContacts } from '../lib/prophecyContactsDataset';
 import { DashboardTeaser } from '../components/home/DashboardTeaser';
 import { Button } from '../ui/Button';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle, Zap, Chrome, Apple } from 'lucide-react';
@@ -221,9 +222,9 @@ const Login: React.FC = () => {
       trackEvent('login.demo.success', { userId: user.userId, orgId: user.orgId });
       Events.loginSelect(user.userId, user.orgId);
 
-      // Load demo data for Danny Avila
-            const expensesResult = await loadDemoExpenses();
-      const agenciesResult = await loadDemoAgencies();
+      // DEMO DATA DISABLED FOR PRODUCTION BETA
+      // const expensesResult = await loadDemoExpenses();
+      // const agenciesResult = await loadDemoAgencies();
     } catch { }
 
     dispatch({ type: 'SET_SUCCESS', payload: user });
@@ -304,11 +305,9 @@ const Login: React.FC = () => {
       trackEvent('login.demo.success', { userId: user.userId, orgId: user.orgId });
       Events.loginSelect(user.userId, user.orgId);
 
-      // Load Prophecy demo data
-      const showsResult = loadProphecyData();
-
-      // Load Prophecy CRM contacts
-      const contactsResult = loadProphecyContacts();
+      // DEMO DATA DISABLED FOR PRODUCTION BETA
+      // const showsResult = loadProphecyData();
+      // const contactsResult = loadProphecyContacts();
     } catch { }
 
     dispatch({ type: 'SET_SUCCESS', payload: user });

@@ -109,6 +109,11 @@ function assignDemoWht(s: Show): Show {
 }
 
 export function loadDemoData(force = false) {
+  // DISABLED FOR PRODUCTION BETA - all data should come from Firestore
+  console.log('[Demo] Demo data loading disabled for production');
+  return { loaded: false, reason: 'disabled_for_production' } as const;
+  
+  /* COMMENTED OUT FOR PRODUCTION
   const existing = showStore.getAll();
   const already = localStorage.getItem(DEMO_FLAG_KEY) === '1';
   if (already && !force) return { loaded: false, reason: 'already' } as const;
@@ -122,6 +127,7 @@ export function loadDemoData(force = false) {
   try { localStorage.setItem(DEMO_FLAG_KEY, '1'); } catch { }
   try { trackEvent('shows.demo.seed', { count: toAdd.length }); } catch { }
   return { loaded: true, added: toAdd.length } as const;
+  */
 }
 
 export function clearAllShows() {
@@ -136,10 +142,16 @@ export function isDemoLoaded() {
 
 /** Hard replace: wipes current shows and loads exactly DEMO_SHOWS (no merge). */
 export function forceReplaceDemoData() {
+  // DISABLED FOR PRODUCTION BETA - all data should come from Firestore
+  console.log('[Demo] Force replace demo data disabled for production');
+  return { replaced: false, count: 0, reason: 'disabled_for_production' } as const;
+  
+  /* COMMENTED OUT FOR PRODUCTION
   showStore.setAll(DEMO_SHOWS.map(assignDemoWht).map(s => withTenant(s, ORG_ARTIST_DANNY)));
   try { localStorage.setItem(DEMO_FLAG_KEY, '1'); } catch { }
   try { trackEvent('shows.demo.forceReplace', { count: DEMO_SHOWS.length }); } catch { }
   return { replaced: true, count: DEMO_SHOWS.length } as const;
+  */
 }
 
 // ============================================================================

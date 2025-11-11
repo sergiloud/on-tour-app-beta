@@ -298,11 +298,12 @@ const ProfileTab: React.FC = () => {
               localStorage.removeItem('demo:teams');
               localStorage.removeItem('demo:links');
               localStorage.removeItem('demo:currentOrg');
-              ensureDemoTenants();
+              // DISABLED FOR PRODUCTION BETA - no demo data
+              // ensureDemoTenants();
               // reload to pick up fresh state cleanly
               location.reload();
             } catch { }
-          }}>{t('profile.clearData') || 'Clear and reseed demo data'}</button>
+          }}>{t('profile.clearData') || 'Clear and reseed demo data (disabled in production)'}</button>
         </div>
       </section>
       {saved && <div className="text-sm text-green-300" aria-live="polite">{saved}</div>}

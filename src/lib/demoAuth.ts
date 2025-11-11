@@ -95,8 +95,11 @@ const DEFAULT_PREFS: UserPrefs = {
 
 export function ensureDemoAuth() {
   try {
-    // Skip demo auth setup if Firebase is configured
-    // Firebase users have their own authentication
+    // DISABLED FOR PRODUCTION BETA - all authentication should use Firebase
+    console.log('[DemoAuth] Production mode - demo auth disabled');
+    return;
+    
+    /* ORIGINAL CODE COMMENTED FOR PRODUCTION
     const isFirebase = typeof window !== 'undefined' && 
                        (window as any).__FIREBASE_CONFIG__ !== undefined;
     
@@ -113,6 +116,7 @@ export function ensureDemoAuth() {
     const prefs = get<Record<string, UserPrefs>>(K_PREFS, {});
     if (!prefs[DEFAULT_USER]) { prefs[DEFAULT_USER] = DEFAULT_PREFS; set(K_PREFS, prefs); }
     if (!prefs[PROPHECY_USER]) { prefs[PROPHECY_USER] = DEFAULT_PREFS; set(K_PREFS, prefs); }
+    */
   } catch { }
 }
 

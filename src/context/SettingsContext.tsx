@@ -67,7 +67,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Determine current user and load their preferences (fallback to legacy settings)
   const [userId] = useState<string>(() => {
     try {
-      ensureDemoAuth();
+      // DISABLED FOR PRODUCTION - demo auth no longer used
+      // ensureDemoAuth();
       return getCurrentUserId();
     } catch {
       // Fallback to a default if no user is set

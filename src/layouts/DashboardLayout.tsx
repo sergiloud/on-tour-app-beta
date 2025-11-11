@@ -62,8 +62,8 @@ export const DashboardLayout: React.FC = () => {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [gPressed, setGPressed] = useState(false);
   useEffect(() => { try { startViewVitals('dashboard'); } catch { } }, []);
-  // Ensure demo tenants are seeded once on dashboard mount
-  useEffect(() => { try { ensureDemoTenants(); } catch { } }, []);
+  // DISABLED FOR PRODUCTION BETA - demo tenants no longer needed
+  // useEffect(() => { try { ensureDemoTenants(); } catch { } }, []);
   // Persist last visited section per org; only restore when explicitly requested
   useEffect(() => {
     if (!org) return;

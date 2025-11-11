@@ -116,9 +116,14 @@ export function saveExpenses(expenses: Expense[]): void {
 }
 
 /**
- * Load demo expenses for Danny Avila (merge with existing)
+ * Load demo expense data
+ * DISABLED FOR PRODUCTION BETA - all data should come from Firestore
  */
 export function loadDemoExpenses(): { added: number; total: number } {
+    console.log('[Expenses] Demo expense loading disabled for production');
+    return { added: 0, total: 0 };
+    
+    /* COMMENTED OUT FOR PRODUCTION
     const existing = loadExpenses();
     const existingIds = new Set(existing.map(e => e.id));
 
@@ -132,6 +137,7 @@ export function loadDemoExpenses(): { added: number; total: number } {
     }
 
     return { added: 0, total: existing.length };
+    */
 }
 
 /**

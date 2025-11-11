@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
-import { ensureDemoAuth, getCurrentUserId, getUserPrefs, getUserProfile, readAllPrefs, setCurrentUserId, upsertUserPrefs, upsertUserProfile, type UserPrefs, type UserProfile, PROPHECY_USER } from '../lib/demoAuth';
-import { ensureDemoTenants } from '../lib/tenants';
+import { getCurrentUserId, getUserPrefs, getUserProfile, readAllPrefs, setCurrentUserId, upsertUserPrefs, upsertUserProfile, type UserPrefs, type UserProfile, PROPHECY_USER } from '../lib/demoAuth';
+// DISABLED FOR PRODUCTION BETA - all data comes from Firestore now
+// import { ensureDemoAuth, ensureDemoTenants } from '../lib/demoAuth';
 import { activityTracker } from '../lib/activityTracker';
 
 interface AuthCtx {
@@ -15,7 +16,8 @@ interface AuthCtx {
 const AuthContext = createContext<AuthCtx | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userId, setUserIdState] = useState<string>(()=>{ try { ensureDemoAuth(); ensureDemoTenants(); return getCurrentUserId() || ''; } catch { return ''; } });
+  // DISABLED FOR PRODUCTION BETA - getCurrentUserId will handle Firebase users
+  const [userId, setUserIdState] = useState<string>(()=>{ try { return getCurrentUserId() || ''; } catch { return ''; } });
   const [profile, setProfile] = useState(()=> getUserProfile(userId) || { id: userId, name: 'User', email: 'user@example.com' });
   const [prefs, setPrefs] = useState(()=> readAllPrefs(userId));
 
@@ -114,14 +116,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Could not load frontend Prophecy data:', e);
       }
 
+      // DISABLED FOR PRODUCTION BETA
       // Initialize backend data asynchronously
-      try {
+      /* try {
         import('../services/prophecyBackendService').then(({ ProphecyBackendService }) => {
           ProphecyBackendService.initializeProphecyUser('org_artist_prophecy');
         });
       } catch (e) {
         console.warn('Could not initialize backend Prophecy data:', e);
-      }
+      } */
     }
   }, []);
 

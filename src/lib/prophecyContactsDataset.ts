@@ -1,13 +1,17 @@
 /**
  * Prophecy CRM Contacts Dataset
- * Promotores y contactos reales de Prophecy
+ * DISABLED FOR PRODUCTION BETA - all contacts should come from Firestore
  */
 
 import type { Contact } from '../types/crm';
 import { contactStore } from '../shared/contactStore';
 
-export const PROPHECY_CONTACTS: Omit<Contact, 'id'>[] = [
-  // Primera página
+// DEMO DATA DISABLED FOR PRODUCTION BETA
+// Previously contained ~1000+ hardcoded Prophecy promoter contacts
+export const PROPHECY_CONTACTS: Omit<Contact, 'id'>[] = [];
+
+/* COMMENTED OUT FOR PRODUCTION - 8600+ lines of hardcoded contact data removed
+[
   {
     firstName: 'Linyi',
     lastName: 'Zeng Lana',
@@ -8674,6 +8678,7 @@ export const PROPHECY_CONTACTS: Omit<Contact, 'id'>[] = [
     interactions: []
   }
 ];
+END OF COMMENTED DEMO DATA */
 
 /**
  * Carga los contactos de Prophecy en el contactStore
@@ -8681,6 +8686,11 @@ export const PROPHECY_CONTACTS: Omit<Contact, 'id'>[] = [
  * For demo users: loads to localStorage
  */
 export async function loadProphecyContacts(): Promise<{ added: number; total: number }> {
+  // DISABLED FOR PRODUCTION BETA - all data should come from Firestore
+  console.log('[Prophecy Contacts Dataset] Demo contact loading disabled for production');
+  return { added: 0, total: 0 };
+  
+  /* COMMENTED OUT FOR PRODUCTION
   try {
     const { isFirebaseConfigured } = await import('./firebase');
     const { getCurrentUserId } = await import('./demoAuth');
@@ -8729,4 +8739,5 @@ export async function loadProphecyContacts(): Promise<{ added: number; total: nu
     console.error('[Prophecy Contacts Dataset] Error loading contacts:', error);
     return { added: 0, total: 0 };
   }
+  */
 }

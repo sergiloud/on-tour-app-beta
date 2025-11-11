@@ -1257,13 +1257,6 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                           onChange={e => setDraft((d: ShowDraft) => ({ ...d, city: e.target.value }))}
                           onBlur={e => { const v = e.target.value.trim(); if (v) recordCity(v); }}
                         />
-                        {recentCities.length > 0 && (
-                          <div className="hidden sm:flex items-center gap-0.5" aria-label={t('shows.editor.city.recent') || 'Recent cities'}>
-                            {recentCities.slice(0, 2).map(rc => (
-                              <button key={rc} type="button" className="px-1 py-0.5 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, city: rc })); recordCity(rc); }}>{rc}</button>
-                            ))}
-                          </div>
-                        )}
                       </div>
                       <datalist id="city-suggestions">
                         {recentCities.map(c => <option key={'city-' + c} value={c} />)}
@@ -1350,13 +1343,6 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       country={draft.country}
                       className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:focus:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 text-sm"
                     />
-                    {recentVenues.length > 0 && (
-                      <div className="hidden md:flex items-center gap-0.5" aria-label={t('shows.editor.venue.recent') || 'Recent venues'}>
-                        {recentVenues.slice(0, 3).map(rv => (
-                          <button key={rv} type="button" className="px-1.5 py-1 rounded text-[9px] bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition-all" onClick={() => { setDraft((d: ShowDraft) => ({ ...d, venue: rv })); recordVenue(rv); }}>{rv}</button>
-                        ))}
-                      </div>
-                    )}
                   </label>
                 </div>
 

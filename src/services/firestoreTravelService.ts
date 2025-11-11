@@ -45,6 +45,29 @@ export interface TravelItinerary {
 
 export class FirestoreTravelService {
   /**
+   * Recursively remove undefined values from an object
+   */
+  private static removeUndefined(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeUndefined(item));
+    }
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const key in obj) {
+        const value = obj[key];
+        if (value !== undefined) {
+          cleaned[key] = this.removeUndefined(value);
+        }
+      }
+      return cleaned;
+    }
+    return obj;
+  }
+
+  /**
    * Save itinerary to Firestore
    */
   static async saveItinerary(itinerary: TravelItinerary, userId: string): Promise<void> {
@@ -53,12 +76,12 @@ export class FirestoreTravelService {
     }
 
     const itineraryRef = doc(db, `users/${userId}/itineraries/${itinerary.id}`);
-    const itineraryData = {
+    const itineraryData = this.removeUndefined({
       ...itinerary,
       updatedAt: Timestamp.now()
-    };
+    });
 
-    await setDoc(itineraryRef, itineraryData);
+    await setDoc(itineraryRef, itineraryData, { merge: true });
   }
 
   /**

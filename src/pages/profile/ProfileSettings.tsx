@@ -161,17 +161,6 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
   const agencies = type === 'booking' ? bookingAgencies : managementAgencies;
   const maxAgencies = 5;
 
-  // Debug: Log on mount
-  React.useEffect(() => {
-    console.log('[AgenciesManager] Component mounted, type:', type);
-    console.log('[AgenciesManager] Current agencies:', agencies);
-    console.log('[AgenciesManager] useSettings hook:', { addAgency, updateAgency, removeAgency });
-  }, []);
-
-  React.useEffect(() => {
-    console.log('[AgenciesManager] Agencies updated:', agencies);
-  }, [agencies]);
-
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -188,20 +177,6 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
       return;
     }
 
-    // VISUAL DEBUG - IMPOSSIBLE TO MISS
-    window.alert('🔥 DEBUG: handleAdd() EJECUTADO - código actualizado funcionando!');
-    console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.warn('🔥🔥🔥 [ProfileSettings] ADDING AGENCY 🔥🔥🔥');
-    console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.warn('[ProfileSettings] Adding agency:', {
-      name: formData.name || `${type} Agency ${agencies.length + 1}`,
-      type,
-      commissionPct: formData.commissionPct,
-      territoryMode: formData.territoryMode,
-      continents: formData.continents,
-      countries: formData.countries
-    });
-
     const result = addAgency({
       name: formData.name || `${type} Agency ${agencies.length + 1}`,
       type,
@@ -212,22 +187,14 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
       notes: formData.notes || undefined
     });
 
-    console.warn('[ProfileSettings] Add agency result:', result);
-    console.warn('[ProfileSettings] Current bookingAgencies:', bookingAgencies);
-    console.warn('[ProfileSettings] Current managementAgencies:', managementAgencies);
-
     if (result.ok) {
-      console.warn('[ProfileSettings] ✅ Agency added successfully:', result.agency);
-      window.alert(`✅ Agencia añadida: ${result.agency?.name}\nTotal ${type}: ${agencies.length + 1}`);
       resetForm();
     } else {
-      console.error('[ProfileSettings] ❌ Failed to add agency:', result.reason);
       alert(result.reason || 'Could not add agency');
     }
   };
 
   const handleUpdate = (id: string) => {
-    console.log('[ProfileSettings] Updating agency:', id, formData);
     updateAgency(id, {
       name: formData.name,
       commissionPct: formData.commissionPct,
@@ -236,14 +203,12 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
       countries: formData.countries.length > 0 ? formData.countries : undefined,
       notes: formData.notes || undefined
     });
-    console.log('[ProfileSettings] ✅ Agency updated');
     setEditingId(null);
     resetForm();
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Delete this agency?')) {
-      console.log('[ProfileSettings] Deleting agency:', id);
       removeAgency(id);
       console.log('[ProfileSettings] ✅ Agency deleted');
     }

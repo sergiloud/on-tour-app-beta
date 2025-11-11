@@ -42,6 +42,29 @@ export interface FinanceTargets {
 
 export class FirestoreFinanceService {
   /**
+   * Recursively remove undefined values from an object
+   */
+  private static removeUndefined(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeUndefined(item));
+    }
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const key in obj) {
+        const value = obj[key];
+        if (value !== undefined) {
+          cleaned[key] = this.removeUndefined(value);
+        }
+      }
+      return cleaned;
+    }
+    return obj;
+  }
+
+  /**
    * Save transaction to Firestore
    */
   static async saveTransaction(transaction: FinanceTransaction, userId: string): Promise<void> {
@@ -50,12 +73,12 @@ export class FirestoreFinanceService {
     }
 
     const transactionRef = doc(db, `users/${userId}/transactions/${transaction.id}`);
-    const transactionData = {
+    const transactionData = this.removeUndefined({
       ...transaction,
       updatedAt: Timestamp.now()
-    };
+    });
 
-    await setDoc(transactionRef, transactionData);
+    await setDoc(transactionRef, transactionData, { merge: true });
   }
 
   /**
@@ -232,12 +255,12 @@ export class FirestoreFinanceService {
     }
 
     const targetsRef = doc(db, `users/${userId}/finance/targets`);
-    const targetsData = {
+    const targetsData = this.removeUndefined({
       ...targets,
       updatedAt: Timestamp.now()
-    };
+    });
 
-    await setDoc(targetsRef, targetsData);
+    await setDoc(targetsRef, targetsData, { merge: true });
   }
 
   /**

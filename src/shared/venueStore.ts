@@ -74,6 +74,15 @@ class VenueStore {
     this.notify();
   }
 
+  // Batch add - para sincronización masiva sin múltiples notificaciones
+  setAll(venues: Venue[]): void {
+    this.venues.clear();
+    venues.forEach(venue => {
+      this.venues.set(venue.id, venue);
+    });
+    this.notify();
+  }
+
   update(id: string, updates: Partial<Venue>): void {
     const venue = this.venues.get(id);
     if (venue) {

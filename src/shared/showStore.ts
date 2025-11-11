@@ -192,15 +192,19 @@ class ShowStore {
     }
   }
 
-  removeShow(id: string) {
+  async removeShow(id: string) {
+    // Optimistically remove from UI first
     const next = this.shows.filter(s => s.id !== id);
     this.setAll(next);
     
     // Sync deletion to Firebase
     if (HybridShowService) {
-      HybridShowService.deleteShow(id).catch((err: Error) => {
+      try {
+        await HybridShowService.deleteShow(id);
+      } catch (err) {
         console.warn('Failed to sync show deletion to Firebase:', err);
-      });
+        // Optionally: rollback the optimistic update here if needed
+      }
     }
   }
 

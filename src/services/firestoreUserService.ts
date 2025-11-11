@@ -76,6 +76,29 @@ export interface UserData {
 
 export class FirestoreUserService {
   /**
+   * Recursively remove undefined values from an object
+   */
+  private static removeUndefined(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeUndefined(item));
+    }
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const key in obj) {
+        const value = obj[key];
+        if (value !== undefined) {
+          cleaned[key] = this.removeUndefined(value);
+        }
+      }
+      return cleaned;
+    }
+    return obj;
+  }
+
+  /**
    * Save user profile to Firestore
    */
   static async saveProfile(profile: UserProfile, userId: string): Promise<void> {
@@ -84,12 +107,12 @@ export class FirestoreUserService {
     }
 
     const profileRef = doc(db, `users/${userId}/profile/main`);
-    const profileData = {
+    const profileData = this.removeUndefined({
       ...profile,
       updatedAt: Timestamp.now()
-    };
+    });
 
-    await setDoc(profileRef, profileData);
+    await setDoc(profileRef, profileData, { merge: true });
   }
 
   /**
@@ -125,10 +148,10 @@ export class FirestoreUserService {
     }
 
     const profileRef = doc(db, `users/${userId}/profile/main`);
-    const profileData = {
+    const profileData = this.removeUndefined({
       ...updates,
       updatedAt: Timestamp.now()
-    };
+    });
 
     await setDoc(profileRef, profileData, { merge: true });
   }
@@ -142,12 +165,12 @@ export class FirestoreUserService {
     }
 
     const prefsRef = doc(db, `users/${userId}/profile/preferences`);
-    const prefsData = {
+    const prefsData = this.removeUndefined({
       ...preferences,
       updatedAt: Timestamp.now()
-    };
+    });
 
-    await setDoc(prefsRef, prefsData);
+    await setDoc(prefsRef, prefsData, { merge: true });
   }
 
   /**
@@ -184,10 +207,10 @@ export class FirestoreUserService {
     }
 
     const prefsRef = doc(db, `users/${userId}/profile/preferences`);
-    const prefsData = {
+    const prefsData = this.removeUndefined({
       ...updates,
       updatedAt: Timestamp.now()
-    };
+    });
 
     await setDoc(prefsRef, prefsData, { merge: true });
   }
@@ -200,28 +223,7 @@ export class FirestoreUserService {
       throw new Error('Firestore not initialized');
     }
 
-    console.log('[FirestoreUserService] Saving settings for user:', userId);
-    console.log('[FirestoreUserService] Settings data:', settings);
-
-    // Remove undefined values recursively (Firestore doesn't support them)
-    const removeUndefined = (obj: any): any => {
-      if (Array.isArray(obj)) {
-        return obj.map(item => removeUndefined(item));
-      }
-      if (obj !== null && typeof obj === 'object') {
-        const cleaned: any = {};
-        for (const key in obj) {
-          if (obj[key] !== undefined) {
-            cleaned[key] = removeUndefined(obj[key]);
-          }
-        }
-        return cleaned;
-      }
-      return obj;
-    };
-
-    const cleanSettings = removeUndefined(settings);
-    console.log('[FirestoreUserService] Cleaned settings:', cleanSettings);
+    const cleanSettings = this.removeUndefined(settings);
 
     const settingsRef = doc(db, `users/${userId}/profile/settings`);
     const settingsData = {
@@ -230,7 +232,6 @@ export class FirestoreUserService {
     };
 
     await setDoc(settingsRef, settingsData, { merge: true });
-    console.log('[FirestoreUserService] Settings saved successfully');
   }
 
   /**

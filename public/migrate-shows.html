@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migrar Shows - On Tour App</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0a0a0a;
+      color: #fff;
+    }
+    .container {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 30px;
+    }
+    h1 { color: #00ff88; margin-top: 0; }
+    button {
+      background: #00ff88;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    button:hover { background: #00dd77; }
+    button:disabled {
+      background: #444;
+      color: #888;
+      cursor: not-allowed;
+    }
+    .log {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .log div { margin: 5px 0; }
+    .success { color: #00ff88; }
+    .error { color: #ff4444; }
+    .info { color: #4af; }
+    .warning { color: #ffaa00; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .stat {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+    .stat-label {
+      color: #888;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚚 Migración de Shows</h1>
+    <p>Esta herramienta moverá los shows desde la colección raíz <code>shows/</code> a tu subcolección personal <code>users/{userId}/shows/</code>.</p>
+    
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Shows en raíz</div>
+        <div class="stat-value" id="rootCount">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Shows migrados</div>
+        <div class="stat-value success" id="migratedCount">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Errores</div>
+        <div class="stat-value error" id="errorCount">0</div>
+      </div>
+    </div>
+
+    <button id="checkBtn" onclick="checkShows()">🔍 Verificar Shows</button>
+    <button id="migrateBtn" onclick="migrateShows()" disabled>🚀 Iniciar Migración</button>
+    <button id="clearBtn" onclick="clearLog()">🗑️ Limpiar Log</button>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDCKhH8TMdoK5ioFS_ABmPsVzacKk7WDmo",
+      authDomain: "on-tour-app-712e2.firebaseapp.com",
+      projectId: "on-tour-app-712e2",
+      storageBucket: "on-tour-app-712e2.firebasestorage.app",
+      messagingSenderId: "728535007953",
+      appId: "1:728535007953:web:b83c4146ebf42c177bfbf0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let showsData = [];
+
+    // Monitor auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        log(`✅ Autenticado como: ${user.email}`, 'success');
+        log(`   User ID: ${user.uid}`, 'info');
+      } else {
+        log('⚠️ No estás autenticado. Inicia sesión primero.', 'warning');
+        log('   Ve a la app principal y luego vuelve aquí.', 'info');
+      }
+    });
+
+    function log(message, type = 'info') {
+      const logEl = document.getElementById('log');
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = message;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+      console.log(message);
+    }
+
+    window.clearLog = function() {
+      document.getElementById('log').innerHTML = '';
+    };
+
+    window.checkShows = async function() {
+      if (!currentUser) {
+        log('❌ Debes estar autenticado', 'error');
+        return;
+      }
+
+      try {
+        const checkBtn = document.getElementById('checkBtn');
+        checkBtn.disabled = true;
+        checkBtn.textContent = '🔍 Verificando...';
+
+        log('🔍 Buscando shows en la colección raíz...', 'info');
+        
+        const rootShowsRef = collection(db, 'shows');
+        const snapshot = await getDocs(rootShowsRef);
+        
+        showsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          data: doc.data()
+        }));
+
+        document.getElementById('rootCount').textContent = showsData.length;
+        
+        log(`📦 Encontrados ${showsData.length} shows en la colección raíz`, 'success');
+        
+        if (showsData.length > 0) {
+          log('📋 Shows encontrados:', 'info');
+          showsData.forEach(show => {
+            log(`   - ${show.id}: ${show.data.city || 'Sin ciudad'} (${show.data.date || 'Sin fecha'})`, 'info');
+          });
+          
+          document.getElementById('migrateBtn').disabled = false;
+        } else {
+          log('✅ No hay shows para migrar', 'success');
+        }
+
+        checkBtn.disabled = false;
+        checkBtn.textContent = '🔍 Verificar Shows';
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+        console.error(error);
+        checkBtn.disabled = false;
+        checkBtn.textContent = '🔍 Verificar Shows';
+      }
+    };
+
+    window.migrateShows = async function() {
+      if (!currentUser) {
+        log('❌ Debes estar autenticado', 'error');
+        return;
+      }
+
+      if (showsData.length === 0) {
+        log('⚠️ Primero verifica los shows', 'warning');
+        return;
+      }
+
+      const confirmMsg = `¿Estás seguro de migrar ${showsData.length} shows?\n\nEsto moverá los shows desde la colección raíz a:\nusers/${currentUser.uid}/shows/\n\n✅ Esta operación es segura y reversible.`;
+      
+      if (!confirm(confirmMsg)) {
+        log('❌ Migración cancelada por el usuario', 'warning');
+        return;
+      }
+
+      try {
+        const migrateBtn = document.getElementById('migrateBtn');
+        migrateBtn.disabled = true;
+        migrateBtn.textContent = '🚀 Migrando...';
+
+        let migrated = 0;
+        let errors = 0;
+
+        log('', 'info');
+        log('🚀 Iniciando migración...', 'info');
+        log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+
+        // Paso 1: Copiar a la subcolección del usuario (batch)
+        log('📝 Paso 1/2: Copiando shows a tu subcolección...', 'info');
+        const batch = writeBatch(db);
+        
+        for (const show of showsData) {
+          try {
+            const userShowRef = doc(db, 'users', currentUser.uid, 'shows', show.id);
+            batch.set(userShowRef, show.data, { merge: true });
+            log(`   ✓ Preparando: ${show.id}`, 'success');
+          } catch (error) {
+            log(`   ✗ Error preparando ${show.id}: ${error.message}`, 'error');
+            errors++;
+          }
+        }
+
+        await batch.commit();
+        log('✅ Shows copiados a users/' + currentUser.uid + '/shows/', 'success');
+
+        // Paso 2: Eliminar de la colección raíz
+        log('', 'info');
+        log('🗑️  Paso 2/2: Eliminando shows de la colección raíz...', 'info');
+        
+        for (const show of showsData) {
+          try {
+            await deleteDoc(doc(db, 'shows', show.id));
+            migrated++;
+            log(`   ✓ Eliminado: ${show.id}`, 'success');
+            document.getElementById('migratedCount').textContent = migrated;
+          } catch (error) {
+            log(`   ✗ Error eliminando ${show.id}: ${error.message}`, 'error');
+            errors++;
+            document.getElementById('errorCount').textContent = errors;
+          }
+        }
+
+        log('', 'info');
+        log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+        log('📊 Resumen:', 'info');
+        log(`   ✅ Shows migrados: ${migrated}`, 'success');
+        log(`   ❌ Errores: ${errors}`, errors > 0 ? 'error' : 'info');
+        log(`   📍 Ubicación: users/${currentUser.uid}/shows/`, 'info');
+        log('', 'info');
+        log('🎉 ¡Migración completada!', 'success');
+        log('   Ahora puedes volver a la app y verificar tus shows.', 'info');
+
+        migrateBtn.textContent = '✅ Migración Completa';
+        document.getElementById('rootCount').textContent = '0';
+        showsData = [];
+      } catch (error) {
+        log(`❌ Error en la migración: ${error.message}`, 'error');
+        console.error(error);
+        migrateBtn.disabled = false;
+        migrateBtn.textContent = '🚀 Iniciar Migración';
+      }
+    };
+
+    // Log inicial
+    log('🚚 Herramienta de migración de shows', 'info');
+    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+    log('Esperando autenticación...', 'info');
+  </script>
+</body>
+</html>

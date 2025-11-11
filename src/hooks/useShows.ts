@@ -90,6 +90,6 @@ export function useShows() {
   const add = (s: Show) => showStore.addShow(s);
   const setAll = (list: Show[]) => showStore.setAll(list);
   const update = (id: string, patch: Partial<Show> & Record<string, unknown>) => showStore.updateShow(id, patch);
-  const remove = (id: string) => showStore.removeShow(id);
+  const remove = async (id: string) => await showStore.removeShow(id);
   return { shows, add, setAll, update, remove };
 }

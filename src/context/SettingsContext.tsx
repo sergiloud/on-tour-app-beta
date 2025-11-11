@@ -70,16 +70,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       // Try to get Firebase Auth user first
       if (auth?.currentUser) {
-        console.log('🔥 [SettingsContext] Using Firebase Auth user:', auth.currentUser.uid);
-        console.log('🔥 [SettingsContext] User email:', auth.currentUser.email);
         return auth.currentUser.uid;
       }
       // Fallback to demo auth
       const demoUser = getCurrentUserId();
-      console.log('⚠️ [SettingsContext] Using demo user:', demoUser);
       return demoUser;
     } catch {
-      console.log('❌ [SettingsContext] Fallback to default_user');
       return 'default_user';
     }
   });
@@ -90,13 +86,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        console.log('🔥 [SettingsContext] Auth state changed - user logged in:', user.uid);
-        console.log('🔥 [SettingsContext] User email:', user.email);
         // Set loading flag to prevent save before Firestore load completes
         setIsLoadingFromFirestore(true);
         setUserId(user.uid);
       } else {
-        console.log('⚠️ [SettingsContext] Auth state changed - user logged out');
         // Fallback to demo user
         const demoUser = getCurrentUserId();
         setUserId(demoUser || 'default_user');
@@ -141,27 +134,21 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     let isMounted = true;
     (async () => {
       try {
-        console.log('📥 [SettingsContext] Loading agencies for userId:', userId);
         setIsLoadingFromFirestore(true);
         const { FirestoreUserService } = await import('../services/firestoreUserService');
         const settings = await FirestoreUserService.getSettings(userId);
-        console.log('📥 [SettingsContext] Firestore settings received:', settings);
         
         if (isMounted && settings) {
           // Always load arrays from Firestore if they exist (even if empty)
           if (settings.bookingAgencies !== undefined) {
-            console.log('📥 [SettingsContext] Loading booking agencies from Firestore:', settings.bookingAgencies);
             setBookingAgencies(settings.bookingAgencies);
           }
           if (settings.managementAgencies !== undefined) {
-            console.log('📥 [SettingsContext] Loading management agencies from Firestore:', settings.managementAgencies);
             setManagementAgencies(settings.managementAgencies);
           }
-        } else {
-          console.log('⚠️ [SettingsContext] No settings found in Firestore for user:', userId);
         }
       } catch (e) {
-        console.error('❌ [SettingsContext] Error loading agencies from Firestore:', e);
+        console.error('[SettingsContext] Error loading agencies from Firestore:', e);
       } finally {
         if (isMounted) {
           setIsLoadingFromFirestore(false);
@@ -171,14 +158,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => { isMounted = false; };
   }, [userId]);
 
-  // Initial load migrated above via initial
-
   // Storage versioning: store a version and allow future migrations to branch cleanly
   const SETTINGS_VERSION = 1 as const;
   useEffect(() => {
     // Skip save during initial load from Firestore
     if (isLoadingFromFirestore) {
-      console.log('⏭️ [SettingsContext] Skipping save - loading from Firestore');
       return;
     }
 
@@ -206,22 +190,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         // Skip if using demo user
         if (!auth || !auth.currentUser || userId === 'default_user' || userId.startsWith('demo_')) {
-          console.warn('⚠️ [SettingsContext] Skipping Firestore sync - no Firebase Auth user');
-          console.warn('   Current userId:', userId);
-          console.warn('   auth.currentUser:', auth?.currentUser?.uid);
           return;
         }
-
-        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.error('🔥 [SettingsContext] SYNCING TO FIRESTORE');
-        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.error('   Firebase Auth user:', auth.currentUser.uid);
-        console.error('   Firebase Auth email:', auth.currentUser.email);
-        console.error('   userId state:', userId);
-        console.error('   Path: users/' + userId + '/profile/settings');
-        console.error('   Booking agencies:', bookingAgencies.length);
-        console.error('   Management agencies:', managementAgencies.length);
-        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         const { FirestoreUserService } = await import('../services/firestoreUserService');
         await FirestoreUserService.saveSettings({
@@ -229,17 +199,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           managementAgencies,
           updatedAt: new Date().toISOString()
         }, userId);
-        
-        console.error('✅ [SettingsContext] Agencies successfully synced to Firestore');
-        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       } catch (e) {
-        console.error('❌ [SettingsContext] Error syncing agencies to Firestore:', e);
-        console.error('[SettingsContext] Error details:', {
-          name: (e as any)?.name,
-          message: (e as any)?.message,
-          code: (e as any)?.code,
-          stack: (e as any)?.stack
-        });
+        console.error('[SettingsContext] Error syncing agencies to Firestore:', e);
       }
     })();
     
@@ -340,14 +301,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const handleAddAgency = useCallback((a: Omit<AgencyConfig, 'id'>) => {
-    console.log('[SettingsContext] handleAddAgency called with:', a);
     const max = 3;
     if (a.type === 'booking') {
       let added: AgencyConfig | undefined;
       setBookingAgencies(prev => {
-        console.log('[SettingsContext] Current booking agencies:', prev);
         if (prev.length >= max) {
-          console.warn('[SettingsContext] Booking agencies limit reached:', max);
           return prev;
         }
         const pct = Math.max(0, Math.min(100, a.commissionPct));
@@ -363,23 +321,18 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ...(a.countries !== undefined && { countries: a.countries }),
           ...(a.notes !== undefined && { notes: a.notes })
         } as AgencyConfig;
-        console.log('[SettingsContext] Adding booking agency:', added);
         return [...prev, added];
       });
       if (!added) { 
-        console.error('[SettingsContext] Failed to add booking agency - limit reached');
         try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }
         return { ok: false, reason: 'limit' } as const;
       }
-      console.log('[SettingsContext] ✅ Booking agency added successfully:', added);
       try { trackEvent('settings.agency.add', { type: a.type, commission: added.commissionPct, territoryMode: added.territoryMode }); } catch { }
       return { ok: true, agency: added } as const;
     } else {
       let added: AgencyConfig | undefined;
       setManagementAgencies(prev => {
-        console.log('[SettingsContext] Current management agencies:', prev);
         if (prev.length >= max) {
-          console.warn('[SettingsContext] Management agencies limit reached:', max);
           return prev;
         }
         const pct = Math.max(0, Math.min(100, a.commissionPct));
@@ -395,34 +348,27 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ...(a.countries !== undefined && { countries: a.countries }),
           ...(a.notes !== undefined && { notes: a.notes })
         } as AgencyConfig;
-        console.log('[SettingsContext] Adding management agency:', added);
         return [...prev, added];
       });
       if (!added) {
-        console.error('[SettingsContext] Failed to add management agency - limit reached');
         try { trackEvent('settings.agency.limit', { type: a.type }); } catch { }
         return { ok: false, reason: 'limit' } as const;
       }
-      console.log('[SettingsContext] ✅ Management agency added successfully:', added);
       try { trackEvent('settings.agency.add', { type: a.type, commission: added.commissionPct, territoryMode: added.territoryMode }); } catch { }
       return { ok: true, agency: added } as const;
     }
   }, []);
 
   const handleUpdateAgency = useCallback((id: string, patch: Partial<AgencyConfig>) => {
-    console.log('[SettingsContext] handleUpdateAgency called:', id, patch);
     const apply = (arr: AgencyConfig[]) => arr.map(a => a.id === id ? { ...a, ...patch, commissionPct: patch.commissionPct != null ? Math.max(0, Math.min(100, patch.commissionPct)) : a.commissionPct } : a);
     setBookingAgencies(a => apply(a));
     setManagementAgencies(a => apply(a));
-    console.log('[SettingsContext] ✅ Agency updated');
     try { trackEvent('settings.agency.update', { id, ...patch }); } catch { }
   }, []);
 
   const handleRemoveAgency = useCallback((id: string) => {
-    console.log('[SettingsContext] handleRemoveAgency called:', id);
     setBookingAgencies(a => a.filter(x => x.id !== id));
     setManagementAgencies(a => a.filter(x => x.id !== id));
-    console.log('[SettingsContext] ✅ Agency removed');
     try { trackEvent('settings.agency.remove', { id }); } catch { }
   }, []);
 

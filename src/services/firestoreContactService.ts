@@ -15,6 +15,7 @@ import {
   where,
   orderBy,
   onSnapshot,
+  writeBatch,
   Timestamp,
   type Unsubscribe
 } from 'firebase/firestore';
@@ -24,6 +25,29 @@ import { deduplicateFirestoreQuery } from '../lib/requestDeduplication';
 
 export class FirestoreContactService {
   /**
+   * Recursively remove undefined values from an object
+   */
+  private static removeUndefined(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeUndefined(item));
+    }
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const key in obj) {
+        const value = obj[key];
+        if (value !== undefined) {
+          cleaned[key] = this.removeUndefined(value);
+        }
+      }
+      return cleaned;
+    }
+    return obj;
+  }
+
+  /**
    * Save contact to Firestore
    */
   static async saveContact(contact: Contact, userId: string): Promise<void> {
@@ -32,12 +56,12 @@ export class FirestoreContactService {
     }
 
     const contactRef = doc(db, `users/${userId}/contacts/${contact.id}`);
-    const contactData = {
+    const contactData = this.removeUndefined({
       ...contact,
       updatedAt: Timestamp.now()
-    };
+    });
 
-    await setDoc(contactRef, contactData);
+    await setDoc(contactRef, contactData, { merge: true });
   }
 
   /**
@@ -138,16 +162,39 @@ export class FirestoreContactService {
   /**
    * Batch save multiple contacts (for migration/import)
    */
+  /**
+   * Batch save contacts - Optimized with batch writes
+   */
   static async saveContacts(contacts: Contact[], userId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const promises = contacts.map(contact =>
-      this.saveContact(contact, userId)
-    );
+    // Firestore batches have a limit of 500 operations
+    const BATCH_SIZE = 500;
+    const chunks = [];
+    
+    for (let i = 0; i < contacts.length; i += BATCH_SIZE) {
+      chunks.push(contacts.slice(i, i + BATCH_SIZE));
+    }
 
-    await Promise.all(promises);
+    for (const chunk of chunks) {
+      const batch = writeBatch(db);
+      
+      for (const contact of chunk) {
+        const contactRef = doc(db, `users/${userId}/contacts/${contact.id}`);
+        const contactData = this.removeUndefined({
+          ...contact,
+          updatedAt: Timestamp.now()
+        });
+        
+        batch.set(contactRef, contactData, { merge: true });
+      }
+      
+      await batch.commit();
+    }
+    
+    console.log(`✅ Batch saved ${contacts.length} contacts`);
   }
 
   /**

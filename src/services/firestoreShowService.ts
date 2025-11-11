@@ -12,6 +12,7 @@ import {
   limit,
   addDoc,
   onSnapshot,
+  writeBatch,
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -19,7 +20,35 @@ import { Show } from '../lib/shows';
 import { deduplicateFirestoreQuery } from '../lib/requestDeduplication';
 
 export class FirestoreShowService {
-  private static COLLECTION = 'shows';
+  /**
+   * Get collection path for user shows
+   */
+  private static getUserShowsPath(userId: string): string {
+    return `users/${userId}/shows`;
+  }
+
+  /**
+   * Recursively remove undefined values from an object
+   */
+  private static removeUndefined(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeUndefined(item));
+    }
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const key in obj) {
+        const value = obj[key];
+        if (value !== undefined) {
+          cleaned[key] = this.removeUndefined(value);
+        }
+      }
+      return cleaned;
+    }
+    return obj;
+  }
 
   /**
    * Save show to Firestore
@@ -29,14 +58,14 @@ export class FirestoreShowService {
       throw new Error('Firestore not initialized');
     }
 
-    const showData = {
+    const showData = this.removeUndefined({
       ...show,
       userId,
       updatedAt: Timestamp.now(),
       createdAt: Timestamp.now() // Always use current time for creation
-    };
+    });
 
-    await setDoc(doc(db, this.COLLECTION, show.id), showData);
+    await setDoc(doc(db, this.getUserShowsPath(userId), show.id), showData, { merge: true });
   }
 
   /**
@@ -49,11 +78,8 @@ export class FirestoreShowService {
         throw new Error('Firestore not initialized');
       }
 
-      const q = query(
-        collection(db, this.COLLECTION),
-        where('userId', '==', userId),
-        orderBy('date', 'desc')
-      );
+      const showsRef = collection(db, this.getUserShowsPath(userId));
+      const q = query(showsRef, orderBy('date', 'desc'));
 
       const snapshot = await getDocs(q);
       return snapshot.docs.map(doc => {
@@ -86,7 +112,7 @@ export class FirestoreShowService {
       throw new Error('Firestore not initialized');
     }
 
-    const docRef = doc(db, this.COLLECTION, showId);
+    const docRef = doc(db, this.getUserShowsPath(userId), showId);
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
@@ -125,18 +151,20 @@ export class FirestoreShowService {
       throw new Error('Firestore not initialized');
     }
 
-    const docRef = doc(db, this.COLLECTION, showId);
+    const docRef = doc(db, this.getUserShowsPath(userId), showId);
     
     // Security: Check ownership first
     const existingDoc = await getDoc(docRef);
-    if (!existingDoc.exists() || existingDoc.data().userId !== userId) {
-      throw new Error('Show not found or access denied');
+    if (!existingDoc.exists()) {
+      throw new Error('Show not found');
     }
 
-    await updateDoc(docRef, {
+    const cleanUpdates = this.removeUndefined({
       ...updates,
       updatedAt: Timestamp.now()
     });
+
+    await updateDoc(docRef, cleanUpdates);
   }
 
   /**
@@ -147,27 +175,52 @@ export class FirestoreShowService {
       throw new Error('Firestore not initialized');
     }
 
-    const docRef = doc(db, this.COLLECTION, showId);
+    const docRef = doc(db, this.getUserShowsPath(userId), showId);
     
     // Security: Check ownership first
     const existingDoc = await getDoc(docRef);
-    if (!existingDoc.exists() || existingDoc.data().userId !== userId) {
-      throw new Error('Show not found or access denied');
+    if (!existingDoc.exists()) {
+      throw new Error('Show not found');
     }
 
     await deleteDoc(docRef);
   }
 
   /**
-   * Bulk save shows (for migration/seeding)
+   * Bulk save shows (for migration/seeding) - Optimized with batch writes
    */
   static async bulkSaveShows(shows: Show[], userId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const promises = shows.map(show => this.saveShow(show, userId));
-    await Promise.all(promises);
+    // Firestore batches have a limit of 500 operations
+    const BATCH_SIZE = 500;
+    const chunks = [];
+    
+    for (let i = 0; i < shows.length; i += BATCH_SIZE) {
+      chunks.push(shows.slice(i, i + BATCH_SIZE));
+    }
+
+    for (const chunk of chunks) {
+      const batch = writeBatch(db);
+      
+      for (const show of chunk) {
+        const showRef = doc(db, this.getUserShowsPath(userId), show.id);
+        const showData = this.removeUndefined({
+          ...show,
+          userId,
+          updatedAt: Timestamp.now(),
+          createdAt: Timestamp.now()
+        });
+        
+        batch.set(showRef, showData, { merge: true });
+      }
+      
+      await batch.commit();
+    }
+    
+    console.log(`✅ Bulk saved ${shows.length} shows using batch writes`);
   }
 
   /**
@@ -178,11 +231,8 @@ export class FirestoreShowService {
       throw new Error('Firestore not initialized');
     }
 
-    const q = query(
-      collection(db, this.COLLECTION),
-      where('userId', '==', userId),
-      orderBy('date', 'desc')
-    );
+    const showsRef = collection(db, this.getUserShowsPath(userId));
+    const q = query(showsRef, orderBy('date', 'desc'));
 
     return onSnapshot(q, (snapshot) => {
       const shows = snapshot.docs.map(doc => {

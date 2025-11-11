@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { venueStore } from '../../shared/venueStore';
 import { HybridContactService } from '../../services/hybridContactService';
+import { HybridVenueService } from '../../services/hybridVenueService';
 import { useAuth } from '../../context/AuthContext';
 import { contactKeys } from '../../hooks/useContactsQuery';
 import type { Venue } from '../../types/venue';
@@ -127,8 +128,8 @@ export function VenueAutocomplete({
       updatedAt: new Date().toISOString(),
     };
 
-    // ✅ Save venue to venueStore (localStorage)
-    venueStore.add(newVenue);
+    // ✅ Save venue to BOTH localStorage AND Firestore
+    await HybridVenueService.saveVenue(newVenue, userId);
     
     // ✅ Also create a contact entry for centralized CRM
     const venueContact: Contact = {

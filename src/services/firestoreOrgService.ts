@@ -45,6 +45,29 @@ export interface Organization {
 
 export class FirestoreOrgService {
   /**
+   * Recursively remove undefined values from an object
+   */
+  private static removeUndefined(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.removeUndefined(item));
+    }
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const key in obj) {
+        const value = obj[key];
+        if (value !== undefined) {
+          cleaned[key] = this.removeUndefined(value);
+        }
+      }
+      return cleaned;
+    }
+    return obj;
+  }
+
+  /**
    * Save organization to Firestore
    */
   static async saveOrganization(org: Organization, userId: string): Promise<void> {
@@ -53,12 +76,12 @@ export class FirestoreOrgService {
     }
 
     const orgRef = doc(db, `users/${userId}/organizations/${org.id}`);
-    const orgData = {
+    const orgData = this.removeUndefined({
       ...org,
       updatedAt: Timestamp.now()
-    };
+    });
 
-    await setDoc(orgRef, orgData);
+    await setDoc(orgRef, orgData, { merge: true });
   }
 
   /**
@@ -121,10 +144,10 @@ export class FirestoreOrgService {
     }
 
     const orgRef = doc(db, `users/${userId}/organizations/${orgId}`);
-    const orgData = {
+    const orgData = this.removeUndefined({
       ...updates,
       updatedAt: Timestamp.now()
-    };
+    });
 
     await setDoc(orgRef, orgData, { merge: true });
   }

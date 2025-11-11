@@ -72,6 +72,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Could not initialize hybrid contact service:', e);
       }
 
+      try {
+        import('../services/hybridVenueService').then(({ HybridVenueService }) => {
+          HybridVenueService.initialize(id);
+        });
+      } catch (e) {
+        console.warn('Could not initialize hybrid venue service:', e);
+      }
+
       // TODO: Initialize finance, travel, org, and user services
       // These will be created as hybrid services following the same pattern
       try {

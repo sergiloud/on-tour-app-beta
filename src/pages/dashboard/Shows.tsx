@@ -999,7 +999,13 @@ const Shows: React.FC = () => {
                             }}
                             onArchive={() => { if (s.status !== 'archived') { update(s.id, { status: 'archived', archivedAt: new Date().toISOString() }); trackEvent('shows.archive', { id: s.id }); toast.warn(t('shows.action.archive') || 'Archive'); } }}
                             onRestore={() => { if (s.status === 'archived') { update(s.id, { status: 'pending', archivedAt: undefined }); trackEvent('shows.restore', { id: s.id }); toast.success(t('shows.action.restore') || 'Restore'); } }}
-                            onDelete={() => { const ok = window.confirm((t('shows.action.delete') || 'Delete') + '?'); if (!ok) return; remove(s.id); trackEvent('shows.delete', { id: s.id }); toast.error(t('shows.action.delete') || 'Delete'); }}
+                            onDelete={async () => { 
+                              const ok = window.confirm((t('shows.action.delete') || 'Delete') + '?'); 
+                              if (!ok) return; 
+                              await remove(s.id); 
+                              trackEvent('shows.delete', { id: s.id }); 
+                              toast.error(t('shows.action.delete') || 'Delete'); 
+                            }}
                           />
                         </td>
                       </motion.tr>

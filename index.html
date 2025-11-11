@@ -22,10 +22,17 @@
   <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
   <link rel="dns-prefetch" href="https://demotiles.maplibre.org" />
+  
+  <!-- ✅ Firebase preconnect para auth y firestore -->
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+  <link rel="dns-prefetch" href="https://on-tour-app-712e2.firebaseapp.com" />
 
   <!-- Preconnect to critical origins (includes DNS + TLS + TCP) -->
   <link rel="preconnect" href="https://api.openstreetmap.org" crossorigin />
   <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
+  
+  <!-- ✅ Preload CSS crítico para evitar FOUC -->
+  <link rel="preload" href="/assets/index.css" as="style" />
 
   <!-- Note: maplibre-gl.css is loaded dynamically by InteractiveMap component on demand -->
   <!-- Removed preload to avoid unused resource warning -->

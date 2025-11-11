@@ -102,16 +102,79 @@ export default defineConfig({
       output: {
         // Use format that handles imports better
         format: 'es',
-        // Simplified chunking strategy to avoid circular dependencies and initialization issues
-        manualChunks: {
-          // Single vendor chunk with explicit dependencies to avoid initialization issues
-          'vendor': ['react', 'react-dom', 'react-router-dom', 'react-is', 'scheduler'],
-          // Charts in separate chunk but with explicit dependencies
-          'charts': ['recharts', '@reduxjs/toolkit', 'react-redux'],
-          // UI libraries
-          'ui': ['framer-motion', 'lucide-react'],
-          // Heavy libraries that can be lazy loaded
-          'heavy': ['maplibre-gl', 'exceljs', 'xlsx']
+        // ✅ Chunking agresivo optimizado para performance
+        manualChunks: (id) => {
+          // Core React
+          if (id.includes('node_modules/react') || 
+              id.includes('node_modules/react-dom') ||
+              id.includes('node_modules/scheduler')) {
+            return 'vendor';
+          }
+          
+          // React Query - usado en toda la app
+          if (id.includes('@tanstack/react-query')) {
+            return 'vendor';
+          }
+          
+          // Router
+          if (id.includes('react-router-dom')) {
+            return 'vendor';
+          }
+          
+          // Charts - bundle pesado separado
+          if (id.includes('recharts') || 
+              id.includes('victory') ||
+              id.includes('d3-')) {
+            return 'charts';
+          }
+          
+          // Redux (usado por charts)
+          if (id.includes('@reduxjs/toolkit') || 
+              id.includes('react-redux') ||
+              id.includes('redux')) {
+            return 'charts';
+          }
+          
+          // UI libraries - animaciones y iconos
+          if (id.includes('framer-motion') || 
+              id.includes('lucide-react')) {
+            return 'ui';
+          }
+          
+          // Mapas - muy pesado, lazy load
+          if (id.includes('maplibre-gl') || 
+              id.includes('mapbox')) {
+            return 'heavy';
+          }
+          
+          // Excel export - muy pesado, lazy load
+          if (id.includes('exceljs') || 
+              id.includes('xlsx')) {
+            return 'heavy';
+          }
+          
+          // Firebase - usado solo en algunas rutas
+          if (id.includes('firebase') || 
+              id.includes('@firebase')) {
+            return 'firebase';
+          }
+          
+          // Virtual lists
+          if (id.includes('@tanstack/react-virtual')) {
+            return 'ui';
+          }
+          
+          // Date libraries
+          if (id.includes('date-fns') || 
+              id.includes('dayjs')) {
+            return 'utils';
+          }
+          
+          // Form libraries
+          if (id.includes('react-hook-form') || 
+              id.includes('zod')) {
+            return 'forms';
+          }
         },
         // Nombres optimizados para caching
         chunkFileNames: 'assets/[name]-[hash].js',

@@ -471,15 +471,15 @@ export const Contacts: React.FC = () => {
             </div>
           ) : (
             <div ref={tableContainerRef} className="flex-1 overflow-auto">
-              <table className="w-full">
+              <table className="w-full" style={{ tableLayout: 'fixed' }}>
                 <thead className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 z-10">
                   <tr>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Contacto</th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Empresa / Cargo</th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Info</th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Ubicación</th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Prioridad</th>
-                    <th className="text-right px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Acciones</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '20%' }}>Contacto</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '20%' }}>Empresa / Cargo</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '22%' }}>Info</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '15%' }}>Ubicación</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '11%' }}>Prioridad</th>
+                    <th className="text-right px-6 py-4 text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider" style={{ width: '12%' }}>Acciones</th>
                   </tr>
                 </thead>
                 <tbody 
@@ -506,7 +506,7 @@ export const Contacts: React.FC = () => {
                           transform: `translateY(${virtualRow.start}px)`,
                         }}
                       >
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" style={{ width: '20%' }}>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-sm font-semibold shadow-lg shadow-accent-500/20">
                           {contact.firstName[0]}{contact.lastName[0]}
@@ -519,15 +519,15 @@ export const Contacts: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" style={{ width: '20%' }}>
                       <p className="text-slate-900 dark:text-white text-sm font-medium">{contact.company || '—'}</p>
                       <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5">{contact.position || 'Sin cargo'}</p>
                     </td>
-                    <td className="px-6 py-4 text-sm text-theme-secondary">
+                    <td className="px-6 py-4 text-sm text-theme-secondary" style={{ width: '22%' }}>
                       {contact.email && <div className="flex items-center gap-2 mb-1"><Mail className="w-3.5 h-3.5 text-slate-300 dark:text-white/40" /><span className="text-theme-secondary">{contact.email}</span></div>}
                       {contact.phone && <div className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-slate-300 dark:text-white/40" /><span className="text-theme-secondary">{contact.phone}</span></div>}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" style={{ width: '15%' }}>
                       {contact.city || contact.country ? (
                         <div className="flex items-center gap-2 text-sm text-theme-secondary">
                           <MapPin className="w-3.5 h-3.5 text-slate-300 dark:text-white/40" />
@@ -535,14 +535,14 @@ export const Contacts: React.FC = () => {
                         </div>
                       ) : <span className="text-slate-400 dark:text-white/40 text-xs">—</span>}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" style={{ width: '11%' }}>
                       <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
                         contact.priority === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
                         contact.priority === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
                         'bg-green-500/15 text-green-400 border border-green-500/30'
                       }`}>{contact.priority === 'high' ? 'Alta' : contact.priority === 'medium' ? 'Media' : 'Baja'}</span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" style={{ width: '12%' }}>
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={(e) => { e.stopPropagation(); handleViewContact(contact!); }}
                           className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400 transition-all duration-150" title="Ver">

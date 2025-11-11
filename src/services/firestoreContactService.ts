@@ -20,6 +20,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import type { Contact } from '../types/crm';
+import { deduplicateFirestoreQuery } from '../lib/requestDeduplication';
 
 export class FirestoreContactService {
   /**
@@ -65,26 +66,29 @@ export class FirestoreContactService {
   }
 
   /**
-   * Get all contacts for a user
+   * Get all contacts for a user - con deduplication
    */
   static async getUserContacts(userId: string): Promise<Contact[]> {
-    if (!db) {
-      throw new Error('Firestore not initialized');
-    }
+    // ✅ Deduplica requests cuando múltiples componentes piden contactos simultáneamente
+    return deduplicateFirestoreQuery('contacts', userId, async () => {
+      if (!db) {
+        throw new Error('Firestore not initialized');
+      }
 
-    const contactsRef = collection(db, `users/${userId}/contacts`);
-    const q = query(contactsRef, orderBy('updatedAt', 'desc'));
-    const querySnapshot = await getDocs(q);
+      const contactsRef = collection(db, `users/${userId}/contacts`);
+      const q = query(contactsRef, orderBy('updatedAt', 'desc'));
+      const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        ...data,
-        id: doc.id,
-        createdAt: data.createdAt?.toDate?.().toISOString() || data.createdAt,
-        updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt,
-        lastContactedAt: data.lastContactedAt?.toDate?.().toISOString() || data.lastContactedAt
-      } as Contact;
+      return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          ...data,
+          id: doc.id,
+          createdAt: data.createdAt?.toDate?.().toISOString() || data.createdAt,
+          updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt,
+          lastContactedAt: data.lastContactedAt?.toDate?.().toISOString() || data.lastContactedAt
+        } as Contact;
+      });
     });
   }
 

@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Show } from '../lib/shows';
+import { deduplicateFirestoreQuery } from '../lib/requestDeduplication';
 
 export class FirestoreShowService {
   private static COLLECTION = 'shows';
@@ -39,38 +40,41 @@ export class FirestoreShowService {
   }
 
   /**
-   * Get all shows for a user
+   * Get all shows for a user - con deduplication
    */
   static async getUserShows(userId: string): Promise<Show[]> {
-    if (!db) {
-      throw new Error('Firestore not initialized');
-    }
+    // ✅ Deduplica requests cuando múltiples componentes piden shows simultáneamente
+    return deduplicateFirestoreQuery('shows', userId, async () => {
+      if (!db) {
+        throw new Error('Firestore not initialized');
+      }
 
-    const q = query(
-      collection(db, this.COLLECTION),
-      where('userId', '==', userId),
-      orderBy('date', 'desc')
-    );
+      const q = query(
+        collection(db, this.COLLECTION),
+        where('userId', '==', userId),
+        orderBy('date', 'desc')
+      );
 
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => {
-      const data = doc.data();
-      // Ensure all required Show fields are present
-      return {
-        id: doc.id,
-        city: data.city || '',
-        country: data.country || '',
-        lat: data.lat || 0,
-        lng: data.lng || 0,
-        date: data.date || new Date().toISOString(),
-        fee: data.fee || 0,
-        status: data.status || 'pending',
-        __version: data.__version || 1,
-        __modifiedAt: data.__modifiedAt || Date.now(),
-        __modifiedBy: data.__modifiedBy || userId,
-        // Include all other optional fields
-        ...data,
-      } as Show;
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Ensure all required Show fields are present
+        return {
+          id: doc.id,
+          city: data.city || '',
+          country: data.country || '',
+          lat: data.lat || 0,
+          lng: data.lng || 0,
+          date: data.date || new Date().toISOString(),
+          fee: data.fee || 0,
+          status: data.status || 'pending',
+          __version: data.__version || 1,
+          __modifiedAt: data.__modifiedAt || Date.now(),
+          __modifiedBy: data.__modifiedBy || userId,
+          // Include all other optional fields
+          ...data,
+        } as Show;
+      });
     });
   }
 

@@ -3,8 +3,6 @@ import { useMissionControl } from '../../context/MissionControlContext';
 import { useHighContrast } from '../../context/HighContrastContext';
 import { trackEvent } from '../../lib/telemetry';
 import { Card } from '../../ui/Card';
-import maplibregl from 'maplibre-gl';
-import type * as MapLibreNS from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useFilteredShows } from '../../features/shows/selectors';
 import { announce } from '../../lib/announcer';
@@ -24,8 +22,8 @@ import {
 // Light Leaflet dynamic integration; keeps bundle lean until loaded.
 const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className = '' }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<MapLibreNS.Map | null>(null);
-  const mlibRef = useRef<null | typeof MapLibreNS>(null);
+  const mapRef = useRef<any>(null);
+  const mlibRef = useRef<any>(null);
   const { focus, setFocus, layers } = useMissionControl() as any;
   const [ready, setReady] = useState(false);
   const [cssWarning, setCssWarning] = useState(false);
@@ -467,7 +465,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           });
           return;
         }
-        const feats = map.queryRenderedFeatures(e.point, { layers: ['unclustered'] }) as MapLibreNS.MapGeoJSONFeature[];
+        const feats = map.queryRenderedFeatures(e.point, { layers: ['unclustered'] }) as any[];
         if (!feats.length) return;
         const f = feats[0];
         if (f && f.geometry.type === 'Point') {
@@ -584,15 +582,18 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
 
     const boot = async () => {
       try {
-        // ✅ Use static import - already loaded at top of file
-        const mapLibre = maplibregl;
+        // ✅ Dynamic import - MapLibre GL is UMD, access via window after load
+        await import('maplibre-gl');
+        
+        // MapLibre GL UMD sets global maplibregl
+        const mapLibre = (window as any).maplibregl;
 
         // Debug logging in development
         if (import.meta.env.DEV) {
           console.log('[InteractiveMap] MapLibre loaded:', {
-            hasMap: !!mapLibre.Map,
-            mapType: typeof mapLibre.Map,
-            constructorName: mapLibre.Map?.name
+            hasMap: !!mapLibre?.Map,
+            mapType: typeof mapLibre?.Map,
+            constructorName: mapLibre?.Map?.name
           });
         }
 
@@ -605,7 +606,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           return undefined;
         }
 
-        mlibRef.current = mapLibre as any;
+        mlibRef.current = mapLibre;
         const rect = el.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) {
           const ro = new ResizeObserver(() => {

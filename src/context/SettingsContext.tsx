@@ -131,6 +131,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [bookingAgencies, setBookingAgencies] = useState<AgencyConfig[]>(() => (legacyInitial as any).bookingAgencies || []);
   const [managementAgencies, setManagementAgencies] = useState<AgencyConfig[]>(() => (legacyInitial as any).managementAgencies || []);
   const [kpiTickerHidden, setKpiTickerHiddenState] = useState<boolean>(!!(legacyInitial as any).kpiTickerHidden);
+  const [isLoadingFromFirestore, setIsLoadingFromFirestore] = useState<boolean>(false);
 
   // Load agencies from Firestore on mount
   useEffect(() => {
@@ -138,6 +139,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     (async () => {
       try {
         console.log('📥 [SettingsContext] Loading agencies for userId:', userId);
+        setIsLoadingFromFirestore(true);
         const { FirestoreUserService } = await import('../services/firestoreUserService');
         const settings = await FirestoreUserService.getSettings(userId);
         console.log('📥 [SettingsContext] Firestore settings received:', settings);
@@ -157,6 +159,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       } catch (e) {
         console.error('❌ [SettingsContext] Error loading agencies from Firestore:', e);
+      } finally {
+        if (isMounted) {
+          setIsLoadingFromFirestore(false);
+        }
       }
     })();
     return () => { isMounted = false; };
@@ -167,6 +173,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Storage versioning: store a version and allow future migrations to branch cleanly
   const SETTINGS_VERSION = 1 as const;
   useEffect(() => {
+    // Skip save during initial load from Firestore
+    if (isLoadingFromFirestore) {
+      console.log('⏭️ [SettingsContext] Skipping save - loading from Firestore');
+      return;
+    }
+
     // Persist to demo user prefs (authoritative for user-specific settings)
     try {
       upsertUserPrefs(userId, {
@@ -229,7 +241,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     })();
     
     try { window.dispatchEvent(new CustomEvent('prefs:updated', { detail: { id: userId } } as any)); } catch { }
-  }, [userId, currency, unit, lang, maskAmounts, region, dateRange, presentationMode, dashboardView, periodPreset, comparePrev, selectedStatuses, bookingAgencies, managementAgencies, kpiTickerHidden]);
+  }, [isLoadingFromFirestore, userId, currency, unit, lang, maskAmounts, region, dateRange, presentationMode, dashboardView, periodPreset, comparePrev, selectedStatuses, bookingAgencies, managementAgencies, kpiTickerHidden]);
 
   // Toggle presentation class on body for global style adjustments
   useEffect(() => {

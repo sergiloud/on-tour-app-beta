@@ -871,9 +871,9 @@ export const ProfileSettings: React.FC = () => {
                       value={theme}
                       onChange={(v) => setTheme(v as any)}
                       options={[
-                        { value: 'auto', label: '💻 Auto (System)' },
-                        { value: 'light', label: '☀️ Light' },
-                        { value: 'dark', label: '🌙 Dark' },
+                        { value: 'auto', label: 'Auto (System)' },
+                        { value: 'light', label: 'Light' },
+                        { value: 'dark', label: 'Dark' },
                       ]}
                       icon={<Monitor className="w-4 h-4" />}
                       description="Choose your preferred color theme"
@@ -1051,10 +1051,10 @@ export const ProfileSettings: React.FC = () => {
                       value={String(prefs.autoSaveInterval || 5)}
                       onChange={(v) => updatePrefs({ autoSaveInterval: Number(v) })}
                       options={[
-                        { value: '1', label: '⚡ Every minute' },
-                        { value: '5', label: '⏱️ Every 5 minutes (Recommended)' },
-                        { value: '10', label: '⏰ Every 10 minutes' },
-                        { value: '0', label: '🚫 Disabled' },
+                        { value: '1', label: 'Every minute' },
+                        { value: '5', label: 'Every 5 minutes (Recommended)' },
+                        { value: '10', label: 'Every 10 minutes' },
+                        { value: '0', label: 'Disabled' },
                       ]}
                       description="How often to automatically save your work"
                     />
@@ -1331,9 +1331,9 @@ export const ProfileSettings: React.FC = () => {
                         value={privacy.profileVisibility}
                         onChange={(v) => setPrivacy(prev => ({ ...prev, profileVisibility: v as any }))}
                         options={[
-                          { value: 'public', label: '🌐 Public - Anyone can view' },
-                          { value: 'team', label: '👥 Team Only - Only team members' },
-                          { value: 'private', label: '🔒 Private - Only you' },
+                          { value: 'public', label: 'Public - Anyone can view' },
+                          { value: 'team', label: 'Team Only - Only team members' },
+                          { value: 'private', label: 'Private - Only you' },
                         ]}
                       />
                       <p className="text-xs text-slate-500 dark:text-white/50 mt-2">
@@ -1604,7 +1604,7 @@ export const ProfileSettings: React.FC = () => {
                           </ul>
                           <button
                             onClick={() => {
-                              if (confirm('⚠️ Are you absolutely sure you want to delete your account?\n\nThis action CANNOT be undone and all your data will be permanently deleted.')) {
+                              if (confirm('Are you absolutely sure you want to delete your account?\n\nThis action CANNOT be undone and all your data will be permanently deleted.')) {
                                 if (confirm('This is your last chance. Type YES in the next dialog to confirm.')) {
                                   const confirmation = prompt('Type "DELETE" to confirm account deletion:');
                                   if (confirmation === 'DELETE') {

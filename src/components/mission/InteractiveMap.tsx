@@ -77,6 +77,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const mlibRef = useRef<any>(null);
   const { focus, setFocus, layers } = useMissionControl() as any;
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [cssWarning, setCssWarning] = useState(false);
   const { highContrast, toggleHC } = useHighContrast();
   const { profile } = useAuth();
@@ -795,26 +796,34 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     const boot = async () => {
       try {
         // ✅ Dynamic import - MapLibre GL is UMD, access via window after load
-        await import('maplibre-gl');
+        console.log('[InteractiveMap] Starting MapLibre import...');
+        const mlModule = await import('maplibre-gl');
+        console.log('[InteractiveMap] MapLibre module imported:', !!mlModule);
         
         // MapLibre GL UMD sets global maplibregl
-        const mapLibre = (window as any).maplibregl;
+        const mapLibre = (window as any).maplibregl || mlModule.default || mlModule;
 
-        // Debug logging in development
-        if (import.meta.env.DEV) {
-          console.log('[InteractiveMap] MapLibre loaded:', {
-            hasMap: !!mapLibre?.Map,
-            mapType: typeof mapLibre?.Map,
-            constructorName: mapLibre?.Map?.name
-          });
-        }
+        console.log('[InteractiveMap] MapLibre loaded:', {
+          hasMap: !!mapLibre?.Map,
+          mapType: typeof mapLibre?.Map,
+          constructorName: mapLibre?.Map?.name,
+          hasWindow: !!(window as any).maplibregl,
+          hasModule: !!mlModule,
+          hasDefault: !!mlModule.default
+        });
 
         // Ensure the library loaded correctly
         if (!mapLibre || !mapLibre.Map || typeof mapLibre.Map !== 'function') {
+          const errorMsg = 'MapLibre library failed to load. Please refresh the page.';
           console.error('[InteractiveMap] MapLibre not loaded correctly', {
             mapLibre,
-            hasMap: !!mapLibre?.Map
+            hasMap: !!mapLibre?.Map,
+            windowMapLibre: (window as any).maplibregl,
+            module: mlModule
           });
+          // Set error state to show fallback message
+          setError(errorMsg);
+          setReady(false);
           return undefined;
         }
 
@@ -851,7 +860,10 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         
         return initWithDelay();
       } catch (error) {
+        const errorMsg = `Failed to load map: ${error instanceof Error ? error.message : 'Unknown error'}`;
         console.error('[InteractiveMap] Failed to load MapLibre:', error);
+        setError(errorMsg);
+        setReady(false);
         return undefined;
       }
     };
@@ -1139,7 +1151,27 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         aria-label={`Tour map showing ${shows.length} shows across different locations`}
         tabIndex={0}
       />
-      {!ready && <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-900/50 dark:to-transparent backdrop-blur-sm animate-pulse">
+      
+      {/* Error state */}
+      {error && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6">
+          <div className="text-center max-w-md">
+            <svg className="w-16 h-16 mx-auto mb-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Map Failed to Load</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {!ready && !error && <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-900/50 dark:to-transparent backdrop-blur-sm animate-pulse">
         <div className="text-xs font-medium text-slate-500 dark:text-slate-400 tracking-wide">Loading map...</div>
       </div>}
       

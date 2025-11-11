@@ -4,6 +4,15 @@ import { offlineManager } from '../lib/offlineManager';
 
 type Listener = (shows: Show[]) => void;
 
+// Import HybridShowService for Firebase sync
+let HybridShowService: any = null;
+// Lazy load to avoid circular dependencies
+import('../services/hybridShowService').then(({ HybridShowService: svc }) => {
+  HybridShowService = svc;
+}).catch(() => {
+  // Service not available (tests, offline, etc.)
+});
+
 // Primary storage key for shows
 const LS_KEY = 'shows-store-v3';
 // Legacy key used by older tests/utilities
@@ -132,6 +141,13 @@ class ShowStore {
   addShow(s: Show) {
     const normalized = normalizeShow(s);
     this.setAll([...this.shows, normalized]);
+    
+    // Sync to Firebase
+    if (HybridShowService) {
+      HybridShowService.saveShow(normalized).catch((err: Error) => {
+        console.warn('Failed to sync show to Firebase:', err);
+      });
+    }
   }
 
   getById(id: string) {
@@ -167,11 +183,25 @@ class ShowStore {
 
     // Queue for backend sync
     this.queueOfflineOperation('update', id, safePatch);
+    
+    // Sync to Firebase
+    if (HybridShowService) {
+      HybridShowService.saveShow(next).catch((err: Error) => {
+        console.warn('Failed to sync show update to Firebase:', err);
+      });
+    }
   }
 
   removeShow(id: string) {
     const next = this.shows.filter(s => s.id !== id);
     this.setAll(next);
+    
+    // Sync deletion to Firebase
+    if (HybridShowService) {
+      HybridShowService.deleteShow(id).catch((err: Error) => {
+        console.warn('Failed to sync show deletion to Firebase:', err);
+      });
+    }
   }
 
   /**

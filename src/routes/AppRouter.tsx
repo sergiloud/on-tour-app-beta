@@ -1,7 +1,5 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from '../pages/LandingPage';
-import Login from '../pages/Login';
 import { RouteLoading, InlineRouteLoading } from '../components/common/RouteLoading';
 import {
   DashboardSkeleton,
@@ -11,10 +9,16 @@ import {
   MissionSkeleton,
   SettingsSkeleton
 } from '../components/skeletons/PageSkeletons';
+import DashboardLayout from '../layouts/DashboardLayout';
+import AuthLayout from '../layouts/AuthLayout';
 
-// Placeholder future lazy routes
+// Auth & Landing - lazy loaded
+const LandingPage = React.lazy(() => import('../pages/LandingPage'));
+const Login = React.lazy(() => import('../pages/Login'));
 const Register = React.lazy(() => import('../pages/Register'));
 const OnboardingPage = React.lazy(() => import('../pages/OnboardingSimple'));
+
+// Dashboard routes - lazy loaded
 const DashboardOverview = React.lazy(() => import('../pages/Dashboard'));
 const Finance = React.lazy(() => import('../pages/dashboard/Finance'));
 const FinanceOverview = React.lazy(() => import('../pages/dashboard/FinanceOverview'));
@@ -29,11 +33,9 @@ const Settings = React.lazy(() => import('../pages/dashboard/Settings'));
 const ProfilePage = React.lazy(() => import('../pages/profile/ProfilePage'));
 const Story = React.lazy(() => import('../pages/dashboard/Story'));
 const DataSecurityPage = React.lazy(() => import('../pages/DataSecurityPage'));
-import DashboardLayout from '../layouts/DashboardLayout';
-import AuthLayout from '../layouts/AuthLayout';
 const WelcomePage = React.lazy(() => import('../pages/welcome/WelcomePage'));
 
-// Org routes
+// Org routes - lazy loaded
 const OrgOverview = React.lazy(() => import('../pages/org/OrgOverviewNew'));
 const OrgMembers = React.lazy(() => import('../pages/org/OrgMembers'));
 const OrgTeams = React.lazy(() => import('../pages/org/OrgTeams'));
@@ -52,11 +54,11 @@ export const AppRouter: React.FC = () => {
       <Routes>
         <Route
           path="/"
-          element={<LandingPage />}
+          element={<Suspense fallback={<RouteLoading message="Loading..." />}><LandingPage /></Suspense>}
         />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Suspense fallback={<RouteLoading message="Loading register..." />}><Register /></Suspense>} />
-        <Route path="/onboarding" element={<Suspense fallback={<RouteLoading message="Loading onboarding..." />}><OnboardingPage /></Suspense>} />
+        <Route path="/login" element={<Suspense fallback={<RouteLoading message="Loading..." />}><Login /></Suspense>} />
+        <Route path="/register" element={<Suspense fallback={<RouteLoading message="Loading..." />}><Register /></Suspense>} />
+        <Route path="/onboarding" element={<Suspense fallback={<RouteLoading message="Loading..." />}><OnboardingPage /></Suspense>} />
         <Route path="/welcome" element={<Navigate to="/dashboard/org" replace />} />
         <Route
           path="/dashboard/*"

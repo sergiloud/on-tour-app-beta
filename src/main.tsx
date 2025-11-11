@@ -32,19 +32,22 @@ try { ensureDemoTenants(); } catch { }
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000, // 10 minutes - increased from 5
-      gcTime: 30 * 60 * 1000, // 30 minutes - increased from 10
+      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+      gcTime: 15 * 60 * 1000, // 15 minutes - cache lifetime
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
         if (error instanceof Error && 'status' in error && typeof error.status === 'number') {
-          return error.status >= 500 && failureCount < 3;
+          return error.status >= 500 && failureCount < 2;
         }
-        return failureCount < 3;
+        return failureCount < 2;
       },
       refetchOnWindowFocus: false,
+      refetchOnReconnect: 'always',
+      networkMode: 'online',
     },
     mutations: {
       retry: 1,
+      networkMode: 'online',
     },
   },
 });

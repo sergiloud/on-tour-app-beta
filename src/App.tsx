@@ -34,25 +34,38 @@ export const App: React.FC = () => {
     // TODO: Re-enable after fixing Vercel configuration
     // swManager.register();
 
-    // Check if browser supports requestIdleCallback
+    // Use requestIdleCallback for better performance
     if ('requestIdleCallback' in window) {
-      // Prefetch high-traffic routes when browser is idle
-      requestIdleCallback(() => {
-        prefetch.shows();
-        prefetch.finance();
-      }, { timeout: 2000 }); // Reducido de 3000 a 2000ms
+      // Prefetch high-priority routes when idle
+      const idleId1 = requestIdleCallback(() => {
+        Promise.all([
+          prefetch.shows(),
+          prefetch.finance(),
+        ]).catch(() => {});
+      }, { timeout: 1500 });
 
-      // Prefetch secondary routes later
-      requestIdleCallback(() => {
-        prefetch.travel();
-        prefetch.calendar();
-      }, { timeout: 5000 }); // Reducido de 6000 a 5000ms
+      // Prefetch secondary routes with lower priority
+      const idleId2 = requestIdleCallback(() => {
+        Promise.all([
+          prefetch.calendar(),
+          prefetch.travel(),
+        ]).catch(() => {});
+      }, { timeout: 4000 });
+
+      return () => {
+        cancelIdleCallback(idleId1);
+        cancelIdleCallback(idleId2);
+      };
     } else {
       // Fallback for browsers without requestIdleCallback
-      setTimeout(() => {
-        prefetch.shows();
-        prefetch.finance();
-      }, 2000); // Reducido de 3000 a 2000ms
+      const timeoutId = setTimeout(() => {
+        Promise.all([
+          prefetch.shows(),
+          prefetch.finance(),
+        ]).catch(() => {});
+      }, 1500);
+
+      return () => clearTimeout(timeoutId);
     }
   }, []);
 

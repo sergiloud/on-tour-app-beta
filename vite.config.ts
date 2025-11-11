@@ -7,14 +7,15 @@ import path from 'path';
 export default defineConfig({
   base: '/', // Always use root path for Vercel deployment
   esbuild: {
-    drop: [], // TEMPORARILY allow console.log for debugging
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
     legalComments: 'none',
     logOverride: {
-      'css-syntax-error': 'silent' // Suppress CSS syntax warnings that don't affect functionality
+      'css-syntax-error': 'silent'
     },
-    // Prevent hoisting issues that can cause initialization errors
     treeShaking: true,
-    minifyIdentifiers: false // Helps with debugging initialization issues
+    minifyIdentifiers: true, // Enable for smaller bundles
+    minifySyntax: true,
+    minifyWhitespace: true,
   },
   css: {
     // Fix CSS syntax warnings during minification
@@ -78,9 +79,15 @@ export default defineConfig({
       'react',
       'react-dom',
       'react-router-dom',
-      'react-is'
+      'react-is',
+      '@tanstack/react-query',
+      'lucide-react',
+      'sonner',
     ],
-    exclude: ['exceljs', 'xlsx'] // Excluir librerías pesadas del pre-bundling
+    exclude: ['exceljs', 'xlsx', 'maplibre-gl'],
+    esbuildOptions: {
+      target: 'es2020',
+    },
   },
   ssr: {
     // Packages that should be processed by Vite instead of treated as external
@@ -90,102 +97,87 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
-    minify: 'esbuild', // Mucho más rápido que terser (4-5x faster)
-    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'], // Modern browsers
-    cssCodeSplit: true, // Split CSS for better caching
+    minify: 'esbuild',
+    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
+    cssCodeSplit: true,
     modulePreload: {
-      polyfill: true
+      polyfill: true,
+      resolveDependencies: (filename, deps) => {
+        // Prioritize critical chunks
+        return deps.filter(dep => 
+          !dep.includes('heavy') && 
+          !dep.includes('charts')
+        );
+      },
     },
     rollupOptions: {
-      // Prevent circular dependencies
       preserveEntrySignatures: 'strict',
       output: {
-        // Use format that handles imports better
         format: 'es',
-        // ✅ Chunking agresivo optimizado para performance
+        // Optimized chunking strategy for faster initial load
         manualChunks: (id) => {
-          // Core React
+          // Core vendor bundle - critical for initial render
           if (id.includes('node_modules/react') || 
               id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/scheduler')) {
+              id.includes('node_modules/scheduler') ||
+              id.includes('@tanstack/react-query') ||
+              id.includes('react-router-dom')) {
             return 'vendor';
           }
           
-          // React Query - usado en toda la app
-          if (id.includes('@tanstack/react-query')) {
-            return 'vendor';
-          }
-          
-          // Router
-          if (id.includes('react-router-dom')) {
-            return 'vendor';
-          }
-          
-          // Charts - bundle pesado separado
+          // Charts - heavy, lazy loaded
           if (id.includes('recharts') || 
               id.includes('victory') ||
-              id.includes('d3-')) {
-            return 'charts';
-          }
-          
-          // Redux (usado por charts)
-          if (id.includes('@reduxjs/toolkit') || 
+              id.includes('d3-') ||
+              id.includes('@reduxjs/toolkit') || 
               id.includes('react-redux') ||
               id.includes('redux')) {
             return 'charts';
           }
           
-          // UI libraries - animaciones y iconos
+          // UI bundle - icons and animations
           if (id.includes('framer-motion') || 
-              id.includes('lucide-react')) {
+              id.includes('lucide-react') ||
+              id.includes('@tanstack/react-virtual')) {
             return 'ui';
           }
           
-          // Mapas - muy pesado, lazy load
+          // Heavy features - deferred loading
           if (id.includes('maplibre-gl') || 
-              id.includes('mapbox')) {
-            return 'heavy';
-          }
-          
-          // Excel export - muy pesado, lazy load
-          if (id.includes('exceljs') || 
+              id.includes('mapbox') ||
+              id.includes('exceljs') || 
               id.includes('xlsx')) {
             return 'heavy';
           }
           
-          // Firebase - usado solo en algunas rutas
+          // Firebase - auth and database
           if (id.includes('firebase') || 
               id.includes('@firebase')) {
             return 'firebase';
           }
           
-          // Virtual lists
-          if (id.includes('@tanstack/react-virtual')) {
-            return 'ui';
-          }
-          
-          // Date libraries
+          // Utilities - date, forms, etc
           if (id.includes('date-fns') || 
-              id.includes('dayjs')) {
+              id.includes('dayjs') ||
+              id.includes('react-hook-form') || 
+              id.includes('zod')) {
             return 'utils';
           }
-          
-          // Form libraries
-          if (id.includes('react-hook-form') || 
-              id.includes('zod')) {
-            return 'forms';
-          }
         },
-        // Nombres optimizados para caching
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
-      }
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        // Optimize exports
+        exports: 'auto',
+        generatedCode: {
+          constBindings: true,
+        },
+      },
     },
-    chunkSizeWarningLimit: 2500, // Aumentado para vendor-heavy (recharts + maplibre)
-    reportCompressedSize: false, // Desactivar para build más rápido
-    cssMinify: true, // Keep default esbuild CSS minifier
-    assetsInlineLimit: 4096
+    chunkSizeWarningLimit: 1000, // Warn for chunks > 1MB
+    reportCompressedSize: false,
+    cssMinify: 'esbuild',
+    assetsInlineLimit: 4096, // Inline assets < 4KB as base64
   },
   server: {
     host: true,

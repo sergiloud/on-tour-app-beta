@@ -39,7 +39,17 @@ type ShowWithExtras = Show & {
   archivedAt?: string;
 };
 
-export type DraftShow = DemoShow & { venue?: string; whtPct?: number; mgmtAgency?: string; bookingAgency?: string; notes?: string; costs?: Cost[] };
+export type DraftShow = DemoShow & { 
+  venue?: string; 
+  venueId?: string; 
+  promoter?: string; 
+  promoterId?: string; 
+  whtPct?: number; 
+  mgmtAgency?: string; 
+  bookingAgency?: string; 
+  notes?: string; 
+  costs?: Cost[] 
+};
 type ViewMode = 'list' | 'board';
 type SortKey = 'date' | 'fee' | 'net';
 
@@ -349,10 +359,11 @@ const Shows: React.FC = () => {
   const saveDraft = (d: DraftShow) => { 
     if (mode === 'add') { 
       const id = (() => { try { return crypto.randomUUID(); } catch { return 's' + Date.now(); } })(); 
-      // Cast to ShowWithExtras to allow costs property
-      add({ ...d, id, costs } as ShowWithExtras); 
+      // Cast to ShowWithExtras to allow costs property - use d.costs from draft
+      add({ ...d, id, costs: d.costs || [] } as ShowWithExtras); 
     } else if (mode === 'edit' && d.id) { 
-      update(d.id, { ...d, costs } as ShowWithExtras); 
+      // Use d.costs from draft to ensure all fields are preserved
+      update(d.id, { ...d, costs: d.costs || [] } as ShowWithExtras); 
     } 
     announce('Saved'); 
     trackEvent('shows.drawer.save', { mode }); 
@@ -1342,7 +1353,14 @@ const Shows: React.FC = () => {
             open={modalOpen}
             mode={mode}
             initial={{ ...draft, costs }}
-            onSave={(d) => { setDraft(d); setCosts(d.costs || []); saveDraft(d); closeDrawer(); }}
+            onSave={(d) => { 
+              // Convert ShowDraft to DraftShow - all fields from d are preserved
+              const draftShow = d as DraftShow;
+              setDraft(draftShow); 
+              setCosts(d.costs || []); 
+              saveDraft(draftShow); 
+              closeDrawer(); 
+            }}
             onDelete={() => { draft && deleteDraft(draft); closeDrawer(); }}
             onRequestClose={closeDrawer}
           />

@@ -144,7 +144,7 @@ export function VenueAutocomplete({
       {isOpen && (search.length > 0 || filteredVenues.length > 0) && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 mt-2 w-full glass border border-slate-200 dark:border-white/10 rounded-[10px] shadow-xl backdrop-blur-xl max-h-80 overflow-hidden flex flex-col"
+          className="absolute z-[10001] mt-2 w-full glass border border-slate-200 dark:border-white/10 rounded-[10px] shadow-xl backdrop-blur-xl max-h-80 overflow-hidden flex flex-col"
         >
           {filteredVenues.length > 0 ? (
             <>

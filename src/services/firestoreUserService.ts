@@ -200,13 +200,17 @@ export class FirestoreUserService {
       throw new Error('Firestore not initialized');
     }
 
+    console.log('[FirestoreUserService] Saving settings for user:', userId);
+    console.log('[FirestoreUserService] Settings data:', settings);
+
     const settingsRef = doc(db, `users/${userId}/profile/settings`);
     const settingsData = {
       ...settings,
       updatedAt: Timestamp.now()
     };
 
-    await setDoc(settingsRef, settingsData);
+    await setDoc(settingsRef, settingsData, { merge: true });
+    console.log('[FirestoreUserService] Settings saved successfully');
   }
 
   /**
@@ -217,14 +221,17 @@ export class FirestoreUserService {
       throw new Error('Firestore not initialized');
     }
 
+    console.log('[FirestoreUserService] Loading settings for user:', userId);
     const settingsRef = doc(db, `users/${userId}/profile/settings`);
     const settingsSnap = await getDoc(settingsRef);
 
     if (!settingsSnap.exists()) {
+      console.log('[FirestoreUserService] No settings found for user:', userId);
       return null;
     }
 
     const data = settingsSnap.data();
+    console.log('[FirestoreUserService] Settings loaded:', data);
     return {
       ...data,
       updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt

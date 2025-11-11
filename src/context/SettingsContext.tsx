@@ -109,20 +109,24 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     let isMounted = true;
     (async () => {
       try {
+        console.log('[SettingsContext] Loading agencies for userId:', userId);
         const { FirestoreUserService } = await import('../services/firestoreUserService');
         const settings = await FirestoreUserService.getSettings(userId);
+        console.log('[SettingsContext] Firestore settings received:', settings);
         if (isMounted && settings) {
-          if (settings.bookingAgencies) {
+          if (settings.bookingAgencies && settings.bookingAgencies.length > 0) {
             console.log('[SettingsContext] Loaded booking agencies from Firestore:', settings.bookingAgencies);
             setBookingAgencies(settings.bookingAgencies);
           }
-          if (settings.managementAgencies) {
+          if (settings.managementAgencies && settings.managementAgencies.length > 0) {
             console.log('[SettingsContext] Loaded management agencies from Firestore:', settings.managementAgencies);
             setManagementAgencies(settings.managementAgencies);
           }
+        } else {
+          console.log('[SettingsContext] No settings found in Firestore for user:', userId);
         }
       } catch (e) {
-        console.warn('[SettingsContext] Could not load agencies from Firestore:', e);
+        console.error('[SettingsContext] Error loading agencies from Firestore:', e);
       }
     })();
     return () => { isMounted = false; };
@@ -155,15 +159,19 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Sync agencies to Firestore for real users
     (async () => {
       try {
+        console.log('[SettingsContext] Syncing agencies to Firestore for userId:', userId);
+        console.log('[SettingsContext] Booking agencies:', bookingAgencies);
+        console.log('[SettingsContext] Management agencies:', managementAgencies);
+        
         const { FirestoreUserService } = await import('../services/firestoreUserService');
         await FirestoreUserService.saveSettings({
           bookingAgencies,
           managementAgencies,
           updatedAt: new Date().toISOString()
         }, userId);
-        console.log('[SettingsContext] Agencies synced to Firestore');
+        console.log('[SettingsContext] ✅ Agencies successfully synced to Firestore');
       } catch (e) {
-        console.warn('[SettingsContext] Could not sync agencies to Firestore:', e);
+        console.error('[SettingsContext] ❌ Error syncing agencies to Firestore:', e);
       }
     })();
     

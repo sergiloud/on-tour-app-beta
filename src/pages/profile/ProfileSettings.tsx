@@ -161,6 +161,17 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
   const agencies = type === 'booking' ? bookingAgencies : managementAgencies;
   const maxAgencies = 5;
 
+  // Debug: Log on mount
+  React.useEffect(() => {
+    console.log('[AgenciesManager] Component mounted, type:', type);
+    console.log('[AgenciesManager] Current agencies:', agencies);
+    console.log('[AgenciesManager] useSettings hook:', { addAgency, updateAgency, removeAgency });
+  }, []);
+
+  React.useEffect(() => {
+    console.log('[AgenciesManager] Agencies updated:', agencies);
+  }, [agencies]);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',

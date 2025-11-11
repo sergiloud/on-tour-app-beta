@@ -70,15 +70,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       // Try to get Firebase Auth user first
       if (auth?.currentUser) {
-        console.log('[SettingsContext] Using Firebase Auth user:', auth.currentUser.uid);
+        console.log('🔥 [SettingsContext] Using Firebase Auth user:', auth.currentUser.uid);
+        console.log('🔥 [SettingsContext] User email:', auth.currentUser.email);
         return auth.currentUser.uid;
       }
       // Fallback to demo auth
       const demoUser = getCurrentUserId();
-      console.log('[SettingsContext] Using demo user:', demoUser);
+      console.log('⚠️ [SettingsContext] Using demo user:', demoUser);
       return demoUser;
     } catch {
-      console.log('[SettingsContext] Fallback to default_user');
+      console.log('❌ [SettingsContext] Fallback to default_user');
       return 'default_user';
     }
   });
@@ -89,10 +90,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        console.log('[SettingsContext] Auth state changed - user logged in:', user.uid);
+        console.log('🔥 [SettingsContext] Auth state changed - user logged in:', user.uid);
+        console.log('🔥 [SettingsContext] User email:', user.email);
         setUserId(user.uid);
       } else {
-        console.log('[SettingsContext] Auth state changed - user logged out');
+        console.log('⚠️ [SettingsContext] Auth state changed - user logged out');
         // Fallback to demo user
         const demoUser = getCurrentUserId();
         setUserId(demoUser || 'default_user');
@@ -135,24 +137,26 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     let isMounted = true;
     (async () => {
       try {
-        console.log('[SettingsContext] Loading agencies for userId:', userId);
+        console.log('📥 [SettingsContext] Loading agencies for userId:', userId);
         const { FirestoreUserService } = await import('../services/firestoreUserService');
         const settings = await FirestoreUserService.getSettings(userId);
-        console.log('[SettingsContext] Firestore settings received:', settings);
+        console.log('📥 [SettingsContext] Firestore settings received:', settings);
+        
         if (isMounted && settings) {
-          if (settings.bookingAgencies && settings.bookingAgencies.length > 0) {
-            console.log('[SettingsContext] Loaded booking agencies from Firestore:', settings.bookingAgencies);
+          // Always load arrays from Firestore if they exist (even if empty)
+          if (settings.bookingAgencies !== undefined) {
+            console.log('📥 [SettingsContext] Loading booking agencies from Firestore:', settings.bookingAgencies);
             setBookingAgencies(settings.bookingAgencies);
           }
-          if (settings.managementAgencies && settings.managementAgencies.length > 0) {
-            console.log('[SettingsContext] Loaded management agencies from Firestore:', settings.managementAgencies);
+          if (settings.managementAgencies !== undefined) {
+            console.log('📥 [SettingsContext] Loading management agencies from Firestore:', settings.managementAgencies);
             setManagementAgencies(settings.managementAgencies);
           }
         } else {
-          console.log('[SettingsContext] No settings found in Firestore for user:', userId);
+          console.log('⚠️ [SettingsContext] No settings found in Firestore for user:', userId);
         }
       } catch (e) {
-        console.error('[SettingsContext] Error loading agencies from Firestore:', e);
+        console.error('❌ [SettingsContext] Error loading agencies from Firestore:', e);
       }
     })();
     return () => { isMounted = false; };
@@ -187,14 +191,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         // Skip if using demo user
         if (!auth || !auth.currentUser || userId === 'default_user' || userId.startsWith('demo_')) {
-          console.log('[SettingsContext] Skipping Firestore sync - no Firebase Auth user');
+          console.log('⚠️ [SettingsContext] Skipping Firestore sync - no Firebase Auth user');
+          console.log('   Current userId:', userId);
+          console.log('   auth.currentUser:', auth?.currentUser?.uid);
           return;
         }
 
-        console.log('[SettingsContext] Firebase Auth user detected:', auth.currentUser.uid);
-        console.log('[SettingsContext] Syncing agencies to Firestore for userId:', userId);
-        console.log('[SettingsContext] Booking agencies:', bookingAgencies);
-        console.log('[SettingsContext] Management agencies:', managementAgencies);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('🔥 [SettingsContext] SYNCING TO FIRESTORE');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('   Firebase Auth user:', auth.currentUser.uid);
+        console.log('   Firebase Auth email:', auth.currentUser.email);
+        console.log('   userId state:', userId);
+        console.log('   Path: users/' + userId + '/profile/settings');
+        console.log('   Booking agencies:', bookingAgencies.length);
+        console.log('   Management agencies:', managementAgencies.length);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         const { FirestoreUserService } = await import('../services/firestoreUserService');
         await FirestoreUserService.saveSettings({
@@ -202,9 +214,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           managementAgencies,
           updatedAt: new Date().toISOString()
         }, userId);
-        console.log('[SettingsContext] ✅ Agencies successfully synced to Firestore');
+        
+        console.log('✅ [SettingsContext] Agencies successfully synced to Firestore');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       } catch (e) {
-        console.error('[SettingsContext] ❌ Error syncing agencies to Firestore:', e);
+        console.error('❌ [SettingsContext] Error syncing agencies to Firestore:', e);
         console.error('[SettingsContext] Error details:', {
           name: (e as any)?.name,
           message: (e as any)?.message,

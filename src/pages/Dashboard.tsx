@@ -14,6 +14,7 @@ import { getCurrentOrgId } from '../lib/tenants';
 import { showStore } from '../shared/showStore';
 import type { Show } from '../lib/shows';
 import { Building2, MapPin, Activity } from 'lucide-react';
+import { ShowsDebugger } from '../components/debug/ShowsDebugger';
 
 // Lazy imports para componentes del Mission Control
 // Priority loading: defer non-critical components
@@ -265,6 +266,8 @@ export const DashboardOverview: React.FC = () => {
           <MissionControlDashboard />
         </div>
       </DashboardWithFAB>
+      {/* Debug component - only shows in development */}
+      <ShowsDebugger />
     </DashboardProvider>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { COUNTRIES } from '../lib/countries';
 import { t } from '../lib/i18n';
 import { useSettings } from '../context/SettingsContext';
@@ -43,6 +44,7 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
   const listRef = useRef<HTMLUListElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [listStyle, setListStyle] = useState<React.CSSProperties>({});
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const internalId = useId();
   const cid = id || internalId;
   const lastSearchRef = useRef<string>('');
@@ -106,11 +108,24 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
     const viewportH = window.innerHeight;
     const spaceBelow = viewportH - rect.bottom - 8; // padding
     const desiredMax = Math.max(160, spaceBelow); // ensure at least previous ~208px (52*4)
+    
+    // Update dropdown position for portal
+    setDropdownPosition({
+      top: rect.bottom + window.scrollY + 4,
+      left: rect.left + window.scrollX,
+      width: rect.width
+    });
+    
     // If spaceBelow too small (e.g., near bottom), try opening upward.
     if (spaceBelow < 120) {
       const spaceAbove = rect.top - 8;
       if (spaceAbove > spaceBelow) {
-        setListStyle({ maxHeight: spaceAbove, bottom: '100%', top: 'auto', marginTop: 0, marginBottom: '4px' });
+        setListStyle({ maxHeight: spaceAbove });
+        setDropdownPosition({
+          top: rect.top + window.scrollY - 4,
+          left: rect.left + window.scrollX,
+          width: rect.width
+        });
         return;
       }
     }
@@ -239,13 +254,20 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
           onClick={clear}
         >×</button>
       )}
-      {open && items.length > 0 && (
+      {open && items.length > 0 && createPortal(
         <ul
           ref={listRef}
           id={cid + '-list'}
           role="listbox"
-          style={listStyle}
-          className="absolute z-10 mt-1 overflow-auto w-full bg-ink-900 border border-white/15 rounded shadow-lg text-xs"
+          style={{
+            ...listStyle,
+            position: 'fixed',
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
+            zIndex: 10001
+          }}
+          className="overflow-auto bg-ink-900 border border-white/15 rounded shadow-lg text-xs"
         >
           {items.map((it, idx) => (
             <li
@@ -262,12 +284,24 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({ value, onChange, i
               <span className="opacity-60 text-[10px]">{it.code}</span>
             </li>
           ))}
-        </ul>
+        </ul>,
+        document.body
       )}
-      {open && items.length === 0 && (
-        <div className="absolute z-10 mt-1 w-full bg-ink-900 border border-white/15 rounded shadow-lg text-xs p-2 opacity-70" role="status">
+      {open && items.length === 0 && createPortal(
+        <div 
+          style={{
+            position: 'fixed',
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
+            zIndex: 10001
+          }}
+          className="bg-ink-900 border border-white/15 rounded shadow-lg text-xs p-2 opacity-70" 
+          role="status"
+        >
           {t('common.noResults') || 'No results'}
-        </div>
+        </div>,
+        document.body
       )}
       {/* Visually hidden aria-live region for announcing count updates */}
       <div aria-live="polite" className="sr-only" ref={liveRef}>{liveMsg}</div>

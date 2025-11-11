@@ -172,12 +172,16 @@ export default defineConfig({
         generatedCode: {
           constBindings: true,
         },
+        // Compact output
+        compact: true,
       },
     },
     chunkSizeWarningLimit: 1000, // Warn for chunks > 1MB
     reportCompressedSize: false,
     cssMinify: 'esbuild',
     assetsInlineLimit: 4096, // Inline assets < 4KB as base64
+    // Enable compression
+    terserOptions: undefined,
   },
   server: {
     host: true,

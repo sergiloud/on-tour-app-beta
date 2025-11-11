@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Show } from '../lib/shows';
 import { showStore } from '../shared/showStore';
 import { getCurrentOrgId } from '../lib/tenants';
+import { getCurrentUserId } from '../lib/demoAuth';
 
 export function useShows() {
   const [allShows, setAllShows] = useState<Show[]>(() => {
@@ -23,6 +24,11 @@ export function useShows() {
     try { 
       return getCurrentOrgId();
     } catch { return ''; } 
+  });
+  const [userId] = useState<string>(()=> {
+    try {
+      return getCurrentUserId();
+    } catch { return ''; }
   });
   
   // Subscribe to showStore updates
@@ -54,8 +60,33 @@ export function useShows() {
     return () => window.removeEventListener('tenant:changed' as any, onTenant);
   }, []);
   
-  // Derive tenant-scoped shows; default to artist data if missing tenantId for backward compat
-  const shows = useMemo(() => allShows.filter(s => !s.tenantId || s.tenantId === orgId), [allShows, orgId]);
+  // Derive tenant-scoped shows with improved filtering:
+  // 1. Shows without tenantId/userId (backward compatibility - show all)
+  // 2. Shows matching current orgId (tenant/organization)
+  // 3. Shows matching current userId (user's personal shows)
+  // If no valid orgId or userId, show ALL shows (development/demo mode)
+  const shows = useMemo(() => {
+    const filtered = allShows.filter(s => {
+      const show = s as any; // Type assertion for runtime data that may have userId
+      
+      // No orgId and no userId = show ALL shows (demo mode / not logged in)
+      if (!orgId && !userId) return true;
+      
+      // Show has no owner = visible to all (backward compatibility)
+      if (!show.tenantId && !show.userId) return true;
+      
+      // Show belongs to current tenant/org
+      if (orgId && show.tenantId === orgId) return true;
+      
+      // Show belongs to current user
+      if (userId && show.userId === userId) return true;
+      
+      return false;
+    });
+    
+    return filtered;
+  }, [allShows, orgId, userId]);
+  
   const add = (s: Show) => showStore.addShow(s);
   const setAll = (list: Show[]) => showStore.setAll(list);
   const update = (id: string, patch: Partial<Show> & Record<string, unknown>) => showStore.updateShow(id, patch);

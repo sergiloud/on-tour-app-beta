@@ -5,21 +5,70 @@ import { trackEvent } from '../../lib/telemetry';
 import { Card } from '../../ui/Card';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useFilteredShows } from '../../features/shows/selectors';
+import { useShows } from '../../hooks/useShows';
+import { useGeocodedShows } from '../../hooks/useGeocodedShows';
 import { announce } from '../../lib/announcer';
 import { useSettings } from '../../context/SettingsContext';
 import { t } from '../../lib/i18n';
 import { useTheme } from '../../hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
 import { escapeHtml } from '../../lib/escape';
-import { HeatmapControl } from '../map/HeatmapControl';
-import {
-  convertToHeatmapData,
-  createHeatmapGeoJSON,
-  getHeatmapColorGradient,
-  type RegionRevenue
-} from '../../features/map/revenueHeatmap';
 
 // Light Leaflet dynamic integration; keeps bundle lean until loaded.
+
+// Helper function to get approximate coordinates for a country code
+const getCountryCoordinates = (countryCode: string): [number, number] => {
+  const coords: Record<string, [number, number]> = {
+    US: [-95.7129, 37.0902],
+    GB: [-3.4360, 55.3781],
+    FR: [2.2137, 46.2276],
+    DE: [10.4515, 51.1657],
+    ES: [-3.7492, 40.4637],
+    IT: [12.5674, 41.8719],
+    NL: [5.2913, 52.1326],
+    BE: [4.4699, 50.5039],
+    CH: [8.2275, 46.8182],
+    AT: [14.5501, 47.5162],
+    PT: [-8.2245, 39.3999],
+    SE: [18.6435, 60.1282],
+    NO: [8.4689, 60.4720],
+    DK: [9.5018, 56.2639],
+    FI: [25.7482, 61.9241],
+    PL: [19.1451, 51.9194],
+    CZ: [15.4730, 49.8175],
+    AU: [133.7751, -25.2744],
+    JP: [138.2529, 36.2048],
+    CN: [104.1954, 35.8617],
+    BR: [-51.9253, -14.2350],
+    MX: [-102.5528, 23.6345],
+    CA: [-106.3468, 56.1304],
+    AR: [-63.6167, -38.4161],
+    CL: [-71.5430, -35.6751],
+    CO: [-74.2973, 4.5709],
+    VN: [108.2772, 14.0583],
+    TH: [100.9925, 15.8700],
+    SG: [103.8198, 1.3521],
+    MY: [101.9758, 4.2105],
+    IN: [78.9629, 20.5937],
+    AE: [53.8478, 23.4241],
+    SA: [45.0792, 23.8859],
+    ZA: [22.9375, -30.5595],
+    EG: [30.8025, 26.8206],
+    KE: [37.9062, -0.0236],
+    NG: [8.6753, 9.0820],
+    GR: [21.8243, 39.0742],
+    TR: [35.2433, 38.9637],
+    RU: [105.3188, 61.5240],
+    UA: [31.1656, 48.3794],
+    IE: [-8.2439, 53.4129],
+    NZ: [174.8860, -40.9006],
+    KR: [127.7669, 35.9078],
+  };
+  
+  const code = countryCode?.toUpperCase();
+  return coords[code] || [0, 0]; // Default to Atlantic Ocean if unknown
+};
+
 const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className = '' }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -28,36 +77,41 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const [ready, setReady] = useState(false);
   const [cssWarning, setCssWarning] = useState(false);
   const { highContrast, toggleHC } = useHighContrast();
-  const { shows: filteredShows } = useFilteredShows();
+  // Use useShows directly to show all shows without date/region filters from SettingsContext
+  const { shows: allShows } = useShows();
+  
+  // Geocode shows that don't have coordinates
+  const { shows: geocodedShows, loading: geocoding, processed, total } = useGeocodedShows(allShows);
+  
   const shows = useMemo(() => {
     const now = Date.now();
-    return [...filteredShows]
-      .filter(s => new Date(s.date).getTime() >= now) // Solo shows futuros
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 50);
-  }, [filteredShows]);
+    return [...geocodedShows]
+      .filter(s => {
+        if (!s.date) return false;
+        const showDate = new Date(s.date).getTime();
+        if (isNaN(showDate)) return false;
+        // Only show future shows with valid coordinates
+        return showDate >= now && s.lng && s.lat && !isNaN(s.lng) && !isNaN(s.lat);
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [geocodedShows]);
   const { fmtMoney } = useSettings();
   const { theme } = useTheme();
   const navigate = useNavigate();
   // Accessibility: honor prefers-reduced-motion for route animation
   const [reducedMotion, setReducedMotion] = useState(false);
-  // Revenue heatmap state
-  const [heatmapEnabled, setHeatmapEnabled] = useState(false);
-  const [heatmapRegions, setHeatmapRegions] = useState<any[]>([]);
-  // Stable empty costs object to avoid recreating on every render
-  const emptyCosts = useMemo(() => ({}), []);
   // Cache CSS token values on theme change so we don't repeatedly call getComputedStyle
   const cssTokensRef = useRef<{ land: string; water: string; border: string; borderProvince: string; halo: string; provinceHalo: string } | null>(null);
   useEffect(() => {
     try {
       const cs = getComputedStyle(document.documentElement);
       cssTokensRef.current = {
-        land: (cs.getPropertyValue('--map-land') || (theme === 'light' ? '#eaf2f8' : '#0a0f14')).trim(),
-        water: (cs.getPropertyValue('--map-water') || (theme === 'light' ? '#cfe9ff' : '#07121d')).trim(),
-        border: (cs.getPropertyValue('--map-border') || (theme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.95)')).trim(),
-        borderProvince: (cs.getPropertyValue('--map-border-province') || (theme === 'light' ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.9)')).trim(),
-        halo: (cs.getPropertyValue('--map-border-halo') || 'rgba(255,255,255,0.45)').trim(),
-        provinceHalo: (cs.getPropertyValue('--map-province-halo') || 'rgba(255,255,255,0.35)').trim()
+        land: (cs.getPropertyValue('--map-land') || (theme === 'light' ? '#f8fafc' : '#0f172a')).trim(),
+        water: (cs.getPropertyValue('--map-water') || (theme === 'light' ? '#dbeafe' : '#0c1623')).trim(),
+        border: (cs.getPropertyValue('--map-border') || (theme === 'light' ? 'rgba(100,116,139,0.3)' : 'rgba(148,163,184,0.4)')).trim(),
+        borderProvince: (cs.getPropertyValue('--map-border-province') || (theme === 'light' ? 'rgba(148,163,184,0.2)' : 'rgba(148,163,184,0.25)')).trim(),
+        halo: (cs.getPropertyValue('--map-border-halo') || 'rgba(255,255,255,0.3)').trim(),
+        provinceHalo: (cs.getPropertyValue('--map-province-halo') || 'rgba(255,255,255,0.15)').trim()
       };
     } catch { }
   }, [theme]);
@@ -84,7 +138,20 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     if (!el) return;
 
     const init = () => {
-      if (!containerRef.current || mapRef.current) return;
+      const container = containerRef.current;
+      if (!container || mapRef.current) return;
+      
+      // Ensure container has explicit dimensions before MapLibre initialization
+      const rect = container.getBoundingClientRect();
+      if (!rect || rect.width === 0 || rect.height === 0) {
+        console.warn('[InteractiveMap] Container has no dimensions, waiting...');
+        return;
+      }
+      
+      // Set explicit width/height styles to prevent MapLibre resize issues
+      container.style.width = `${rect.width}px`;
+      container.style.height = `${rect.height}px`;
+      
       const mlib = mlibRef.current;
 
       // Safety check: ensure MapLibre is fully loaded
@@ -93,24 +160,72 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         return;
       }
 
-      const map = new mlib.Map({
-        container: containerRef.current,
-        style: ({
-          version: 8,
-          glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-          sources: {},
-          layers: [
-            // Base background as water; land will be filled from vector polygons
-            { id: 'background-water', type: 'background', paint: { 'background-color': cssTokensRef.current?.water || (theme === 'light' ? '#cfe9ff' : '#07121d') } }
-          ]
-        } as any),
-        center: [2.3522, 48.8566],
-        zoom: 2.6,
-        attributionControl: false,
-        dragRotate: false,
-        pitchWithRotate: false
-      });
+      let map;
+      try {
+        // Temporarily suppress console errors during MapLibre init to avoid non-fatal resize errors
+        const originalError = console.error;
+        const errors: any[] = [];
+        console.error = (...args: any[]) => {
+          // Capture but don't display the _calcMatrices error - it's non-fatal
+          if (args[0]?.toString().includes('_calcMatrices') || args[0]?.toString().includes("Cannot read properties of null")) {
+            errors.push(args);
+            return;
+          }
+          originalError(...args);
+        };
+
+        try {
+          map = new mlib.Map({
+            container: container,
+            style: ({
+              version: 8,
+              glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+              sources: {},
+              layers: [
+                {
+                  id: 'background-water',
+                  type: 'background',
+                  paint: {
+                    'background-color': cssTokensRef.current?.water || (theme === 'light' ? '#e0f2fe' : '#0c1623')
+                  }
+                }
+              ]
+            } as any),
+            center: [15, 30], // Center on Europe/Mediterranean  
+            zoom: 2,
+            minZoom: 1,
+            maxZoom: 16,
+            attributionControl: false,
+            dragRotate: false,
+            pitchWithRotate: false,
+            doubleClickZoom: true,
+            touchZoomRotate: true,
+            touchPitch: false
+          });
+        } finally {
+          console.error = originalError;
+        }
+      } catch (error) {
+        console.error('[InteractiveMap] Failed to initialize map:', error);
+        return;
+      }
+      
+      if (!map) {
+        console.error('[InteractiveMap] Map object is null after construction');
+        return;
+      }
+      
       mapRef.current = map;
+      
+      // Resize after map is fully loaded
+      map.once('load', () => {
+        try {
+          map.resize();
+        } catch (e) {
+          // Ignore resize errors
+        }
+      });
+      
       // Lazy-load MapLibre CSS on demand (first init) to reduce initial CSS cost
       try {
         const id = 'maplibre-css';
@@ -134,11 +249,15 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
               .maplibregl-ctrl-group{background:rgba(0,0,0,.4);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.15)}
               .maplibregl-ctrl-group button{width:30px;height:30px;display:block;color:#eaf2f6}
               .maplibregl-popup{max-width:280px}
-              .maplibregl-popup-content{background:rgba(8,12,16,.92);border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 30px -8px rgba(0,0,0,.7);color:#eaf2f6;border-radius:10px}
-              .maplibregl-popup-close-button{color:#cfe7ff;font-size:16px}
+              .maplibregl-popup-content{background:rgba(8,12,16,.92);border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 30px -8px rgba(0,0,0,.7);color:#eaf2f6;border-radius:8px;padding:0}
+              .maplibregl-popup-close-button{color:#cfe7ff;font-size:14px;padding:4px;width:24px;height:24px}
               .maplibregl-popup .title{font-weight:700;color:#fff;margin-bottom:2px}
-              .maplibregl-popup .meta{color:rgba(255,255,255,.85);font-size:12px}
-              .maplibregl-popup .fee{color:#bfff00;font-weight:700;margin-top:4px}`;
+              .maplibregl-popup .meta{color:rgba(255,255,255,.85);font-size:11px}
+              .maplibregl-popup .fee{color:#bfff00;font-weight:700;margin-top:4px}
+              .city-list{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.2) transparent}
+              .city-list::-webkit-scrollbar{width:4px}
+              .city-list::-webkit-scrollbar-track{background:transparent}
+              .city-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:2px}`;
               document.head.appendChild(style);
               console.warn('MapLibre CSS failed to load; inlined minimal fallback CSS.');
               setCssWarning(true);
@@ -272,7 +391,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           setTimeout(() => {
             try {
               // Smooth ease-in to next show with custom easing
-              map.easeTo({ center, zoom: 6, duration: 1200, easing: (t) => 1 - Math.pow(1 - t, 4) }); // ease-out-quart
+              map.easeTo({ center, zoom: 6, duration: 1200, easing: (t: number) => 1 - Math.pow(1 - t, 4) }); // ease-out-quart
               const date = new Date(next.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
               const time = new Date(next.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
               const fee = fmtMoney(Number(next.fee));
@@ -320,93 +439,105 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           type: 'FeatureCollection', features: shows.map((s, idx) => {
             const net = nets[idx] ?? 0;
             const category = toCategory(net);
+            
+            // Use show coordinates if available, otherwise approximate from country
+            let lng = s.lng;
+            let lat = s.lat;
+            if (!lng || !lat || (lng === 0 && lat === 0)) {
+              const [approxLng, approxLat] = getCountryCoordinates(s.country || '');
+              lng = approxLng;
+              lat = approxLat;
+            }
+            
             return ({
               type: 'Feature', properties: {
                 id: s.id,
                 title: `${s.city}, ${new Date(s.date).toLocaleDateString()}`,
                 city: s.city,
+                country: s.country,
                 date: s.date,
                 status: s.status,
                 fee: s.fee,
                 net,
                 category
-              }, geometry: { type: 'Point', coordinates: [s.lng, s.lat] }
+              }, geometry: { type: 'Point', coordinates: [lng, lat] }
             });
           })
         } as any;
-        map.addSource('shows', { type: 'geojson', data: showFc, cluster: true, clusterMaxZoom: 6, clusterRadius: 40 } as any);
+        // Disable clustering - show each show individually
+        map.addSource('shows', { type: 'geojson', data: showFc, cluster: false } as any);
+        
+        // Outer glow ring for markers (enhanced halo effect)
         map.addLayer({
-          id: 'clusters', type: 'circle', source: 'shows', filter: ['has', 'point_count'],
-          paint: {
-            'circle-color': [
-              'step', ['get', 'point_count'], '#86efac', 5, '#22c55e', 10, '#16a34a'
-            ],
-            'circle-radius': [
-              'step', ['get', 'point_count'], 12, 5, 16, 10, 20
-            ],
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#065f46'
-          }
-        });
-        map.addLayer({
-          id: 'cluster-count', type: 'symbol', source: 'shows', filter: ['has', 'point_count'],
-          layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Noto Sans Regular'], 'text-size': 11 },
-          paint: { 'text-color': '#052e16' }
-        });
-        // Outer glow ring for markers (subtle halo effect)
-        map.addLayer({
-          id: 'unclustered-halo', type: 'circle', source: 'shows', filter: ['!', ['has', 'point_count']],
+          id: 'unclustered-halo', type: 'circle', source: 'shows',
           paint: {
             'circle-radius': [
               'interpolate', ['linear'], ['zoom'],
-              2, 10,
-              6, 14,
-              10, 20
+              1, 8,
+              4, 14,
+              8, 20,
+              12, 28
+            ],
+            'circle-color': [
+              'match', ['get', 'status'],
+              'confirmed', theme === 'light' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.3)',
+              'pending', theme === 'light' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.3)',
+              'offer', theme === 'light' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.3)',
+              theme === 'light' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.3)'
+            ],
+            'circle-opacity': 0.6,
+            'circle-blur': 1
+          }
+        } as any);
+
+        // Main markers
+        map.addLayer({
+          id: 'unclustered', type: 'circle', source: 'shows',
+          paint: {
+            'circle-radius': [
+              'interpolate', ['linear'], ['zoom'],
+              1, 4,
+              4, 7,
+              8, 11,
+              12, 16
             ],
             'circle-color': [
               'match', ['get', 'status'],
               'confirmed', '#22c55e',
               'pending', '#f59e0b',
               'offer', '#3b82f6',
-              'canceled', '#ef4444',
-              '#6b7280'
-            ],
-            'circle-opacity': 0.15,
-            'circle-blur': 0.8
-          }
-        });
-
-        // Main markers - enhanced with better colors and sizing
-        map.addLayer({
-          id: 'unclustered', type: 'circle', source: 'shows', filter: ['!', ['has', 'point_count']],
-          paint: {
-            'circle-radius': [
-              'interpolate', ['linear'], ['zoom'],
-              2, 6,
-              6, 10,
-              10, 14
-            ],
-            'circle-color': [
-              'match', ['get', 'status'],
-              'confirmed', '#22c55e',  // Green - confirmed shows
-              'pending', '#f59e0b',    // Amber - pending approval
-              'offer', '#3b82f6',      // Blue - offers
-              'canceled', '#ef4444',   // Red - canceled
-              '#6b7280'                // Gray fallback
+              '#94a3b8'
             ],
             'circle-stroke-width': [
               'interpolate', ['linear'], ['zoom'],
-              2, 2,
-              6, 3,
-              10, 4
+              1, 1.5,
+              8, 2.5,
+              12, 3.5
             ],
-            'circle-stroke-color': '#ffffff',
-            'circle-stroke-opacity': 0.9,
+            'circle-stroke-color': theme === 'light' ? '#ffffff' : '#0f172a',
             'circle-opacity': 0.95
           }
-        });
-        // Financial HEAT layer (circles scaled/colored by net)
-        // Heat layer removed for clarity
+        } as any);
+
+        // Main markers - enhanced with better sizing for precision
+        map.addLayer({
+          id: 'unclustered-labels', type: 'symbol', source: 'shows',
+          minzoom: 6, // Only show labels when zoomed in
+          layout: {
+            'text-field': ['get', 'city'],
+            'text-font': ['Open Sans Regular'],
+            'text-size': 11,
+            'text-offset': [0, 1.5],
+            'text-anchor': 'top'
+          },
+          paint: {
+            'text-color': theme === 'light' ? '#0f172a' : '#f1f5f9',
+            'text-halo-color': theme === 'light' ? '#ffffff' : '#0f172a',
+            'text-halo-width': 1.5
+          }
+        } as any);
+
+        // Financial HEAT layer removed for clarity
         // Revenue heatmap layer is now managed by useEffect (see below)
 
         // Route line from first 3 shows
@@ -432,11 +563,15 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           } as any
         });
 
-        // Fit to bounds of shows
+        // Fit to bounds of shows with better padding and max zoom
         if (shows.length) {
           const bounds = new mlib.LngLatBounds();
           shows.forEach(s => bounds.extend([s.lng, s.lat] as [number, number]));
-          map.fitBounds(bounds as any, { padding: 40, duration: 600 });
+          map.fitBounds(bounds as any, { 
+            padding: { top: 80, bottom: 80, left: 80, right: 80 }, 
+            duration: 500,
+            maxZoom: 8 
+          });
           try { const first = shows[0]; if (first) announce(`Showing ${shows.length} shows, starting at ${first.city}`); } catch { }
         }
 
@@ -451,21 +586,9 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       try { if (containerRef.current) ro.observe(containerRef.current); } catch { }
       window.addEventListener('resize', resize);
 
-      // Basic interactivity: click popup
+      // Basic interactivity: click popup - no clustering, all shows individual
       const onClick = (e: any) => {
-        // Click clusters to zoom in
-        const clusterFeatures = map.queryRenderedFeatures(e.point, { layers: ['clusters'] }) as any[];
-        if (clusterFeatures.length) {
-          const f = clusterFeatures[0];
-          const clusterId = f.properties.cluster_id;
-          const src: any = map.getSource('shows');
-          src.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
-            if (err) return;
-            map.easeTo({ center: f.geometry.coordinates as [number, number], zoom });
-          });
-          return;
-        }
-        const feats = map.queryRenderedFeatures(e.point, { layers: ['unclustered'] }) as any[];
+        const feats = map.queryRenderedFeatures(e.point, { layers: ['unclustered-halo', 'unclustered'] }) as any[];
         if (!feats.length) return;
         const f = feats[0];
         if (f && f.geometry.type === 'Point') {
@@ -497,38 +620,64 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           };
           const statusStyle = statusStyles[p.status] || 'background:#6b7280;color:#fff';
 
-          const popup = new mlib.Popup({ closeButton: true, offset: 12, className: 'enhanced-popup' })
+          const popup = new mlib.Popup({ closeButton: true, offset: 15, className: 'enhanced-popup', maxWidth: '280px' })
             .setLngLat(coords)
             .setHTML(`
-                <div class="map-popup" role="dialog" aria-modal="true" aria-label="${t('common.openShow') || 'Show details'}" style="font-family:system-ui,-apple-system,sans-serif;background:linear-gradient(135deg,rgba(15,23,42,0.98),rgba(30,41,59,0.98));backdrop-filter:blur(12px);border-radius:10px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,0.4);min-width:240px;border:1px solid rgba(255,255,255,0.1)">
+                <div class="map-popup" role="dialog" aria-modal="true" aria-label="${t('common.openShow') || 'Show details'}" style="font-family:system-ui,-apple-system,sans-serif;background:linear-gradient(135deg,rgba(15,23,42,0.98),rgba(30,41,59,0.98));backdrop-filter:blur(16px);border-radius:10px;padding:12px;box-shadow:0 12px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.1);min-width:220px;max-width:280px;animation:popupSlideIn 0.3s ease-out">
+                  <style>
+                    @keyframes popupSlideIn {
+                      from { opacity:0; transform:translateY(8px) scale(0.95); }
+                      to { opacity:1; transform:translateY(0) scale(1); }
+                    }
+                    .map-popup button:hover {
+                      transform: translateY(-1px);
+                      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    }
+                    .map-popup button:active {
+                      transform: translateY(0);
+                    }
+                  </style>
                   <div style="margin-bottom:10px">
-                    <div class="title" style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">${escapeHtml(p.city || 'Show')}</div>
+                    <div class="title" style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:-0.02em">${escapeHtml(p.city || 'Show')}</div>
                     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-                      <span style="padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;${statusStyle}">${escapeHtml(p.status || '')}</span>
-                      ${countdownText ? `<span style="padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(255,255,255,0.05);color:${countdownColor}">${countdownText}</span>` : ''}
+                      <span style="padding:3px 8px;border-radius:5px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;${statusStyle}">${escapeHtml(p.status || '')}</span>
+                      ${countdownText ? `<span style="padding:3px 8px;border-radius:5px;font-size:9px;font-weight:600;background:rgba(255,255,255,0.08);color:${countdownColor};border:1px solid ${countdownColor}40">${countdownText}</span>` : ''}
                     </div>
                   </div>
                   <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;font-size:11px;color:rgba(255,255,255,0.7)">
                     <div style="display:flex;align-items:center;gap:6px">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/>
                         <line x1="8" y1="2" x2="8" y2="6"/>
                         <line x1="3" y1="10" x2="21" y2="10"/>
                       </svg>
-                      <span>${escapeHtml(date)}</span>
-                      ${time ? `<span style="margin-left:4px;opacity:0.6">${escapeHtml(time)}</span>` : ''}
+                      <span style="font-size:11px;font-weight:500">${escapeHtml(date)}</span>
+                      ${time ? `<span style="margin-left:4px;opacity:0.6;font-size:10px">${escapeHtml(time)}</span>` : ''}
                     </div>
-                    ${fee ? `<div style="font-size:16px;font-weight:700;color:#bfff00;margin-top:2px">${fee}</div>` : ''}
+                    ${fee ? `<div style="font-size:16px;font-weight:800;color:#bfff00;margin-top:4px;text-shadow:0 2px 8px rgba(191,255,0,0.3)">${fee}</div>` : ''}
                   </div>
                   <div class="actions" style="display:flex;gap:6px">
-                    <button class="popup-primary" aria-label="${t('map.openInDashboard')}" style="flex:1;padding:8px 12px;border-radius:8px;background:linear-gradient(135deg,#bfff00,#a3e635);color:#000;font-weight:700;font-size:12px;border:none;cursor:pointer;transition:all 0.2s">
+                    <button class="popup-primary" aria-label="${t('map.openInDashboard')}" style="flex:1;padding:8px 12px;border-radius:7px;background:linear-gradient(135deg,#bfff00,#a3e635);color:#000;font-weight:700;font-size:12px;border:none;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 8px rgba(191,255,0,0.3)">
                       ${t('common.open') || 'Open'}
                     </button>
                   </div>
                 </div>
               `)
             .addTo(map) as any;
+          
+          // Smooth flyTo animation with optimal zoom
+          const currentZoom = map.getZoom();
+          const targetZoom = Math.max(currentZoom, 8); // Zoom in at least to 8 for better view
+          map.flyTo({
+            center: coords,
+            zoom: targetZoom,
+            duration: 1200,
+            essential: true,
+            curve: 1.2,
+            easing: (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t // easeInOutQuad
+          });
+          
           try {
             const trap = () => {
               const node = document.querySelector('.maplibregl-popup-content .map-popup') as HTMLElement | null;
@@ -576,6 +725,12 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         }
       };
       map.on('click', onClick);
+      
+      // Change cursor on hover over shows
+      map.on('mouseenter', 'unclustered-halo', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'unclustered-halo', () => { map.getCanvas().style.cursor = ''; });
+      map.on('mouseenter', 'unclustered', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'unclustered', () => { map.getCanvas().style.cursor = ''; });
 
       return () => { try { ro.disconnect(); } catch { } window.removeEventListener('resize', resize); map.off('click', onClick); map.remove(); mapRef.current = null; };
     };
@@ -607,17 +762,37 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         }
 
         mlibRef.current = mapLibre;
-        const rect = el.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) {
-          const ro = new ResizeObserver(() => {
-            const r = el.getBoundingClientRect();
-            if (r.width > 0 && r.height > 0) { try { ro.disconnect(); } catch { } init(); }
-          });
-          try { ro.observe(el); } catch { init(); }
-          return () => { try { ro.disconnect(); } catch { } };
-        } else {
-          return init();
-        }
+        
+        // Wait for container to be fully painted before initializing map
+        const initWithDelay = () => {
+          const rect = el?.getBoundingClientRect();
+          if (!rect || rect.width === 0 || rect.height === 0) {
+            const ro = new ResizeObserver(() => {
+              const r = el?.getBoundingClientRect();
+              if (r && r.width > 0 && r.height > 0) { 
+                try { ro.disconnect(); } catch { } 
+                // Double rAF ensures layout is committed and painted
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => init());
+                });
+              }
+            });
+            try { if (el) ro.observe(el); } catch { 
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => init());
+              });
+            }
+            return () => { try { ro.disconnect(); } catch { } };
+          } else {
+            // Double rAF ensures DOM is fully painted before MapLibre init
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => init());
+            });
+            return () => {};
+          }
+        };
+        
+        return initWithDelay();
       } catch (error) {
         console.error('[InteractiveMap] Failed to load MapLibre:', error);
         return undefined;
@@ -796,52 +971,6 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   }, [ready, reducedMotion]);
 
   // Update heatmap layer when state changes
-  React.useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !ready) return;
-
-    // Remove existing heatmap layer and source if they exist
-    if (map.getLayer('revenue-heatmap-layer')) {
-      map.removeLayer('revenue-heatmap-layer');
-    }
-    if (map.getSource('revenue-heatmap')) {
-      map.removeSource('revenue-heatmap');
-    }
-
-    // Add heatmap layer if enabled and data available
-    if (heatmapEnabled && heatmapRegions.length > 0) {
-      const heatmapData = convertToHeatmapData(heatmapRegions);
-      const heatmapGeoJSON = createHeatmapGeoJSON(heatmapData);
-
-      map.addSource('revenue-heatmap', {
-        type: 'geojson',
-        data: heatmapGeoJSON as any
-      });
-
-      map.addLayer({
-        id: 'revenue-heatmap-layer',
-        type: 'heatmap',
-        source: 'revenue-heatmap',
-        paint: {
-          'heatmap-weight': ['get', 'weight'] as any,
-          'heatmap-intensity': [
-            'interpolate', ['linear'], ['zoom'],
-            0, 0.8,
-            9, 1.2
-          ] as any,
-          'heatmap-color': getHeatmapColorGradient() as any,
-          'heatmap-radius': [
-            'interpolate', ['linear'], ['zoom'],
-            0, 8,
-            4, 15,
-            9, 30
-          ] as any,
-          'heatmap-opacity': 0.75
-        }
-      } as any);
-    }
-  }, [ready, heatmapEnabled, heatmapRegions]);
-
   // Fit all shows function
   const fitAllShows = React.useCallback(() => {
     const map = mapRef.current;
@@ -856,7 +985,13 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     });
 
     if (!bounds.isEmpty()) {
-      map.fitBounds(bounds as any, { padding: 60, duration: 800 });
+      map.fitBounds(bounds as any, { 
+        padding: { top: 100, bottom: 100, left: 100, right: 100 }, 
+        duration: 1000,
+        maxZoom: 8,
+        essential: true,
+        easing: (t: number) => 1 - Math.pow(1 - t, 3) // easeOutCubic for smoother deceleration
+      });
       trackEvent('map.fitAllShows', { showCount: shows.length });
     }
   }, [shows]);
@@ -885,7 +1020,19 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         aria-label={`Tour map showing ${shows.length} shows across different locations`}
         tabIndex={0}
       />
-      {!ready && <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100/10 to-transparent dark:from-white/5 dark:to-white/0 animate-pulse text-[10px] tracking-widest uppercase text-slate-300 dark:text-white/40">Loading map…</div>}
+      {!ready && <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-900/50 dark:to-transparent backdrop-blur-sm animate-pulse">
+        <div className="text-xs font-medium text-slate-500 dark:text-slate-400 tracking-wide">Loading map...</div>
+      </div>}
+      
+      {/* Geocoding indicator - Improved design */}
+      {geocoding && processed < total && (
+        <div className="absolute bottom-3 left-3 px-2.5 py-1.5 backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-medium text-slate-700 dark:text-white shadow-lg flex items-center gap-2">
+          <svg className="w-3.5 h-3.5 animate-spin text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span className="text-[11px]">{processed}/{total}</span>
+        </div>
+      )}
       {cssWarning && (
         <div className="absolute top-2 right-2 text-[11px] px-2 py-1 rounded bg-amber-400/90 text-black border border-amber-900/20 shadow">
           {t('map.cssWarning')}
@@ -895,31 +1042,27 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         <div className={`absolute inset-0 pointer-events-none map-gradient-mask contrast-125 saturate-150`} />
       )}
 
-      {/* Fit All Shows Button */}
+      {/* Fit All Shows Button - Enhanced design with gradient and glow */}
       {ready && shows.length > 0 && (
         <button
           onClick={fitAllShows}
-          className="absolute top-4 right-4 px-3 py-2 min-h-[44px] md:min-h-0 md:py-1.5 backdrop-blur-md bg-slate-900/80 hover:bg-slate-800/90 border border-slate-300 dark:border-white/20 hover:border-accent-500/40 rounded-lg text-xs font-medium transition-all duration-300 shadow-xl hover:shadow-accent-500/20 flex items-center gap-2 active:scale-95"
+          className="group absolute top-3 right-3 px-4 py-2 backdrop-blur-xl bg-gradient-to-br from-white/95 to-white/85 dark:from-slate-900/95 dark:to-slate-800/95 hover:from-accent-50 hover:to-accent-100/90 dark:hover:from-accent-900/40 dark:hover:to-accent-800/40 border border-slate-200 dark:border-white/10 hover:border-accent-400 dark:hover:border-accent-500/50 rounded-xl text-xs font-bold text-slate-800 dark:text-white hover:text-accent-700 dark:hover:text-accent-300 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-accent-500/20 dark:hover:shadow-accent-500/30 flex items-center gap-2.5 active:scale-95 transform hover:-translate-y-0.5"
           aria-label="Fit all shows in view"
-          title="View all shows"
+          style={{ letterSpacing: '0.02em' }}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          <svg className="w-4 h-4 transition-transform duration-300 group-hover:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
-          <span className="hidden md:inline">Fit All</span>
+          <span className="text-[11px] font-extrabold">{t('map.viewAll') || 'View All'}</span>
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-accent-400/0 via-accent-400/10 to-accent-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </button>
       )}
-
-      {/* Revenue Heatmap Control */}
+      
+      {/* Show count badge */}
       {ready && shows.length > 0 && (
-        <div className="absolute top-20 right-4">
-          <HeatmapControl
-            shows={shows as any}
-            costs={emptyCosts}
-            isActive={heatmapEnabled}
-            onToggle={setHeatmapEnabled}
-            onDataChange={setHeatmapRegions}
-          />
+        <div className="absolute top-3 left-3 px-3 py-1.5 backdrop-blur-xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 border border-white/10 rounded-lg text-xs font-bold text-white shadow-lg flex items-center gap-2">
+          <div className="w-2 h-2 bg-accent-400 rounded-full animate-pulse" />
+          <span className="text-[11px]">{shows.length} {shows.length === 1 ? 'show' : 'shows'}</span>
         </div>
       )}
 

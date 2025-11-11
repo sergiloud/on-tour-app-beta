@@ -14,7 +14,6 @@ import { getCurrentOrgId } from '../lib/tenants';
 import { showStore } from '../shared/showStore';
 import type { Show } from '../lib/shows';
 import { Building2, MapPin, Activity } from 'lucide-react';
-import { ShowsDebugger } from '../components/debug/ShowsDebugger';
 
 // Lazy imports para componentes del Mission Control
 // Priority loading: defer non-critical components
@@ -36,23 +35,9 @@ const MissionControlDashboard: React.FC = () => {
   const [showLegend, setShowLegend] = React.useState(true);
   const { org } = useOrg();
 
-  // Progressive loading state - load critical content immediately, defer heavy components
-  const [showMap, setShowMap] = useState(false);
-  const [showActionHub, setShowActionHub] = useState(false);
-
-  // Load heavy components progressively after initial render
-  useEffect(() => {
-    // Critical content renders immediately (filters, agenda)
-    // Defer map slightly to prioritize above-the-fold content
-    const mapTimer = setTimeout(() => setShowMap(true), 100);
-    // Defer action hub more as it's below the fold
-    const actionTimer = setTimeout(() => setShowActionHub(true), 300);
-
-    return () => {
-      clearTimeout(mapTimer);
-      clearTimeout(actionTimer);
-    };
-  }, []);
+  // Progressive loading state - render all components immediately
+  const [showMap, setShowMap] = useState(true);
+  const [showActionHub, setShowActionHub] = useState(true);
 
   const handleMapRetry = useCallback(() => {
     setMapKey(k => k + 1);
@@ -159,8 +144,8 @@ const MissionControlDashboard: React.FC = () => {
                       </div>
                     }
                   >
-                    <React.Suspense fallback={<LoadingCard height="h-80 md:h-96" />}>
-                      <InteractiveMap key={mapKey} className="h-80 md:h-96 w-full" />
+                    <React.Suspense fallback={<LoadingCard height="h-[500px]" />}>
+                      <InteractiveMap key={mapKey} className="h-[500px] w-full" />
                     </React.Suspense>
                   </ErrorBoundary>
 
@@ -266,8 +251,6 @@ export const DashboardOverview: React.FC = () => {
           <MissionControlDashboard />
         </div>
       </DashboardWithFAB>
-      {/* Debug component - only shows in development */}
-      <ShowsDebugger />
     </DashboardProvider>
   );
 };

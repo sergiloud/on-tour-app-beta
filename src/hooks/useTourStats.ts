@@ -113,7 +113,8 @@ export const useTourStats = (): TourStats => {
 
         let all = shows
             .filter(s => {
-                if (s.tenantId !== orgId) return false;
+                // Shows are already filtered by useShows hook (tenantId/userId)
+                // Just filter by date and validity here
                 if (!s.date) return false; // Skip shows without valid date
                 const showDate = new Date(s.date).getTime();
                 if (isNaN(showDate)) return false; // Skip invalid dates

@@ -5,6 +5,7 @@
 export type Show = {
   id: string;
   tenantId?: string;
+  userId?: string;         // User ID who owns this show (for Firestore sync)
   name?: string; // show / festival / venue display name
   city: string;
   country: string;

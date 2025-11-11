@@ -21,7 +21,7 @@ import SubNav from '../components/common/SubNav';
 
 function useNavItems(collapsed: boolean) {
   const { org } = useOrg();
-  if (!org) return [] as Array<{ to: string; labelKey: string; end?: boolean; section?: string }>;
+  if (!org) return [] as Array<{ to: string; labelKey: string; end?: boolean; section?: string; separator?: boolean; separatorLabel?: string }>;
   const commonStart = [{ to: '/dashboard', labelKey: 'nav.dashboard', end: true }];
   // Both artist and agency get full access to all sections
   return [
@@ -32,6 +32,7 @@ function useNavItems(collapsed: boolean) {
     { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
     { to: '/dashboard/finance', labelKey: 'nav.finance' },
     { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
+    { to: '', labelKey: '', separator: true, separatorLabel: collapsed ? '' : 'En desarrollo' },
     { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
     { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },
     { to: '/dashboard/org/clients', labelKey: 'nav.clients', section: 'org' },
@@ -197,18 +198,29 @@ export const DashboardLayout: React.FC = () => {
             </div>
           </div>
           <nav className="flex flex-col gap-1.5 text-sm" aria-label="Dashboard navigation">
-            {navItems.map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={!!(item as any).end}
-                className={({ isActive }) => `rounded-md px-3 py-2 font-medium flex items-center gap-2 motion-safe:transition-colors ${isActive ? 'bg-accent-500 text-black shadow-glow' : 'opacity-80 hover:opacity-100 hover:bg-white/6'}`}
-                onMouseEnter={() => prefetchByPath(item.to)}
-                onFocus={() => prefetchByPath(item.to)}
-              >
-                <span className="w-5 h-5 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[10px] uppercase">{firstGrapheme(t(item.labelKey))}</span>
-                {!collapsed && <span>{t(item.labelKey)}</span>}
-              </NavLink>
+            {navItems.map((item, index) => (
+              item.separator ? (
+                <div key={`separator-${index}`} className="my-2">
+                  <div className="border-t border-slate-200 dark:border-white/10"></div>
+                  {item.separatorLabel && !collapsed && (
+                    <div className="text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-wider px-3 py-2 font-semibold">
+                      {item.separatorLabel}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={!!(item as any).end}
+                  className={({ isActive }) => `rounded-md px-3 py-2 font-medium flex items-center gap-2 motion-safe:transition-colors ${isActive ? 'bg-accent-500 text-black shadow-glow' : 'opacity-80 hover:opacity-100 hover:bg-white/6'}`}
+                  onMouseEnter={() => prefetchByPath(item.to)}
+                  onFocus={() => prefetchByPath(item.to)}
+                >
+                  <span className="w-5 h-5 rounded-md bg-slate-200 dark:bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[10px] uppercase">{firstGrapheme(t(item.labelKey))}</span>
+                  {!collapsed && <span>{t(item.labelKey)}</span>}
+                </NavLink>
+              )
             ))}
           </nav>
           <div className="mt-auto text-[10px] leading-relaxed opacity-60 space-y-0.5">

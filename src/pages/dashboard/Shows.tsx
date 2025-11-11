@@ -1273,7 +1273,7 @@ const Shows: React.FC = () => {
                   {/* Region */}
                   <div>
                     <h4 className="text-sm font-semibold mb-3 text-slate-600 dark:text-white/80">{t('shows.filters.region') || 'Region'}</h4>
-                    <select value={region} onChange={e => setRegion(e.target.value as any)} className="w-full px-4 py-2.5 rounded-lg bg-interactive border border-theme-strong hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:outline-none cursor-pointer transition-all">
+                    <select value={region} onChange={e => setRegion(e.target.value as 'all' | 'AMER' | 'EMEA' | 'APAC')} className="w-full px-4 py-2.5 rounded-lg bg-interactive border border-theme-strong hover:border-slate-400 dark:hover:border-white/30 focus:border-accent-500/50 focus:outline-none cursor-pointer transition-all">
                       <option value="all">All Regions</option>
                       <option value="AMER">AMER</option>
                       <option value="EMEA">EMEA</option>
@@ -1341,8 +1341,8 @@ const Shows: React.FC = () => {
           <ShowEditorDrawer
             open={modalOpen}
             mode={mode}
-            initial={{ ...(draft as any), costs }}
-            onSave={(d) => { setDraft(d as any); setCosts((d as any).costs || []); saveDraft(d as any); closeDrawer(); }}
+            initial={{ ...draft, costs }}
+            onSave={(d) => { setDraft(d); setCosts(d.costs || []); saveDraft(d); closeDrawer(); }}
             onDelete={() => { draft && deleteDraft(draft); closeDrawer(); }}
             onRequestClose={closeDrawer}
           />
@@ -1447,8 +1447,9 @@ const NativeShowCard: React.FC<{
       return (t('shows.relative.daysAgo') || '{n} days ago').replace('{n}', String(Math.abs(diffDays)));
     })();
     const marginPct = show.fee > 0 ? Math.round((net / show.fee) * 100) : 0;
-    const primary = show.name || (show as any).venue || show.city;
-    const secondaryVenue = (show as any).venue && show.name ? (show as any).venue : '';
+    const showWithExtras = show as ShowWithExtras;
+    const primary = show.name || showWithExtras.venue || show.city;
+    const secondaryVenue = showWithExtras.venue && show.name ? showWithExtras.venue : '';
     return { rel, marginPct, primary, secondaryVenue };
   }, [show.date, show.fee, show.name, show.city, net, t]);
 

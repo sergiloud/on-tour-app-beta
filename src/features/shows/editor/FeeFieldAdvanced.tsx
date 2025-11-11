@@ -231,9 +231,9 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
 
       {/* Financial Breakdown Dashboard */}
       {calculations.fee > 0 && (
-        <div className={`bg-gradient-to-br ${getBgColor(calculations.profitMargin)} border border-slate-200 dark:border-white/10 rounded-md p-2.5 space-y-2.5`}>
+        <div className={`bg-gradient-to-br ${getBgColor(calculations.profitMargin)} border border-slate-200 dark:border-white/10 rounded-md p-3 space-y-2.5`}>
           {/* Top Row: Fee and Costs */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-0.5">
               <span className="text-[9px] uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
                 {t('shows.editor.summary.fee') || 'Fee'}
@@ -254,7 +254,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
                     className="text-[8px] px-1.5 py-0.5 rounded-sm bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-accent-300 hover:text-accent-200 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
                     title={t('shows.editor.costs.manage') || 'Manage costs'}
                   >
-                    ✏️ Edit
+                    ✏️
                   </button>
                 )}
               </div>
@@ -268,7 +268,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
           <div className="h-px bg-slate-200 dark:bg-white/10"></div>
 
           {/* Bottom Row: WHT and Net */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-0.5">
               <span className="text-[9px] uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
                 {t('shows.editor.summary.wht') || 'WHT'} ({whtPct}%)
@@ -278,47 +278,49 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
               </span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-[9px] uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
-                {t('shows.editor.summary.net') || 'Est. Net'}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <span className={`text-sm font-bold ${getMarginColor(calculations.profitMargin)}`}>
-                  {fmtMoney(calculations.net)}
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[9px] uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
+                  {t('shows.editor.summary.net') || 'Est. Net'}
                 </span>
                 <span
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${getMarginColor(
+                  className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${getMarginColor(
                     calculations.profitMargin
-                  )} bg-white/10`}
+                  )} bg-white/10 whitespace-nowrap`}
                 >
                   {calculations.profitMargin}%
                 </span>
               </div>
+              <span className={`text-sm font-bold ${getMarginColor(calculations.profitMargin)}`}>
+                {fmtMoney(calculations.net)}
+              </span>
             </div>
           </div>
 
           {/* Profit Margin Indicator */}
-          <div className="flex items-center gap-2 pt-0.5">
-            <div className="flex-1 h-0.5 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all duration-300 bg-gradient-to-r ${
-                  calculations.profitMargin >= 60
-                    ? 'from-green-500 to-green-400 w-full'
-                    : calculations.profitMargin >= 40
-                    ? 'from-green-500 to-yellow-400'
-                    : calculations.profitMargin >= 20
-                    ? 'from-yellow-500 to-orange-400'
-                    : calculations.profitMargin >= 0
-                    ? 'from-orange-500 to-red-400'
-                    : 'from-red-500 to-red-600'
-                }`}
-                style={{
-                  width: `${Math.max(5, Math.min(100, calculations.profitMargin))}%`,
-                }}
-              />
+          <div className="space-y-1">
+            <div className="flex items-center justify-between gap-2 text-[9px]">
+              <span className="text-slate-400 dark:text-white/60 font-medium">
+                {calculations.profitMargin >= 0 ? 'Profitable' : 'At loss'}
+              </span>
+              <div className="flex-1 h-1 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden max-w-[120px]">
+                <div
+                  className={`h-full transition-all duration-300 bg-gradient-to-r ${
+                    calculations.profitMargin >= 60
+                      ? 'from-green-500 to-green-400'
+                      : calculations.profitMargin >= 40
+                      ? 'from-green-500 to-yellow-400'
+                      : calculations.profitMargin >= 20
+                      ? 'from-yellow-500 to-orange-400'
+                      : calculations.profitMargin >= 0
+                      ? 'from-orange-500 to-red-400'
+                      : 'from-red-500 to-red-600'
+                  }`}
+                  style={{
+                    width: `${Math.max(5, Math.min(100, calculations.profitMargin))}%`,
+                  }}
+                />
+              </div>
             </div>
-            <span className="text-[9px] text-slate-400 dark:text-white/60 font-medium min-w-fit">
-              {calculations.profitMargin >= 0 ? 'Profitable' : 'At loss'}
-            </span>
           </div>
         </div>
       )}

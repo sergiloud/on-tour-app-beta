@@ -3,9 +3,16 @@
  *
  * Advanced memoization, caching, and performance strategies
  * @module lib/performance
+ * @deprecated Use individual hooks from src/hooks/ instead
  */
 
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
+
+// Re-export new optimized hooks for backwards compatibility
+export { useDebounce, useDebouncedCallback } from '../hooks/useDebounce';
+export { useThrottle, useThrottledScroll } from '../hooks/useThrottle';
+export { useIntersectionObserver, useIsVisible } from '../hooks/useIntersectionObserver';
+export { useLocalStorage } from '../hooks/useLocalStorage';
 
 // ============================================================================
 // MEMOIZATION & CALLBACKS
@@ -35,51 +42,6 @@ export function usePrevious<T>(value: T): T | undefined {
   }, [value]);
 
   return ref.current;
-}
-
-/**
- * useDebounce
- * Debounce hook with configurable delay
- * Reduces excessive re-renders and API calls
- */
-export function useDebounce<T>(value: T, delay: number = 500): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-export function useThrottle<T>(value: T, interval: number = 500): T {
-  const [throttledValue, setThrottledValue] = useState<T>(value);
-  const lastUpdated = useRef<number>(Date.now());
-
-  useEffect(() => {
-    const now = Date.now();
-
-    if (now >= lastUpdated.current + interval) {
-      lastUpdated.current = now;
-      setThrottledValue(value);
-    } else {
-      const timer = setTimeout(
-        () => {
-          lastUpdated.current = Date.now();
-          setThrottledValue(value);
-        },
-        interval - (now - lastUpdated.current)
-      );
-
-      return () => clearTimeout(timer);
-    }
-  }, [value, interval]);
-
-  return throttledValue;
 }
 
 // ============================================================================
@@ -274,40 +236,8 @@ export function useLazyImage(src: string): {
   };
 }
 
-/**
- * useIntersectionObserver
- * Observe element visibility for lazy loading
- */
-export function useIntersectionObserver(
-  ref: React.RefObject<HTMLElement>,
-  options?: IntersectionObserverInit
-): boolean {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (entry && entry.isIntersecting) {
-        setIsVisible(true);
-        // Stop observing once visible
-        observer.unobserve(entry.target);
-      }
-    }, {
-      threshold: 0.1,
-      ...options,
-    });
-
-    observer.observe(ref.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [ref, options]);
-
-  return isVisible;
-}
+// Note: useIntersectionObserver is now available via hook re-exports at top of file
+// Note: useIntersectionObserver is now available via hook re-exports at top of file
 
 // ============================================================================
 // PERFORMANCE MONITORING
@@ -433,18 +363,5 @@ export function useBatchProcessor<T, R>(
 // EXPORTS
 // ============================================================================
 
-export default {
-  useMemoCallback,
-  usePrevious,
-  useDebounce,
-  useThrottle,
-  useQuery,
-  useVirtualList,
-  useLazyImage,
-  useIntersectionObserver,
-  usePerformanceObserver,
-  measurePerformance,
-  SimpleCache,
-  BatchProcessor,
-  useBatchProcessor,
-};
+// Note: Direct default export removed to avoid re-export conflicts
+// Import individual utilities directly or use named exports

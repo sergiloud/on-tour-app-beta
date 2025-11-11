@@ -13,6 +13,7 @@ import { useFilteredShows } from '../../features/shows/selectors';
 import { useOrg } from '../../context/OrgContext';
 import { prefetchByPath } from '../../routes/prefetch';
 import { getOrgById } from '../../lib/tenants';
+import { useDebounce } from '../../hooks/useDebounce';
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -30,6 +31,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
   const { setDashboardView } = useSettings();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 150);
   const [idx, setIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement|null>(null);
   const { shows } = useFilteredShows();
@@ -38,7 +40,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
   useEffect(()=>{ if (open) { setQuery(''); setIdx(0); setTimeout(()=> inputRef.current?.focus(), 0); } }, [open]);
 
   const items = useMemo<Item[]>(()=>{
-    const q = query.trim().toLowerCase();
+    const q = debouncedQuery.trim().toLowerCase();
     const actions: Item[] = [
       { id: 'act:filters', type: 'quick-action', icon: <Search className="w-4 h-4" />, label: t('cmd.openFilters'), run: ()=>{ window.dispatchEvent(new CustomEvent('global-filters:open')); onClose(); } },
       { id: 'act:shortcuts', type: 'quick-action', icon: <Zap className="w-4 h-4" />, label: t('cmd.shortcuts'), run: ()=>{ window.dispatchEvent(new CustomEvent('shortcuts:open')); onClose(); } },
@@ -82,7 +84,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
     const all = [...actions, ...artistItems, ...memberItems, ...teamItems, ...docItems, ...showItems];
     if (!q) return all.slice(0, 12);
     return all.filter(it => it.label.toLowerCase().includes(q)).slice(0, 20);
-  }, [query, navigate, shows, org?.type, links, members, teams, setDashboardView, onClose]);
+  }, [debouncedQuery, navigate, shows, org?.type, links, members, teams, setDashboardView, onClose]);
 
   const onKey = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') { e.stopPropagation(); onClose(); return; }

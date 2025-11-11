@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 export type TripSummaryBadgeProps = {
   path: string[]; // e.g., ["MAD","BCN","LIS"]
@@ -19,4 +19,4 @@ const TripSummaryBadge: React.FC<TripSummaryBadgeProps> = ({ path, className }) 
   );
 };
 
-export default TripSummaryBadge;
+export default memo(TripSummaryBadge);

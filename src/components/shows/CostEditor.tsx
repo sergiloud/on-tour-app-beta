@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import type { Cost } from '../../types/shows';
 import { t } from '../../lib/i18n';
 
@@ -62,4 +62,4 @@ const CostEditor: React.FC<Props> = ({ onAdd }) => {
   );
 };
 
-export default CostEditor;
+export default memo(CostEditor);

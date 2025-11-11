@@ -13,7 +13,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import PeriodFilter from './PeriodFilter';
 import type { PeriodPreset, DateRange } from './PeriodFilter';
-import { FinancePeriodProvider } from '../../contexts/FinancePeriodContext';
+import { FinancePeriodProvider } from '../../context/FinancePeriodContext';
 
 const meta = {
   title: 'Finance/PeriodFilter',

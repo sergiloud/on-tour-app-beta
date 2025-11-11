@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, ChevronDown, X, TrendingUp } from 'lucide-react';
-import { useFinancePeriod, ComparisonMode } from '../../contexts/FinancePeriodContext';
+import { useFinancePeriod, ComparisonMode } from '../../context/FinancePeriodContext';
 
 export type PeriodPreset =
   | 'last7days'

@@ -2,7 +2,7 @@ import { useMemo, useCallback } from 'react';
 import type { TransactionV3 } from '../types/financeV3';
 import { calculateProfitabilityAnalysis } from '../lib/profitabilityHelpers';
 import { determineGroupingMode, groupTransactionsByPeriod, calculateAccumulatedBudget } from '../lib/financeHelpers';
-import { useFinanceTargets } from '../contexts/FinanceTargetsContext';
+import { useFinanceTargets } from '../context/FinanceTargetsContext';
 import Papa from 'papaparse';
 
 export interface DateRange {

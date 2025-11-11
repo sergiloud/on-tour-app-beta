@@ -16,7 +16,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useFinanceData, type ComparisonKPIs } from '../useFinanceData';
 import type { TransactionV3 } from '../../types/financeV3';
-import { FinanceTargetsProvider } from '../../contexts/FinanceTargetsContext';
+import { FinanceTargetsProvider } from '../../context/FinanceTargetsContext';
 import React from 'react';
 
 // Mock del hook useFinanceTargets para evitar problemas con el provider

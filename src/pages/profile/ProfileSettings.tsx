@@ -188,7 +188,12 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
       return;
     }
 
-    console.log('[ProfileSettings] Adding agency:', {
+    // VISUAL DEBUG - IMPOSSIBLE TO MISS
+    window.alert('🔥 DEBUG: handleAdd() EJECUTADO - código actualizado funcionando!');
+    console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.warn('🔥🔥🔥 [ProfileSettings] ADDING AGENCY 🔥🔥🔥');
+    console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.warn('[ProfileSettings] Adding agency:', {
       name: formData.name || `${type} Agency ${agencies.length + 1}`,
       type,
       commissionPct: formData.commissionPct,
@@ -207,10 +212,13 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
       notes: formData.notes || undefined
     });
 
-    console.log('[ProfileSettings] Add agency result:', result);
+    console.warn('[ProfileSettings] Add agency result:', result);
+    console.warn('[ProfileSettings] Current bookingAgencies:', bookingAgencies);
+    console.warn('[ProfileSettings] Current managementAgencies:', managementAgencies);
 
     if (result.ok) {
-      console.log('[ProfileSettings] ✅ Agency added successfully:', result.agency);
+      console.warn('[ProfileSettings] ✅ Agency added successfully:', result.agency);
+      window.alert(`✅ Agencia añadida: ${result.agency?.name}\nTotal ${type}: ${agencies.length + 1}`);
       resetForm();
     } else {
       console.error('[ProfileSettings] ❌ Failed to add agency:', result.reason);

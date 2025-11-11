@@ -203,9 +203,14 @@ export class FirestoreUserService {
     console.log('[FirestoreUserService] Saving settings for user:', userId);
     console.log('[FirestoreUserService] Settings data:', settings);
 
+    // Remove undefined values (Firestore doesn't support them)
+    const cleanSettings = JSON.parse(JSON.stringify(settings, (key, value) => 
+      value === undefined ? null : value
+    ));
+
     const settingsRef = doc(db, `users/${userId}/profile/settings`);
     const settingsData = {
-      ...settings,
+      ...cleanSettings,
       updatedAt: Timestamp.now()
     };
 

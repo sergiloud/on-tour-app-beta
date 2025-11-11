@@ -203,22 +203,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         // Skip if using demo user
         if (!auth || !auth.currentUser || userId === 'default_user' || userId.startsWith('demo_')) {
-          console.log('⚠️ [SettingsContext] Skipping Firestore sync - no Firebase Auth user');
-          console.log('   Current userId:', userId);
-          console.log('   auth.currentUser:', auth?.currentUser?.uid);
+          console.warn('⚠️ [SettingsContext] Skipping Firestore sync - no Firebase Auth user');
+          console.warn('   Current userId:', userId);
+          console.warn('   auth.currentUser:', auth?.currentUser?.uid);
           return;
         }
 
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('🔥 [SettingsContext] SYNCING TO FIRESTORE');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('   Firebase Auth user:', auth.currentUser.uid);
-        console.log('   Firebase Auth email:', auth.currentUser.email);
-        console.log('   userId state:', userId);
-        console.log('   Path: users/' + userId + '/profile/settings');
-        console.log('   Booking agencies:', bookingAgencies.length);
-        console.log('   Management agencies:', managementAgencies.length);
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('🔥 [SettingsContext] SYNCING TO FIRESTORE');
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('   Firebase Auth user:', auth.currentUser.uid);
+        console.error('   Firebase Auth email:', auth.currentUser.email);
+        console.error('   userId state:', userId);
+        console.error('   Path: users/' + userId + '/profile/settings');
+        console.error('   Booking agencies:', bookingAgencies.length);
+        console.error('   Management agencies:', managementAgencies.length);
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         const { FirestoreUserService } = await import('../services/firestoreUserService');
         await FirestoreUserService.saveSettings({
@@ -227,8 +227,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           updatedAt: new Date().toISOString()
         }, userId);
         
-        console.log('✅ [SettingsContext] Agencies successfully synced to Firestore');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('✅ [SettingsContext] Agencies successfully synced to Firestore');
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       } catch (e) {
         console.error('❌ [SettingsContext] Error syncing agencies to Firestore:', e);
         console.error('[SettingsContext] Error details:', {

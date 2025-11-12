@@ -19,6 +19,10 @@ import { useAuth } from '../context/AuthContext';
 import { useOrg } from '../context/OrgContext';
 import SubNav from '../components/common/SubNav';
 import FirestoreUserPreferencesService from '../services/firestoreUserPreferencesService';
+import { BottomNav } from '../components/mobile/BottomNav';
+import { MoreMenu } from '../components/mobile/MoreMenu';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { MobileOS } from '../components/mobile/ios/MobileOS';
 
 function useNavItems(collapsed: boolean) {
   const { org } = useOrg();
@@ -90,6 +94,8 @@ export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const isMobile = useIsMobile();
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   // When arriving with ?landing=1 we clean the query and stay on /dashboard.
   // This ref avoids restoring last section immediately after that cleaning replace.
   const skipRestoreOnceRef = React.useRef(false);
@@ -99,6 +105,16 @@ export const DashboardLayout: React.FC = () => {
   useEffect(() => { try { startViewVitals('dashboard'); } catch { } }, []);
   // DISABLED FOR PRODUCTION BETA - demo tenants no longer needed
   // useEffect(() => { try { ensureDemoTenants(); } catch { } }, []);
+  
+  // Handle "More" navigation in mobile bottom nav
+  useEffect(() => {
+    if (location.pathname === '/dashboard/more') {
+      setMoreMenuOpen(true);
+      // Navigate back to previous page
+      navigate(-1);
+    }
+  }, [location.pathname, navigate]);
+  
   // Persist last visited section per org; only restore when explicitly requested
   useEffect(() => {
     if (!org) return;
@@ -230,6 +246,16 @@ export const DashboardLayout: React.FC = () => {
     return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('shortcuts:open' as any, onOpen as any); };
   }, [gPressed, org?.type, navigate]);
   const navItems = useNavItems(collapsed);
+  
+  // Show iOS-style Mobile OS on mobile devices
+  if (isMobile) {
+    return (
+      <MissionControlProvider>
+        <MobileOS />
+      </MissionControlProvider>
+    );
+  }
+  
   return (
     <MissionControlProvider>
       <div className="min-h-screen flex bg-dark-900">
@@ -445,6 +471,16 @@ export const DashboardLayout: React.FC = () => {
               )}
             </ul>
           </nav>
+          
+          {/* New Mobile Bottom Navigation */}
+          {isMobile && <BottomNav />}
+          
+          {/* Mobile More Menu */}
+          <AnimatePresence>
+            {moreMenuOpen && (
+              <MoreMenu onClose={() => setMoreMenuOpen(false)} />
+            )}
+          </AnimatePresence>
         </div>
       </div>
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />

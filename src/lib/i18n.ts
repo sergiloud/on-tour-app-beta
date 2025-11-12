@@ -643,6 +643,9 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'settings.import': 'Import settings'
     , 'settings.reset': 'Reset to defaults'
     , 'settings.preview': 'Preview'
+    , 'settings.profile': 'Profile'
+    // Mobile navigation
+    , 'mobile.more': 'More'
     , 'shows.table.net': 'Net'
     , 'shows.table.status': 'Status'
     , 'shows.selectAll': 'Select all'
@@ -2031,6 +2034,9 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'settings.import': 'Importar ajustes'
     , 'settings.reset': 'Restablecer por defecto'
     , 'settings.preview': 'Vista previa'
+    , 'settings.profile': 'Perfil'
+    // Mobile navigation
+    , 'mobile.more': 'Más'
     , 'common.close': 'Cerrar'
     , 'common.language': 'Idioma'
     , 'layout.invite': 'Invitar'

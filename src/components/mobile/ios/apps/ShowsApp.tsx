@@ -4,12 +4,14 @@ import { Calendar, MapPin, DollarSign, Clock, CheckCircle2, AlertCircle, Plus, S
 import { showStore } from '../../../../shared/showStore';
 import { useSettings } from '../../../../context/SettingsContext';
 import { AddShowModal } from '../modals/AddShowModal';
+import { SkeletonScreen } from '../SkeletonScreen';
 import type { Show } from '../../../../lib/shows';
 
 type FilterType = 'all' | 'confirmed' | 'pending' | 'offer';
 
 export const ShowsApp: React.FC = () => {
   const [shows, setShows] = useState<Show[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
@@ -27,6 +29,7 @@ export const ShowsApp: React.FC = () => {
   React.useEffect(() => {
     const updateShows = (newShows: Show[]) => {
       setShows(newShows);
+      setIsLoading(false);
     };
     
     // Initial load
@@ -240,30 +243,33 @@ export const ShowsApp: React.FC = () => {
         className="flex-1 overflow-y-auto px-5 py-4 space-y-2.5"
         onTouchStart={handleTouchStart}
       >
-        <AnimatePresence mode="popLayout">
-          {filteredShows.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-              className="text-center py-12"
-            >
-              <div className="w-14 h-14 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                <Calendar className="w-7 h-7 text-white/40" />
-              </div>
-              <h3 className="text-base font-semibold text-white mb-1.5">
-                {searchQuery ? 'No shows found' : 'No shows yet'}
-              </h3>
-              <p className="text-xs text-white/50">
-                {searchQuery
-                  ? 'Try a different search term'
-                  : 'Add your first show to get started'}
-              </p>
-            </motion.div>
-          ) : (
-            filteredShows.map((show, index) => (
+        {isLoading ? (
+          <SkeletonScreen variant="list" count={6} />
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {filteredShows.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                className="text-center py-12"
+              >
+                <div className="w-14 h-14 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-7 h-7 text-white/40" />
+                </div>
+                <h3 className="text-base font-semibold text-white mb-1.5">
+                  {searchQuery ? 'No shows found' : 'No shows yet'}
+                </h3>
+                <p className="text-xs text-white/50">
+                  {searchQuery
+                    ? 'Try a different search term'
+                    : 'Add your first show to get started'}
+                </p>
+              </motion.div>
+            ) : (
+              filteredShows.map((show, index) => (
               <motion.button
                 key={show.id}
                 layoutId={`show-${show.id}`}
@@ -329,8 +335,9 @@ export const ShowsApp: React.FC = () => {
                 )}
               </motion.button>
             ))
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>
+        )}
       </div>
 
       {/* FAB - Quick Add */}

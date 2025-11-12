@@ -3,11 +3,13 @@ import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { TrendingUp, DollarSign, Calendar, AlertCircle, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
 import { useFinance } from '../../../../context/FinanceContext';
 import { useSettings } from '../../../../context/SettingsContext';
+import { SkeletonScreen } from '../SkeletonScreen';
 
 export const FinanceApp: React.FC = () => {
   const { snapshot, kpis } = useFinance();
   const { fmtMoney } = useSettings();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Pull to refresh
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -70,6 +72,13 @@ export const FinanceApp: React.FC = () => {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5);
   }, [snapshot.shows]);
+
+  // Mark as loaded after data is available
+  React.useEffect(() => {
+    if (snapshot.shows.length >= 0) {
+      setIsLoading(false);
+    }
+  }, [snapshot.shows.length]);
 
   // Handle refresh - memoize callback
   const handleRefresh = useCallback(async () => {
@@ -162,9 +171,16 @@ export const FinanceApp: React.FC = () => {
         className="flex-1 px-5 py-5 space-y-3"
         onTouchStart={handleTouchStart}
       >
-        {/* KPI Cards Grid */}
-        <div className="grid grid-cols-2 gap-2.5">
-          {kpiCards.map((kpi, index) => (
+        {isLoading ? (
+          <>
+            <SkeletonScreen variant="grid" count={4} />
+            <SkeletonScreen variant="list" count={3} />
+          </>
+        ) : (
+          <>
+            {/* KPI Cards Grid */}
+            <div className="grid grid-cols-2 gap-2.5">
+              {kpiCards.map((kpi, index) => (
             <motion.div
               key={kpi.id}
               initial={{ opacity: 0, y: 10 }}
@@ -315,6 +331,8 @@ export const FinanceApp: React.FC = () => {
             </div>
           </div>
         </motion.div>
+          </>
+        )}
       </div>
     </div>
   );

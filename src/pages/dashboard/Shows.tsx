@@ -200,13 +200,20 @@ const Shows: React.FC = () => {
       const whtPct = show.whtPct || 0;
       const wht = s.fee * (whtPct / 100);
 
-      // Calculate agency commissions dynamically
+      // Calculate agency commissions dynamically - only for selected agencies
       let agencyCommission = 0;
       try {
-        const applicable = agenciesForShow(s, bookingAgencies, managementAgencies);
-        const allAgencies = [...applicable.booking, ...applicable.management];
-        if (allAgencies.length > 0) {
-          agencyCommission = computeCommission(s, allAgencies);
+        const selectedAgencies = [];
+        if (s.mgmtAgency) {
+          const mgmt = managementAgencies.find(a => a.name === s.mgmtAgency);
+          if (mgmt) selectedAgencies.push(mgmt);
+        }
+        if (s.bookingAgency) {
+          const booking = bookingAgencies.find(a => a.name === s.bookingAgency);
+          if (booking) selectedAgencies.push(booking);
+        }
+        if (selectedAgencies.length > 0) {
+          agencyCommission = computeCommission(s, selectedAgencies);
         }
       } catch (e) {
         console.error('[Shows] Error calculating agency commission:', e);

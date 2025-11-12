@@ -34,10 +34,18 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({ onFilterChange }) => {
     const commissionsByAgency: Record<string, { name: string; amount: number }> = {};
 
     confirmedShows.forEach(show => {
-      const applicable = agenciesForShow(show, bookingAgencies, managementAgencies);
-      const allAgencies = [...applicable.booking, ...applicable.management];
+      // Only calculate commissions for shows with selected agencies
+      const selectedAgencies = [];
+      if (show.mgmtAgency) {
+        const mgmt = managementAgencies.find(a => a.name === show.mgmtAgency);
+        if (mgmt) selectedAgencies.push(mgmt);
+      }
+      if (show.bookingAgency) {
+        const booking = bookingAgencies.find(a => a.name === show.bookingAgency);
+        if (booking) selectedAgencies.push(booking);
+      }
 
-      allAgencies.forEach(agency => {
+      selectedAgencies.forEach(agency => {
         const commission = computeCommission(show, [agency]);
         if (commission > 0) {
           totalAgencyCommissions += commission;

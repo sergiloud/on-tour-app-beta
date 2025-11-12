@@ -522,6 +522,59 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
 
   const net = computeNet({ fee, whtPct: draft.whtPct, costs: draft.costs });
   const marginPct = fee > 0 ? (net / fee) * 100 : 0;
+  
+  // Calculate Finance tab card values with selected agencies
+  const financeCards = useMemo(() => {
+    const feeVal = Number(draft.fee) || 0;
+    
+    // Get only the agencies that are actually selected in the dropdowns
+    const selectedAgencies = [];
+    if (draft.mgmtAgency) {
+      const mgmt = managementAgencies.find(a => a.name === draft.mgmtAgency);
+      if (mgmt) selectedAgencies.push(mgmt);
+    }
+    if (draft.bookingAgency) {
+      const booking = bookingAgencies.find(a => a.name === draft.bookingAgency);
+      if (booking) selectedAgencies.push(booking);
+    }
+    
+    const demoShow: Show = {
+      id: draft.id || '',
+      date: draft.date || '',
+      city: draft.city || '',
+      country: draft.country || '',
+      lat: 0,
+      lng: 0,
+      fee: feeVal,
+      feeCurrency: draft.feeCurrency || 'EUR',
+      status: draft.status || 'confirmed',
+      mgmtAgency: draft.mgmtAgency,
+      bookingAgency: draft.bookingAgency,
+      __version: 1,
+      __modifiedAt: Date.now(),
+      __modifiedBy: ''
+    };
+    
+    const commVal = selectedAgencies.length > 0
+      ? computeCommission(demoShow, selectedAgencies)
+      : 0;
+    const totalCommPct = feeVal > 0 ? (commVal / feeVal) * 100 : 0;
+    
+    const whtPctEff = draft.whtPct || 0;
+    const whtVal = feeVal * (whtPctEff / 100);
+    const costsVal = (draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0);
+    const netVal = feeVal - whtVal - commVal - costsVal;
+    
+    const agencyNames = selectedAgencies
+      .map(a => {
+        const isBooking = bookingAgencies.some(ba => ba.name === a.name);
+        return `${a.name} (${isBooking ? 'B' : 'M'})`;
+      })
+      .join(', ');
+    
+    return { feeVal, commVal, totalCommPct, whtPctEff, whtVal, costsVal, netVal, agencyNames };
+  }, [draft.fee, draft.mgmtAgency, draft.bookingAgency, draft.whtPct, draft.costs, draft.id, draft.date, draft.city, draft.country, draft.feeCurrency, draft.status, managementAgencies, bookingAgencies]);
+  
   // Memoized cost grouping (subtotals) reused in Costs tab summary
   const costGroups = useMemo(() => {
     const arr = (draft.costs || []);
@@ -1369,7 +1422,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', AUD: 'A$' };
                       return symbols[feeCurrency || baseCurrency] || '€';
                     })()}
-                    costs={draft.costs || []}
+                    costs={(draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0)}
+                    commissions={financeCards.commVal}
                     whtPct={draft.whtPct || 0}
                     fmtMoney={fmtMoney}
                     error={validation.fee ? String(t(validation.fee) || 'Invalid fee') : undefined}
@@ -1634,7 +1688,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', AUD: 'A$' };
                     return symbols[(draft as any).feeCurrency || baseCurrency] || '€';
                   })()}
-                  costs={(draft as any).costs || []}
+                  costs={((draft as any).costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0)}
+                  commissions={financeCards.commVal}
                   whtPct={(draft as any).whtPct || 0}
                   fmtMoney={fmtMoney}
                   error={validation.fee ? String(t(validation.fee) || 'Invalid fee') : undefined}
@@ -1650,74 +1705,36 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   <span className="font-medium">{t('shows.editor.tooltip.netFormula') || 'Net = Fee − (Fee×WHT%) − Commission − Costs'}</span>
                 </div>
               </div>
-              {(() => {
-                const feeVal = Number(draft.fee) || 0;
-
-                // Calculate dynamic commissions
-                const demoShow: Show = {
-                  id: draft.id || '',
-                  date: draft.date || '',
-                  city: draft.city || '',
-                  country: draft.country || '',
-                  lat: 0,
-                  lng: 0,
-                  fee: feeVal,
-                  feeCurrency: draft.feeCurrency || 'EUR',
-                  status: draft.status || 'confirmed',
-                  mgmtAgency: draft.mgmtAgency,       // Include selected agencies
-                  bookingAgency: draft.bookingAgency, // for commission calculation
-                  __version: 1,
-                  __modifiedAt: Date.now(),
-                  __modifiedBy: ''
-                };
-                const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);
-                const commVal = applicable.booking.length > 0 || applicable.management.length > 0
-                  ? computeCommission(demoShow, [...applicable.booking, ...applicable.management])
-                  : 0;
-                const totalCommPct = feeVal > 0 ? (commVal / feeVal) * 100 : 0;
-
-                const whtPctEff = draft.whtPct || 0;
-                const whtVal = feeVal * (whtPctEff / 100);
-                const costsVal = (draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0);
-                const netVal = feeVal - whtVal - commVal - costsVal;
-
-                // For display purposes - show agency names if any applicable
-                const agencyNames = [
-                  ...applicable.booking.map(a => `${a.name} (B)`),
-                  ...applicable.management.map(a => `${a.name} (M)`)
-                ].join(', ');
-
-                return <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
-                  <div className="glass rounded p-2 space-y-1">
-                    <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.fee') || 'Fee'}</div>
-                    <div className="text-sm font-semibold tabular-nums">{fmtMoney(feeVal)}</div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+                <div className="glass rounded p-2 space-y-1">
+                  <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.fee') || 'Fee'}</div>
+                  <div className="text-sm font-semibold tabular-nums">{fmtMoney(financeCards.feeVal)}</div>
+                </div>
+                <div className="glass rounded p-2 space-y-1">
+                  <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.wht') || 'WHT'} {financeCards.whtPctEff ? `(${financeCards.whtPctEff}%)` : ''}</div>
+                  <div className="text-sm font-semibold tabular-nums">-{fmtMoney(Math.round(financeCards.whtVal))}</div>
+                </div>
+                <div
+                  className="glass rounded p-2 space-y-1 relative"
+                  title={financeCards.agencyNames || undefined}
+                >
+                  <div className="uppercase tracking-wide opacity-60 flex items-center gap-1 flex-wrap">
+                    {t('shows.editor.finance.commissions') || 'Commissions'} {financeCards.totalCommPct > 0 ? `(${financeCards.totalCommPct.toFixed(1)}%)` : ''}
                   </div>
-                  <div className="glass rounded p-2 space-y-1">
-                    <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.wht') || 'WHT'} {whtPctEff ? `(${whtPctEff}%)` : ''}</div>
-                    <div className="text-sm font-semibold tabular-nums">-{fmtMoney(Math.round(whtVal))}</div>
+                  <div className="text-sm font-semibold tabular-nums flex items-center gap-2">
+                    -{fmtMoney(Math.round(financeCards.commVal))}
+                    {financeCards.agencyNames && <span className="px-1 rounded bg-accent-500/20 border border-accent-400/40 text-accent-200 text-[9px]">{financeCards.agencyNames}</span>}
                   </div>
-                  <div
-                    className="glass rounded p-2 space-y-1 relative"
-                    title={agencyNames || undefined}
-                  >
-                    <div className="uppercase tracking-wide opacity-60 flex items-center gap-1 flex-wrap">
-                      {t('shows.editor.finance.commissions') || 'Commissions'} {totalCommPct > 0 ? `(${totalCommPct.toFixed(1)}%)` : ''}
-                    </div>
-                    <div className="text-sm font-semibold tabular-nums flex items-center gap-2">
-                      -{fmtMoney(Math.round(commVal))}
-                      {agencyNames && <span className="px-1 rounded bg-accent-500/20 border border-accent-400/40 text-accent-200 text-[9px]">{agencyNames}</span>}
-                    </div>
-                  </div>
-                  <div className="glass rounded p-2 space-y-1">
-                    <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.costs') || 'Costs'}</div>
-                    <div className="text-sm font-semibold tabular-nums">-{fmtMoney(Math.round(costsVal))}</div>
-                  </div>
-                  <div className="glass rounded p-2 space-y-1 col-span-2 sm:col-span-3 bg-accent-500/12 border border-accent-500/40">
-                    <div className="uppercase tracking-wide opacity-80 font-medium flex items-center gap-2 text-accent-100">{t('shows.editor.summary.net') || 'Est. Net'}{feeVal > 0 && <span className="px-1 py-0.5 rounded bg-accent-500/25 border border-accent-500/40 text-accent-50 text-[10px]" title={t('shows.tooltip.margin') || 'Net divided by Fee (%)'}>{Math.round((netVal / feeVal) * 100)}%</span>}</div>
-                    <div className="text-base font-semibold tabular-nums text-accent-50">{fmtMoney(Math.round(netVal))}</div>
-                  </div>
-                </div>;
-              })()}
+                </div>
+                <div className="glass rounded p-2 space-y-1">
+                  <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.costs') || 'Costs'}</div>
+                  <div className="text-sm font-semibold tabular-nums">-{fmtMoney(Math.round(financeCards.costsVal))}</div>
+                </div>
+                <div className="glass rounded p-2 space-y-1 col-span-2 sm:col-span-3 bg-accent-500/12 border border-accent-500/40">
+                  <div className="uppercase tracking-wide opacity-80 font-medium flex items-center gap-2 text-accent-100">{t('shows.editor.summary.net') || 'Est. Net'}{financeCards.feeVal > 0 && <span className="px-1 py-0.5 rounded bg-accent-500/25 border border-accent-500/40 text-accent-50 text-[10px]" title={t('shows.tooltip.margin') || 'Net divided by Fee (%)'}>{Math.round((financeCards.netVal / financeCards.feeVal) * 100)}%</span>}</div>
+                  <div className="text-base font-semibold tabular-nums text-accent-50">{fmtMoney(Math.round(financeCards.netVal))}</div>
+                </div>
+              </div>
               {(() => {
                 const mgmt = managementAgencies.find(a => a.name === draft.mgmtAgency);
                 const booking = bookingAgencies.find(a => a.name === draft.bookingAgency);

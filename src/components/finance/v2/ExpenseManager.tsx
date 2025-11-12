@@ -114,31 +114,34 @@ const ExpenseManager: React.FC = () => {
     shows.forEach(show => {
       if (show.status === 'offer') return; // Skip offers
 
-      const applicable = agenciesForShow(show, bookingAgencies, managementAgencies);
-
-      // Calculate booking commissions
-      applicable.booking.forEach(agency => {
-        const commission = computeCommission(show, [agency]);
-        if (commission > 0) {
-          if (!commissionsByAgency[agency.id]) {
-            commissionsByAgency[agency.id] = { name: agency.name, amount: 0, type: 'booking' };
+      // Only calculate commissions for shows with selected agencies
+      if (show.mgmtAgency) {
+        const mgmt = managementAgencies.find(a => a.name === show.mgmtAgency);
+        if (mgmt) {
+          const commission = computeCommission(show, [mgmt]);
+          if (commission > 0) {
+            if (!commissionsByAgency[mgmt.id]) {
+              commissionsByAgency[mgmt.id] = { name: mgmt.name, amount: 0, type: 'management' };
+            }
+            const entry = commissionsByAgency[mgmt.id];
+            if (entry) entry.amount += commission;
           }
-          const entry = commissionsByAgency[agency.id];
-          if (entry) entry.amount += commission;
         }
-      });
+      }
 
-      // Calculate management commissions
-      applicable.management.forEach(agency => {
-        const commission = computeCommission(show, [agency]);
-        if (commission > 0) {
-          if (!commissionsByAgency[agency.id]) {
-            commissionsByAgency[agency.id] = { name: agency.name, amount: 0, type: 'management' };
+      if (show.bookingAgency) {
+        const booking = bookingAgencies.find(a => a.name === show.bookingAgency);
+        if (booking) {
+          const commission = computeCommission(show, [booking]);
+          if (commission > 0) {
+            if (!commissionsByAgency[booking.id]) {
+              commissionsByAgency[booking.id] = { name: booking.name, amount: 0, type: 'booking' };
+            }
+            const entry = commissionsByAgency[booking.id];
+            if (entry) entry.amount += commission;
           }
-          const entry = commissionsByAgency[agency.id];
-          if (entry) entry.amount += commission;
         }
-      });
+      }
     });
 
     return Object.values(commissionsByAgency);

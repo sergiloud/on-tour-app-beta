@@ -5,6 +5,7 @@ export interface FeeFieldAdvancedProps {
   fee: number | undefined;
   onFeeChange: (fee: number | undefined) => void;
   costs: number;
+  commissions?: number;  // Add commissions to the calculation
   whtPct?: number;
   currency: string;
   currencySymbol: string;
@@ -36,6 +37,7 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
   fee,
   onFeeChange,
   costs,
+  commissions = 0,
   whtPct = 0,
   currency,
   currencySymbol,
@@ -57,12 +59,13 @@ export const FeeFieldAdvanced: React.FC<FeeFieldAdvancedProps> = ({
   const calculations = useMemo(() => {
     const f = fee ?? 0;
     const c = costs ?? 0;
+    const comm = commissions ?? 0;
     const wht = Math.round(f * (whtPct / 100));
-    const net = f - c - wht;
+    const net = f - c - wht - comm;
     const profitMargin = f > 0 ? Math.round((net / f) * 100) : 0;
 
-    return { fee: f, costs: c, wht, net, profitMargin };
-  }, [fee, costs, whtPct]);
+    return { fee: f, costs: c, commissions: comm, wht, net, profitMargin };
+  }, [fee, costs, commissions, whtPct]);
 
   const handleFeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;

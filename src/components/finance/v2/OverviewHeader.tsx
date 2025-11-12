@@ -14,11 +14,19 @@ const OverviewHeader: React.FC = () => {
     let totalCommissions = 0;
 
     confirmedShows.forEach(show => {
-      const applicable = agenciesForShow(show, bookingAgencies, managementAgencies);
-      const allAgencies = [...applicable.booking, ...applicable.management];
-      allAgencies.forEach(agency => {
-        totalCommissions += computeCommission(show, [agency]);
-      });
+      // Only calculate commissions for shows with selected agencies
+      const selectedAgencies = [];
+      if (show.mgmtAgency) {
+        const mgmt = managementAgencies.find(a => a.name === show.mgmtAgency);
+        if (mgmt) selectedAgencies.push(mgmt);
+      }
+      if (show.bookingAgency) {
+        const booking = bookingAgencies.find(a => a.name === show.bookingAgency);
+        if (booking) selectedAgencies.push(booking);
+      }
+      if (selectedAgencies.length > 0) {
+        totalCommissions += computeCommission(show, selectedAgencies);
+      }
     });
 
     return { totalCommissions };

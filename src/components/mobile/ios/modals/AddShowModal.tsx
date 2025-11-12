@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, MapPin, DollarSign, Save } from 'lucide-react';
 import { showStore } from '../../../../shared/showStore';
 import { useSettings } from '../../../../context/SettingsContext';
+import { modalTransitions, overlayTransitions } from '../../../../lib/transitions';
+import { hapticButton, hapticSuccess, hapticError, hapticSelection } from '../../../../lib/haptics';
 import type { Show } from '../../../../lib/shows';
 
 interface AddShowModalProps {
@@ -30,11 +32,7 @@ export const AddShowModal: React.FC<AddShowModalProps> = ({ isOpen, onClose }) =
     }
 
     setIsSaving(true);
-
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    hapticButton();
 
     try {
       const newShow: Show = {
@@ -53,11 +51,7 @@ export const AddShowModal: React.FC<AddShowModalProps> = ({ isOpen, onClose }) =
       };
 
       showStore.addShow(newShow);
-
-      // Success haptic
-      if (navigator.vibrate) {
-        navigator.vibrate([10, 50, 10]);
-      }
+      hapticSuccess();
 
       // Reset form
       setCity('');
@@ -70,19 +64,14 @@ export const AddShowModal: React.FC<AddShowModalProps> = ({ isOpen, onClose }) =
       onClose();
     } catch (error) {
       console.error('Error adding show:', error);
-      // Error haptic
-      if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]);
-      }
+      hapticError();
     } finally {
       setIsSaving(false);
     }
   }, [city, country, venue, date, fee, status, onClose]);
 
   const handleClose = useCallback(() => {
-    if (navigator.vibrate) {
-      navigator.vibrate(5);
-    }
+    hapticSelection();
     onClose();
   }, [onClose]);
 
@@ -90,18 +79,18 @@ export const AddShowModal: React.FC<AddShowModalProps> = ({ isOpen, onClose }) =
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          variants={overlayTransitions}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end modal-layer"
           onClick={handleClose}
         >
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            variants={modalTransitions}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="w-full bg-ink-900 rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col gpu-accelerate-full"
             onClick={(e) => e.stopPropagation()}
           >

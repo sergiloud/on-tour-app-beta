@@ -12,6 +12,7 @@ import { useCalendarState } from '../../hooks/useCalendarState';
 import { useCalendarMatrix } from '../../hooks/useCalendarMatrix';
 import { useCalendarData } from '../../hooks/useCalendarData';
 import { useCalendarModals } from '../../hooks/useCalendarModals';
+import { useCalendarActions } from '../../hooks/useCalendarActions';
 import CalendarToolbar from '../../components/calendar/CalendarToolbar';
 import BulkOperationsToolbar from '../../components/calendar/BulkOperationsToolbar';
 import type { EventButton } from '../../components/calendar/DraggableEventButtons';
@@ -30,6 +31,7 @@ import ShowEventModal from '../../components/calendar/ShowEventModal';
 import EventEditorModal from '../../components/calendar/EventEditorModal';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { usePerfMonitor } from '../../lib/perfMonitor';
+import { generateId } from '../../lib/id';
 
 // Calendar event type is shared in components/calendar/types
 
@@ -46,15 +48,6 @@ const toDateOnlyTz = (iso: string, tz: string) => {
   } catch { }
   // If iso already like YYYY-MM-DD or T00:00:00, slice first 10
   return iso.slice(0, 10);
-};
-
-// Generate UUID with fallback for older browsers
-const generateId = () => {
-  try {
-    return crypto.randomUUID();
-  } catch {
-    return Math.random().toString(36).slice(2, 10);
-  }
 };
 
 // Map button colors to calendar event colors
@@ -114,6 +107,14 @@ const Calendar: React.FC = () => {
   
   // Modal management
   const modals = useCalendarModals();
+  
+  // Business logic actions
+  const actions = useCalendarActions({
+    shows,
+    travel,
+    showOperations,
+    travelOperations,
+  });
   
   // UI state
   const [selectedDay, setSelectedDay] = useState<string>('');
@@ -208,156 +209,24 @@ const Calendar: React.FC = () => {
 
   // Handle saving edited event
   const handleSaveEditedEvent = async (event: Show | Itinerary) => {
-    if ('kind' in event && event.kind === 'show') {
-      // It's a show
-      const show = event as Show;
-      showOperations.update(show.id, show);
-    } else {
-      // It's an itinerary
-      const itinerary = event as Itinerary;
-      await travelOperations.save(itinerary);
-    }
+    await actions.saveEditedEvent(event);
   };
 
 
   const handleSpanAdjust = (eventId: string, direction: 'start' | 'end', deltaDays: number) => {
-    // Check if it's an itinerary event (format: "eventType:UUID" where eventType is not 'show')
-    if (!eventId.startsWith('show:') && eventId.includes(':')) {
-      const [eventType, itineraryId] = eventId.split(':');
-      const itineraryEvent = travel.find(t => t.id === itineraryId);
-      if (!itineraryEvent) {
-        return;
-      }
-
-      try {
-        const startDate = new Date(itineraryEvent.date);
-        const endDate = itineraryEvent.endDate ? new Date(itineraryEvent.endDate) : new Date(itineraryEvent.date);
-
-        if (direction === 'start') {
-          // Adjust start date
-          startDate.setDate(startDate.getDate() + deltaDays);
-          if (startDate > endDate) {
-            startDate.setTime(endDate.getTime());
-          }
-          const newStartStr = startDate.toISOString().slice(0, 10);
-          const updatedTravel: Itinerary = { ...itineraryEvent, date: newStartStr };
-          if (itineraryEvent.endDate && startDate.getTime() !== endDate.getTime()) {
-            updatedTravel.endDate = itineraryEvent.endDate.slice(0, 10);
-          } else if (itineraryEvent.endDate) {
-            updatedTravel.endDate = undefined;
-          }
-          travelOperations.save(updatedTravel);
-        } else {
-          // Adjust end date
-          endDate.setDate(endDate.getDate() + deltaDays);
-          if (endDate < startDate) {
-            endDate.setTime(startDate.getTime());
-          }
-          const newEndStr = endDate.toISOString().slice(0, 10);
-          const updatedTravel: Itinerary = { ...itineraryEvent, date: itineraryEvent.date.slice(0, 10) };
-          if (endDate.getTime() === startDate.getTime()) {
-            updatedTravel.endDate = undefined;
-          } else {
-            updatedTravel.endDate = newEndStr;
-          }
-          travelOperations.save(updatedTravel);
-        }
-      } catch (err) {
-        // Handle error silently
-      }
-      return;
-    }
-
-    // Otherwise handle as Show event
-    const actualEventId = eventId.startsWith('show:') ? eventId.substring(5) : eventId;
-    const show = shows.find(s => s.id === actualEventId);
-    if (!show) {
-      return;
-    }
-
-    try {
-      const startDate = new Date(show.date);
-      const endDate = show.endDate ? new Date(show.endDate) : new Date(show.date);
-
-      if (direction === 'start') {
-        // Adjust start date (move the beginning)
-        startDate.setDate(startDate.getDate() + deltaDays);
-
-        // Ensure start date doesn't go after end date
-        if (startDate > endDate) {
-          startDate.setTime(endDate.getTime());
-        }
-
-        const newStartStr = startDate.toISOString().slice(0, 10);
-        const updateData: any = { date: `${newStartStr}T00:00:00` };
-
-        // If we had an endDate and it's different from start, keep it
-        if (show.endDate && startDate.getTime() !== endDate.getTime()) {
-          // Keep the end date from show, ensure it's in correct format (YYYY-MM-DDTHH:MM:SS)
-          const endDateStr = show.endDate.slice(0, 10);
-          updateData.endDate = `${endDateStr}T00:00:00`;
-        } else if (show.endDate) {
-          // If start and end are now the same, remove endDate
-          updateData.endDate = undefined;
-        }
-
-        showOperations.update(actualEventId, updateData);
-      } else {
-        // Adjust end date (move the ending)
-        endDate.setDate(endDate.getDate() + deltaDays);
-
-        // Ensure end date doesn't go before start date
-        if (endDate < startDate) {
-          endDate.setTime(startDate.getTime());
-        }
-
-        const newEndStr = endDate.toISOString().slice(0, 10);
-        // Extract just the date part (YYYY-MM-DD) from show.date
-        const showDateStr = show.date.slice(0, 10);
-        const updateData: any = { date: `${showDateStr}T00:00:00` };
-
-        // If end date is same as start date, remove it (single day event)
-        if (endDate.getTime() === startDate.getTime()) {
-          updateData.endDate = undefined;
-        } else {
-          updateData.endDate = `${newEndStr}T00:00:00`;
-        }
-
-        showOperations.update(actualEventId, updateData);
-      }
-    } catch (err) {
-      // Handle error silently
-    }
+    actions.adjustEventSpan(eventId, direction, deltaDays);
   };
 
   // Bulk operations handlers
   const handleBulkDelete = useCallback(() => {
     const selectedIds = getSelectedIds();
-    selectedIds.forEach(id => {
-      showOperations.remove(id);
-    });
-    announce(`Deleted ${selectedIds.length} event${selectedIds.length !== 1 ? 's' : ''}`);
-    trackEvent('calendar.bulk.delete', { count: selectedIds.length });
+    actions.bulkDeleteEvents(selectedIds);
     clearSelection();
-  }, [getSelectedIds, showOperations, clearSelection]);
+  }, [getSelectedIds, actions, clearSelection]);
 
   const handleBulkMove = useCallback((direction: 'forward' | 'backward', days: number) => {
     const selectedIds = getSelectedIds();
-    const delta = direction === 'forward' ? days : -days;
-
-    selectedIds.forEach(id => {
-      const show = shows.find(s => s.id === id);
-      if (show) {
-        const currentDate = new Date(show.date);
-        currentDate.setDate(currentDate.getDate() + delta);
-        const newDateStr = currentDate.toISOString().slice(0, 10);
-        showOperations.update(id, { date: `${newDateStr}T00:00:00` } as any);
-      }
-    });
-
-    const dirText = direction === 'forward' ? 'forward' : 'backward';
-    announce(`Moved ${selectedIds.length} event${selectedIds.length !== 1 ? 's' : ''} ${dirText} by ${days} day${days !== 1 ? 's' : ''}`);
-    trackEvent('calendar.bulk.move', { count: selectedIds.length, direction, days });
+    actions.bulkMoveEvents(selectedIds, direction, days);
     clearSelection();
   }, [getSelectedIds, shows, showOperations, clearSelection]);
 
@@ -580,134 +449,7 @@ const Calendar: React.FC = () => {
 
   // Handler para guardar evento
   const handleSaveEvent = async (data: EventData) => {
-    try {
-      console.log('[handleSaveEvent] Called with:', { type: data.type, title: data.title, date: data.date });
-      switch (data.type) {
-        case 'show':
-          const id = generateId();
-          const newShow: Show = {
-            id,
-            city: data.city || '',
-            country: data.country || '',
-            lat: 0,
-            lng: 0,
-            date: `${data.date}T00:00:00`,
-            fee: data.fee || 0,
-            status: 'pending',
-            __version: 0,
-            __modifiedAt: Date.now(),
-            __modifiedBy: 'system'
-          };
-          showOperations.add(newShow);
-          trackEvent('calendar.create.event', { type: 'show', date: data.date });
-          announce(`Show created in ${data.city}, ${data.country}`);
-          break;
-
-        case 'travel':
-          try {
-            if (modals.state.travelFlight.editingId) {
-              // Update existing travel event
-              const existingTravel = travel.find(t => t.id === modals.state.travelFlight.editingId);
-              if (existingTravel) {
-                const updatedTravel: Itinerary = {
-                  ...existingTravel,
-                  date: data.date,
-                  title: `${data.origin || ''} → ${data.destination || ''}`,
-                  city: data.destination || undefined,
-                  description: data.description,
-                  location: data.location,
-                  // Store flight details in the object
-                  confirmationCode: data.confirmationCode,
-                  departureTime: data.departureTime,
-                  arrivalTime: data.arrivalTime,
-                  flightNumber: data.flightNumber,
-                  airline: data.airline,
-                  departureTerminal: data.departureTerminal,
-                  arrivalTerminal: data.arrivalTerminal,
-                  seat: data.seat,
-                  notes: data.notes,
-                  travelMode: data.travelMode,
-                  dateEnd: data.dateEnd,
-                  origin: data.origin,
-                  destination: data.destination,
-                } as any;
-
-                // NOTE: Do NOT call setTravel directly - the subscription from saveItinerary will update React state
-                await travelOperations.save(updatedTravel);
-                trackEvent('calendar.edit.event', { type: 'travel', from: data.date, to: data.dateEnd });
-                announce(`Travel event updated from ${data.origin} to ${data.destination}`);
-              }
-            } else {
-              // Create new travel event
-              const tid = generateId();
-              const it: Itinerary = {
-                id: tid,
-                date: data.date,
-                title: `${data.origin || ''} → ${data.destination || ''}`,
-                team: 'A',
-                city: data.destination || undefined,
-                status: 'pending',
-                description: data.description,
-                location: data.location,
-                // Store flight details
-                confirmationCode: data.confirmationCode,
-                departureTime: data.departureTime,
-                arrivalTime: data.arrivalTime,
-                flightNumber: data.flightNumber,
-                airline: data.airline,
-                departureTerminal: data.departureTerminal,
-                arrivalTerminal: data.arrivalTerminal,
-                seat: data.seat,
-                notes: data.notes,
-                travelMode: data.travelMode,
-                dateEnd: data.dateEnd,
-                origin: data.origin,
-                destination: data.destination,
-              } as any;
-
-              // Persist itinerary to travel store
-              // NOTE: Do NOT call setTravel directly - the subscription from saveItinerary will update React state
-              await travelOperations.save(it);
-              trackEvent('calendar.create.event', { type: 'travel', from: data.date, to: data.dateEnd });
-              announce(`Travel event created from ${data.origin} to ${data.destination}`);
-            }
-          } catch (err) {
-            // Handle error silently
-          }
-          break;
-
-        case 'meeting':
-        case 'rehearsal':
-        case 'break':
-          try {
-            // For meeting/rehearsal/break, always create new events
-            // (Editing is handled via EventEditorModal, not EventCreationModal)
-            const eid = generateId();
-            const eventItinerary: Itinerary = {
-              id: eid,
-              date: data.date,
-              title: data.title || data.type,
-              team: 'A',
-              city: undefined,
-              status: data.status || 'pending',
-              description: data.description,
-              location: data.location,
-              btnType: data.type,
-              endDate: data.dateEnd,
-            } as any;
-
-            // NOTE: Do NOT call setTravel directly - the subscription from saveItinerary will update React state
-            await travelOperations.save(eventItinerary);
-            trackEvent('calendar.create.event', { type: data.type, date: data.date });
-            announce(`${data.type} event created`);
-          } catch (err) {
-            // Handle error silently
-          }
-          break;
-      }
-    } catch (err) {
-      // Handle error silently
-    }
+    await actions.saveEvent(data, modals.state.travelFlight.editingId);
   };
 
   // Handler para abrir modal de detalles del día
@@ -898,67 +640,14 @@ const Calendar: React.FC = () => {
             }
           }}
           onMoveShow={(showId, toDate, duplicate) => {
-            // Check if it's an itinerary event (not a show)
-            if (!showId.startsWith('show:') && showId.includes(':')) {
-              const [eventType, itineraryId] = showId.split(':');
-
-              // Find the itinerary
-              const foundItinerary = travel.find((it: Itinerary) => it.id === itineraryId);
-              if (!foundItinerary) return;
-
-              const iso = `${toDate}T00:00:00`;
-
-              if (duplicate) {
-                // Duplicate itinerary
-                const newId = generateId();
-                const copy: Itinerary = { ...foundItinerary, id: newId, date: iso };
-                travelOperations.save(copy).catch(err => {
-                  console.error('Failed to duplicate itinerary:', err);
-                });
-              } else {
-                // Move itinerary
-                const updated: Itinerary = { ...foundItinerary, date: iso };
-                travelOperations.save(updated).catch(err => {
-                  console.error('Failed to move itinerary:', err);
-                });
-              }
-            } else {
-              // It's a show event
-              const id = showId.split(':')[1] || showId;
-              const found = shows.find(s => s.id === id);
-              if (!found) return;
-              const iso = `${toDate}T00:00:00`;
-              if (duplicate) {
-                const newId = generateId();
-                const copy: Show = { ...found, id: newId, date: iso };
-                showOperations.add(copy);
-              } else {
-                showOperations.update(id, { date: iso });
-              }
-            }
+            actions.moveEvent(showId, toDate, duplicate);
           }}
           onQuickAddSave={(dateStr, data) => {
-            const id = generateId();
-            const newShow: Show = { id, city: data.city, country: data.country, lat: 0, lng: 0, date: `${dateStr}T00:00:00`, fee: Number(data.fee || 0), status: 'pending', __version: 0, __modifiedAt: Date.now(), __modifiedBy: 'system' } as Show;
-            showOperations.add(newShow);
-            try { trackEvent('cal.create.quick', { id, day: dateStr }); } catch { }
-            navigate(`/dashboard/shows?edit=${id}`);
+            const newId = actions.quickAddShow(dateStr, data);
+            navigate(`/dashboard/shows?edit=${newId}`);
           }}
           onDeleteShow={(eventId) => {
-            // Check if it's an itinerary event (not a show)
-            if (!eventId.startsWith('show:') && eventId.includes(':')) {
-              const [eventType, itineraryId] = eventId.split(':');
-              if (itineraryId) {
-                travelOperations.remove(itineraryId).catch((err: any) => {
-                  // Handle error silently
-                });
-              }
-            } else {
-              // It's a show event
-              const id = eventId.split(':')[1] || eventId;
-              showOperations.remove(id);
-            }
-            try { trackEvent('cal.drag.delete_outside', { id: eventId }); } catch { }
+            actions.deleteEvent(eventId);
           }}
           onSpanAdjust={handleSpanAdjust}
           heatmapMode={heatmapMode}

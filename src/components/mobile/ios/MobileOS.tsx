@@ -6,7 +6,6 @@ import { AppModal } from './AppModal';
 import { NotificationCenter } from './NotificationCenter';
 import { SpotlightSearch } from './SpotlightSearch';
 import { ControlCenter } from './ControlCenter';
-import { LockScreen } from './LockScreen';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import { APP_REGISTRY, getDefaultLayout } from '../../../config/appRegistry';
 import { NotificationProvider, useNotifications } from '../../../stores/notificationStore';
@@ -54,7 +53,6 @@ const MobileOSContent: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showControlCenter, setShowControlCenter] = useState(false);
-  const [isLocked, setIsLocked] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -276,14 +274,6 @@ const MobileOSContent: React.FC = () => {
         isOpen={showControlCenter}
         onClose={() => setShowControlCenter(false)}
       />
-
-      {/* Lock Screen */}
-      <AnimatePresence>
-        <LockScreen
-          isLocked={isLocked}
-          onUnlock={() => setIsLocked(false)}
-        />
-      </AnimatePresence>
     </div>
   );
 };

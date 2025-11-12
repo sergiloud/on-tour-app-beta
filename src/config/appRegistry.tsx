@@ -14,6 +14,9 @@ import {
   FileText 
 } from 'lucide-react';
 import { SettingsApp } from '../components/mobile/ios/apps/SettingsApp';
+import { ShowsApp } from '../components/mobile/ios/apps/ShowsApp';
+import { FinanceApp } from '../components/mobile/ios/apps/FinanceApp';
+import { CalendarApp } from '../components/mobile/ios/apps/CalendarApp';
 
 // Placeholder components (will be replaced with actual app wrappers)
 const PlaceholderApp: React.FC<AppComponentProps> = () => (
@@ -37,10 +40,10 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Shows',
     icon: Music,
     badge: () => {
-      // TODO: Get pending shows count
+      // TODO: Get pending shows count from showStore
       return null;
     },
-    component: PlaceholderApp,
+    component: ShowsApp,
     category: 'productivity',
     isRemovable: true,
     quickActions: [
@@ -58,7 +61,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
       // TODO: Get pending payments count
       return null;
     },
-    component: PlaceholderApp,
+    component: FinanceApp,
     category: 'finance',
     isRemovable: true,
     quickActions: [
@@ -94,7 +97,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
       // TODO: Get today's events count
       return null;
     },
-    component: PlaceholderApp,
+    component: CalendarApp,
     category: 'productivity',
     isRemovable: true,
     quickActions: [

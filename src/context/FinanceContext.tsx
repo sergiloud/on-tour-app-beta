@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { buildFinanceSnapshotFromShows } from '../features/finance/snapshot';
 import type { FinanceSnapshot, FinanceShow } from '../features/finance/types';
-import { selectKpis, selectNetSeries, selectStatusBreakdown, selectMonthlySeries, selectThisMonth, type KpiNumbers, type NetPoint, type StatusBreakdown, type MonthlySeries, type ThisMonthAgg } from '../features/finance/selectors';
+import { selectKpis, selectMonthlyAggregates, selectStatusBreakdown, selectThisMonth, type KpiNumbers, type NetPoint, type StatusBreakdown, type MonthlySeries, type ThisMonthAgg } from '../features/finance/selectors';
 import { selectBreakdownsV2, selectExpectedPipelineV2, selectARAgingV2 } from '../features/finance/selectors.v2';
 import { fetchFinanceSnapshot, fetchTargets as fetchTargetsApi, updateTargetsApi, subscribeSnapshot } from '../services/financeApi';
 import { useSettings } from './SettingsContext';
@@ -143,9 +143,18 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [baseSnapshot, region, dateRange.from, dateRange.to, selectedStatuses]);
 
   const kpis = useMemo(() => selectKpis(snapshot), [snapshot]);
-  const netSeries = useMemo(() => selectNetSeries(snapshot), [snapshot]);
-  const monthlySeries = useMemo(() => selectMonthlySeries(snapshot), [snapshot]);
-  const compareMonthlySeries = useMemo(() => compareSnapshot ? selectMonthlySeries(compareSnapshot) : null, [compareSnapshot]);
+  
+  // OPTIMIZED: Use master selector to compute both netSeries and monthlySeries in one pass
+  const monthlyAggregates = useMemo(() => selectMonthlyAggregates(snapshot), [snapshot]);
+  const netSeries = monthlyAggregates.points;
+  const monthlySeries = monthlyAggregates.series;
+  
+  const compareMonthlyAggregates = useMemo(() => 
+    compareSnapshot ? selectMonthlyAggregates(compareSnapshot) : null, 
+    [compareSnapshot]
+  );
+  const compareMonthlySeries = compareMonthlyAggregates?.series ?? null;
+  
   const thisMonth = useMemo(() => selectThisMonth(snapshot), [snapshot]);
   const statusBreakdown = useMemo(() => selectStatusBreakdown(snapshot), [snapshot]);
   const v2 = useMemo(() => ({

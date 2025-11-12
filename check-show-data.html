@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Check Show Data</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+    pre { background: #000; padding: 10px; border: 1px solid #0f0; overflow-x: auto; }
+    .show { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .missing { color: #f00; }
+    .present { color: #0f0; }
+  </style>
+</head>
+<body>
+  <h1>Show Data Inspector</h1>
+  <button onclick="checkData()">Check Shows</button>
+  <div id="output"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    
+    // Get Firebase config from localStorage
+    const config = JSON.parse(localStorage.getItem('firebase-config') || '{}');
+    const app = initializeApp(config);
+    const db = getFirestore(app);
+    
+    window.checkData = async function() {
+      const output = document.getElementById('output');
+      output.innerHTML = '<p>Loading shows...</p>';
+      
+      try {
+        // Get current user ID
+        const userId = localStorage.getItem('demo:user-id') || 'demo-user';
+        console.log('User ID:', userId);
+        
+        // Get shows from Firestore
+        const showsRef = collection(db, `users/${userId}/shows`);
+        const q = query(showsRef, orderBy('date', 'desc'));
+        const snapshot = await getDocs(q);
+        
+        let html = `<h2>Found ${snapshot.docs.length} shows</h2>`;
+        
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          const hasMgmt = data.mgmtAgency ? 'present' : 'missing';
+          const hasBooking = data.bookingAgency ? 'present' : 'missing';
+          
+          html += `
+            <div class="show">
+              <h3>${data.name || 'Unnamed'} - ${data.city || 'Unknown city'}</h3>
+              <p><strong>ID:</strong> ${doc.id}</p>
+              <p><strong>Date:</strong> ${data.date}</p>
+              <p><strong>Status:</strong> ${data.status}</p>
+              <p><strong>Fee:</strong> ${data.fee}</p>
+              <p class="${hasMgmt}"><strong>mgmtAgency:</strong> ${data.mgmtAgency || 'NOT SET'}</p>
+              <p class="${hasBooking}"><strong>bookingAgency:</strong> ${data.bookingAgency || 'NOT SET'}</p>
+              <details>
+                <summary>Full data</summary>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+              </details>
+            </div>
+          `;
+        });
+        
+        // Also check localStorage
+        const localShows = JSON.parse(localStorage.getItem('shows-store-v3') || '[]');
+        html += `<h2>LocalStorage shows: ${localShows.length}</h2>`;
+        localShows.slice(0, 3).forEach(show => {
+          const hasMgmt = show.mgmtAgency ? 'present' : 'missing';
+          const hasBooking = show.bookingAgency ? 'present' : 'missing';
+          html += `
+            <div class="show">
+              <h3>${show.name || 'Unnamed'} - ${show.city || 'Unknown city'}</h3>
+              <p class="${hasMgmt}"><strong>mgmtAgency:</strong> ${show.mgmtAgency || 'NOT SET'}</p>
+              <p class="${hasBooking}"><strong>bookingAgency:</strong> ${show.bookingAgency || 'NOT SET'}</p>
+            </div>
+          `;
+        });
+        
+        output.innerHTML = html;
+      } catch (error) {
+        output.innerHTML = `<p class="missing">Error: ${error.message}</p><pre>${error.stack}</pre>`;
+      }
+    };
+  </script>
+</body>
+</html>

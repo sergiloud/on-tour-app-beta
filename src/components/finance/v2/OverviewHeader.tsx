@@ -20,6 +20,19 @@ const OverviewHeader: React.FC = () => {
       return isInPeriod(s.date);
     });
     
+    console.log('[OverviewHeader] Processing shows:', {
+      totalShows: shows.length,
+      periodShows: periodShows.length,
+      sampleShow: periodShows[0] ? {
+        id: periodShows[0].id,
+        name: periodShows[0].name,
+        hasMgmt: !!periodShows[0].mgmtAgency,
+        hasBooking: !!periodShows[0].bookingAgency,
+        mgmtAgency: periodShows[0].mgmtAgency,
+        bookingAgency: periodShows[0].bookingAgency
+      } : null
+    });
+    
     let totalCommissions = 0;
 
     periodShows.forEach(show => {
@@ -34,10 +47,19 @@ const OverviewHeader: React.FC = () => {
         if (booking) selectedAgencies.push(booking);
       }
       if (selectedAgencies.length > 0) {
-        totalCommissions += computeCommission(show, selectedAgencies);
+        const commission = computeCommission(show, selectedAgencies);
+        console.log('[OverviewHeader] Commission for show:', {
+          show: show.name,
+          mgmt: show.mgmtAgency,
+          booking: show.bookingAgency,
+          selectedAgencies: selectedAgencies.length,
+          commission
+        });
+        totalCommissions += commission;
       }
     });
 
+    console.log('[OverviewHeader] Total commissions:', totalCommissions);
     return { totalCommissions };
   }, [allShows, bookingAgencies, managementAgencies, isInPeriod]);
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
+import { hapticSelection } from '../../../../lib/haptics';
 
 interface Task {
   id: string;
@@ -49,10 +50,7 @@ export const TasksWidget: React.FC<TasksWidgetProps> = ({ className = '' }) => {
       )
     );
 
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    hapticSelection();
   };
 
   const priorityColors = {

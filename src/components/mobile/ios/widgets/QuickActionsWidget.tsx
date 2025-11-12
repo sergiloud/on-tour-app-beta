@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Calendar, DollarSign, MapPin, Users, Plane } from 'lucide-react';
+import { hapticButton } from '../../../../lib/haptics';
 
 interface QuickAction {
   id: string;
@@ -72,10 +73,7 @@ export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({
   onActionPress,
 }) => {
   const handleAction = (action: QuickAction) => {
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    hapticButton();
     
     if (onActionPress) {
       onActionPress(action.id);

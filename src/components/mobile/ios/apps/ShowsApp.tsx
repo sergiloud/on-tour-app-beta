@@ -179,8 +179,8 @@ export const ShowsApp: React.FC = () => {
         <div className="px-5 pt-5 pb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Shows</h1>
-              <p className="text-xs text-white/50 mt-0.5">{shows.length} eventos totales</p>
+              <h1 className="font-sf-display text-ios-title1 font-bold text-white">Shows</h1>
+              <p className="font-sf-text text-ios-caption1 text-white/50 mt-0.5">{shows.length} eventos totales</p>
             </div>
             <button
               onClick={() => {

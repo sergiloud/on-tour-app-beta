@@ -6,6 +6,55 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx,js,jsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        // iOS System Fonts
+        'sf-pro': [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'SF Pro Display',
+          'SF Pro Text',
+          'Helvetica Neue',
+          'Helvetica',
+          'Arial',
+          'sans-serif',
+        ],
+        'sf-display': [
+          'SF Pro Display',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'sans-serif',
+        ],
+        'sf-text': [
+          'SF Pro Text',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'sans-serif',
+        ],
+        // Default sans fallback
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
+      },
+      fontSize: {
+        // iOS Dynamic Type Scale
+        'ios-large-title': ['34px', { lineHeight: '41px', letterSpacing: '0.011em', fontWeight: '400' }],
+        'ios-title1': ['28px', { lineHeight: '34px', letterSpacing: '0.013em', fontWeight: '400' }],
+        'ios-title2': ['22px', { lineHeight: '28px', letterSpacing: '0.016em', fontWeight: '400' }],
+        'ios-title3': ['20px', { lineHeight: '25px', letterSpacing: '0.019em', fontWeight: '400' }],
+        'ios-headline': ['17px', { lineHeight: '22px', letterSpacing: '-0.022em', fontWeight: '600' }],
+        'ios-body': ['17px', { lineHeight: '22px', letterSpacing: '-0.022em', fontWeight: '400' }],
+        'ios-callout': ['16px', { lineHeight: '21px', letterSpacing: '-0.020em', fontWeight: '400' }],
+        'ios-subheadline': ['15px', { lineHeight: '20px', letterSpacing: '-0.016em', fontWeight: '400' }],
+        'ios-footnote': ['13px', { lineHeight: '18px', letterSpacing: '-0.006em', fontWeight: '400' }],
+        'ios-caption1': ['12px', { lineHeight: '16px', letterSpacing: '0em', fontWeight: '400' }],
+        'ios-caption2': ['11px', { lineHeight: '13px', letterSpacing: '0.006em', fontWeight: '400' }],
+      },
       spacing: {
         // Base 4px spacing system for consistent rhythm
         '1': '0.25rem',   // 4px

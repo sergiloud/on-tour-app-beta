@@ -154,12 +154,12 @@ export const FinanceApp: React.FC = () => {
       <div className="sticky top-0 z-10 bg-gray-900/60 backdrop-blur-xl border-b border-white/10 px-5 pt-5 pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Finance</h1>
-            <p className="text-xs text-white/50 mt-0.5">Your financial overview</p>
+            <h1 className="font-sf-display text-ios-title1 font-bold text-white">Finance</h1>
+            <p className="font-sf-text text-ios-caption1 text-white/50 mt-0.5">Your financial overview</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="px-2.5 py-1 bg-emerald-500/10 rounded-md">
-              <span className="text-xs font-semibold text-emerald-400">{snapshot.shows.length} shows</span>
+              <span className="font-sf-text text-ios-caption1 font-semibold text-emerald-400">{snapshot.shows.length} shows</span>
             </div>
           </div>
         </div>

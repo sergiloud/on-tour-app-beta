@@ -7,7 +7,8 @@ import { NotificationCenter } from './NotificationCenter';
 import { SpotlightSearch } from './SpotlightSearch';
 import { ControlCenter } from './ControlCenter';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
-import { APP_REGISTRY, getDefaultLayout } from '../../../config/appRegistry';
+import { useAppBadges } from '../../../hooks/useAppBadges';
+import { APP_REGISTRY, getDefaultLayout, updateAppBadges } from '../../../config/appRegistry';
 import { NotificationProvider, useNotifications } from '../../../stores/notificationStore';
 import { ThemeProvider } from '../../../stores/themeStore';
 import type { AppDefinition, AppLayout, MobileOSState } from '../../../types/mobileOS';
@@ -29,6 +30,12 @@ const DEFAULT_WIDGETS = {
 const MobileOSContent: React.FC = () => {
   const deviceInfo = useDeviceInfo();
   const { unreadCount } = useNotifications();
+  const badges = useAppBadges();
+
+  // Update global badges state for app registry
+  useEffect(() => {
+    updateAppBadges(badges);
+  }, [badges]);
   
   // Load layout from localStorage or use default
   const [layout, setLayout] = useState<AppLayout>(() => {

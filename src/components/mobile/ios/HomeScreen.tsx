@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { AppIcon } from './AppIcon';
 import { QuickActionsMenu } from './QuickActionsMenu';
@@ -86,7 +86,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     setTouchEnd(0);
   };
 
-  const handleDragStart = (appId: string, index: number) => {
+  const handleDragStart = useCallback((appId: string, index: number) => {
     if (!isEditMode) return;
     setDraggedAppId(appId);
     setDraggedIndex(index);
@@ -94,9 +94,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     if (navigator.vibrate) {
       navigator.vibrate(30);
     }
-  };
+  }, [isEditMode]);
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo, targetIndex: number) => {
+  const handleDragEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo, targetIndex: number) => {
     if (!isEditMode || draggedIndex === null || !onLayoutChange || !currentPageData) {
       setDraggedAppId(null);
       setDraggedIndex(null);
@@ -157,9 +157,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
     setDraggedAppId(null);
     setDraggedIndex(null);
-  };
+  }, [isEditMode, draggedIndex, onLayoutChange, currentPage, pages]);
 
-  const currentPageData = pages[currentPage];
+  const currentPageData = useMemo(() => pages[currentPage], [pages, currentPage]);
   if (!currentPageData) return null;
 
   return (

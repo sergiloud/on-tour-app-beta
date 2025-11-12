@@ -18,6 +18,19 @@ import { ShowsApp } from '../components/mobile/ios/apps/ShowsApp';
 import { FinanceApp } from '../components/mobile/ios/apps/FinanceApp';
 import { CalendarApp } from '../components/mobile/ios/apps/CalendarApp';
 
+// Global badges state that will be updated by useAppBadges hook
+export let APP_BADGES = {
+  shows: null as number | null,
+  finance: null as number | null,
+  calendar: null as number | null,
+  travel: null as number | null,
+  settings: null as number | null,
+};
+
+export const updateAppBadges = (badges: typeof APP_BADGES) => {
+  APP_BADGES = badges;
+};
+
 // Placeholder components (will be replaced with actual app wrappers)
 const PlaceholderApp: React.FC<AppComponentProps> = () => (
   <div className="flex items-center justify-center h-full p-8">
@@ -39,10 +52,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     id: 'shows',
     name: 'Shows',
     icon: Music,
-    badge: () => {
-      // TODO: Get pending shows count from showStore
-      return null;
-    },
+    badge: () => APP_BADGES.shows,
     component: ShowsApp,
     category: 'productivity',
     isRemovable: true,
@@ -57,10 +67,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     id: 'finance',
     name: 'Finance',
     icon: DollarSign,
-    badge: () => {
-      // TODO: Get pending payments count
-      return null;
-    },
+    badge: () => APP_BADGES.finance,
     component: FinanceApp,
     category: 'finance',
     isRemovable: true,
@@ -75,10 +82,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     id: 'travel',
     name: 'Travel',
     icon: Plane,
-    badge: () => {
-      // TODO: Get upcoming trips count
-      return null;
-    },
+    badge: () => APP_BADGES.travel,
     component: PlaceholderApp,
     category: 'travel',
     isRemovable: true,
@@ -93,10 +97,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     id: 'calendar',
     name: 'Calendar',
     icon: Calendar,
-    badge: () => {
-      // TODO: Get today's events count
-      return null;
-    },
+    badge: () => APP_BADGES.calendar,
     component: CalendarApp,
     category: 'productivity',
     isRemovable: true,

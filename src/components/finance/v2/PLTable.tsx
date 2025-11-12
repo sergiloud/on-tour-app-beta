@@ -30,7 +30,9 @@ function calculateAgencyCommissions(show: any, bookingAgencies: any[], managemen
       lng: show.lng || 0,
       date: show.date,
       fee: show.fee,
-      status: show.status
+      status: show.status,
+      mgmtAgency: show.mgmtAgency,       // Include selected agencies
+      bookingAgency: show.bookingAgency  // for commission calculation
     };
 
     const applicable = agenciesForShow(demoShow as Show, bookingAgencies, managementAgencies);

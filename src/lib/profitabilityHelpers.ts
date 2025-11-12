@@ -243,7 +243,9 @@ export function calculateCommissionsFromShow(
       lng: show.lng,
       date: show.date,
       fee: show.fee,
-      status: show.status
+      status: show.status,
+      mgmtAgency: (show as any).mgmtAgency,       // Include selected agencies
+      bookingAgency: (show as any).bookingAgency  // for commission calculation
     };
 
     const applicable = agenciesForShow(showForAgencies, bookingAgencies, managementAgencies);

@@ -66,7 +66,7 @@ export const pageTransitionsParallax: Variants = {
 
 /**
  * iOS-native modal transitions
- * Present: Slide up from bottom
+ * Present: Slide up from bottom with spring overshoot
  * Dismiss: Slide down to bottom
  */
 export const modalTransitions: Variants = {
@@ -79,9 +79,9 @@ export const modalTransitions: Variants = {
     opacity: 1,
     transition: {
       type: 'spring',
-      stiffness: 320,
-      damping: 32,
-      mass: 0.7,
+      stiffness: 400,
+      damping: 25, // Reduced for more bounce
+      mass: 0.6,
       opacity: { duration: 0.15 },
     },
   },
@@ -91,6 +91,62 @@ export const modalTransitions: Variants = {
     transition: {
       duration: 0.25,
       ease: [0.4, 0, 0.6, 1],
+    },
+  },
+};
+
+/**
+ * Enhanced modal with backdrop scale effect
+ * Backdrop scales from 0.95 to 1 on dismiss for depth
+ */
+export const modalTransitionsWithBackdrop: Variants = {
+  initial: {
+    y: '100%',
+    opacity: 0,
+  },
+  animate: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 400,
+      damping: 25,
+      mass: 0.6,
+    },
+  },
+  exit: {
+    y: '100%',
+    opacity: 0,
+    transition: {
+      duration: 0.25,
+      ease: [0.4, 0, 0.6, 1],
+    },
+  },
+};
+
+/**
+ * Backdrop transition for modal backgrounds
+ * Scales content behind modal for depth effect
+ */
+export const backdropTransitions: Variants = {
+  initial: {
+    opacity: 0,
+    scale: 1,
+  },
+  animate: {
+    opacity: 1,
+    scale: 0.95,
+    transition: {
+      opacity: { duration: 0.2 },
+      scale: { type: 'spring', stiffness: 300, damping: 30 },
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 1,
+    transition: {
+      opacity: { duration: 0.15 },
+      scale: { type: 'spring', stiffness: 300, damping: 30 },
     },
   },
 };

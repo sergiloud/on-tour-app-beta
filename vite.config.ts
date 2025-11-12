@@ -105,7 +105,7 @@ export default defineConfig({
       preserveEntrySignatures: 'strict',
       output: {
         format: 'es',
-        // Optimized chunking strategy for faster initial load
+        // Simplified chunking strategy - only separate truly independent heavy libs
         manualChunks: (id) => {
           // Core vendor bundle - critical for initial render
           if (id.includes('node_modules/react') || 
@@ -115,70 +115,28 @@ export default defineConfig({
             return 'vendor';
           }
           
-          // React Query - separate for caching
-          if (id.includes('@tanstack/react-query')) {
-            return 'react-query';
-          }
-          
-          // Charts - CONSOLIDADO: Recharts + D3 juntos (dependencias internas)
-          if (id.includes('recharts') || 
-              id.includes('victory') ||
-              id.includes('d3-')) {
-            return 'charts';
-          }
-          
-          // Redux (si se usa)
-          if (id.includes('@reduxjs/toolkit') || 
-              id.includes('react-redux') ||
-              id.includes('redux')) {
-            return 'redux';
-          }
-          
-          // UI bundle - icons and animations (SEPARADOS)
-          if (id.includes('framer-motion')) {
-            return 'animations';
-          }
-          
-          if (id.includes('lucide-react')) {
-            return 'icons';
-          }
-          
-          if (id.includes('@tanstack/react-virtual')) {
-            return 'virtualization';
-          }
-          
-          // Radix UI components (separados del resto)
-          if (id.includes('@radix-ui')) {
-            return 'ui-radix';
-          }
-          
-          // MapLibre - CRÍTICO: separar del resto
-          if (id.includes('maplibre-gl') || id.includes('mapbox')) {
+          // MapLibre - only loaded in Travel/Mission, safe to separate
+          if (id.includes('maplibre-gl')) {
             return 'maplibre';
           }
           
-          // Excel/PDF export - CRÍTICO: separar para lazy load
+          // Excel export - only loaded on export action, safe to separate
           if (id.includes('exceljs') || id.includes('xlsx')) {
             return 'export-excel';
           }
           
-          if (id.includes('jspdf') || id.includes('jspdf-autotable')) {
-            return 'export-pdf';
-          }
-          
-          // Firebase - CONSOLIDADO: todas las libs juntas (dependencias internas)
+          // Firebase - keep consolidated
           if (id.includes('firebase') || id.includes('@firebase')) {
             return 'firebase';
           }
           
-          // Utilities - date, forms, etc
-          if (id.includes('date-fns') || id.includes('dayjs')) {
-            return 'date-utils';
+          // Framer Motion - animations, can be separated
+          if (id.includes('framer-motion')) {
+            return 'animations';
           }
           
-          if (id.includes('react-hook-form') || id.includes('zod')) {
-            return 'form-validation';
-          }
+          // Let Vite handle the rest automatically (including Recharts, D3, icons, etc)
+          // This prevents internal dependency resolution errors
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',

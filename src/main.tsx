@@ -91,11 +91,7 @@ if (import.meta.env.DEV) {
   );
 }
 
-// Register Service Worker for PWA
-// Service Worker registration - TEMPORARILY DISABLED
-// The service worker causes MIME type errors on Vercel
-// TODO: Fix Vercel configuration to serve sw.js with correct MIME type
-/*
+// Register Service Worker for PWA - ENABLED for iOS session persistence
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
@@ -131,4 +127,4 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     }
   });
 }
-*/
+

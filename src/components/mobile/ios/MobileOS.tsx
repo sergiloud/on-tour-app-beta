@@ -265,10 +265,10 @@ const MobileOSContent: React.FC = () => {
   }, [openApp, showSearch, showNotifications]);
 
   return (
-    <div className="fixed inset-0 bg-dark-900 overflow-hidden">
+    <div className="fixed inset-0 bg-dark-900 overflow-hidden gpu-accelerate">
       {/* Animated Background - Zen & Dynamic */}
       <motion.div 
-        className="absolute inset-0"
+        className="absolute inset-0 prevent-repaint"
         animate={{
           background: [
             'radial-gradient(circle at 20% 20%, #16202c 0%, #0b1118 55%, #05070a 100%)',
@@ -278,15 +278,16 @@ const MobileOSContent: React.FC = () => {
           ]
         }}
         transition={{
-          duration: 20,
+          duration: 25,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "linear",
+          times: [0, 0.33, 0.66, 1]
         }}
       />
 
       {/* Subtle accent glow */}
       <motion.div
-        className="absolute inset-0 opacity-5"
+        className="absolute inset-0 opacity-5 prevent-repaint"
         animate={{
           background: [
             'radial-gradient(circle at 30% 40%, rgba(191, 255, 0, 0.08), transparent 60%)',
@@ -295,9 +296,10 @@ const MobileOSContent: React.FC = () => {
           ]
         }}
         transition={{
-          duration: 15,
+          duration: 18,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "linear",
+          times: [0, 0.5, 1]
         }}
       />
 
@@ -308,9 +310,9 @@ const MobileOSContent: React.FC = () => {
           <motion.button
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, type: 'spring', stiffness: 400, damping: 25 }}
+            transition={{ delay: 0.2, duration: 0.2, ease: 'easeOut' }}
             onClick={() => setShowSearch(true)}
-            className="absolute top-4 left-4 z-30 p-2 rounded-full bg-white/20 dark:bg-neutral-800/40 backdrop-blur-md shadow-lg"
+            className="absolute top-4 left-4 z-30 p-2 rounded-full bg-white/20 dark:bg-neutral-800/40 backdrop-blur-md shadow-lg touch-optimized gpu-accelerate"
           >
             <Search className="w-5 h-5 text-white dark:text-neutral-200" />
           </motion.button>
@@ -319,16 +321,17 @@ const MobileOSContent: React.FC = () => {
           <motion.button
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, type: 'spring', stiffness: 400, damping: 25 }}
+            transition={{ delay: 0.2, duration: 0.2, ease: 'easeOut' }}
             onClick={() => setShowNotifications(true)}
-            className="absolute top-4 right-4 z-30 p-2 rounded-full bg-white/20 dark:bg-neutral-800/40 backdrop-blur-md shadow-lg"
+            className="absolute top-4 right-4 z-30 p-2 rounded-full bg-white/20 dark:bg-neutral-800/40 backdrop-blur-md shadow-lg touch-optimized gpu-accelerate"
           >
             <Bell className="w-5 h-5 text-white dark:text-neutral-200" />
             {unreadCount > 0 && (
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center"
+                transition={{ duration: 0.15, ease: 'backOut' }}
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center gpu-accelerate"
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
               </motion.span>

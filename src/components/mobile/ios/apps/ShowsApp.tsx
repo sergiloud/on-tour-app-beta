@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-mo
 import { Calendar, MapPin, DollarSign, Clock, CheckCircle2, AlertCircle, Plus, Search, X, RefreshCw } from 'lucide-react';
 import { showStore } from '../../../../shared/showStore';
 import { useSettings } from '../../../../context/SettingsContext';
+import { AddShowModal } from '../modals/AddShowModal';
 import type { Show } from '../../../../lib/shows';
 
 type FilterType = 'all' | 'confirmed' | 'pending' | 'offer';
@@ -13,6 +14,7 @@ export const ShowsApp: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const { fmtMoney } = useSettings();
   
   // Pull to refresh
@@ -337,14 +339,21 @@ export const ShowsApp: React.FC = () => {
         animate={{ scale: 1 }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="absolute bottom-20 right-5 w-12 h-12 bg-accent-500 text-black rounded-lg shadow-glow flex items-center justify-center z-20"
+        transition={{ duration: 0.15, ease: 'easeOut' }}
+        className="absolute bottom-20 right-5 w-12 h-12 bg-accent-500 text-black rounded-lg shadow-glow flex items-center justify-center z-20 touch-target instant-feedback fab-optimized"
         onClick={() => {
-          // TODO: Open add show modal
+          setShowAddModal(true);
           if (navigator.vibrate) navigator.vibrate(10);
         }}
       >
         <Plus className="w-5 h-5" />
       </motion.button>
+
+      {/* Add Show Modal */}
+      <AddShowModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      />
 
       {/* Show Detail Modal */}
       <AnimatePresence>

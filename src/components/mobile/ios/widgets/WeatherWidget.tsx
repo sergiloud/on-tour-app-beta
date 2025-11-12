@@ -1,32 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Cloud, Sun, CloudRain, Wind, Droplets, Eye } from 'lucide-react';
+import { Cloud, Sun, CloudRain, Wind, Droplets, Eye, CloudSnow, CloudLightning } from 'lucide-react';
+import { getWeather, getMockWeather, type WeatherData } from '../../../../services/weatherService';
+import { showStore } from '../../../../shared/showStore';
+import type { Show } from '../../../../lib/shows';
 
 interface WeatherWidgetProps {
   className?: string;
 }
 
-interface WeatherData {
-  temp: number;
-  condition: 'sunny' | 'cloudy' | 'rainy' | 'windy';
-  humidity: number;
-  wind: number;
-  visibility: number;
-  location: string;
-}
-
-// Mock weather data - en producción conectaría con API real
-const MOCK_WEATHER: WeatherData = {
-  temp: 22,
-  condition: 'sunny',
-  humidity: 65,
-  wind: 12,
-  visibility: 10,
-  location: 'Barcelona, ES',
-};
-
 export const WeatherWidget: React.FC<WeatherWidgetProps> = ({ className = '' }) => {
-  const [weather, setWeather] = useState<WeatherData>(MOCK_WEATHER);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -37,7 +22,43 @@ export const WeatherWidget: React.FC<WeatherWidgetProps> = ({ className = '' }) 
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchWeather() {
+      setLoading(true);
+      
+      // Get next show for fallback location
+      const shows = showStore.getAll();
+      const upcomingShows = shows
+        .filter((s: Show) => s.date && new Date(s.date) >= new Date())
+        .sort((a: Show, b: Show) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+      
+      const nextShow = upcomingShows[0];
+      
+      const weatherData = await getWeather(nextShow);
+      
+      if (!cancelled) {
+        if (weatherData) {
+          setWeather(weatherData);
+        } else {
+          // Fallback to mock data if API fails
+          setWeather(getMockWeather(nextShow?.city ? `${nextShow.city}, ${nextShow.country}` : undefined));
+        }
+        setLoading(false);
+      }
+    }
+
+    fetchWeather();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const getWeatherIcon = () => {
+    if (!weather) return Sun;
+    
     switch (weather.condition) {
       case 'sunny':
         return Sun;
@@ -47,12 +68,18 @@ export const WeatherWidget: React.FC<WeatherWidgetProps> = ({ className = '' }) 
         return CloudRain;
       case 'windy':
         return Wind;
+      case 'snowy':
+        return CloudSnow;
+      case 'stormy':
+        return CloudLightning;
       default:
         return Sun;
     }
   };
 
   const getWeatherColor = () => {
+    if (!weather) return { bg: 'from-yellow-500/20 to-orange-500/20', icon: 'text-yellow-400', glow: 'shadow-yellow-500/20' };
+    
     switch (weather.condition) {
       case 'sunny':
         return { bg: 'from-yellow-500/20 to-orange-500/20', icon: 'text-yellow-400', glow: 'shadow-yellow-500/20' };
@@ -62,13 +89,42 @@ export const WeatherWidget: React.FC<WeatherWidgetProps> = ({ className = '' }) 
         return { bg: 'from-blue-500/20 to-indigo-500/20', icon: 'text-blue-400', glow: 'shadow-blue-500/20' };
       case 'windy':
         return { bg: 'from-cyan-500/20 to-teal-500/20', icon: 'text-cyan-400', glow: 'shadow-cyan-500/20' };
+      case 'snowy':
+        return { bg: 'from-blue-300/20 to-white/20', icon: 'text-blue-200', glow: 'shadow-blue-300/20' };
+      case 'stormy':
+        return { bg: 'from-purple-500/20 to-gray-700/20', icon: 'text-purple-300', glow: 'shadow-purple-500/20' };
       default:
         return { bg: 'from-yellow-500/20 to-orange-500/20', icon: 'text-yellow-400', glow: 'shadow-yellow-500/20' };
     }
   };
 
+  const getWeatherConditionText = (condition: WeatherData['condition']): string => {
+    switch (condition) {
+      case 'sunny': return 'Soleado';
+      case 'cloudy': return 'Nublado';
+      case 'rainy': return 'Lluvioso';
+      case 'windy': return 'Ventoso';
+      case 'snowy': return 'Nevado';
+      case 'stormy': return 'Tormentoso';
+      default: return 'Soleado';
+    }
+  };
+
   const WeatherIcon = getWeatherIcon();
   const colors = getWeatherColor();
+
+  // Loading state
+  if (loading || !weather) {
+    return (
+      <div className={`relative bg-white/5 backdrop-blur-md rounded-[28px] border border-white/10 overflow-hidden shadow-xl gpu-accelerate ${className}`}>
+        <div className="relative p-4">
+          <div className="flex items-center justify-center h-48">
+            <div className="text-white/40 text-sm">Cargando clima...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative bg-white/5 backdrop-blur-md rounded-[28px] border border-white/10 overflow-hidden shadow-xl gpu-accelerate ${className}`}>
@@ -114,10 +170,7 @@ export const WeatherWidget: React.FC<WeatherWidgetProps> = ({ className = '' }) 
             <span className="text-2xl text-white/70 font-light">°C</span>
           </div>
           <p className="text-sm text-white/70 font-medium capitalize mt-1">
-            {weather.condition === 'sunny' && 'Soleado'}
-            {weather.condition === 'cloudy' && 'Nublado'}
-            {weather.condition === 'rainy' && 'Lluvioso'}
-            {weather.condition === 'windy' && 'Ventoso'}
+            {getWeatherConditionText(weather.condition)}
           </p>
         </div>
 

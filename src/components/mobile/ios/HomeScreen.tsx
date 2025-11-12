@@ -6,7 +6,6 @@ import { WhatsNext } from './widgets/WhatsNext';
 import { QuickStats } from './widgets/QuickStats';
 import { TasksWidget } from './widgets/TasksWidget';
 import { FinanceStatsWidget } from './widgets/FinanceStatsWidget';
-import { NearbyShowsWidget } from './widgets/NearbyShowsWidget';
 import { QuickActionsWidget } from './widgets/QuickActionsWidget';
 import { WeatherWidget } from './widgets/WeatherWidget';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
@@ -22,7 +21,6 @@ interface HomeScreenProps {
     quickStats: boolean;
     tasks?: boolean;
     financeStats?: boolean;
-    nearbyShows?: boolean;
     quickActions?: boolean;
     weather?: boolean;
   };
@@ -185,21 +183,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     <div className="absolute inset-0 flex flex-col overflow-hidden pt-8">
       {/* SECCIÓN 1: Apps Grid - 40% altura para 3 filas */}
       <div
-        className="h-[40%] px-6 pt-4 overflow-y-auto"
+        className="h-[40%] px-6 pt-4 overflow-y-auto smooth-scroll"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         <motion.div
           key={currentPage}
-          initial={{ opacity: 0, x: 30 }}
+          initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
+          exit={{ opacity: 0, x: -20 }}
           transition={{ 
-            duration: 0.25,
-            ease: [0.4, 0, 0.2, 1]
+            duration: 0.2,
+            ease: 'easeOut'
           }}
-          className="grid grid-cols-4 gap-x-4 gap-y-5 auto-rows-min"
+          className="grid grid-cols-4 gap-x-4 gap-y-5 auto-rows-min widget-container"
         >
           {currentPageData.apps.map((appId, index) => {
             if (!appId) {
@@ -214,13 +212,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             return (
               <motion.div 
                 key={appId} 
-                className="flex justify-center"
-                initial={{ scale: 0.8, opacity: 0 }}
+                className="flex justify-center icon-wobble"
+                initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{
-                  duration: 0.2,
-                  ease: [0.4, 0, 0.2, 1],
-                  delay: index * 0.02,
+                  duration: 0.18,
+                  ease: 'easeOut',
+                  delay: index * 0.015,
                 }}
               >
                 <AppIcon
@@ -332,7 +330,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </motion.div>
         )}
 
-        {enabledWidgets.nearbyShows && (
+        {enabledWidgets.quickActions && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -342,11 +340,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               delay: 0.6,
             }}
           >
-            <NearbyShowsWidget />
+            <QuickActionsWidget />
           </motion.div>
         )}
 
-        {enabledWidgets.quickActions && (
+        {enabledWidgets.weather && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -356,11 +354,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               delay: 0.7,
             }}
           >
-            <QuickActionsWidget />
+            <WeatherWidget />
           </motion.div>
         )}
 
-        {!enabledWidgets.whatsNext && !enabledWidgets.quickStats && !enabledWidgets.tasks && !enabledWidgets.financeStats && !enabledWidgets.nearbyShows && !enabledWidgets.quickActions && (
+        {!enabledWidgets.whatsNext && !enabledWidgets.quickStats && !enabledWidgets.tasks && !enabledWidgets.financeStats && !enabledWidgets.quickActions && !enabledWidgets.weather && (
           <div className="flex items-center justify-center h-full text-white/40 text-sm">
             <div className="text-center">
               <p>No hay widgets habilitados</p>

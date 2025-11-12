@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Settings as SettingsIcon, Home, Smartphone, Bell, Shield, LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Settings as SettingsIcon, 
+  Home, 
+  Smartphone, 
+  Bell, 
+  Shield, 
+  LogOut,
+  Moon,
+  Palette,
+  Vibrate,
+  Zap,
+  ChevronRight
+} from 'lucide-react';
 import type { AppComponentProps } from '../../../../types/mobileOS';
 
 const WIDGETS_KEY = 'mobileOS:widgets';
+const HAPTIC_KEY = 'mobileOS:haptic';
+const THEME_KEY = 'mobileOS:theme';
 
 interface SettingItem {
   label: string;
@@ -12,6 +26,7 @@ interface SettingItem {
   onToggle?: () => void;
   type?: 'link' | 'action' | 'toggle';
   danger?: boolean;
+  onClick?: () => void;
 }
 
 interface SettingsSection {
@@ -25,6 +40,10 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
     whatsNext: true,
     quickStats: false,
   });
+  
+  const [hapticEnabled, setHapticEnabled] = useState(true);
+  const [darkMode, setDarkMode] = useState(true);
+  const [showDeviceInfo, setShowDeviceInfo] = useState(false);
 
   // Load widgets config
   useEffect(() => {
@@ -33,8 +52,18 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
       if (stored) {
         setWidgets(JSON.parse(stored));
       }
+      
+      const haptic = localStorage.getItem(HAPTIC_KEY);
+      if (haptic !== null) {
+        setHapticEnabled(JSON.parse(haptic));
+      }
+      
+      const theme = localStorage.getItem(THEME_KEY);
+      if (theme !== null) {
+        setDarkMode(JSON.parse(theme));
+      }
     } catch (error) {
-      console.error('Failed to load widgets config:', error);
+      console.error('Failed to load settings:', error);
     }
   }, []);
 
@@ -58,6 +87,28 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
     }
   };
 
+  // Toggle haptic feedback
+  const toggleHaptic = () => {
+    const newValue = !hapticEnabled;
+    setHapticEnabled(newValue);
+    localStorage.setItem(HAPTIC_KEY, JSON.stringify(newValue));
+    
+    if (newValue && navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
+
+  // Toggle dark mode (placeholder)
+  const toggleDarkMode = () => {
+    const newValue = !darkMode;
+    setDarkMode(newValue);
+    localStorage.setItem(THEME_KEY, JSON.stringify(newValue));
+    
+    if (navigator.vibrate && hapticEnabled) {
+      navigator.vibrate(10);
+    }
+  };
+
   const settingsSections: SettingsSection[] = [
     {
       title: 'Widgets',
@@ -65,14 +116,14 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
       items: [
         {
           label: "What's Next",
-          description: 'Próximos eventos',
+          description: 'Próximos eventos y calendario',
           enabled: widgets.whatsNext,
           onToggle: () => toggleWidget('whatsNext'),
           type: 'toggle',
         },
         {
           label: 'Quick Stats',
-          description: 'Estadísticas rápidas',
+          description: 'Estadísticas rápidas del tour',
           enabled: widgets.quickStats,
           onToggle: () => toggleWidget('quickStats'),
           type: 'toggle',
@@ -80,18 +131,40 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
       ],
     },
     {
-      title: 'General',
-      icon: SettingsIcon,
+      title: 'Apariencia',
+      icon: Palette,
       items: [
         {
-          label: 'Dispositivo',
-          description: 'Información del dispositivo',
-          type: 'link',
+          label: 'Modo Oscuro',
+          description: 'Tema oscuro activado',
+          enabled: darkMode,
+          onToggle: toggleDarkMode,
+          type: 'toggle',
         },
+      ],
+    },
+    {
+      title: 'Interacción',
+      icon: Zap,
+      items: [
         {
-          label: 'Notificaciones',
-          description: 'Gestionar alertas',
+          label: 'Feedback Háptico',
+          description: 'Vibraciones al tocar',
+          enabled: hapticEnabled,
+          onToggle: toggleHaptic,
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      title: 'Dispositivo',
+      icon: Smartphone,
+      items: [
+        {
+          label: 'Información',
+          description: 'Detalles del dispositivo',
           type: 'link',
+          onClick: () => setShowDeviceInfo(!showDeviceInfo),
         },
       ],
     },
@@ -202,13 +275,53 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
 
                   {/* Arrow for links */}
                   {item.type === 'link' && (
-                    <div className="text-white/30">›</div>
+                    <ChevronRight className="w-5 h-5 text-white/30" />
                   )}
                 </div>
               ))}
             </div>
           </motion.div>
         ))}
+
+        {/* Device Info Panel */}
+        <AnimatePresence>
+          {showDeviceInfo && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-4">
+                <h3 className="text-white font-semibold mb-3 text-sm">Información del Dispositivo</h3>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-white/50">User Agent</span>
+                    <span className="text-white/80 text-right max-w-[60%] truncate">
+                      {navigator.userAgent.split(' ')[0]}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/50">Pantalla</span>
+                    <span className="text-white/80">{window.innerWidth}×{window.innerHeight}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/50">Vibración</span>
+                    <span className={'vibrate' in navigator ? 'text-green-400' : 'text-white/30'}>
+                      {'vibrate' in navigator ? 'Soportado' : 'No soportado'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/50">Online</span>
+                    <span className={navigator.onLine ? 'text-green-400' : 'text-red-400'}>
+                      {navigator.onLine ? 'Conectado' : 'Desconectado'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* App Info */}
         <div className="text-center text-white/40 text-xs pt-4">

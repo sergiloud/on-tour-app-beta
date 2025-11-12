@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useMemo, useRef } from 'react';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin } from 'lucide-react';
 import { showStore } from '../../../../shared/showStore';
 import type { Show } from '../../../../lib/shows';
@@ -11,6 +11,7 @@ export const CalendarApp: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   // Subscribe to showStore
   React.useEffect(() => {
@@ -87,15 +88,29 @@ export const CalendarApp: React.FC = () => {
 
   // Navigation
   const goToPreviousMonth = () => {
+    setSwipeDirection('right');
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
   const goToNextMonth = () => {
+    setSwipeDirection('left');
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
   const goToToday = () => {
     setCurrentMonth(new Date());
+    setSwipeDirection(null);
+  };
+
+  // Swipe handlers
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    const threshold = 50;
+    
+    if (info.offset.x > threshold) {
+      goToPreviousMonth();
+    } else if (info.offset.x < -threshold) {
+      goToNextMonth();
+    }
   };
 
   // Format date as YYYY-MM-DD
@@ -142,21 +157,30 @@ export const CalendarApp: React.FC = () => {
 
         {/* Month Navigation */}
         <div className="flex items-center justify-between">
-          <button
+          <motion.button
             onClick={goToPreviousMonth}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            whileTap={{ scale: 0.9 }}
           >
             <ChevronLeft className="w-5 h-5 text-white" />
-          </button>
+          </motion.button>
           
-          <h2 className="text-lg font-semibold text-white">{monthName}</h2>
+          <motion.h2 
+            key={monthName}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-lg font-semibold text-white"
+          >
+            {monthName}
+          </motion.h2>
           
-          <button
+          <motion.button
             onClick={goToNextMonth}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            whileTap={{ scale: 0.9 }}
           >
             <ChevronRight className="w-5 h-5 text-white" />
-          </button>
+          </motion.button>
         </div>
 
         {/* View Toggle */}
@@ -185,11 +209,24 @@ export const CalendarApp: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {viewMode === 'month' ? (
-          <>
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+      <motion.div 
+        className="flex-1 overflow-y-auto px-4 py-4"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={handleDragEnd}
+      >
+        <AnimatePresence mode="wait">
+          {viewMode === 'month' ? (
+            <motion.div
+              key={currentMonth.toISOString()}
+              initial={{ opacity: 0, x: swipeDirection === 'left' ? 100 : swipeDirection === 'right' ? -100 : 0 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: swipeDirection === 'left' ? -100 : swipeDirection === 'right' ? 100 : 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              {/* Weekday Headers */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
                 <div key={index} className="text-center text-xs font-medium text-slate-400 pb-2">
                   {day}
@@ -276,10 +313,16 @@ export const CalendarApp: React.FC = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </>
-        ) : (
-          /* List View */
-          <div className="space-y-3">
+            </motion.div>
+          ) : (
+            /* List View */
+            <motion.div 
+              key="list-view"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-3"
+            >
             {shows
               .filter(show => {
                 const showDate = new Date(show.date);
@@ -325,9 +368,10 @@ export const CalendarApp: React.FC = () => {
                   </div>
                 </motion.div>
               ))}
-          </div>
-        )}
-      </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 };

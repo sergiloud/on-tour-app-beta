@@ -1,12 +1,19 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, Calendar, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { TrendingUp, DollarSign, Calendar, AlertCircle, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
 import { useFinance } from '../../../../context/FinanceContext';
 import { useSettings } from '../../../../context/SettingsContext';
 
 export const FinanceApp: React.FC = () => {
   const { snapshot, kpis } = useFinance();
   const { fmtMoney } = useSettings();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Pull to refresh
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const pullY = useMotionValue(0);
+  const pullProgress = useTransform(pullY, [0, 80], [0, 1]);
+  const pullRotate = useTransform(pullY, [0, 80], [0, 360]);
 
   // KPI Cards Data
   const kpiCards = [
@@ -62,8 +69,76 @@ export const FinanceApp: React.FC = () => {
       .slice(0, 5);
   }, [snapshot.shows]);
 
+  // Handle refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Finance data is already reactive from context
+    setIsRefreshing(false);
+    pullY.set(0);
+  };
+
+  // Pull to refresh handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const scrollTop = scrollRef.current?.scrollTop || 0;
+    if (scrollTop === 0 && !isRefreshing) {
+      const touch = e.touches[0];
+      if (!touch) return;
+
+      const startY = touch.clientY;
+
+      const handleTouchMove = (e: TouchEvent) => {
+        const touch = e.touches[0];
+        if (!touch) return;
+
+        const deltaY = Math.max(0, touch.clientY - startY);
+        pullY.set(Math.min(deltaY, 100));
+      };
+
+      const handleTouchEnd = () => {
+        if (pullY.get() > 80 && !isRefreshing) {
+          handleRefresh();
+        } else {
+          pullY.set(0);
+        }
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
+      };
+
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleTouchEnd);
+    }
+  };
+
   return (
-    <div className="h-full flex flex-col bg-dark-900 overflow-y-auto">
+    <div className="h-full flex flex-col bg-dark-900 overflow-y-auto relative">
+      {/* Pull to Refresh Indicator */}
+      <motion.div
+        className="absolute top-0 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center"
+        style={{ y: pullY }}
+      >
+        <motion.div
+          className="w-10 h-10 rounded-full bg-accent-500/20 backdrop-blur-md flex items-center justify-center"
+          style={{ 
+            opacity: pullProgress,
+            scale: pullProgress
+          }}
+        >
+          <motion.div style={{ rotate: pullRotate }}>
+            <RefreshCw 
+              className={`w-5 h-5 ${isRefreshing ? 'text-accent-500 animate-spin' : 'text-accent-500'}`}
+              strokeWidth={2.5}
+            />
+          </motion.div>
+        </motion.div>
+      </motion.div>
+
       {/* Header */}
       <div className="sticky top-0 z-10 bg-dark-900/95 backdrop-blur-xl border-b border-white/10 px-4 pt-4 pb-3">
         <h1 className="text-2xl font-bold text-white">Finance</h1>
@@ -71,7 +146,11 @@ export const FinanceApp: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-4 py-6 space-y-6">
+      <div 
+        ref={scrollRef}
+        className="flex-1 px-4 py-6 space-y-6"
+        onTouchStart={handleTouchStart}
+      >
         {/* KPI Cards Grid */}
         <div className="grid grid-cols-2 gap-3">
           {kpiCards.map((kpi, index) => (

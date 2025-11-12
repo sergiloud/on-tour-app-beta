@@ -129,4 +129,4 @@ const AgendaList: React.FC<Props> = ({ eventsByDay, onOpen }) => {
   );
 };
 
-export default AgendaList;
+export default React.memo(AgendaList);

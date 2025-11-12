@@ -764,4 +764,4 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
   );
 };
 
-export default MonthGrid;
+export default React.memo(MonthGrid);

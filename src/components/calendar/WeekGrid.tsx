@@ -312,4 +312,4 @@ const WeekGrid: React.FC<Props> = ({ weekStart, eventsByDay, tz, onOpen, onCreat
   );
 };
 
-export default WeekGrid;
+export default React.memo(WeekGrid);

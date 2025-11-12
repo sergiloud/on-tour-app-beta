@@ -14,7 +14,7 @@ interface TimelineViewProps {
  * Timeline view for calendar - shows events in chronological order
  * Great for planning tours with a clear sequential view
  */
-export const TimelineView: React.FC<TimelineViewProps> = ({
+const TimelineViewComponent: React.FC<TimelineViewProps> = ({
   events,
   from,
   to,
@@ -276,3 +276,5 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     </motion.div>
   );
 };
+
+export const TimelineView = React.memo(TimelineViewComponent);

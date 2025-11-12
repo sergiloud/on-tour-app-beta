@@ -174,4 +174,4 @@ const DayGrid: React.FC<Props> = ({ day, events, onOpen, onDeleteEvent, tz }) =>
   );
 };
 
-export default DayGrid;
+export default React.memo(DayGrid);

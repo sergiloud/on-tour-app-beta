@@ -251,8 +251,12 @@ export function calculateCommissionsFromShow(
       bookingAgency: (show as any).bookingAgency  // for commission calculation
     };
 
+    console.log(`[calculateCommissionsFromShow] Show: ${show.name}, Date: ${show.date}, Fee: €${show.fee}, mgmtAgency: ${(show as any).mgmtAgency}, bookingAgency: ${(show as any).bookingAgency}`);
+
     const applicable = agenciesForShow(showForAgencies, bookingAgencies, managementAgencies);
     const allAgencies = [...applicable.booking, ...applicable.management];
+    
+    console.log(`[calculateCommissionsFromShow] Agencies found for show:`, allAgencies.length, allAgencies.map(a => a.name));
 
     if (allAgencies.length > 0) {
       const totalCommission = computeCommission(showForAgencies, allAgencies);
@@ -265,12 +269,16 @@ export function calculateCommissionsFromShow(
         const pct = agency.commissionPct;
         const amount = (show.fee * pct) / 100;
 
+        console.log(`[calculateCommissionsFromShow] → Commission: ${agency.name} ${pct}% = €${amount.toFixed(2)}`);
+
         commissions.push({
           name: agency.name,
           percentage: pct,
           amount: amount
         });
       });
+    } else {
+      console.log(`[calculateCommissionsFromShow] ❌ NO agencies found for this show`);
     }
   } catch (e) {
     console.error('[profitability] Error calculating commissions:', e);

@@ -21,8 +21,12 @@ import { isValidLocation } from '../../services/travelApi';
 import { sanitizeName } from '../../lib/sanitize';
 import ShowDetailModal from '../shows/ShowDetailModal';
 import { Show } from '../../lib/shows';
+import { usePerfMonitor } from '../../lib/perfMonitor';
 
 const TourAgendaComponent: React.FC = () => {
+    // Performance monitoring
+    usePerfMonitor('TourAgenda:render');
+    
     const { fmtMoney } = useSettings();
     const { setFocus } = useMissionControl();
     const [isLoading, setIsLoading] = useState(false);

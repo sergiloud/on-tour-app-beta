@@ -19,6 +19,7 @@ import { slideUp, staggerFast } from '../../lib/animations';
 import type { TransactionV3 } from '../../types/financeV3';
 import { useTransactionFilters } from '../../hooks/useTransactionFilters';
 import { useSavedFilters } from '../../hooks/useSavedFilters';
+import { usePerfMonitor } from '../../lib/perfMonitor';
 
 const EXPENSE_CATEGORIES = [
   'Alojamiento',
@@ -61,6 +62,9 @@ export function TransactionsTab({
   fmtMoney,
   onExportCSV,
 }: TransactionsTabProps) {
+  // Performance monitoring
+  usePerfMonitor('TransactionsTab:render');
+  
   // Hook de filtrado (gestiona su propio estado)
   const {
     filterType,

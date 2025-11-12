@@ -25,6 +25,7 @@ import { useAuth } from '../../context/AuthContext';
 import { trackPageView } from '../../lib/activityTracker';
 import { logger } from '../../lib/logger';
 import { agenciesForShow, computeCommission } from '../../lib/agencies';
+import { usePerfMonitor } from '../../lib/perfMonitor';
 
 // Extended types for Shows with optional fields
 type Cost = { id: string; type: string; amount: number; desc?: string };
@@ -54,6 +55,9 @@ type ViewMode = 'list' | 'board';
 type SortKey = 'date' | 'fee' | 'net';
 
 const Shows: React.FC = () => {
+  // Performance monitoring
+  usePerfMonitor('Shows:render');
+  
   const { shows, add, update, remove } = useShows();
   const { fmtMoney, lang, bookingAgencies, managementAgencies } = useSettings();
   const { userId } = useAuth();

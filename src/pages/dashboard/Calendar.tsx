@@ -29,6 +29,7 @@ import TravelFlightModal from '../../components/calendar/TravelFlightModal';
 import ShowEventModal from '../../components/calendar/ShowEventModal';
 import EventEditorModal from '../../components/calendar/EventEditorModal';
 import { getCurrentOrgId } from '../../lib/tenants';
+import { usePerfMonitor } from '../../lib/perfMonitor';
 
 // Calendar event type is shared in components/calendar/types
 
@@ -67,6 +68,9 @@ const COLOR_MAP: Record<EventButton['color'], CalEvent['color']> = {
 };
 
 const Calendar: React.FC = () => {
+  // Performance monitoring
+  usePerfMonitor('Calendar:render');
+  
   const { shows, add, update, remove } = useShows();
   const { lang } = useSettings();
   const navigate = useNavigate();

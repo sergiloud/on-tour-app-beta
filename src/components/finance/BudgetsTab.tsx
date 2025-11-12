@@ -4,6 +4,7 @@ import { AlertCircle } from 'lucide-react';
 import { slideUp, staggerFast, fadeIn } from '../../lib/animations';
 import { ProgressBar } from '../../ui/ProgressBar';
 import type { BudgetCategory } from '../../hooks/useFinanceData';
+import { usePerfMonitor } from '../../lib/perfMonitor';
 
 export interface BudgetsTabProps {
   /** Categorías de presupuesto */
@@ -24,6 +25,9 @@ export function BudgetsTab({
   budgetCategories,
   fmtMoney,
 }: BudgetsTabProps) {
+  // Performance monitoring
+  usePerfMonitor('BudgetsTab:render');
+  
   return (
     <div className="space-y-4">
       <div className="glass rounded-xl border border-theme p-6 hover:border-accent-500/30 transition-fast">

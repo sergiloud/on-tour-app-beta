@@ -111,48 +111,84 @@ export default defineConfig({
           if (id.includes('node_modules/react') || 
               id.includes('node_modules/react-dom') ||
               id.includes('node_modules/scheduler') ||
-              id.includes('@tanstack/react-query') ||
               id.includes('react-router-dom')) {
             return 'vendor';
           }
           
-          // Charts - heavy, lazy loaded
-          if (id.includes('recharts') || 
-              id.includes('victory') ||
-              id.includes('d3-') ||
-              id.includes('@reduxjs/toolkit') || 
-              id.includes('react-redux') ||
-              id.includes('redux')) {
+          // React Query - separate for caching
+          if (id.includes('@tanstack/react-query')) {
+            return 'react-query';
+          }
+          
+          // Charts - heavy, lazy loaded (SEPARADOS)
+          if (id.includes('recharts') || id.includes('victory')) {
             return 'charts';
           }
           
-          // UI bundle - icons and animations
-          if (id.includes('framer-motion') || 
-              id.includes('lucide-react') ||
-              id.includes('@tanstack/react-virtual')) {
-            return 'ui';
+          // D3 utilities (usado por charts)
+          if (id.includes('d3-')) {
+            return 'charts-d3';
           }
           
-          // Heavy features - deferred loading
-          if (id.includes('maplibre-gl') || 
-              id.includes('mapbox') ||
-              id.includes('exceljs') || 
-              id.includes('xlsx')) {
-            return 'heavy';
+          // Redux (si se usa)
+          if (id.includes('@reduxjs/toolkit') || 
+              id.includes('react-redux') ||
+              id.includes('redux')) {
+            return 'redux';
           }
           
-          // Firebase - auth and database
-          if (id.includes('firebase') || 
-              id.includes('@firebase')) {
-            return 'firebase';
+          // UI bundle - icons and animations (SEPARADOS)
+          if (id.includes('framer-motion')) {
+            return 'animations';
+          }
+          
+          if (id.includes('lucide-react')) {
+            return 'icons';
+          }
+          
+          if (id.includes('@tanstack/react-virtual')) {
+            return 'virtualization';
+          }
+          
+          // Radix UI components (separados del resto)
+          if (id.includes('@radix-ui')) {
+            return 'ui-radix';
+          }
+          
+          // MapLibre - CRÍTICO: separar del resto
+          if (id.includes('maplibre-gl') || id.includes('mapbox')) {
+            return 'maplibre';
+          }
+          
+          // Excel/PDF export - CRÍTICO: separar para lazy load
+          if (id.includes('exceljs') || id.includes('xlsx')) {
+            return 'export-excel';
+          }
+          
+          if (id.includes('jspdf') || id.includes('jspdf-autotable')) {
+            return 'export-pdf';
+          }
+          
+          // Firebase - separar Auth de Firestore
+          if (id.includes('firebase/app') || id.includes('firebase/auth')) {
+            return 'firebase-core';
+          }
+          
+          if (id.includes('firebase/firestore') || id.includes('@firebase/firestore')) {
+            return 'firebase-firestore';
+          }
+          
+          if (id.includes('firebase/storage')) {
+            return 'firebase-storage';
           }
           
           // Utilities - date, forms, etc
-          if (id.includes('date-fns') || 
-              id.includes('dayjs') ||
-              id.includes('react-hook-form') || 
-              id.includes('zod')) {
-            return 'utils';
+          if (id.includes('date-fns') || id.includes('dayjs')) {
+            return 'date-utils';
+          }
+          
+          if (id.includes('react-hook-form') || id.includes('zod')) {
+            return 'form-validation';
           }
         },
         chunkFileNames: 'assets/[name]-[hash].js',

@@ -3,6 +3,9 @@ import { getCurrentUserId, getUserPrefs, getUserProfile, readAllPrefs, setCurren
 // DISABLED FOR PRODUCTION BETA - all data comes from Firestore now
 // import { ensureDemoAuth, ensureDemoTenants } from '../lib/demoAuth';
 import { activityTracker } from '../lib/activityTracker';
+import { HybridShowService } from '../services/hybridShowService';
+import { HybridContactService } from '../services/hybridContactService';
+import { HybridVenueService } from '../services/hybridVenueService';
 
 interface AuthCtx {
   userId: string;
@@ -57,25 +60,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Initialize ALL hybrid services for real users
       try {
-        import('../services/hybridShowService').then(({ HybridShowService }) => {
-          HybridShowService.initialize(id);
-        });
+        HybridShowService.initialize(id);
       } catch (e) {
         console.warn('Could not initialize hybrid show service:', e);
       }
       
       try {
-        import('../services/hybridContactService').then(({ HybridContactService }) => {
-          HybridContactService.initialize(id);
-        });
+        HybridContactService.initialize(id);
       } catch (e) {
         console.warn('Could not initialize hybrid contact service:', e);
       }
 
       try {
-        import('../services/hybridVenueService').then(({ HybridVenueService }) => {
-          HybridVenueService.initialize(id);
-        });
+        HybridVenueService.initialize(id);
       } catch (e) {
         console.warn('Could not initialize hybrid venue service:', e);
       }

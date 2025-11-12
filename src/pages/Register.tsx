@@ -10,6 +10,7 @@ import { secureStorage } from '../lib/secureStorage';
 import { auth, isFirebaseConfigured } from '../lib/firebase';
 import { createUserWithEmailAndPassword, updateProfile as updateFirebaseProfile } from 'firebase/auth';
 import { HybridShowService } from '../services/hybridShowService';
+import { HybridContactService } from '../services/hybridContactService';
 
 // Estados para el registro
 type RegisterState = 'idle' | 'loading' | 'error' | 'success';
@@ -209,7 +210,6 @@ const Register: React.FC = () => {
 
         // Initialize hybrid contact service
         try {
-          const { HybridContactService } = await import('../services/hybridContactService');
           await HybridContactService.initialize(newUserId);
         } catch (e) {
           console.warn('Could not initialize contacts:', e);

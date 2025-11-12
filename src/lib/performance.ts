@@ -360,8 +360,217 @@ export function useBatchProcessor<T, R>(
 }
 
 // ============================================================================
+// PERFORMANCE MEASUREMENT
+// ============================================================================
+
+type PerformanceEntry = {
+  name: string;
+  duration: number;
+  startTime: number;
+  timestamp: string;
+};
+
+class PerformanceTracker {
+  private entries: PerformanceEntry[] = [];
+  private readonly MAX_ENTRIES = 100;
+  private readonly WARN_THRESHOLD = 100; // ms
+  private readonly ERROR_THRESHOLD = 500; // ms
+
+  /**
+   * Mide el tiempo de ejecución de una función síncrona
+   */
+  measure<T>(name: string, fn: () => T): T {
+    const startMark = `${name}-start`;
+    const endMark = `${name}-end`;
+    
+    performance.mark(startMark);
+    const result = fn();
+    performance.mark(endMark);
+    
+    try {
+      performance.measure(name, startMark, endMark);
+      const measure = performance.getEntriesByName(name)[0];
+      this.recordEntry(name, measure.duration);
+      
+      // Log warnings para interacciones lentas
+      if (measure.duration > this.ERROR_THRESHOLD) {
+        console.error(`❌ SLOW: ${name} took ${measure.duration.toFixed(2)}ms (>${this.ERROR_THRESHOLD}ms)`);
+      } else if (measure.duration > this.WARN_THRESHOLD) {
+        console.warn(`⚠️ ${name} took ${measure.duration.toFixed(2)}ms (>${this.WARN_THRESHOLD}ms)`);
+      } else if (import.meta.env.DEV) {
+        console.log(`✅ ${name}: ${measure.duration.toFixed(2)}ms`);
+      }
+    } catch (e) {
+      console.error('Failed to measure performance:', e);
+    } finally {
+      // Cleanup marks
+      performance.clearMarks(startMark);
+      performance.clearMarks(endMark);
+      performance.clearMeasures(name);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Mide el tiempo de ejecución de una función asíncrona
+   */
+  async measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const startMark = `${name}-start`;
+    const endMark = `${name}-end`;
+    
+    performance.mark(startMark);
+    try {
+      const result = await fn();
+      performance.mark(endMark);
+      
+      performance.measure(name, startMark, endMark);
+      const measure = performance.getEntriesByName(name)[0];
+      this.recordEntry(name, measure.duration);
+      
+      if (measure.duration > this.ERROR_THRESHOLD) {
+        console.error(`❌ SLOW ASYNC: ${name} took ${measure.duration.toFixed(2)}ms`);
+      } else if (measure.duration > this.WARN_THRESHOLD) {
+        console.warn(`⚠️ ${name} took ${measure.duration.toFixed(2)}ms`);
+      } else if (import.meta.env.DEV) {
+        console.log(`✅ ${name}: ${measure.duration.toFixed(2)}ms`);
+      }
+      
+      return result;
+    } catch (error) {
+      performance.mark(endMark);
+      throw error;
+    } finally {
+      performance.clearMarks(startMark);
+      performance.clearMarks(endMark);
+      performance.clearMeasures(name);
+    }
+  }
+
+  /**
+   * Inicia un cronómetro manual para eventos que no son funciones
+   */
+  start(name: string): () => void {
+    const startMark = `${name}-start`;
+    performance.mark(startMark);
+    
+    // Retorna función de finalización
+    return () => {
+      const endMark = `${name}-end`;
+      performance.mark(endMark);
+      
+      try {
+        performance.measure(name, startMark, endMark);
+        const measure = performance.getEntriesByName(name)[0];
+        this.recordEntry(name, measure.duration);
+        
+        if (measure.duration > this.ERROR_THRESHOLD) {
+          console.error(`❌ SLOW: ${name} took ${measure.duration.toFixed(2)}ms`);
+        } else if (measure.duration > this.WARN_THRESHOLD) {
+          console.warn(`⚠️ ${name} took ${measure.duration.toFixed(2)}ms`);
+        } else if (import.meta.env.DEV) {
+          console.log(`✅ ${name}: ${measure.duration.toFixed(2)}ms`);
+        }
+      } catch (e) {
+        console.error('Failed to complete performance measurement:', e);
+      } finally {
+        performance.clearMarks(startMark);
+        performance.clearMarks(endMark);
+        performance.clearMeasures(name);
+      }
+    };
+  }
+
+  private recordEntry(name: string, duration: number) {
+    this.entries.push({
+      name,
+      duration,
+      startTime: performance.now(),
+      timestamp: new Date().toISOString(),
+    });
+    
+    if (this.entries.length > this.MAX_ENTRIES) {
+      this.entries.shift();
+    }
+  }
+
+  getReport(): {
+    entries: PerformanceEntry[];
+    slowest: PerformanceEntry[];
+    average: { [key: string]: number };
+  } {
+    const grouped = this.entries.reduce((acc, entry) => {
+      if (!acc[entry.name]) {
+        acc[entry.name] = [];
+      }
+      acc[entry.name].push(entry.duration);
+      return acc;
+    }, {} as { [key: string]: number[] });
+    
+    const average = Object.entries(grouped).reduce((acc, [name, durations]) => {
+      acc[name] = durations.reduce((sum, d) => sum + d, 0) / durations.length;
+      return acc;
+    }, {} as { [key: string]: number });
+    
+    const slowest = [...this.entries]
+      .sort((a, b) => b.duration - a.duration)
+      .slice(0, 10);
+    
+    return { entries: this.entries, slowest, average };
+  }
+
+  printReport() {
+    const report = this.getReport();
+    
+    console.group('📊 Performance Report');
+    console.log('Total measurements:', this.entries.length);
+    
+    console.group('⏱️ Average Times');
+    Object.entries(report.average)
+      .sort(([, a], [, b]) => b - a)
+      .forEach(([name, avg]) => {
+        const emoji = avg > this.ERROR_THRESHOLD ? '❌' : avg > this.WARN_THRESHOLD ? '⚠️' : '✅';
+        console.log(`${emoji} ${name}: ${avg.toFixed(2)}ms`);
+      });
+    console.groupEnd();
+    
+    console.group('🐌 Slowest Operations');
+    report.slowest.forEach((entry, i) => {
+      console.log(`${i + 1}. ${entry.name}: ${entry.duration.toFixed(2)}ms at ${entry.timestamp}`);
+    });
+    console.groupEnd();
+    
+    console.groupEnd();
+  }
+
+  clear() {
+    this.entries = [];
+    performance.clearMarks();
+    performance.clearMeasures();
+  }
+}
+
+export const perfTracker = new PerformanceTracker();
+
+if (typeof window !== 'undefined') {
+  (window as any).__perfTracker = perfTracker;
+}
+
+export function usePerfMeasure(componentName: string) {
+  return {
+    measure: <T>(actionName: string, fn: () => T) => 
+      perfTracker.measure(`${componentName}.${actionName}`, fn),
+    measureAsync: <T>(actionName: string, fn: () => Promise<T>) =>
+      perfTracker.measureAsync(`${componentName}.${actionName}`, fn),
+    start: (actionName: string) =>
+      perfTracker.start(`${componentName}.${actionName}`),
+  };
+}
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 
 // Note: Direct default export removed to avoid re-export conflicts
 // Import individual utilities directly or use named exports
+

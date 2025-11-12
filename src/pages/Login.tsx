@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { t } from '../lib/i18n';
+import { t, setLang } from '../lib/i18n';
 import { ORG_AGENCY_SHALIZI, ORG_ARTIST_DANNY, ORG_ARTIST_DANNY_V2, ORG_ARTIST_PROPHECY, setCurrentOrgId } from '../lib/tenants';
 import { trackEvent, Events } from '../lib/telemetry';
 import { setAuthed } from '../lib/demoAuth';
@@ -462,7 +462,6 @@ const Login: React.FC = () => {
           // Update local preferences if available
           if (userData.preferences) {
             if (userData.preferences.language) {
-              const { setLang } = await import('../lib/i18n');
               setLang(userData.preferences.language);
             }
           }

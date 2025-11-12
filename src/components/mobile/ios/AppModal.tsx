@@ -36,7 +36,7 @@ export const AppModal: React.FC<AppModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 bg-ink-900"
+          className="fixed inset-0 z-50 bg-ink-900 gpu-accelerate-full"
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={{ top: 0, bottom: 0.5 }}

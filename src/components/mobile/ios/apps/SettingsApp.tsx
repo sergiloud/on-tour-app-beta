@@ -14,6 +14,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import type { AppComponentProps } from '../../../../types/mobileOS';
+import { useNotifications, requestNotificationPermission } from '../../../../stores/notificationStore';
 
 const WIDGETS_KEY = 'mobileOS:widgets';
 const HAPTIC_KEY = 'mobileOS:haptic';
@@ -36,14 +37,21 @@ interface SettingsSection {
 }
 
 export const SettingsApp: React.FC<AppComponentProps> = () => {
+  const { addNotification } = useNotifications();
+  
   const [widgets, setWidgets] = useState({
     whatsNext: true,
     quickStats: false,
+    tasks: false,
+    financeStats: false,
   });
   
   const [hapticEnabled, setHapticEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [showDeviceInfo, setShowDeviceInfo] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    'Notification' in window && Notification.permission === 'granted'
+  );
 
   // Load widgets config
   useEffect(() => {
@@ -68,7 +76,7 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
   }, []);
 
   // Save widgets config
-  const toggleWidget = (widgetName: 'whatsNext' | 'quickStats') => {
+  const toggleWidget = (widgetName: 'whatsNext' | 'quickStats' | 'tasks' | 'financeStats') => {
     const newWidgets = {
       ...widgets,
       [widgetName]: !widgets[widgetName],
@@ -109,6 +117,54 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
     }
   };
 
+  // Toggle notifications
+  const toggleNotifications = async () => {
+    if (!notificationsEnabled) {
+      const granted = await requestNotificationPermission();
+      setNotificationsEnabled(granted);
+      
+      if (granted) {
+        addNotification({
+          type: 'system',
+          title: 'Notificaciones activadas',
+          message: 'Ahora recibirás notificaciones de tus shows y eventos',
+          priority: 'low',
+        });
+      }
+    } else {
+      setNotificationsEnabled(false);
+    }
+  };
+
+  // Test notification
+  const sendTestNotification = () => {
+    const notifications = [
+      {
+        type: 'show' as const,
+        title: 'Nuevo show añadido',
+        message: 'Show en Madrid - 15 de Mayo',
+        priority: 'medium' as const,
+      },
+      {
+        type: 'finance' as const,
+        title: 'Gasto registrado',
+        message: 'Hotel Barcelona - €350',
+        priority: 'low' as const,
+      },
+      {
+        type: 'task' as const,
+        title: 'Tarea pendiente',
+        message: 'Revisar contratos antes del viernes',
+        priority: 'high' as const,
+      },
+    ];
+
+    const random = notifications[Math.floor(Math.random() * notifications.length)];
+    if (random) {
+      addNotification(random);
+    }
+  };
+
   const settingsSections: SettingsSection[] = [
     {
       title: 'Widgets',
@@ -127,6 +183,39 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
           enabled: widgets.quickStats,
           onToggle: () => toggleWidget('quickStats'),
           type: 'toggle',
+        },
+        {
+          label: 'Tareas',
+          description: 'Lista de tareas pendientes',
+          enabled: widgets.tasks,
+          onToggle: () => toggleWidget('tasks'),
+          type: 'toggle',
+        },
+        {
+          label: 'Gastos',
+          description: 'Últimos gastos registrados',
+          enabled: widgets.financeStats,
+          onToggle: () => toggleWidget('financeStats'),
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      title: 'Notificaciones',
+      icon: Bell,
+      items: [
+        {
+          label: 'Activar notificaciones',
+          description: 'Recibe alertas de shows y eventos',
+          enabled: notificationsEnabled,
+          onToggle: toggleNotifications,
+          type: 'toggle',
+        },
+        {
+          label: 'Probar notificación',
+          description: 'Enviar notificación de prueba',
+          type: 'action',
+          onClick: sendTestNotification,
         },
       ],
     },

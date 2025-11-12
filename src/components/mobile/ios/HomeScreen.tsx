@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { AppIcon } from './AppIcon';
+import { QuickActionsMenu } from './QuickActionsMenu';
 import { WhatsNext } from './widgets/WhatsNext';
 import { QuickStats } from './widgets/QuickStats';
+import { TasksWidget } from './widgets/TasksWidget';
+import { FinanceStatsWidget } from './widgets/FinanceStatsWidget';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import type { AppDefinition, AppPage } from '../../../types/mobileOS';
 
@@ -14,6 +17,8 @@ interface HomeScreenProps {
   enabledWidgets: {
     whatsNext: boolean;
     quickStats: boolean;
+    tasks?: boolean;
+    financeStats?: boolean;
   };
   onPageChange: (page: number) => void;
   onAppOpen: (app: AppDefinition) => void;
@@ -38,6 +43,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [touchEnd, setTouchEnd] = useState(0);
   const [draggedAppId, setDraggedAppId] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [quickActionsApp, setQuickActionsApp] = useState<{ app: AppDefinition; position: { x: number; y: number } } | null>(null);
   const deviceInfo = useDeviceInfo();
 
   // Calcular espacio superior según dispositivo
@@ -201,7 +207,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   badge={badgeValue}
                   isDragging={draggedAppId === appId}
                   onPress={() => onAppOpen(app)}
-                  onLongPress={onEnterEditMode}
+                  onLongPress={(e) => {
+                    if (!isEditMode) {
+                      // Get touch position for menu
+                      const target = e.currentTarget as HTMLElement;
+                      const rect = target.getBoundingClientRect();
+                      setQuickActionsApp({
+                        app,
+                        position: {
+                          x: rect.left + rect.width / 2,
+                          y: rect.top,
+                        },
+                      });
+                    } else {
+                      onEnterEditMode();
+                    }
+                  }}
                   onDragStart={() => handleDragStart(appId, index)}
                   onDragEnd={(event, info) => handleDragEnd(event, info, index)}
                 />
@@ -210,6 +231,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           })}
         </motion.div>
       </div>
+
+      {/* Quick Actions Menu */}
+      {quickActionsApp && (
+        <QuickActionsMenu
+          app={quickActionsApp.app}
+          isOpen={!!quickActionsApp}
+          onClose={() => setQuickActionsApp(null)}
+          position={quickActionsApp.position}
+        />
+      )}
 
       {/* SECCIÓN 2: Widgets Area - hasta el dock */}
       <div className="flex-1 px-6 pt-6 pb-24 overflow-y-auto space-y-4">
@@ -241,7 +272,35 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </motion.div>
         )}
 
-        {!enabledWidgets.whatsNext && !enabledWidgets.quickStats && (
+        {enabledWidgets.tasks && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.25,
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.4,
+            }}
+          >
+            <TasksWidget />
+          </motion.div>
+        )}
+
+        {enabledWidgets.financeStats && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.25,
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.5,
+            }}
+          >
+            <FinanceStatsWidget />
+          </motion.div>
+        )}
+
+        {!enabledWidgets.whatsNext && !enabledWidgets.quickStats && !enabledWidgets.tasks && !enabledWidgets.financeStats && (
           <div className="flex items-center justify-center h-full text-white/40 text-sm">
             <div className="text-center">
               <p>No hay widgets habilitados</p>

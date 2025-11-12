@@ -71,7 +71,7 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ className = '' }) => {
   ];
 
   return (
-    <div className={`relative bg-white/5 backdrop-blur-md rounded-[28px] border border-white/10 overflow-hidden shadow-xl p-4 ${className}`}>
+    <div className={`relative bg-white/5 backdrop-blur-md rounded-[28px] border border-white/10 overflow-hidden shadow-xl p-4 gpu-accelerate ${className}`}>
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 rounded-xl bg-accent-500/20 flex items-center justify-center">

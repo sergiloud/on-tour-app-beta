@@ -9,7 +9,7 @@ interface AppIconProps {
   isActive?: boolean;
   badge?: number | string | null;
   onPress?: () => void;
-  onLongPress?: () => void;
+  onLongPress?: (event: React.MouseEvent | React.TouchEvent) => void;
   isDragging?: boolean;
   onDragStart?: () => void;
   onDragEnd?: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
@@ -41,16 +41,20 @@ export const AppIcon: React.FC<AppIconProps> = ({
 }) => {
   const [isPressed, setIsPressed] = React.useState(false);
   const longPressTimer = React.useRef<number | null>(null);
+  const eventRef = React.useRef<React.TouchEvent | React.MouseEvent | null>(null);
 
-  const handleTouchStart = () => {
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     setIsPressed(true);
+    eventRef.current = e;
     if (onLongPress) {
       longPressTimer.current = window.setTimeout(() => {
         // Haptic feedback
         if (navigator.vibrate) {
           navigator.vibrate(50);
         }
-        onLongPress();
+        if (eventRef.current) {
+          onLongPress(eventRef.current);
+        }
       }, 500);
     }
   };
@@ -74,7 +78,7 @@ export const AppIcon: React.FC<AppIconProps> = ({
 
   return (
     <motion.div
-      className="flex flex-col items-center gap-1.5 relative"
+      className="flex flex-col items-center gap-1.5 relative gpu-accelerate"
       drag={isEditing}
       dragSnapToOrigin={false}
       dragElastic={0.2}
@@ -98,6 +102,7 @@ export const AppIcon: React.FC<AppIconProps> = ({
           relative
           overflow-hidden
           motion-safe:transition-all
+          gpu-accelerate
           ${isDragging ? 'opacity-50' : ''}
           ${isActive 
             ? 'bg-accent-500 text-black shadow-glow' 

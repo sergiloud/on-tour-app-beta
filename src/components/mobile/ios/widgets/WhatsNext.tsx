@@ -119,7 +119,7 @@ export const WhatsNext: React.FC<WhatsNextProps> = ({ events: propEvents }) => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        className="bg-white/5 backdrop-blur-md rounded-[20px] p-4 border border-white/10 hover:border-accent-500/40 hover:bg-white/8 transition-all duration-300 cursor-pointer"
+        className="bg-white/5 backdrop-blur-md rounded-[20px] p-4 border border-white/10 hover:border-accent-500/40 hover:bg-white/8 transition-all duration-300 cursor-pointer gpu-accelerate"
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
       >

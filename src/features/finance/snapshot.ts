@@ -160,27 +160,6 @@ export function buildFinanceSnapshotFromShows(shows: FinanceShow[], now = new Da
 export function buildFinanceSnapshot(now = new Date()): FinanceSnapshot {
   const org = getCurrentOrgId();
   const allShows = showStore.getAll() as unknown as FinanceShow[];
-  console.log('[buildFinanceSnapshot] Total shows from showStore:', allShows.length);
-  
-  // Also check localStorage directly
-  try {
-    const lsShows = JSON.parse(localStorage.getItem('shows-store-v3') || '[]');
-    console.log('[buildFinanceSnapshot] Total shows in localStorage:', lsShows.length);
-  } catch (e) {
-    console.warn('[buildFinanceSnapshot] Failed to read from localStorage', e);
-  }
-  
-  // Include shows with no tenantId OR matching current org
   const shows = allShows.filter((s: any) => !s.tenantId || s.tenantId === org);
-  console.log('[buildFinanceSnapshot] Shows after org filter:', shows.length, 'org:', org);
-  
-  // Debug: log tenantIds distribution
-  const tenantCounts = allShows.reduce((acc: any, s: any) => {
-    const tid = s.tenantId || 'null';
-    acc[tid] = (acc[tid] || 0) + 1;
-    return acc;
-  }, {});
-  console.log('[buildFinanceSnapshot] TenantId distribution:', tenantCounts);
-  
   return buildFinanceSnapshotFromShows(shows, now);
 }

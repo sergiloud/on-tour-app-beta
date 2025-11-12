@@ -33,21 +33,14 @@ export function useRawTransactions(): TransactionV3[] {
   useEffect(() => {
     const handleOrgChange = (e: any) => {
       const newOrgId = e?.detail?.id;
-      if (newOrgId) {
-        console.log('[useRawTransactions] Org changed to:', newOrgId);
-        setOrgId(newOrgId);
-      }
+      if (newOrgId) setOrgId(newOrgId);
     };
     window.addEventListener('tenant:changed' as any, handleOrgChange);
     return () => window.removeEventListener('tenant:changed' as any, handleOrgChange);
   }, []);
   
-  // Obtener snapshot de datos (fuente actual: local)
-  // Re-calculate when orgId changes
-  const snapshot = useMemo(() => {
-    console.log('[useRawTransactions] Building snapshot for org:', orgId);
-    return buildFinanceSnapshot();
-  }, [orgId]);
+  // Obtener snapshot de datos - recalculate when orgId changes
+  const snapshot = useMemo(() => buildFinanceSnapshot(), [orgId]);
 
   // Transformar shows a transacciones V3
   const transactionsV3 = useMemo<TransactionV3[]>(() => {

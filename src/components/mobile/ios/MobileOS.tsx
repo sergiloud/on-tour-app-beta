@@ -9,6 +9,13 @@ import { APP_REGISTRY, getDefaultLayout } from '../../../config/appRegistry';
 import type { AppDefinition, AppLayout, MobileOSState } from '../../../types/mobileOS';
 
 const STORAGE_KEY = 'mobileOS:layout';
+const WIDGETS_KEY = 'mobileOS:widgets';
+
+// Default widgets configuration
+const DEFAULT_WIDGETS = {
+  whatsNext: true,
+  quickStats: false, // Deshabilitado por defecto
+};
 
 export const MobileOS: React.FC = () => {
   const deviceInfo = useDeviceInfo();
@@ -20,6 +27,16 @@ export const MobileOS: React.FC = () => {
       return stored ? JSON.parse(stored) : getDefaultLayout();
     } catch {
       return getDefaultLayout();
+    }
+  });
+
+  // Load widgets configuration
+  const [enabledWidgets, setEnabledWidgets] = useState(() => {
+    try {
+      const stored = localStorage.getItem(WIDGETS_KEY);
+      return stored ? JSON.parse(stored) : DEFAULT_WIDGETS;
+    } catch {
+      return DEFAULT_WIDGETS;
     }
   });
 
@@ -36,6 +53,31 @@ export const MobileOS: React.FC = () => {
       console.error('Failed to save layout:', error);
     }
   }, [layout]);
+
+  // Persist widgets configuration
+  useEffect(() => {
+    try {
+      localStorage.setItem(WIDGETS_KEY, JSON.stringify(enabledWidgets));
+    } catch (error) {
+      console.error('Failed to save widgets config:', error);
+    }
+  }, [enabledWidgets]);
+
+  // Listen for widget changes from Settings app
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === WIDGETS_KEY && e.newValue) {
+        try {
+          setEnabledWidgets(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error('Failed to parse widgets config:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Get dock apps
   const dockApps = layout.dock
@@ -123,6 +165,7 @@ export const MobileOS: React.FC = () => {
         apps={APP_REGISTRY}
         currentPage={currentPage}
         isEditMode={isEditMode}
+        enabledWidgets={enabledWidgets}
         onPageChange={setCurrentPage}
         onAppOpen={handleAppOpen}
         onEnterEditMode={handleEnterEditMode}

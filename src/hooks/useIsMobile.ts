@@ -1,18 +1,34 @@
 import { useState, useEffect } from 'react';
 
 /**
- * Hook to detect if the current viewport is mobile size
- * Based on Tailwind's md breakpoint (768px)
+ * Hook to detect if the current viewport is mobile size or a mobile device
+ * Detects both screen size AND mobile user agents (iPhone, Android, etc.)
  */
 export function useIsMobile(breakpoint: number = 768): boolean {
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return window.innerWidth < breakpoint;
+    
+    // Check if it's a mobile device via user agent
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+    
+    // Check if viewport is mobile size
+    const isMobileSize = window.innerWidth < breakpoint;
+    
+    // Return true if either condition is met
+    return isMobileDevice || isMobileSize;
   });
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < breakpoint);
+      // Check user agent
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+      
+      // Check viewport size
+      const isMobileSize = window.innerWidth < breakpoint;
+      
+      setIsMobile(isMobileDevice || isMobileSize);
     };
 
     // Use ResizeObserver for better performance if available

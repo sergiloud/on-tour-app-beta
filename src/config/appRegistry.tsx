@@ -13,6 +13,7 @@ import {
   Link, 
   FileText 
 } from 'lucide-react';
+import { SettingsApp } from '../components/mobile/ios/apps/SettingsApp';
 
 // Placeholder components (will be replaced with actual app wrappers)
 const PlaceholderApp: React.FC<AppComponentProps> = () => (
@@ -138,7 +139,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Settings',
     icon: Settings,
     badge: () => null,
-    component: PlaceholderApp,
+    component: SettingsApp,
     category: 'settings',
     isRemovable: false,
     quickActions: [

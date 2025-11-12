@@ -11,6 +11,10 @@ interface HomeScreenProps {
   apps: Record<string, AppDefinition>;
   currentPage: number;
   isEditMode: boolean;
+  enabledWidgets: {
+    whatsNext: boolean;
+    quickStats: boolean;
+  };
   onPageChange: (page: number) => void;
   onAppOpen: (app: AppDefinition) => void;
   onEnterEditMode: () => void;
@@ -22,6 +26,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   apps,
   currentPage,
   isEditMode,
+  enabledWidgets,
   onPageChange,
   onAppOpen,
   onEnterEditMode,
@@ -134,31 +139,44 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
       {/* SECCIÓN 2: Widgets Area - hasta el dock */}
       <div className="flex-1 px-6 pt-6 pb-24 overflow-y-auto space-y-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            type: 'spring',
-            stiffness: 350,
-            damping: 30,
-            delay: 0.4,
-          }}
-        >
-          <WhatsNext />
-        </motion.div>
+        {enabledWidgets.whatsNext && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              type: 'spring',
+              stiffness: 350,
+              damping: 30,
+              delay: 0.4,
+            }}
+          >
+            <WhatsNext />
+          </motion.div>
+        )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            type: 'spring',
-            stiffness: 350,
-            damping: 30,
-            delay: 0.5,
-          }}
-        >
-          <QuickStats />
-        </motion.div>
+        {enabledWidgets.quickStats && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              type: 'spring',
+              stiffness: 350,
+              damping: 30,
+              delay: 0.5,
+            }}
+          >
+            <QuickStats />
+          </motion.div>
+        )}
+
+        {!enabledWidgets.whatsNext && !enabledWidgets.quickStats && (
+          <div className="flex items-center justify-center h-full text-white/40 text-sm">
+            <div className="text-center">
+              <p>No hay widgets habilitados</p>
+              <p className="text-xs mt-1">Actívalos en Settings</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Edit mode overlay */}

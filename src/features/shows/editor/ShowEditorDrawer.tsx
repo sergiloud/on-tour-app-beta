@@ -575,6 +575,61 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     return { feeVal, commVal, totalCommPct, whtPctEff, whtVal, costsVal, netVal, agencyNames };
   }, [draft.fee, draft.mgmtAgency, draft.bookingAgency, draft.whtPct, draft.costs, draft.id, draft.date, draft.city, draft.country, draft.feeCurrency, draft.status, managementAgencies, bookingAgencies]);
   
+  // Financial breakdown with dynamic agency commissions
+  const financialBreakdown = useMemo(() => {
+    const feeVal = Number(draft.fee) || 0;
+    
+    // Get selected agencies and calculate commissions individually
+    let mgmtCommission = 0;
+    let bookingCommission = 0;
+    
+    const demoShow: Show = {
+      id: draft.id || '',
+      date: draft.date || '',
+      city: draft.city || '',
+      country: draft.country || '',
+      lat: 0,
+      lng: 0,
+      fee: feeVal,
+      feeCurrency: draft.feeCurrency || 'EUR',
+      status: draft.status || 'confirmed',
+      mgmtAgency: draft.mgmtAgency,
+      bookingAgency: draft.bookingAgency,
+      __version: 1,
+      __modifiedAt: Date.now(),
+      __modifiedBy: ''
+    };
+    
+    if (draft.mgmtAgency) {
+      const mgmt = managementAgencies.find(a => a.name === draft.mgmtAgency);
+      if (mgmt) {
+        mgmtCommission = computeCommission(demoShow, [mgmt]);
+      }
+    }
+    
+    if (draft.bookingAgency) {
+      const booking = bookingAgencies.find(a => a.name === draft.bookingAgency);
+      if (booking) {
+        bookingCommission = computeCommission(demoShow, [booking]);
+      }
+    }
+    
+    const whtPctEff = draft.whtPct || 0;
+    const wht = feeVal * (whtPctEff / 100);
+    const totalCosts = (draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0);
+    const net = feeVal - wht - mgmtCommission - bookingCommission - totalCosts;
+    
+    return {
+      fee: feeVal,
+      wht,
+      mgmt: mgmtCommission,
+      booking: bookingCommission,
+      commissions: mgmtCommission + bookingCommission,
+      totalCosts,
+      net
+    };
+  }, [draft.fee, draft.whtPct, draft.mgmtAgency, draft.bookingAgency, draft.costs, draft.id, draft.date, draft.city, draft.country, draft.feeCurrency, draft.status, managementAgencies, bookingAgencies]);
+  
   // Memoized cost grouping (subtotals) reused in Costs tab summary
   const costGroups = useMemo(() => {
     const arr = (draft.costs || []);
@@ -1849,22 +1904,17 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 </label>
               </div>
 
-              {(() => {
-                const b = breakdownNet({ fee: draft.fee, whtPct: draft.whtPct, mgmtPct: draft.mgmtPct, bookingPct: draft.bookingPct, costs: draft.costs });
-                return (
-                  <div className="glass border border-slate-200 dark:border-white/10 rounded-[10px] p-3 space-y-2">
-                    <h4 className="font-semibold text-xs uppercase tracking-wider text-white/80">{t('shows.editor.finance.breakdown') || 'Financial Breakdown'}</h4>
-                    <dl className="grid grid-cols-2 gap-y-1 text-[11px]">
-                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.fee') || 'Fee'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">{fmtMoney(b.fee)}</dd>
-                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.wht') || 'WHT'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(b.wht))}</dd>
-                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.table.agency.mgmt') || 'Mgmt'} ({b.mgmt ? ((b.mgmt / b.fee * 100).toFixed(1) + '%') : '0%'})</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(b.mgmt))}</dd>
-                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.table.agency.booking') || 'Booking'} ({b.booking ? ((b.booking / b.fee * 100).toFixed(1) + '%') : '0%'})</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(b.booking))}</dd>
-                      <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.costs') || 'Costs'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(b.totalCosts))}</dd>
-                      <dt className="font-bold pt-1 border-t border-slate-200 dark:border-white/10 mt-0.5 text-accent-300">{t('shows.editor.summary.net') || 'Est. Net'}</dt><dd className="text-right tabular-nums font-bold pt-1 border-t border-slate-200 dark:border-white/10 mt-0.5 flex items-center justify-end gap-1.5 text-accent-300">{fmtMoney(Math.round(b.net))}{b.fee > 0 && <span className="px-1.5 py-0.5 rounded-md bg-accent-500/30 border border-accent-500/50 text-accent-200 text-[9px] font-bold" title={t('shows.tooltip.margin') || 'Net divided by Fee (%)'}>{Math.round((b.net / b.fee) * 100)}%</span>}</dd>
-                    </dl>
-                  </div>
-                );
-              })()}
+              <div className="glass border border-slate-200 dark:border-white/10 rounded-[10px] p-3 space-y-2">
+                <h4 className="font-semibold text-xs uppercase tracking-wider text-white/80">{t('shows.editor.finance.breakdown') || 'Financial Breakdown'}</h4>
+                <dl className="grid grid-cols-2 gap-y-1 text-[11px]">
+                  <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.fee') || 'Fee'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">{fmtMoney(financialBreakdown.fee)}</dd>
+                  <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.wht') || 'WHT'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(financialBreakdown.wht))}</dd>
+                  <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.table.agency.mgmt') || 'Mgmt'} ({financialBreakdown.mgmt && financialBreakdown.fee ? ((financialBreakdown.mgmt / financialBreakdown.fee * 100).toFixed(1) + '%') : '0%'})</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(financialBreakdown.mgmt))}</dd>
+                  <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.table.agency.booking') || 'Booking'} ({financialBreakdown.booking && financialBreakdown.fee ? ((financialBreakdown.booking / financialBreakdown.fee * 100).toFixed(1) + '%') : '0%'})</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(financialBreakdown.booking))}</dd>
+                  <dt className="text-slate-400 dark:text-white/60 font-medium">{t('shows.editor.summary.costs') || 'Costs'}</dt><dd className="text-right tabular-nums font-semibold text-slate-900 dark:text-white">-{fmtMoney(Math.round(financialBreakdown.totalCosts))}</dd>
+                  <dt className="font-bold pt-1 border-t border-slate-200 dark:border-white/10 mt-0.5 text-accent-300">{t('shows.editor.summary.net') || 'Est. Net'}</dt><dd className="text-right tabular-nums font-bold pt-1 border-t border-slate-200 dark:border-white/10 mt-0.5 flex items-center justify-end gap-1.5 text-accent-300">{fmtMoney(Math.round(financialBreakdown.net))}{financialBreakdown.fee > 0 && <span className="px-1.5 py-0.5 rounded-md bg-accent-500/30 border border-accent-500/50 text-accent-200 text-[9px] font-bold" title={t('shows.tooltip.margin') || 'Net divided by Fee (%)'}>{Math.round((financialBreakdown.net / financialBreakdown.fee) * 100)}%</span>}</dd>
+                </dl>
+              </div>
             </div>
           )}
           {tab === 'costs' && (

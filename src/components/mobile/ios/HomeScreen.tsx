@@ -6,6 +6,8 @@ import { WhatsNext } from './widgets/WhatsNext';
 import { QuickStats } from './widgets/QuickStats';
 import { TasksWidget } from './widgets/TasksWidget';
 import { FinanceStatsWidget } from './widgets/FinanceStatsWidget';
+import { NearbyShowsWidget } from './widgets/NearbyShowsWidget';
+import { QuickActionsWidget } from './widgets/QuickActionsWidget';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import type { AppDefinition, AppPage } from '../../../types/mobileOS';
 
@@ -19,6 +21,8 @@ interface HomeScreenProps {
     quickStats: boolean;
     tasks?: boolean;
     financeStats?: boolean;
+    nearbyShows?: boolean;
+    quickActions?: boolean;
   };
   onPageChange: (page: number) => void;
   onAppOpen: (app: AppDefinition) => void;
@@ -300,7 +304,35 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </motion.div>
         )}
 
-        {!enabledWidgets.whatsNext && !enabledWidgets.quickStats && !enabledWidgets.tasks && !enabledWidgets.financeStats && (
+        {enabledWidgets.nearbyShows && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.25,
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.6,
+            }}
+          >
+            <NearbyShowsWidget />
+          </motion.div>
+        )}
+
+        {enabledWidgets.quickActions && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.25,
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.7,
+            }}
+          >
+            <QuickActionsWidget />
+          </motion.div>
+        )}
+
+        {!enabledWidgets.whatsNext && !enabledWidgets.quickStats && !enabledWidgets.tasks && !enabledWidgets.financeStats && !enabledWidgets.nearbyShows && !enabledWidgets.quickActions && (
           <div className="flex items-center justify-center h-full text-white/40 text-sm">
             <div className="text-center">
               <p>No hay widgets habilitados</p>

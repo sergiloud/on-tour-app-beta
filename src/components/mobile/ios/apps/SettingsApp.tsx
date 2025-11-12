@@ -44,6 +44,8 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
     quickStats: false,
     tasks: false,
     financeStats: false,
+    nearbyShows: false,
+    quickActions: false,
   });
   
   const [hapticEnabled, setHapticEnabled] = useState(true);
@@ -76,7 +78,7 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
   }, []);
 
   // Save widgets config
-  const toggleWidget = (widgetName: 'whatsNext' | 'quickStats' | 'tasks' | 'financeStats') => {
+  const toggleWidget = (widgetName: 'whatsNext' | 'quickStats' | 'tasks' | 'financeStats' | 'nearbyShows' | 'quickActions') => {
     const newWidgets = {
       ...widgets,
       [widgetName]: !widgets[widgetName],
@@ -119,7 +121,12 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
 
   // Toggle notifications
   const toggleNotifications = async () => {
+    if (navigator.vibrate && hapticEnabled) {
+      navigator.vibrate(10);
+    }
+
     if (!notificationsEnabled) {
+      // Request permission
       const granted = await requestNotificationPermission();
       setNotificationsEnabled(granted);
       
@@ -130,9 +137,24 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
           message: 'Ahora recibirás notificaciones de tus shows y eventos',
           priority: 'low',
         });
+      } else {
+        // Show alert if denied
+        addNotification({
+          type: 'system',
+          title: 'Notificaciones bloqueadas',
+          message: 'Permite las notificaciones en la configuración de tu navegador',
+          priority: 'medium',
+        });
       }
     } else {
+      // Disable notifications
       setNotificationsEnabled(false);
+      addNotification({
+        type: 'system',
+        title: 'Notificaciones desactivadas',
+        message: 'Ya no recibirás notificaciones',
+        priority: 'low',
+      });
     }
   };
 
@@ -196,6 +218,20 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
           description: 'Últimos gastos registrados',
           enabled: widgets.financeStats,
           onToggle: () => toggleWidget('financeStats'),
+          type: 'toggle',
+        },
+        {
+          label: 'Shows Cercanos',
+          description: 'Shows próximos cerca de ti',
+          enabled: widgets.nearbyShows,
+          onToggle: () => toggleWidget('nearbyShows'),
+          type: 'toggle',
+        },
+        {
+          label: 'Acciones Rápidas',
+          description: 'Accesos directos a funciones',
+          enabled: widgets.quickActions,
+          onToggle: () => toggleWidget('quickActions'),
           type: 'toggle',
         },
       ],

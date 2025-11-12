@@ -19,6 +19,8 @@ const DEFAULT_WIDGETS = {
   quickStats: false,
   tasks: false,
   financeStats: false,
+  nearbyShows: false,
+  quickActions: false,
 };
 
 const MobileOSContent: React.FC = () => {

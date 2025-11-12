@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { buildFinanceSnapshot } from '../features/finance/snapshot';
 import { showToTransactionV3 } from '../lib/profitabilityHelpers';
 import type { TransactionV3 } from '../types/financeV3';
+import { getCurrentOrgId } from '../lib/tenants';
 
 /**
  * Custom hook para la capa de adquisición de datos
@@ -26,8 +27,27 @@ import type { TransactionV3 } from '../types/financeV3';
  * @returns TransactionV3[] - Transacciones ordenadas por fecha descendente
  */
 export function useRawTransactions(): TransactionV3[] {
+  // Track orgId changes to invalidate snapshot cache
+  const [orgId, setOrgId] = useState(() => getCurrentOrgId());
+  
+  useEffect(() => {
+    const handleOrgChange = (e: any) => {
+      const newOrgId = e?.detail?.id;
+      if (newOrgId) {
+        console.log('[useRawTransactions] Org changed to:', newOrgId);
+        setOrgId(newOrgId);
+      }
+    };
+    window.addEventListener('tenant:changed' as any, handleOrgChange);
+    return () => window.removeEventListener('tenant:changed' as any, handleOrgChange);
+  }, []);
+  
   // Obtener snapshot de datos (fuente actual: local)
-  const snapshot = useMemo(() => buildFinanceSnapshot(), []);
+  // Re-calculate when orgId changes
+  const snapshot = useMemo(() => {
+    console.log('[useRawTransactions] Building snapshot for org:', orgId);
+    return buildFinanceSnapshot();
+  }, [orgId]);
 
   // Transformar shows a transacciones V3
   const transactionsV3 = useMemo<TransactionV3[]>(() => {

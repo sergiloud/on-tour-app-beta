@@ -88,7 +88,9 @@ export function useCalendarState() {
   useEffect(()=>{ try { localStorage.setItem('calendar:tz', tz); } catch {} }, [tz]);
   useEffect(()=>{ try { localStorage.setItem('calendar:filters', JSON.stringify(filters)); } catch {} }, [filters]);
 
-  const today = useMemo(()=> new Date().toISOString().slice(0,10), []);
+  // Fixed: Don't memoize 'today' - it should update daily
+  // Cheap operation (< 1μs) that should reflect current date
+  const today = new Date().toISOString().slice(0,10);
 
   return { view, setView, cursor, setCursor, tz, setTz, filters, setFilters, today };
 }

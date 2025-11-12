@@ -200,11 +200,6 @@ const Login: React.FC = () => {
     }
   }, [loginState.state, setUserId, updateProfile, usersMap, remember]);
 
-  // SSO handlers
-  const handleGoogleLogin = React.useCallback(() => handleSSOLogin('google'), [handleSSOLogin]);
-  const handleAppleLogin = React.useCallback(() => handleSSOLogin('apple'), [handleSSOLogin]);
-  const handleMicrosoftLogin = React.useCallback(() => handleSSOLogin('microsoft'), [handleSSOLogin]);
-
   // Persistir preferencia "recordarme" cuando cambia
   React.useEffect(() => {
     secureStorage.setItem('auth:rememberMe', remember);
@@ -791,7 +786,7 @@ const Login: React.FC = () => {
             >
               {/* Google */}
               <motion.button
-                onClick={handleGoogleLogin}
+                onClick={() => handleSSOLogin('google')}
                 disabled={loginState.state === 'loading'}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -803,7 +798,7 @@ const Login: React.FC = () => {
 
               {/* Apple */}
               <motion.button
-                onClick={handleAppleLogin}
+                onClick={() => handleSSOLogin('apple')}
                 disabled={loginState.state === 'loading'}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

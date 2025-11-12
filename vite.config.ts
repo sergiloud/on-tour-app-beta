@@ -120,14 +120,11 @@ export default defineConfig({
             return 'react-query';
           }
           
-          // Charts - heavy, lazy loaded (SEPARADOS)
-          if (id.includes('recharts') || id.includes('victory')) {
+          // Charts - CONSOLIDADO: Recharts + D3 juntos (dependencias internas)
+          if (id.includes('recharts') || 
+              id.includes('victory') ||
+              id.includes('d3-')) {
             return 'charts';
-          }
-          
-          // D3 utilities (usado por charts)
-          if (id.includes('d3-')) {
-            return 'charts-d3';
           }
           
           // Redux (si se usa)
@@ -169,17 +166,9 @@ export default defineConfig({
             return 'export-pdf';
           }
           
-          // Firebase - separar Auth de Firestore
-          if (id.includes('firebase/app') || id.includes('firebase/auth')) {
-            return 'firebase-core';
-          }
-          
-          if (id.includes('firebase/firestore') || id.includes('@firebase/firestore')) {
-            return 'firebase-firestore';
-          }
-          
-          if (id.includes('firebase/storage')) {
-            return 'firebase-storage';
+          // Firebase - CONSOLIDADO: todas las libs juntas (dependencias internas)
+          if (id.includes('firebase') || id.includes('@firebase')) {
+            return 'firebase';
           }
           
           // Utilities - date, forms, etc

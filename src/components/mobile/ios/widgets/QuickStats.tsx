@@ -1,0 +1,114 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Music, DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { showStore } from '../../../../shared/showStore';
+import type { Show } from '../../../../lib/shows';
+import { parseISO, isFuture, isThisMonth } from 'date-fns';
+
+interface QuickStatsProps {
+  className?: string;
+}
+
+export const QuickStats: React.FC<QuickStatsProps> = ({ className = '' }) => {
+  const [shows, setShows] = useState<Show[]>([]);
+
+  useEffect(() => {
+    const updateShows = (allShows: Show[]) => {
+      setShows(allShows);
+    };
+
+    updateShows(showStore.getAll());
+    const unsubscribe = showStore.subscribe(updateShows);
+
+    return () => unsubscribe();
+  }, []);
+
+  // Calcular estadísticas
+  const confirmedShows = shows.filter(s => s.status === 'confirmed').length;
+  const upcomingShows = shows.filter(s => {
+    const showDate = typeof s.date === 'string' ? parseISO(s.date) : new Date(s.date);
+    return isFuture(showDate) && s.status === 'confirmed';
+  }).length;
+
+  const thisMonthShows = shows.filter(s => {
+    const showDate = typeof s.date === 'string' ? parseISO(s.date) : new Date(s.date);
+    return isThisMonth(showDate) && s.status === 'confirmed';
+  }).length;
+
+  const totalRevenue = shows
+    .filter(s => s.status === 'confirmed')
+    .reduce((sum, show) => sum + (show.fee || 0), 0);
+
+  const stats = [
+    {
+      icon: Music,
+      label: 'Total Shows',
+      value: confirmedShows,
+      color: 'accent-500',
+      bgColor: 'accent-500/20',
+    },
+    {
+      icon: Calendar,
+      label: 'Próximos',
+      value: upcomingShows,
+      color: 'blue-400',
+      bgColor: 'blue-500/20',
+    },
+    {
+      icon: TrendingUp,
+      label: 'Este mes',
+      value: thisMonthShows,
+      color: 'purple-400',
+      bgColor: 'purple-500/20',
+    },
+    {
+      icon: DollarSign,
+      label: 'Revenue',
+      value: `€${(totalRevenue / 1000).toFixed(0)}K`,
+      color: 'green-400',
+      bgColor: 'green-500/20',
+    },
+  ];
+
+  return (
+    <div className={`relative bg-white/5 backdrop-blur-md rounded-[28px] border border-white/10 overflow-hidden shadow-xl p-4 ${className}`}>
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-8 h-8 rounded-xl bg-accent-500/20 flex items-center justify-center">
+          <TrendingUp className="w-4 h-4 text-accent-500" strokeWidth={2.5} />
+        </div>
+        <div>
+          <h2 className="text-base font-bold text-white tracking-tight">Quick Stats</h2>
+          <p className="text-[10px] text-white/50 font-medium">Resumen rápido</p>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {stats.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              type: 'spring',
+              stiffness: 400,
+              damping: 25,
+              delay: index * 0.05,
+            }}
+            className="bg-white/5 backdrop-blur-sm rounded-[16px] p-3 border border-white/10"
+            whileHover={{ scale: 1.02, borderColor: 'rgba(255, 255, 255, 0.2)' }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`w-8 h-8 rounded-xl bg-${stat.bgColor} flex items-center justify-center`}>
+                <stat.icon className={`w-4 h-4 text-${stat.color}`} strokeWidth={2.5} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-white mb-0.5">{stat.value}</div>
+            <div className="text-[10px] text-white/60 font-medium">{stat.label}</div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};

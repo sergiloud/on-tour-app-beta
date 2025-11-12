@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Plane, MapPin, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO, isFuture } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { showStore } from '../../../../shared/showStore';
+import type { Show } from '../../../../lib/shows';
 
 interface Event {
   id: string;
@@ -23,60 +25,54 @@ interface WhatsNextProps {
   events?: Event[];
 }
 
-// Mock data - será reemplazado con datos reales del context
-const MOCK_EVENTS: Event[] = [
-  {
-    id: '1',
+// Función para convertir Show a Event
+const showToEvent = (show: Show): Event => {
+  const showDate = typeof show.date === 'string' ? parseISO(show.date) : new Date(show.date);
+  
+  return {
+    id: show.id,
     type: 'show',
-    title: 'Concierto Madrid',
-    date: new Date(2025, 10, 15, 21, 0),
-    location: 'Madrid, España',
-    venue: 'WiZink Center',
-    time: '21:00',
-  },
-  {
-    id: '2',
-    type: 'flight',
-    title: 'Vuelo a Barcelona',
-    date: new Date(2025, 10, 16, 8, 30),
-    flightNumber: 'IB3142',
-    from: 'MAD',
-    to: 'BCN',
-    gate: 'T4 - Gate B12',
-    terminal: 'Terminal 4',
-  },
-  {
-    id: '3',
-    type: 'show',
-    title: 'Concierto Barcelona',
-    date: new Date(2025, 10, 17, 20, 30),
-    location: 'Barcelona, España',
-    venue: 'Palau Sant Jordi',
-    time: '20:30',
-  },
-  {
-    id: '4',
-    type: 'flight',
-    title: 'Vuelo a Valencia',
-    date: new Date(2025, 10, 18, 10, 15),
-    flightNumber: 'VY2105',
-    from: 'BCN',
-    to: 'VLC',
-    gate: 'T1 - Gate A8',
-    terminal: 'Terminal 1',
-  },
-];
+    title: show.name || `${show.city}, ${show.country}`,
+    date: showDate,
+    location: `${show.city}, ${show.country}`,
+    venue: show.venue || undefined,
+    time: format(showDate, 'HH:mm'),
+  };
+};
 
-export const WhatsNext: React.FC<WhatsNextProps> = ({ events = MOCK_EVENTS }) => {
+export const WhatsNext: React.FC<WhatsNextProps> = ({ events: propEvents }) => {
   const [currentPage, setCurrentPage] = useState(0);
-  // const [widgetHeight, setWidgetHeight] = useState(280); // Resize desactivado
-  // const [isResizing, setIsResizing] = useState(false); // Resize desactivado
-  // const widgetRef = useRef<HTMLDivElement>(null); // Resize desactivado
+  const [shows, setShows] = useState<Show[]>([]);
+  
+  // Suscribirse a showStore para obtener shows reales
+  useEffect(() => {
+    const updateShows = (allShows: Show[]) => {
+      setShows(allShows);
+    };
+    
+    // Obtener shows iniciales
+    updateShows(showStore.getAll());
+    
+    // Suscribirse a cambios
+    const unsubscribe = showStore.subscribe(updateShows);
+    
+    return () => unsubscribe();
+  }, []);
+  
+  // Convertir shows a events y combinar con propEvents
+  const showEvents = shows
+    .filter(show => {
+      const showDate = typeof show.date === 'string' ? parseISO(show.date) : show.date;
+      return isFuture(showDate); // Solo shows futuros
+    })
+    .map(showToEvent)
+    .sort((a, b) => a.date.getTime() - b.date.getTime()) // Ordenar por fecha
+    .slice(0, 10); // Máximo 10 eventos
+  
+  const events = propEvents || showEvents;
   
   const eventsPerPage = 2;
   const totalPages = Math.ceil(events.length / eventsPerPage);
-  // const MIN_HEIGHT = 200; // Resize desactivado
-  // const MAX_HEIGHT = 500; // Resize desactivado
 
   const currentEvents = events.slice(
     currentPage * eventsPerPage,

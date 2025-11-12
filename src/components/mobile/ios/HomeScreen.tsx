@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppIcon } from './AppIcon';
 import { WhatsNext } from './widgets/WhatsNext';
+import { QuickStats } from './widgets/QuickStats';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import type { AppDefinition, AppPage } from '../../../types/mobileOS';
 
@@ -132,7 +133,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* SECCIÓN 2: Widgets Area - hasta el dock */}
-      <div className="flex-1 px-6 pt-6 pb-24 overflow-y-auto">
+      <div className="flex-1 px-6 pt-6 pb-24 overflow-y-auto space-y-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -144,6 +145,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           }}
         >
           <WhatsNext />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            type: 'spring',
+            stiffness: 350,
+            damping: 30,
+            delay: 0.5,
+          }}
+        >
+          <QuickStats />
         </motion.div>
       </div>
 

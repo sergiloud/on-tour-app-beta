@@ -239,10 +239,11 @@ export const CalendarApp: React.FC = () => {
             <AnimatePresence>
               {selectedDate && selectedDateShows.length > 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl overflow-hidden"
                 >
                   <h3 className="text-white font-semibold mb-3">
                     {new Date(selectedDate).toLocaleDateString('en-US', {
@@ -290,8 +291,9 @@ export const CalendarApp: React.FC = () => {
                 <motion.div
                   key={show.id}
                   layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
                   className="p-4 bg-white/5 border border-white/10 rounded-xl"
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">

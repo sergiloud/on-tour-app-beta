@@ -134,13 +134,12 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
         {settingsSections.map((section, sectionIndex) => (
           <motion.div
             key={section.title}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              type: 'spring',
-              stiffness: 350,
-              damping: 30,
-              delay: sectionIndex * 0.1,
+              duration: 0.2,
+              ease: [0.4, 0, 0.2, 1],
+              delay: sectionIndex * 0.05,
             }}
           >
             {/* Section Header */}

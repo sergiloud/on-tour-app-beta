@@ -88,13 +88,12 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ className = '' }) => {
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{
-              type: 'spring',
-              stiffness: 400,
-              damping: 25,
-              delay: index * 0.05,
+              duration: 0.2,
+              ease: [0.4, 0, 0.2, 1],
+              delay: index * 0.03,
             }}
             className="bg-white/5 backdrop-blur-sm rounded-[16px] p-3 border border-white/10"
             whileHover={{ scale: 1.02, borderColor: 'rgba(255, 255, 255, 0.2)' }}

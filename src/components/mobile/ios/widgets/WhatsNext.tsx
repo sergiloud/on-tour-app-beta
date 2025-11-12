@@ -253,10 +253,10 @@ export const WhatsNext: React.FC<WhatsNextProps> = ({ events: propEvents }) => {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPage}
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 15 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            exit={{ opacity: 0, x: -15 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="space-y-3"
           >
             {currentEvents.map(renderEvent)}
@@ -278,7 +278,7 @@ export const WhatsNext: React.FC<WhatsNextProps> = ({ events: propEvents }) => {
                     ? 'rgba(191, 255, 0, 0.8)' 
                     : 'rgba(255, 255, 255, 0.2)',
                 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               />
             ))}
           </div>

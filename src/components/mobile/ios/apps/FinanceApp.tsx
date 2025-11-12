@@ -77,13 +77,12 @@ export const FinanceApp: React.FC = () => {
           {kpiCards.map((kpi, index) => (
             <motion.div
               key={kpi.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                delay: index * 0.05,
-                type: 'spring',
-                stiffness: 350,
-                damping: 30,
+                delay: index * 0.03,
+                duration: 0.2,
+                ease: [0.4, 0, 0.2, 1],
               }}
               className={`p-4 rounded-xl border border-white/10 ${kpi.bgColor}`}
             >
@@ -104,9 +103,9 @@ export const FinanceApp: React.FC = () => {
 
         {/* Status Breakdown */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.12, duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           className="bg-white/5 border border-white/10 rounded-xl p-4"
         >
           <h2 className="text-lg font-semibold text-white mb-4">Show Status</h2>
@@ -127,9 +126,9 @@ export const FinanceApp: React.FC = () => {
 
         {/* Month Breakdown */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.18, duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           className="bg-white/5 border border-white/10 rounded-xl p-4"
         >
           <h2 className="text-lg font-semibold text-white mb-4">This Month</h2>
@@ -159,9 +158,9 @@ export const FinanceApp: React.FC = () => {
         {/* Recent Shows */}
         {recentShows.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.24, duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="bg-white/5 border border-white/10 rounded-xl p-4"
           >
             <h2 className="text-lg font-semibold text-white mb-4">Recent Shows</h2>
@@ -198,9 +197,9 @@ export const FinanceApp: React.FC = () => {
 
         {/* Year Summary */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.3, duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           className="bg-gradient-to-br from-accent-500/20 to-accent-600/10 border border-accent-500/30 rounded-xl p-4"
         >
           <h2 className="text-lg font-semibold text-white mb-4">Year Summary</h2>

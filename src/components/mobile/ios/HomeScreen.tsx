@@ -166,14 +166,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       >
         <motion.div
           key={currentPage}
-          initial={{ opacity: 0, x: 50 }}
+          initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
+          exit={{ opacity: 0, x: -30 }}
           transition={{ 
-            type: 'spring', 
-            stiffness: 350, 
-            damping: 30,
-            mass: 0.8
+            duration: 0.25,
+            ease: [0.4, 0, 0.2, 1]
           }}
           className="grid grid-cols-4 gap-x-4 gap-y-5 auto-rows-min"
         >
@@ -191,13 +189,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <motion.div 
                 key={appId} 
                 className="flex justify-center"
-                initial={{ scale: 0, opacity: 0 }}
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{
-                  type: 'spring',
-                  stiffness: 400,
-                  damping: 25,
-                  delay: index * 0.03,
+                  duration: 0.2,
+                  ease: [0.4, 0, 0.2, 1],
+                  delay: index * 0.02,
                 }}
               >
                 <AppIcon
@@ -221,13 +218,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       <div className="flex-1 px-6 pt-6 pb-24 overflow-y-auto space-y-4">
         {enabledWidgets.whatsNext && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              type: 'spring',
-              stiffness: 350,
-              damping: 30,
-              delay: 0.4,
+              duration: 0.25,
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.2,
             }}
           >
             <WhatsNext />
@@ -236,13 +232,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {enabledWidgets.quickStats && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              type: 'spring',
-              stiffness: 350,
-              damping: 30,
-              delay: 0.5,
+              duration: 0.25,
+              ease: [0.4, 0, 0.2, 1],
+              delay: enabledWidgets.whatsNext ? 0.3 : 0.2,
             }}
           >
             <QuickStats />

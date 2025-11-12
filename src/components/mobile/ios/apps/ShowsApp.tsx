@@ -145,12 +145,15 @@ export const ShowsApp: React.FC = () => {
           {filteredShows.length === 0 ? (
             <motion.div
               key="empty"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               className="text-center py-12"
             >
-              <div className="text-6xl mb-4">🎸</div>
+              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-white/40" />
+              </div>
               <h3 className="text-lg font-medium text-white mb-2">
                 {searchQuery ? 'No shows found' : 'No shows yet'}
               </h3>
@@ -165,13 +168,14 @@ export const ShowsApp: React.FC = () => {
               <motion.button
                 key={show.id}
                 layout
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 transition={{
-                  layout: { type: 'spring', stiffness: 350, damping: 30 },
-                  opacity: { duration: 0.2 },
-                  delay: index * 0.02,
+                  layout: { type: 'spring', stiffness: 500, damping: 35 },
+                  opacity: { duration: 0.15 },
+                  y: { duration: 0.2, ease: [0.4, 0, 0.2, 1] },
+                  delay: index * 0.015,
                 }}
                 onClick={() => setSelectedShow(show)}
                 className="w-full text-left p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-98"
@@ -218,8 +222,9 @@ export const ShowsApp: React.FC = () => {
 
                 {/* Venue (if present) */}
                 {show.venue && (
-                  <div className="mt-2 text-xs text-slate-400 truncate">
-                    📍 {show.venue}
+                  <div className="mt-2 text-xs text-slate-400 truncate flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3" />
+                    {show.venue}
                   </div>
                 )}
               </motion.button>
@@ -250,6 +255,7 @@ export const ShowsApp: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             className="absolute inset-0 bg-black/80 backdrop-blur-sm z-30 flex items-end"
             onClick={() => setSelectedShow(null)}
           >
@@ -257,7 +263,7 @@ export const ShowsApp: React.FC = () => {
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 40 }}
               className="w-full bg-dark-800 rounded-t-3xl max-h-[80vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
@@ -304,8 +310,9 @@ export const ShowsApp: React.FC = () => {
                     {[selectedShow.city, selectedShow.country].filter(Boolean).join(', ') || '—'}
                   </div>
                   {selectedShow.venue && (
-                    <div className="text-sm text-slate-300 mt-1">
-                      📍 {selectedShow.venue}
+                    <div className="text-sm text-slate-300 mt-1 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                      {selectedShow.venue}
                     </div>
                   )}
                 </div>

@@ -84,7 +84,7 @@ export const AppIcon: React.FC<AppIconProps> = ({
       animate={isEditing ? { y: [0, -2, 0] } : {}}
       transition={isEditing ? { 
         repeat: Infinity, 
-        duration: 2, 
+        duration: 2.5, 
         ease: 'easeInOut' 
       } : {}}
       whileHover={{ scale: 1.05 }}
@@ -112,7 +112,7 @@ export const AppIcon: React.FC<AppIconProps> = ({
         onMouseLeave={handleTouchEnd}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
         aria-label={app.name}
       >
         {/* Icon with native app accent colors */}

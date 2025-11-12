@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Wifi, 
@@ -138,13 +138,83 @@ const SliderControl: React.FC<SliderControlProps> = ({ icon, value, onChange, la
 };
 
 export const ControlCenter: React.FC<ControlCenterProps> = ({ isOpen, onClose }) => {
-  const [wifi, setWifi] = React.useState(true);
-  const [bluetooth, setBluetooth] = React.useState(false);
-  const [airplane, setAirplane] = React.useState(false);
-  const [dnd, setDnd] = React.useState(false);
-  const [flashlight, setFlashlight] = React.useState(false);
-  const [volume, setVolume] = React.useState(60);
-  const [brightness, setBrightness] = React.useState(75);
+  // Persist state to localStorage
+  const [wifi, setWifi] = useState(() => {
+    try {
+      const stored = localStorage.getItem('controlCenter:wifi');
+      return stored ? JSON.parse(stored) : true;
+    } catch {
+      return true;
+    }
+  });
+
+  const [bluetooth, setBluetooth] = useState(() => {
+    try {
+      const stored = localStorage.getItem('controlCenter:bluetooth');
+      return stored ? JSON.parse(stored) : false;
+    } catch {
+      return false;
+    }
+  });
+
+  const [airplane, setAirplane] = useState(false);
+  const [dnd, setDnd] = useState(false);
+  const [flashlight, setFlashlight] = useState(false);
+  
+  const [volume, setVolume] = useState(() => {
+    try {
+      const stored = localStorage.getItem('controlCenter:volume');
+      return stored ? JSON.parse(stored) : 60;
+    } catch {
+      return 60;
+    }
+  });
+
+  const [brightness, setBrightness] = useState(() => {
+    try {
+      const stored = localStorage.getItem('controlCenter:brightness');
+      return stored ? JSON.parse(stored) : 75;
+    } catch {
+      return 75;
+    }
+  });
+
+  // Persist settings
+  useEffect(() => {
+    try {
+      localStorage.setItem('controlCenter:wifi', JSON.stringify(wifi));
+    } catch (error) {
+      console.error('Failed to save wifi state:', error);
+    }
+  }, [wifi]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('controlCenter:bluetooth', JSON.stringify(bluetooth));
+    } catch (error) {
+      console.error('Failed to save bluetooth state:', error);
+    }
+  }, [bluetooth]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('controlCenter:volume', JSON.stringify(volume));
+    } catch (error) {
+      console.error('Failed to save volume state:', error);
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('controlCenter:brightness', JSON.stringify(brightness));
+      // Actually adjust screen brightness (limited browser support)
+      if ('wakeLock' in navigator) {
+        // Brightness adjustment would go here if supported
+      }
+    } catch (error) {
+      console.error('Failed to save brightness state:', error);
+    }
+  }, [brightness]);
 
   return (
     <motion.div

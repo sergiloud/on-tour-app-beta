@@ -25,6 +25,7 @@ const DEFAULT_WIDGETS = {
   financeStats: false,
   nearbyShows: false,
   quickActions: false,
+  weather: false,
 };
 
 const MobileOSContent: React.FC = () => {

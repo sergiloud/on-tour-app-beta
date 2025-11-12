@@ -48,6 +48,7 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
     financeStats: false,
     nearbyShows: false,
     quickActions: false,
+    weather: false,
   });
   
   const [hapticEnabled, setHapticEnabled] = useState(true);
@@ -80,7 +81,7 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
   }, []);
 
   // Save widgets config
-  const toggleWidget = (widgetName: 'whatsNext' | 'quickStats' | 'tasks' | 'financeStats' | 'nearbyShows' | 'quickActions') => {
+  const toggleWidget = (widgetName: 'whatsNext' | 'quickStats' | 'tasks' | 'financeStats' | 'nearbyShows' | 'quickActions' | 'weather') => {
     const newWidgets = {
       ...widgets,
       [widgetName]: !widgets[widgetName],
@@ -234,6 +235,13 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
           description: 'Accesos directos a funciones',
           enabled: widgets.quickActions,
           onToggle: () => toggleWidget('quickActions'),
+          type: 'toggle',
+        },
+        {
+          label: 'Clima',
+          description: 'Pronóstico del tiempo actual',
+          enabled: widgets.weather,
+          onToggle: () => toggleWidget('weather'),
           type: 'toggle',
         },
       ],

@@ -8,6 +8,7 @@ import { TasksWidget } from './widgets/TasksWidget';
 import { FinanceStatsWidget } from './widgets/FinanceStatsWidget';
 import { NearbyShowsWidget } from './widgets/NearbyShowsWidget';
 import { QuickActionsWidget } from './widgets/QuickActionsWidget';
+import { WeatherWidget } from './widgets/WeatherWidget';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import type { AppDefinition, AppPage } from '../../../types/mobileOS';
 
@@ -23,6 +24,7 @@ interface HomeScreenProps {
     financeStats?: boolean;
     nearbyShows?: boolean;
     quickActions?: boolean;
+    weather?: boolean;
   };
   onPageChange: (page: number) => void;
   onAppOpen: (app: AppDefinition) => void;

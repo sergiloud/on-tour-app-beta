@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
+import { AppLoader } from './AppLoader';
 import type { AppDefinition } from '../../../types/mobileOS';
 
 interface AppModalProps {
@@ -15,22 +16,42 @@ export const AppModal: React.FC<AppModalProps> = ({
   onClose,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const y = useMotionValue(0);
   const opacity = useTransform(y, [0, 300], [1, 0.3]);
   const scale = useTransform(y, [0, 300], [1, 0.95]);
 
-  if (!app) return null;
+  // Resetear estado cuando se abre/cierra
+  useEffect(() => {
+    if (isOpen) {
+      setIsClosing(false);
+      y.set(0);
+    }
+  }, [isOpen, y]);
 
-  const AppComponent = app.component;
-
-  const handleDragEnd = (_: any, info: PanInfo) => {
+  const handleDragEnd = useCallback((_: any, info: PanInfo) => {
     setIsDragging(false);
     
     // Close if dragged down more than 150px or with sufficient velocity
     if (info.offset.y > 150 || info.velocity.y > 500) {
+      if (!isClosing) {
+        setIsClosing(true);
+        // Pequeño delay para que la animación se vea bien
+        setTimeout(() => {
+          onClose();
+        }, 50);
+      }
+    }
+  }, [isClosing, onClose]);
+
+  const handleBackClick = useCallback(() => {
+    if (!isClosing) {
+      setIsClosing(true);
       onClose();
     }
-  };
+  }, [isClosing, onClose]);
+
+  if (!app) return null;
 
   return (
     <AnimatePresence>
@@ -43,9 +64,9 @@ export const AppModal: React.FC<AppModalProps> = ({
           exit={{ y: '100%', opacity: 0, scale: 0.9 }}
           transition={{ 
             type: 'spring', 
-            stiffness: 450, 
-            damping: 35,
-            mass: 0.8
+            stiffness: 500, 
+            damping: 30,
+            mass: 0.6
           }}
         >
           {/* Drag Indicator - draggable area */}
@@ -75,8 +96,9 @@ export const AppModal: React.FC<AppModalProps> = ({
             <div className="flex items-center justify-between px-4 py-3 pt-4">
               {/* Back Button */}
               <motion.button
-                onClick={onClose}
-                className="flex items-center gap-2 px-3 py-2 -ml-3 text-accent-500"
+                onClick={handleBackClick}
+                disabled={isClosing}
+                className="flex items-center gap-2 px-3 py-2 -ml-3 text-accent-500 disabled:opacity-50"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -98,9 +120,9 @@ export const AppModal: React.FC<AppModalProps> = ({
             </div>
           </div>
 
-          {/* App Content */}
+          {/* App Content with Lazy Loading */}
           <div className="h-full overflow-y-auto" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 2rem)' }}>
-            <AppComponent onClose={onClose} isActive={isOpen} />
+            <AppLoader app={app} onClose={onClose} isActive={isOpen} />
           </div>
         </motion.div>
       )}

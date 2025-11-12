@@ -145,11 +145,11 @@ export const LinksApp: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-gradient-to-b from-gray-900 via-gray-900 to-black text-white flex flex-col">
-      {/* Header - Desktop Style */}
-      <div className="sticky top-0 z-10 bg-gray-900/60 backdrop-blur-xl border-b border-white/10 px-5 pt-5 pb-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight">Quick Links</h1>
+    <div className="h-full bg-gradient-to-b from-gray-900 to-black text-white flex flex-col">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-4 border-b border-white/10">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">Quick Links</h1>
           <button
             onClick={() => haptic('light')}
             className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center hover:bg-blue-600 transition-colors"
@@ -165,7 +165,7 @@ export const LinksApp: React.FC = () => {
             placeholder="Search links..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pl-10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           />
           <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-white/40" />
         </div>
@@ -192,7 +192,7 @@ export const LinksApp: React.FC = () => {
       </div>
 
       {/* Links List */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4">
         {isRefreshing && (
           <div className="text-center py-4">
             <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -207,7 +207,7 @@ export const LinksApp: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.03 }}
               onClick={() => handleLinkClick(link)}
-              className={`bg-gradient-to-br ${getCategoryColor(link.category)} border rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform relative`}
+              className={`bg-gradient-to-br ${getCategoryColor(link.category)} border rounded-xl p-4 cursor-pointer hover:scale-[0.98] transition-transform relative`}
             >
               {link.isPinned && (
                 <Star
@@ -217,7 +217,7 @@ export const LinksApp: React.FC = () => {
               )}
               
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
                   {link.category === 'streaming' && <Music className="w-6 h-6" />}
                   {link.category === 'social' && <Instagram className="w-6 h-6" />}
                   {link.category === 'tools' && <Globe className="w-6 h-6" />}

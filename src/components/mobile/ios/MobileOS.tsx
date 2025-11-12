@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HomeScreen } from './HomeScreen';
 import { Dock } from './Dock';
@@ -8,6 +8,8 @@ import { SpotlightSearch } from './SpotlightSearch';
 import { AppSwitcher } from './AppSwitcher';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import { useAppBadges } from '../../../hooks/useAppBadges';
+import { useAppPreload } from '../../../hooks/useAppPreload';
+import { useInstantDebounce } from '../../../hooks/useDebounce';
 import { APP_REGISTRY, getDefaultLayout, updateAppBadges } from '../../../config/appRegistry';
 import { NotificationProvider, useNotifications } from '../../../stores/notificationStore';
 import { ThemeProvider } from '../../../stores/themeStore';
@@ -66,6 +68,11 @@ const MobileOSContent: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [openApp, setOpenApp] = useState<AppDefinition | null>(null);
   const [recentApps, setRecentApps] = useState<string[]>([]);
+  
+  // Refs para prevenir múltiples aperturas simultáneas
+  const isOpeningAppRef = useRef(false);
+  const lastOpenedAppRef = useRef<string | null>(null);
+  const openTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Persist layout to localStorage
   useEffect(() => {
@@ -106,8 +113,42 @@ const MobileOSContent: React.FC = () => {
     .map(id => APP_REGISTRY[id])
     .filter(Boolean) as AppDefinition[];
 
-  // Handle app open
-  const handleAppOpen = (app: AppDefinition) => {
+  // Precargar apps del dock y recientes
+  useAppPreload(dockApps, recentApps, APP_REGISTRY);
+
+  // Handle app open - OPTIMIZADO para prevenir doble apertura y lag
+  const handleAppOpen = useCallback((app: AppDefinition) => {
+    // Validar que la app existe y es válida
+    if (!app || !app.id || !app.component) {
+      console.warn('Invalid app definition:', app);
+      return;
+    }
+
+    // Si ya hay una app abriéndose o es la misma app, ignorar
+    if (isOpeningAppRef.current || openApp?.id === app.id) {
+      return;
+    }
+
+    // Si acabamos de abrir esta misma app hace menos de 500ms, ignorar (doble-click)
+    if (lastOpenedAppRef.current === app.id) {
+      return;
+    }
+
+    // Marcar como abriendo
+    isOpeningAppRef.current = true;
+    lastOpenedAppRef.current = app.id;
+
+    // Limpiar timeout anterior si existe
+    if (openTimeoutRef.current) {
+      clearTimeout(openTimeoutRef.current);
+    }
+
+    // Haptic feedback suave
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+
+    // Abrir app inmediatamente
     setOpenApp(app);
     
     // Add to recent apps (max 10)
@@ -120,34 +161,62 @@ const MobileOSContent: React.FC = () => {
     if (isEditMode) {
       setIsEditMode(false);
     }
-  };
 
-  // Handle app close
-  const handleAppClose = () => {
+    // Resetear flags después de un delay seguro
+    openTimeoutRef.current = setTimeout(() => {
+      isOpeningAppRef.current = false;
+      lastOpenedAppRef.current = null;
+    }, 500);
+  }, [openApp, isEditMode]);
+
+  // Handle app close - OPTIMIZADO
+  const handleAppClose = useCallback(() => {
+    // Limpiar timeouts
+    if (openTimeoutRef.current) {
+      clearTimeout(openTimeoutRef.current);
+    }
+    
     setOpenApp(null);
-  };
+    
+    // Resetear flags inmediatamente al cerrar
+    isOpeningAppRef.current = false;
+    
+    // Permitir reabrir la misma app después de 200ms
+    setTimeout(() => {
+      lastOpenedAppRef.current = null;
+    }, 200);
+  }, []);
+
+  // Cleanup en unmount
+  useEffect(() => {
+    return () => {
+      if (openTimeoutRef.current) {
+        clearTimeout(openTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle enter edit mode
-  const handleEnterEditMode = () => {
+  const handleEnterEditMode = useCallback(() => {
     setIsEditMode(true);
     // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate(50);
     }
-  };
+  }, []);
 
   // Handle exit edit mode
-  const handleExitEditMode = () => {
+  const handleExitEditMode = useCallback(() => {
     setIsEditMode(false);
-  };
+  }, []);
 
   // Handle layout change (drag & drop)
-  const handleLayoutChange = (newPages: AppLayout['pages']) => {
+  const handleLayoutChange = useCallback((newPages: AppLayout['pages']) => {
     setLayout(prev => ({
       ...prev,
       pages: newPages,
     }));
-  };
+  }, []);
 
   // Gesture detection for App Switcher (swipe up from bottom)
   useEffect(() => {

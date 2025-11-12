@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { AppIcon } from './AppIcon';
 import { QuickActionsMenu } from './QuickActionsMenu';
@@ -51,25 +51,42 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [quickActionsApp, setQuickActionsApp] = useState<{ app: AppDefinition; position: { x: number; y: number } } | null>(null);
   const deviceInfo = useDeviceInfo();
+  
+  // Ref para prevenir swipes accidentales durante interacciones con apps
+  const isInteractingWithApp = useRef(false);
 
   // Calcular espacio superior según dispositivo
   const topSpace = deviceInfo.hasNotch ? 'h-14' : 'h-10';
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // No iniciar swipe si está interactuando con una app
+    if (isInteractingWithApp.current) {
+      return;
+    }
+    
     const touch = e.targetTouches[0];
     if (touch) {
       setTouchStart(touch.clientX);
     }
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (isInteractingWithApp.current) {
+      return;
+    }
+    
     const touch = e.targetTouches[0];
     if (touch) {
       setTouchEnd(touch.clientX);
     }
-  };
+  }, []);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
+    if (isInteractingWithApp.current) {
+      isInteractingWithApp.current = false;
+      return;
+    }
+    
     if (!touchStart || !touchEnd) return;
     
     const distance = touchStart - touchEnd;
@@ -86,7 +103,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
     setTouchStart(0);
     setTouchEnd(0);
-  };
+  }, [touchStart, touchEnd, currentPage, pages.length, onPageChange]);
 
   const handleDragStart = useCallback((appId: string, index: number) => {
     if (!isEditMode) return;
@@ -212,8 +229,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   isEditing={isEditMode}
                   badge={badgeValue}
                   isDragging={draggedAppId === appId}
-                  onPress={() => onAppOpen(app)}
+                  onPress={() => {
+                    // Marcar interacción para prevenir swipes accidentales
+                    isInteractingWithApp.current = true;
+                    onAppOpen(app);
+                    // Resetear después de un momento
+                    setTimeout(() => {
+                      isInteractingWithApp.current = false;
+                    }, 300);
+                  }}
                   onLongPress={(e) => {
+                    isInteractingWithApp.current = true;
                     if (!isEditMode) {
                       // Get touch position for menu
                       const target = e.currentTarget as HTMLElement;

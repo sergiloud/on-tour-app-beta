@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { motion, PanInfo } from 'framer-motion';
+import { useInstantDebounce } from '../../../hooks/useDebounce';
 import type { AppDefinition } from '../../../types/mobileOS';
 
 interface AppIconProps {
@@ -42,11 +43,35 @@ export const AppIcon: React.FC<AppIconProps> = ({
   const [isPressed, setIsPressed] = React.useState(false);
   const longPressTimer = React.useRef<number | null>(null);
   const eventRef = React.useRef<React.TouchEvent | React.MouseEvent | null>(null);
+  const clickProcessingRef = useRef(false);
 
-  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+  // Prevenir doble-click y múltiples llamadas con debounce instantáneo
+  const debouncedOnPress = useInstantDebounce(
+    useCallback(() => {
+      if (onPress && !isEditing && !clickProcessingRef.current) {
+        clickProcessingRef.current = true;
+        
+        // Haptic feedback
+        if (navigator.vibrate) {
+          navigator.vibrate(10);
+        }
+        
+        onPress();
+        
+        // Resetear flag después de un delay
+        setTimeout(() => {
+          clickProcessingRef.current = false;
+        }, 100);
+      }
+    }, [onPress, isEditing]),
+    300 // 300ms de protección contra doble-click
+  );
+
+  const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     setIsPressed(true);
     eventRef.current = e;
-    if (onLongPress) {
+    
+    if (onLongPress && !isEditing) {
       longPressTimer.current = window.setTimeout(() => {
         // Haptic feedback
         if (navigator.vibrate) {
@@ -57,24 +82,28 @@ export const AppIcon: React.FC<AppIconProps> = ({
         }
       }, 500);
     }
-  };
+  }, [onLongPress, isEditing]);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     setIsPressed(false);
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
-  };
+  }, []);
 
-  const handleClick = () => {
-    if (!isEditing && onPress) {
-      // Haptic feedback
-      if (navigator.vibrate) {
-        navigator.vibrate(10);
-      }
-      onPress();
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Cancelar long press si hay
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
-  };
+    
+    debouncedOnPress();
+  }, [debouncedOnPress]);
 
   return (
     <motion.div

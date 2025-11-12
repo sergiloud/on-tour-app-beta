@@ -132,10 +132,10 @@ export const ArtistsApp: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-gradient-to-b from-gray-900 via-gray-900 to-black text-white flex flex-col">
-      {/* Header - Desktop Style */}
-      <div className="sticky top-0 z-10 bg-gray-900/60 backdrop-blur-xl border-b border-white/10 px-5 pt-5 pb-4">
-        <h1 className="text-xl font-bold tracking-tight">Artists</h1>
+    <div className="h-full bg-gradient-to-b from-gray-900 to-black text-white flex flex-col">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-4 border-b border-white/10">
+        <h1 className="text-2xl font-bold mb-4">Artists</h1>
         
         {/* Search */}
         <div className="relative mb-4">
@@ -144,7 +144,7 @@ export const ArtistsApp: React.FC = () => {
             placeholder="Search artists..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pl-10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           />
           <Music className="absolute left-3 top-3.5 w-4 h-4 text-white/40" />
         </div>
@@ -171,7 +171,7 @@ export const ArtistsApp: React.FC = () => {
       </div>
 
       {/* Artists List */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4">
         {isRefreshing && (
           <div className="text-center py-4">
             <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -189,15 +189,15 @@ export const ArtistsApp: React.FC = () => {
                 setSelectedArtist(artist);
                 haptic('light');
               }}
-              className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform"
+              className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-2xl p-4 cursor-pointer hover:scale-[0.98] transition-transform"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                     <Mic className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">{artist.name}</h3>
+                    <h3 className="font-semibold text-lg">{artist.name}</h3>
                     <p className="text-xs text-white/60">{artist.genre}</p>
                   </div>
                 </div>
@@ -207,12 +207,12 @@ export const ArtistsApp: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 text-sm">
+              <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-1 text-white/60">
                   <Calendar className="w-4 h-4" />
                   <span>{artist.pastShows} shows</span>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-md ${getStatusColor(artist.status)}`}>
+                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(artist.status)}`}>
                   {artist.status}
                 </span>
               </div>
@@ -236,21 +236,21 @@ export const ArtistsApp: React.FC = () => {
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 35 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full bg-gray-900 rounded-t-2xl px-5 py-5 max-h-[80vh] overflow-y-auto"
+            className="w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto"
           >
-            <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-5" />
+            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6" />
             
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <Mic className="w-10 h-10" />
               </div>
               <div className="flex-1">
-                <h2 className="text-sm font-bold">{selectedArtist.name}</h2>
+                <h2 className="text-2xl font-bold">{selectedArtist.name}</h2>
                 <p className="text-white/60">{selectedArtist.genre}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   <span className="font-semibold">{selectedArtist.rating}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-md ml-2 ${getStatusColor(selectedArtist.status)}`}>
+                  <span className={`text-xs px-2 py-1 rounded-full ml-2 ${getStatusColor(selectedArtist.status)}`}>
                     {selectedArtist.status}
                   </span>
                 </div>
@@ -286,7 +286,7 @@ export const ArtistsApp: React.FC = () => {
             </div>
 
             {/* Requirements */}
-            <div className="bg-white/5 rounded-lg px-4 py-3 mb-4">
+            <div className="bg-white/5 rounded-xl p-4 mb-4">
               <h3 className="font-semibold mb-3">Requirements</h3>
               <div className="space-y-2">
                 {selectedArtist.requirements.map((req, idx) => (
@@ -300,12 +300,12 @@ export const ArtistsApp: React.FC = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-3">
+              <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-xl p-4">
                 <div className="text-sm text-white/60 mb-1">Past Shows</div>
-                <div className="text-lg font-bold">{selectedArtist.pastShows}</div>
+                <div className="text-2xl font-bold">{selectedArtist.pastShows}</div>
               </div>
               {selectedArtist.lastShow && (
-                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg px-4 py-3">
+                <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-xl p-4">
                   <div className="text-sm text-white/60 mb-1">Last Show</div>
                   <div className="text-lg font-bold">{selectedArtist.lastShow}</div>
                 </div>
@@ -314,7 +314,7 @@ export const ArtistsApp: React.FC = () => {
 
             <button
               onClick={() => setSelectedArtist(null)}
-              className="w-full bg-blue-500 hover:bg-blue-600 rounded-lg py-2.5 font-semibold text-sm transition-all"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl py-3 font-semibold hover:from-blue-600 hover:to-blue-700 transition-all"
             >
               Close
             </button>

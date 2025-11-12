@@ -4,6 +4,12 @@
 /* CSS-only animations (GPU-accelerated) */
 @import './animations.css';
 
+/* Mobile performance optimizations */
+@import './mobile-performance.css';
+
+/* Mobile touch optimizations */
+@import './mobile-touch.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

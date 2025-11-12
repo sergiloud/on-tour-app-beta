@@ -1,0 +1,174 @@
+/**
+ * Optimizaciones para mejorar la respuesta táctil en mobile
+ * Previene lag, mejora feedback visual, elimina delays de touch
+ */
+
+/* Eliminar delay de 300ms en iOS para touch events */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Feedback táctil instantáneo para botones y elementos interactivos */
+button,
+a,
+[role="button"],
+.touch-target {
+  -webkit-tap-highlight-color: rgba(191, 255, 0, 0.1);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+
+/* Prevenir selección de texto durante interacciones táctiles */
+.mobile-os,
+.home-screen,
+.app-icon,
+.dock {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Optimizar rendimiento de scrolling */
+.mobile-scrollable {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+/* Mejorar respuesta de elementos draggable */
+[draggable="true"],
+.draggable {
+  -webkit-user-drag: element;
+  touch-action: none;
+  will-change: transform;
+}
+
+/* Estados de interacción más responsivos */
+.touch-feedback {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.touch-feedback:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+/* Prevenir doble-tap zoom en iOS */
+.no-zoom {
+  touch-action: manipulation;
+}
+
+/* Optimizar gestos de swipe */
+.swipeable {
+  touch-action: pan-x pan-y;
+  overscroll-behavior: none;
+}
+
+/* Estados hover optimizados para touch (solo en desktop) */
+@media (hover: hover) and (pointer: fine) {
+  .touch-target:hover {
+    opacity: 0.8;
+  }
+}
+
+/* Eliminar estados hover en dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .touch-target:hover {
+    opacity: 1;
+  }
+}
+
+/* Mejorar área táctil mínima (44x44px según Apple HIG) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  position: relative;
+}
+
+/* Extender área táctil sin cambiar visual */
+.touch-target::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+}
+
+/* Optimizar animaciones para touch */
+@media (prefers-reduced-motion: no-preference) {
+  .touch-animate {
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .touch-animate:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Prevenir lag en transiciones táctiles */
+.instant-touch {
+  transition-duration: 0ms !important;
+}
+
+/* Mejorar rendimiento de modals en mobile */
+.modal-overlay {
+  will-change: opacity, transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Optimizar lista de apps para scroll táctil */
+.app-grid {
+  will-change: scroll-position;
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+/* Feedback visual instantáneo para clicks */
+.instant-feedback:active {
+  filter: brightness(0.9);
+  transition: filter 0.05s ease-out;
+}
+
+/* Prevenir bounce/overscroll no deseado */
+.fixed-scroll {
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
+}
+
+/* Mejorar respuesta de gestos de cierre */
+.closeable-gesture {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimizar renders durante drag */
+.drag-optimized {
+  pointer-events: auto;
+  will-change: transform;
+  contain: layout style paint;
+}
+
+/* Estados de carga más responsivos */
+.loading-touch {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Prevenir jank en animaciones de entrada/salida */
+.smooth-modal-transition {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

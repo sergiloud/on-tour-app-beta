@@ -130,10 +130,10 @@ export const ReportsApp: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-gradient-to-b from-gray-900 via-gray-900 to-black text-white flex flex-col">
-      {/* Header - Desktop Style */}
-      <div className="sticky top-0 z-10 bg-gray-900/60 backdrop-blur-xl border-b border-white/10 px-5 pt-5 pb-4">
-        <h1 className="text-xl font-bold tracking-tight">Reports</h1>
+    <div className="h-full bg-gradient-to-b from-gray-900 to-black text-white flex flex-col">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-4 border-b border-white/10">
+        <h1 className="text-2xl font-bold mb-4">Reports</h1>
         
         {/* Search */}
         <div className="relative mb-4">
@@ -142,7 +142,7 @@ export const ReportsApp: React.FC = () => {
             placeholder="Search reports..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pl-10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           />
           <Filter className="absolute left-3 top-3.5 w-4 h-4 text-white/40" />
         </div>
@@ -169,7 +169,7 @@ export const ReportsApp: React.FC = () => {
       </div>
 
       {/* Reports List */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4">
         {isRefreshing && (
           <div className="text-center py-4">
             <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -189,7 +189,7 @@ export const ReportsApp: React.FC = () => {
                   setSelectedReport(report);
                   haptic('light');
                 }}
-                className={`bg-gradient-to-br ${getTypeColor(report.type)} border rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform`}
+                className={`bg-gradient-to-br ${getTypeColor(report.type)} border rounded-2xl p-4 cursor-pointer hover:scale-[0.98] transition-transform`}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -257,7 +257,7 @@ export const ReportsApp: React.FC = () => {
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 35 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full bg-gray-900 rounded-t-2xl px-5 py-5 max-h-[80vh] overflow-y-auto"
+            className="w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto"
           >
             <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6" />
             
@@ -268,7 +268,7 @@ export const ReportsApp: React.FC = () => {
                   return <Icon className="w-6 h-6 text-blue-400" />;
                 })()}
                 <div>
-                  <h2 className="text-base font-bold">{selectedReport.title}</h2>
+                  <h2 className="text-xl font-bold">{selectedReport.title}</h2>
                   <p className="text-sm text-white/60">{selectedReport.period}</p>
                 </div>
               </div>
@@ -283,22 +283,22 @@ export const ReportsApp: React.FC = () => {
 
             {selectedReport.revenue !== undefined && (
               <div className="space-y-3 mb-6">
-                <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3">
+                <div className="bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-500/30 rounded-xl p-4">
                   <div className="text-sm text-white/60 mb-1">Total Revenue</div>
-                  <div className="text-lg font-bold text-green-400">{formatCurrency(selectedReport.revenue)}</div>
+                  <div className="text-2xl font-bold text-green-400">{formatCurrency(selectedReport.revenue)}</div>
                 </div>
                 
                 {selectedReport.expenses !== undefined && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
+                  <div className="bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl p-4">
                     <div className="text-sm text-white/60 mb-1">Total Expenses</div>
-                    <div className="text-lg font-bold text-red-400">{formatCurrency(selectedReport.expenses)}</div>
+                    <div className="text-2xl font-bold text-red-400">{formatCurrency(selectedReport.expenses)}</div>
                   </div>
                 )}
 
                 {selectedReport.profit !== undefined && (
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-3">
+                  <div className="bg-gradient-to-r from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-xl p-4">
                     <div className="text-sm text-white/60 mb-1">Net Profit</div>
-                    <div className="text-lg font-bold text-blue-400 flex items-center gap-2">
+                    <div className="text-2xl font-bold text-blue-400 flex items-center gap-2">
                       {formatCurrency(selectedReport.profit)}
                       <TrendingUp className="w-5 h-5" />
                     </div>
@@ -306,9 +306,9 @@ export const ReportsApp: React.FC = () => {
                 )}
 
                 {selectedReport.shows !== undefined && (
-                  <div className="bg-white/5 rounded-lg px-4 py-3">
+                  <div className="bg-white/5 rounded-xl p-4">
                     <div className="text-sm text-white/60 mb-1">Total Shows</div>
-                    <div className="text-lg font-bold">{selectedReport.shows}</div>
+                    <div className="text-2xl font-bold">{selectedReport.shows}</div>
                   </div>
                 )}
               </div>
@@ -317,14 +317,14 @@ export const ReportsApp: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleExport(selectedReport)}
-                className="bg-blue-500 hover:bg-blue-600 rounded-lg py-2.5 font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl py-3 font-semibold flex items-center justify-center gap-2 hover:from-blue-600 hover:to-blue-700 transition-all"
               >
                 <Download className="w-4 h-4" />
                 Export PDF
               </button>
               <button
                 onClick={() => setSelectedReport(null)}
-                className="bg-white/10 rounded-lg py-2.5 font-semibold text-sm hover:bg-white/20 transition-all"
+                className="bg-white/10 rounded-xl py-3 font-semibold hover:bg-white/20 transition-all"
               >
                 Close
               </button>

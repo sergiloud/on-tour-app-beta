@@ -1,0 +1,140 @@
+/**
+ * Optimizaciones de CSS para mejorar el rendimiento de animaciones móviles
+ * Estas clases deben ser usadas en componentes que animan frecuentemente
+ */
+
+/* Force hardware acceleration for common animated elements */
+.gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.gpu-accelerate-full {
+  transform: translateZ(0) translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform, opacity;
+}
+
+/* Optimización para modales de apps */
+.app-modal-container {
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+/* Optimización para listas largas */
+.list-item-optimized {
+  contain: layout style paint;
+  will-change: transform;
+}
+
+/* Prevenir repaint durante animaciones */
+.prevent-repaint {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Smooth scrolling optimizado */
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+/* Optimizar imágenes y avatares */
+.optimized-image {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  will-change: transform;
+}
+
+/* App loading skeleton optimizations */
+.skeleton-optimized {
+  contain: strict;
+  content-visibility: auto;
+  will-change: opacity, transform;
+}
+
+/* Reducir layout shifts en cards */
+.card-stable {
+  contain: layout style;
+  content-visibility: auto;
+}
+
+/* Animaciones de entrada optimizadas */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+  }
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pulso de loading optimizado */
+@keyframes pulse-optimized {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-optimized {
+  animation: pulse-optimized 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: opacity;
+}
+
+/* Spinner de carga optimizado */
+@keyframes spin-optimized {
+  to {
+    transform: rotate(360deg) translateZ(0);
+  }
+}
+
+.animate-spin-optimized {
+  animation: spin-optimized 1s linear infinite;
+  will-change: transform;
+}
+
+/* Contenedor de app con optimizaciones */
+.app-content-wrapper {
+  contain: layout style;
+  isolation: isolate;
+  will-change: scroll-position;
+}
+
+/* Optimización para backdrop blur */
+.optimized-blur {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  will-change: backdrop-filter;
+}
+
+/* Touch optimizations */
+.touch-optimized {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Reduce motion para accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .gpu-accelerate-full,
+  .prevent-repaint,
+  .animate-fade-in-scale,
+  .animate-pulse-optimized,
+  .animate-spin-optimized {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

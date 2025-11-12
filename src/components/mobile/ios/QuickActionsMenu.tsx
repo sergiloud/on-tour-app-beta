@@ -1,6 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Calendar, DollarSign, MapPin, X } from 'lucide-react';
+import { 
+  Plus, Calendar, DollarSign, MapPin, X, Users, BarChart3, 
+  FileText, Music, Building2, Link, StickyNote, Folder, Plane
+} from 'lucide-react';
 import type { AppDefinition } from '../../../types/mobileOS';
 
 interface QuickAction {
@@ -69,7 +72,7 @@ const APP_QUICK_ACTIONS: Record<string, QuickAction[]> = {
     {
       id: 'view-summary',
       label: 'Resumen',
-      icon: Calendar,
+      icon: BarChart3,
       color: 'text-blue-400',
       bgColor: 'bg-blue-500/20',
       action: () => console.log('Summary'),
@@ -91,6 +94,140 @@ const APP_QUICK_ACTIONS: Record<string, QuickAction[]> = {
       color: 'text-purple-400',
       bgColor: 'bg-purple-500/20',
       action: () => console.log('View map'),
+    },
+  ],
+  contacts: [
+    {
+      id: 'new-contact',
+      label: 'Nuevo Contacto',
+      icon: Plus,
+      color: 'text-accent-500',
+      bgColor: 'bg-accent-500/20',
+      action: () => console.log('New contact'),
+    },
+    {
+      id: 'search',
+      label: 'Buscar',
+      icon: Users,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-500/20',
+      action: () => console.log('Search'),
+    },
+  ],
+  reports: [
+    {
+      id: 'pl-report',
+      label: 'Informe P&L',
+      icon: DollarSign,
+      color: 'text-green-400',
+      bgColor: 'bg-green-500/20',
+      action: () => console.log('P&L Report'),
+    },
+    {
+      id: 'tour-summary',
+      label: 'Resumen Tour',
+      icon: Music,
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-500/20',
+      action: () => console.log('Tour Summary'),
+    },
+    {
+      id: 'tax-report',
+      label: 'Informe Fiscal',
+      icon: FileText,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-500/20',
+      action: () => console.log('Tax Report'),
+    },
+  ],
+  files: [
+    {
+      id: 'upload',
+      label: 'Subir Archivo',
+      icon: Plus,
+      color: 'text-accent-500',
+      bgColor: 'bg-accent-500/20',
+      action: () => console.log('Upload file'),
+    },
+    {
+      id: 'recent',
+      label: 'Recientes',
+      icon: Folder,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-500/20',
+      action: () => console.log('Recent files'),
+    },
+  ],
+  artists: [
+    {
+      id: 'new-artist',
+      label: 'Nuevo Artista',
+      icon: Plus,
+      color: 'text-accent-500',
+      bgColor: 'bg-accent-500/20',
+      action: () => console.log('New artist'),
+    },
+    {
+      id: 'favorites',
+      label: 'Favoritos',
+      icon: Music,
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-500/20',
+      action: () => console.log('Favorites'),
+    },
+  ],
+  venues: [
+    {
+      id: 'new-venue',
+      label: 'Nuevo Venue',
+      icon: Plus,
+      color: 'text-accent-500',
+      bgColor: 'bg-accent-500/20',
+      action: () => console.log('New venue'),
+    },
+    {
+      id: 'nearby',
+      label: 'Cercanos',
+      icon: MapPin,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-500/20',
+      action: () => console.log('Nearby venues'),
+    },
+  ],
+  links: [
+    {
+      id: 'new-link',
+      label: 'Nuevo Link',
+      icon: Plus,
+      color: 'text-accent-500',
+      bgColor: 'bg-accent-500/20',
+      action: () => console.log('New link'),
+    },
+    {
+      id: 'pinned',
+      label: 'Fijados',
+      icon: Link,
+      color: 'text-yellow-400',
+      bgColor: 'bg-yellow-500/20',
+      action: () => console.log('Pinned links'),
+    },
+  ],
+  notes: [
+    {
+      id: 'new-note',
+      label: 'Nueva Nota',
+      icon: Plus,
+      color: 'text-accent-500',
+      bgColor: 'bg-accent-500/20',
+      action: () => console.log('New note'),
+    },
+    {
+      id: 'pinned',
+      label: 'Fijadas',
+      icon: StickyNote,
+      color: 'text-yellow-400',
+      bgColor: 'bg-yellow-500/20',
+      action: () => console.log('Pinned notes'),
     },
   ],
 };

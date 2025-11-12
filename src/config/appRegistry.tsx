@@ -17,6 +17,14 @@ import { SettingsApp } from '../components/mobile/ios/apps/SettingsApp';
 import { ShowsApp } from '../components/mobile/ios/apps/ShowsApp';
 import { FinanceApp } from '../components/mobile/ios/apps/FinanceApp';
 import { CalendarApp } from '../components/mobile/ios/apps/CalendarApp';
+import { TravelApp } from '../components/mobile/ios/apps/TravelApp';
+import { TeamApp } from '../components/mobile/ios/apps/TeamApp';
+import { ReportsApp } from '../components/mobile/ios/apps/ReportsApp';
+import { FilesApp } from '../components/mobile/ios/apps/FilesApp';
+import { ArtistsApp } from '../components/mobile/ios/apps/ArtistsApp';
+import { VenuesApp } from '../components/mobile/ios/apps/VenuesApp';
+import { LinksApp } from '../components/mobile/ios/apps/LinksApp';
+import { NotesApp } from '../components/mobile/ios/apps/NotesApp';
 
 // Global badges state that will be updated by useAppBadges hook
 export let APP_BADGES = {
@@ -83,7 +91,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Travel',
     icon: Plane,
     badge: () => APP_BADGES.travel,
-    component: PlaceholderApp,
+    component: TravelApp,
     category: 'travel',
     isRemovable: true,
     quickActions: [
@@ -110,10 +118,10 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
 
   contacts: {
     id: 'contacts',
-    name: 'Contacts',
+    name: 'Team',
     icon: Users,
     badge: () => null,
-    component: PlaceholderApp,
+    component: TeamApp,
     category: 'communication',
     isRemovable: true,
     quickActions: [
@@ -128,7 +136,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Reports',
     icon: BarChart3,
     badge: () => null,
-    component: PlaceholderApp,
+    component: ReportsApp,
     category: 'productivity',
     isRemovable: true,
     quickActions: [
@@ -158,7 +166,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Files',
     icon: FolderOpen,
     badge: () => null,
-    component: PlaceholderApp,
+    component: FilesApp,
     category: 'productivity',
     isRemovable: true,
     quickActions: [
@@ -173,7 +181,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Artists',
     icon: Mic2,
     badge: () => null,
-    component: PlaceholderApp,
+    component: ArtistsApp,
     category: 'productivity',
     isRemovable: true,
   },
@@ -183,7 +191,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Venues',
     icon: Building2,
     badge: () => null,
-    component: PlaceholderApp,
+    component: VenuesApp,
     category: 'productivity',
     isRemovable: true,
   },
@@ -193,7 +201,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Links',
     icon: Link,
     badge: () => null,
-    component: PlaceholderApp,
+    component: LinksApp,
     category: 'communication',
     isRemovable: true,
   },
@@ -203,7 +211,7 @@ export const APP_REGISTRY: Record<string, AppDefinition> = {
     name: 'Notes',
     icon: FileText,
     badge: () => null,
-    component: PlaceholderApp,
+    component: NotesApp,
     category: 'productivity',
     isRemovable: true,
   },

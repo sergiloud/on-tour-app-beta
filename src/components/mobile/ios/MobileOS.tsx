@@ -5,7 +5,7 @@ import { Dock } from './Dock';
 import { AppModal } from './AppModal';
 import { NotificationCenter } from './NotificationCenter';
 import { SpotlightSearch } from './SpotlightSearch';
-import { ControlCenter } from './ControlCenter';
+import { AppSwitcher } from './AppSwitcher';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import { useAppBadges } from '../../../hooks/useAppBadges';
 import { APP_REGISTRY, getDefaultLayout, updateAppBadges } from '../../../config/appRegistry';
@@ -60,7 +60,7 @@ const MobileOSContent: React.FC = () => {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [showControlCenter, setShowControlCenter] = useState(false);
+  const [showAppSwitcher, setShowAppSwitcher] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -149,6 +149,52 @@ const MobileOSContent: React.FC = () => {
     }));
   };
 
+  // Gesture detection for App Switcher (swipe up from bottom)
+  useEffect(() => {
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (touch && touch.clientY > window.innerHeight - 100) {
+        touchStartY = touch.clientY;
+        touchStartTime = Date.now();
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartY) return;
+      
+      const touch = e.touches[0];
+      if (!touch) return;
+
+      const deltaY = touchStartY - touch.clientY;
+      const deltaTime = Date.now() - touchStartTime;
+
+      // Swipe up from bottom edge (fast and long enough)
+      if (deltaY > 100 && deltaTime < 300 && !openApp && !showSearch && !showNotifications) {
+        setShowAppSwitcher(true);
+        if (navigator.vibrate) navigator.vibrate(30);
+        touchStartY = 0;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      touchStartY = 0;
+      touchStartTime = 0;
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [openApp, showSearch, showNotifications]);
+
   return (
     <div className="fixed inset-0 bg-dark-900 overflow-hidden">
       {/* Animated Background - Zen & Dynamic */}
@@ -187,7 +233,7 @@ const MobileOSContent: React.FC = () => {
       />
 
       {/* Top Action Buttons */}
-      {!openApp && !showNotifications && !showSearch && !showControlCenter && (
+      {!openApp && !showNotifications && !showSearch && (
         <>
           {/* Search Button - Top Left */}
           <motion.button
@@ -198,19 +244,6 @@ const MobileOSContent: React.FC = () => {
             className="absolute top-4 left-4 z-30 p-2 rounded-full bg-white/20 dark:bg-neutral-800/40 backdrop-blur-md shadow-lg"
           >
             <Search className="w-5 h-5 text-white dark:text-neutral-200" />
-          </motion.button>
-
-          {/* Control Center Button - Top Right Corner */}
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 25 }}
-            onClick={() => setShowControlCenter(true)}
-            className="absolute top-4 right-16 z-30 p-2 rounded-full bg-white/20 dark:bg-neutral-800/40 backdrop-blur-md shadow-lg"
-          >
-            <svg className="w-5 h-5 text-white dark:text-neutral-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
           </motion.button>
 
           {/* Notification Bell - Top Right */}
@@ -277,10 +310,18 @@ const MobileOSContent: React.FC = () => {
         onClose={() => setShowSearch(false)}
       />
 
-      {/* Control Center */}
-      <ControlCenter
-        isOpen={showControlCenter}
-        onClose={() => setShowControlCenter(false)}
+      {/* App Switcher */}
+      <AppSwitcher
+        isOpen={showAppSwitcher}
+        onClose={() => setShowAppSwitcher(false)}
+        recentApps={recentApps.map(id => APP_REGISTRY[id]).filter((app): app is AppDefinition => !!app)}
+        onAppSelect={(appId) => {
+          const app = APP_REGISTRY[appId];
+          if (app) {
+            handleAppOpen(app);
+            setShowAppSwitcher(false);
+          }
+        }}
       />
     </div>
   );

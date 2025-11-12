@@ -1,19 +1,28 @@
 import React, { useMemo } from 'react';
 import { t } from '../../../lib/i18n';
 import { useFinanceSnapshot } from '../../../hooks/useFinanceSnapshot';
+import { useFinancePeriod } from '../../../context/FinancePeriodContext';
 import { agenciesForShow, computeCommission } from '../../../lib/agencies';
 import { TrendingUp, TrendingDown, Users } from 'lucide-react';
 
 const OverviewHeader: React.FC = () => {
-  const { allShows, snapshot, compareSnapshot, fmtMoney, comparePrev, bookingAgencies, managementAgencies } = useFinanceSnapshot();
+  const { allShows, snapshot, fmtMoney, comparePrev, bookingAgencies, managementAgencies } = useFinanceSnapshot();
+  const { isInPeriod } = useFinancePeriod();
 
   // Calculate agency commissions for current period
   const agencyData = useMemo(() => {
     const shows = (allShows as any[]) || [];
-    const confirmedShows = shows.filter(s => s.status !== 'offer');
+    
+    // Filter shows by period and status
+    const periodShows = shows.filter(s => {
+      if (s.status === 'offer') return false;
+      if (!s.date) return false;
+      return isInPeriod(s.date);
+    });
+    
     let totalCommissions = 0;
 
-    confirmedShows.forEach(show => {
+    periodShows.forEach(show => {
       // Only calculate commissions for shows with selected agencies
       const selectedAgencies = [];
       if (show.mgmtAgency) {
@@ -30,25 +39,14 @@ const OverviewHeader: React.FC = () => {
     });
 
     return { totalCommissions };
-  }, [bookingAgencies, managementAgencies]);
+  }, [allShows, bookingAgencies, managementAgencies, isInPeriod]);
 
   // Calculate previous period commissions if comparison is enabled
   const prevAgencyCommissions = useMemo(() => {
-    if (!comparePrev || !compareSnapshot) return null;
-
-    // For now, return a simple calculation based on expense difference
-    // In a real scenario, you'd calculate from the compareSnapshot's shows
-    const currentExpenses = snapshot?.year.expenses || 0;
-    const prevExpenses = compareSnapshot.year.expenses || 0;
-
-    // Estimate that commissions are roughly the same proportion
-    if (currentExpenses > 0 && agencyData.totalCommissions > 0) {
-      const commissionRatio = agencyData.totalCommissions / currentExpenses;
-      return prevExpenses * commissionRatio;
-    }
-
+    // Simplified: for now we don't calculate comparison period commissions
+    // This would require access to comparison period's shows data
     return null;
-  }, [comparePrev, compareSnapshot, snapshot, agencyData.totalCommissions]);
+  }, []);
 
   const commissionDelta = prevAgencyCommissions !== null
     ? agencyData.totalCommissions - prevAgencyCommissions

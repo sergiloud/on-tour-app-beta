@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Music, DollarSign, TrendingUp, Calendar } from 'lucide-react';
-import { showStore } from '../../../../shared/showStore';
-import type { Show } from '../../../../lib/shows';
+import { useShows } from '../../../../hooks/useShows';
+import { useKpi } from '../../../../context/KPIDataContext';
+import { useSettings } from '../../../../context/SettingsContext';
 import { parseISO, isFuture, isThisMonth } from 'date-fns';
 
 interface QuickStatsProps {
@@ -10,18 +11,9 @@ interface QuickStatsProps {
 }
 
 export const QuickStats: React.FC<QuickStatsProps> = ({ className = '' }) => {
-  const [shows, setShows] = useState<Show[]>([]);
-
-  useEffect(() => {
-    const updateShows = (allShows: Show[]) => {
-      setShows(allShows);
-    };
-
-    updateShows(showStore.getAll());
-    const unsubscribe = showStore.subscribe(updateShows);
-
-    return () => unsubscribe();
-  }, []);
+  const { shows } = useShows();
+  const { raw } = useKpi();
+  const { fmtMoney } = useSettings();
 
   // Calcular estadísticas
   const confirmedShows = shows.filter(s => s.status === 'confirmed').length;
@@ -35,9 +27,7 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ className = '' }) => {
     return isThisMonth(showDate) && s.status === 'confirmed';
   }).length;
 
-  const totalRevenue = shows
-    .filter(s => s.status === 'confirmed')
-    .reduce((sum, show) => sum + (show.fee || 0), 0);
+  const totalRevenue = raw.yearNet;
 
   const stats = [
     {
@@ -64,7 +54,7 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ className = '' }) => {
     {
       icon: DollarSign,
       label: 'Revenue',
-      value: `€${(totalRevenue / 1000).toFixed(0)}K`,
+      value: totalRevenue >= 1000 ? fmtMoney(totalRevenue).replace(/\.\d+/, 'K') : fmtMoney(totalRevenue),
       iconColor: 'text-green-400',
       bgColor: 'bg-green-500/20',
     },

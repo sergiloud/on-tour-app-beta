@@ -212,6 +212,66 @@ const Calendar: React.FC = () => {
     await actions.saveEditedEvent(event);
   };
 
+  // Centralized event opening logic (P6.3)
+  const handleEventOpen = useCallback((ev: CalEvent) => {
+    if (ev.kind === 'show') {
+      // For show events, open ShowEventModal with show data
+      const id = ev.id.split(':')[1];
+      const show = shows.find(s => s.id === id);
+      if (show) {
+        const showData = {
+          id: show.id,
+          date: show.date.slice(0, 10),
+          title: show.city,
+          city: show.city,
+          country: show.country,
+          status: show.status,
+          notes: show.notes,
+        };
+        modals.openShowEvent(showData);
+      }
+    } else if (ev.kind === 'travel') {
+      // For travel events, open TravelFlightModal with travel data
+      const id = ev.id.split(':')[1];
+      const travelEvent = travel.find(t => t.id === id);
+      if (travelEvent) {
+        const travelData = {
+          type: 'travel',
+          date: travelEvent.date.slice(0, 10),
+          dateEnd: (travelEvent as any).endDate || (travelEvent as any).dateEnd,
+          origin: (travelEvent as any).departure || (travelEvent as any).origin,
+          destination: travelEvent.city || travelEvent.destination,
+          travelMode: (travelEvent as any).travelMode || 'flight',
+          confirmationCode: (travelEvent as any).confirmationCode,
+          departureTime: (travelEvent as any).startTime || (travelEvent as any).departureTime,
+          arrivalTime: (travelEvent as any).arrivalTime,
+          flightNumber: (travelEvent as any).flightNumber,
+          airline: (travelEvent as any).airline,
+          departureTerminal: (travelEvent as any).departureTerminal,
+          arrivalTerminal: (travelEvent as any).arrivalTerminal,
+          seat: (travelEvent as any).seat,
+          notes: (travelEvent as any).description || (travelEvent as any).notes,
+        } as EventData;
+        modals.openTravelFlight(travelData, id);
+      }
+    } else {
+      // For other events (meeting, rehearsal, break, etc), open EventCreationModal
+      const id = ev.id.split(':')[1];
+      const otherEvent = travel.find(t => t.id === id);
+      if (otherEvent) {
+        const eventData = {
+          type: ev.kind as EventType,
+          date: otherEvent.date.slice(0, 10),
+          dateEnd: (otherEvent as any).endDate,
+          title: otherEvent.title,
+          description: (otherEvent as any).description,
+          location: (otherEvent as any).location,
+          color: (otherEvent as any).buttonColor as any,
+        } as EventData;
+        modals.openEventCreation(otherEvent.date.slice(0, 10), ev.kind as EventType, eventData);
+      }
+    }
+  }, [shows, travel, modals]);
 
   const handleSpanAdjust = (eventId: string, direction: 'start' | 'end', deltaDays: number) => {
     actions.adjustEventSpan(eventId, direction, deltaDays);
@@ -577,68 +637,7 @@ const Calendar: React.FC = () => {
             handleOpenDayDetails(d);
             setSelectedDay(d);
           }}
-          onOpen={(ev) => {
-            console.log('MonthGrid onOpen called:', ev.kind, ev.id);
-            if (ev.kind === 'show') {
-              const id = ev.id.split(':')[1];
-              const show = shows.find(s => s.id === id);
-              if (show) {
-                const showData = {
-                  id: show.id,
-                  date: show.date.slice(0, 10),
-                  title: show.city,
-                  city: show.city,
-                  country: show.country,
-                  status: show.status,
-                  notes: show.notes,
-                };
-                modals.openShowEvent(showData);
-              }
-            } else if (ev.kind === 'travel') {
-              // For travel events, open TravelFlightModal with travel data
-              console.log('Travel event clicked:', ev.id, ev.kind);
-              const id = ev.id.split(':')[1];
-              const travelEvent = travel.find(t => t.id === id);
-              console.log('Travel event found:', travelEvent);
-              if (travelEvent) {
-                // Pre-fill the modal with travel data
-                const travelData = {
-                  type: 'travel',
-                  date: travelEvent.date.slice(0, 10),
-                  dateEnd: (travelEvent as any).endDate || (travelEvent as any).dateEnd,
-                  origin: (travelEvent as any).departure || (travelEvent as any).origin,
-                  destination: travelEvent.city || travelEvent.destination,
-                  travelMode: (travelEvent as any).travelMode || 'flight',
-                  confirmationCode: (travelEvent as any).confirmationCode,
-                  departureTime: (travelEvent as any).startTime || (travelEvent as any).departureTime,
-                  arrivalTime: (travelEvent as any).arrivalTime,
-                  flightNumber: (travelEvent as any).flightNumber,
-                  airline: (travelEvent as any).airline,
-                  departureTerminal: (travelEvent as any).departureTerminal,
-                  arrivalTerminal: (travelEvent as any).arrivalTerminal,
-                  seat: (travelEvent as any).seat,
-                  notes: (travelEvent as any).description || (travelEvent as any).notes,
-                } as EventData;
-                modals.openTravelFlight(travelData, id);
-              }
-            } else {
-              // For other events (meeting, rehearsal, break, etc), open EventCreationModal
-              const id = ev.id.split(':')[1];
-              const otherEvent = travel.find(t => t.id === id);
-              if (otherEvent) {
-                const eventData = {
-                  type: ev.kind as EventType,
-                  date: otherEvent.date.slice(0, 10),
-                  dateEnd: (otherEvent as any).endDate,
-                  title: otherEvent.title,
-                  description: (otherEvent as any).description,
-                  location: (otherEvent as any).location,
-                  color: (otherEvent as any).buttonColor as any,
-                } as EventData;
-                modals.openEventCreation(otherEvent.date.slice(0, 10), ev.kind as EventType, eventData);
-              }
-            }
-          }}
+          onOpen={handleEventOpen}
           onMoveShow={(showId, toDate, duplicate) => {
             actions.moveEvent(showId, toDate, duplicate);
           }}
@@ -660,66 +659,7 @@ const Calendar: React.FC = () => {
           weekStart={weekStart}
           eventsByDay={weekEventsByDay}
           tz={tz}
-          onOpen={(ev) => {
-            if (ev.kind === 'show') {
-              const id = ev.id.split(':')[1];
-              const show = shows.find(s => s.id === id);
-              if (show) {
-                const showData = {
-                  id: show.id,
-                  date: show.date.slice(0, 10),
-                  title: show.city,
-                  city: show.city,
-                  country: show.country,
-                  status: show.status,
-                  notes: show.notes,
-                };
-                modals.openShowEvent(showData);
-              }
-            } else if (ev.kind === 'travel') {
-              // For travel events, open TravelFlightModal with travel data
-              console.log('Travel event clicked:', ev.id, ev.kind);
-              const id = ev.id.split(':')[1];
-              const travelEvent = travel.find(t => t.id === id);
-              console.log('Travel event found:', travelEvent);
-              if (travelEvent) {
-                const travelData = {
-                  type: 'travel',
-                  date: travelEvent.date.slice(0, 10),
-                  dateEnd: (travelEvent as any).endDate || (travelEvent as any).dateEnd,
-                  origin: (travelEvent as any).departure || (travelEvent as any).origin,
-                  destination: travelEvent.city || travelEvent.destination,
-                  travelMode: (travelEvent as any).travelMode || 'flight',
-                  confirmationCode: (travelEvent as any).confirmationCode,
-                  departureTime: (travelEvent as any).startTime || (travelEvent as any).departureTime,
-                  arrivalTime: (travelEvent as any).arrivalTime,
-                  flightNumber: (travelEvent as any).flightNumber,
-                  airline: (travelEvent as any).airline,
-                  departureTerminal: (travelEvent as any).departureTerminal,
-                  arrivalTerminal: (travelEvent as any).arrivalTerminal,
-                  seat: (travelEvent as any).seat,
-                  notes: (travelEvent as any).description || (travelEvent as any).notes,
-                } as EventData;
-                modals.openTravelFlight(travelData, id);
-              }
-            } else {
-              // For other events (meeting, rehearsal, break, etc), open EventCreationModal
-              const id = ev.id.split(':')[1];
-              const otherEvent = travel.find(t => t.id === id);
-              if (otherEvent) {
-                const eventData = {
-                  type: ev.kind as EventType,
-                  date: otherEvent.date.slice(0, 10),
-                  dateEnd: (otherEvent as any).endDate,
-                  title: otherEvent.title,
-                  description: (otherEvent as any).description,
-                  location: (otherEvent as any).location,
-                  color: (otherEvent as any).buttonColor as any,
-                } as EventData;
-                modals.openEventCreation(otherEvent.date.slice(0, 10), ev.kind as EventType, eventData);
-              }
-            }
-          }}
+          onOpen={handleEventOpen}
         />
       )}
 
@@ -728,111 +668,14 @@ const Calendar: React.FC = () => {
           day={selectedDay || `${cursor}-01`}
           events={dayEvents}
           tz={tz}
-          onOpen={(ev) => {
-            if (ev.kind === 'show') {
-              const id = ev.id.split(':')[1];
-              const show = shows.find(s => s.id === id);
-              if (show) {
-                const showData = {
-                  id: show.id,
-                  date: show.date.slice(0, 10),
-                  title: show.city,
-                  city: show.city,
-                  country: show.country,
-                  status: show.status,
-                  notes: show.notes,
-                };
-                modals.openShowEvent(showData);
-              }
-            } else {
-              const id = ev.id.split(':')[1];
-              const travelEvent = travel.find(t => t.id === id);
-              if (travelEvent) {
-                const eventData = {
-                  type: 'travel',
-                  date: travelEvent.date.slice(0, 10),
-                  dateEnd: (travelEvent as any).dateEnd,
-                  origin: (travelEvent as any).origin,
-                  destination: travelEvent.city,
-                  travelMode: (travelEvent as any).travelMode || 'flight',
-                  confirmationCode: (travelEvent as any).confirmationCode,
-                  departureTime: (travelEvent as any).departureTime,
-                  arrivalTime: (travelEvent as any).arrivalTime,
-                  flightNumber: (travelEvent as any).flightNumber,
-                  airline: (travelEvent as any).airline,
-                  departureTerminal: (travelEvent as any).departureTerminal,
-                  arrivalTerminal: (travelEvent as any).arrivalTerminal,
-                  seat: (travelEvent as any).seat,
-                  notes: (travelEvent as any).notes,
-                } as EventData;
-                modals.openEventCreation(travelEvent.date.slice(0, 10), 'travel', eventData);
-              }
-            }
-          }}
+          onOpen={handleEventOpen}
         />
       )}
 
       {view === 'agenda' && (
         <AgendaList
           eventsByDay={agendaEventsByDay}
-          onOpen={(ev) => {
-            if (ev.kind === 'show') {
-              const id = ev.id.split(':')[1];
-              const show = shows.find(s => s.id === id);
-              if (show) {
-                const showData = {
-                  id: show.id,
-                  date: show.date.slice(0, 10),
-                  title: show.city,
-                  city: show.city,
-                  country: show.country,
-                  status: show.status,
-                  notes: show.notes,
-                };
-                modals.openShowEvent(showData);
-              }
-            } else if (ev.kind === 'travel') {
-              // For travel events, open TravelFlightModal with travel data
-              const id = ev.id.split(':')[1];
-              const travelEvent = travel.find(t => t.id === id);
-              if (travelEvent) {
-                const travelData = {
-                  type: 'travel',
-                  date: travelEvent.date.slice(0, 10),
-                  dateEnd: (travelEvent as any).endDate || (travelEvent as any).dateEnd,
-                  origin: (travelEvent as any).departure || (travelEvent as any).origin,
-                  destination: travelEvent.city || travelEvent.destination,
-                  travelMode: (travelEvent as any).travelMode || 'flight',
-                  confirmationCode: (travelEvent as any).confirmationCode,
-                  departureTime: (travelEvent as any).startTime || (travelEvent as any).departureTime,
-                  arrivalTime: (travelEvent as any).arrivalTime,
-                  flightNumber: (travelEvent as any).flightNumber,
-                  airline: (travelEvent as any).airline,
-                  departureTerminal: (travelEvent as any).departureTerminal,
-                  arrivalTerminal: (travelEvent as any).arrivalTerminal,
-                  seat: (travelEvent as any).seat,
-                  notes: (travelEvent as any).description || (travelEvent as any).notes,
-                } as EventData;
-                modals.openTravelFlight(travelData, id);
-              }
-            } else {
-              // For other events (meeting, rehearsal, break, etc), open EventCreationModal
-              const id = ev.id.split(':')[1];
-              const otherEvent = travel.find(t => t.id === id);
-              if (otherEvent) {
-                const eventData = {
-                  type: ev.kind as EventType,
-                  date: otherEvent.date.slice(0, 10),
-                  dateEnd: (otherEvent as any).endDate,
-                  title: otherEvent.title,
-                  description: (otherEvent as any).description,
-                  location: (otherEvent as any).location,
-                  color: (otherEvent as any).buttonColor as any,
-                } as EventData;
-                modals.openEventCreation(otherEvent.date.slice(0, 10), ev.kind as EventType, eventData);
-              }
-            }
-          }}
+          onOpen={handleEventOpen}
         />
       )}      {view === 'timeline' && (
         <TimelineView

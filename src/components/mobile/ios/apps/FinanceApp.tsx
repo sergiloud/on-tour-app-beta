@@ -248,17 +248,17 @@ export const FinanceApp: React.FC = () => {
         {/* Recent Shows */}
         {recentShows.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.24, duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="bg-white/5 border border-white/10 rounded-lg px-4 py-3"
+            transition={{ delay: 0.18, duration: 0.18, ease: 'easeOut' }}
+            className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 widget-container"
           >
             <h2 className="text-sm font-semibold text-white mb-3">Recent Shows</h2>
             <div className="space-y-2.5">
               {recentShows.map((show, index) => (
                 <div
                   key={show.id || index}
-                  className="flex items-center justify-between py-2"
+                  className="flex items-center justify-between py-2 card-list-item"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-white font-medium truncate">
@@ -287,10 +287,10 @@ export const FinanceApp: React.FC = () => {
 
         {/* Year Summary */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-          className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-3"
+          transition={{ delay: 0.22, duration: 0.18, ease: 'easeOut' }}
+          className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-3 widget-container"
         >
           <h2 className="text-sm font-semibold text-white mb-3">Year Summary</h2>
           <div className="space-y-2.5">

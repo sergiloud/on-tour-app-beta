@@ -93,7 +93,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
               </div>
 
               {/* Notification List */}
-              <div className="overflow-y-auto max-h-[calc(80vh-100px)]">
+              <div className="overflow-y-auto max-h-[calc(80vh-100px)] smooth-scroll">
                 {notifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-white/50">
                     <Bell className="w-12 h-12 mb-3 opacity-40" />
@@ -107,12 +107,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
                         <motion.div
                           key={notification.id}
                           layout
-                          initial={{ opacity: 0, x: -20 }}
+                          initial={{ opacity: 0, x: -15 }}
                           animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20, height: 0 }}
-                          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                          exit={{ opacity: 0, x: 15, height: 0 }}
+                          transition={{ 
+                            layout: { duration: 0.25, ease: 'easeOut' },
+                            opacity: { duration: 0.15 },
+                            x: { duration: 0.2, ease: 'easeOut' }
+                          }}
                           className={`
-                            relative border-b border-white/5 px-6 py-4 hover:bg-white/5 transition-colors
+                            relative border-b border-white/5 px-6 py-4 hover:bg-white/5 transition-colors notification-slide card-list-item
                             ${!notification.read ? 'bg-accent-500/10 border-l-4 border-l-accent-500' : ''}
                           `}
                         >
@@ -150,16 +154,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
                                 {!notification.read && (
                                   <motion.button
                                     onClick={() => markAsRead(notification.id)}
-                                    className="text-xs text-accent-500 hover:text-accent-400 font-medium"
+                                    className="text-xs text-accent-500 hover:text-accent-400 font-medium touch-optimized"
                                     whileTap={{ scale: 0.95 }}
+                                    transition={{ duration: 0.1 }}
                                   >
                                     Marcar como leída
                                   </motion.button>
                                 )}
                                 <motion.button
                                   onClick={() => deleteNotification(notification.id)}
-                                  className="text-xs text-red-400 hover:text-red-300 font-medium"
+                                  className="text-xs text-red-400 hover:text-red-300 font-medium touch-optimized"
                                   whileTap={{ scale: 0.95 }}
+                                  transition={{ duration: 0.1 }}
                                 >
                                   Eliminar
                                 </motion.button>

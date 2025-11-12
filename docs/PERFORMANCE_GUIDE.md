@@ -82,6 +82,40 @@ Se han implementado optimizaciones críticas de rendimiento para eliminar flicke
 - Layout animations: `duration: 0.25s` en lugar de spring
 - FAB: `fab-optimized`, transitions `duration: 0.15s`
 
+**NotificationCenter.tsx** ✨ NEW
+- Lista de notificaciones: `smooth-scroll`, `notification-slide`, `card-list-item`
+- Exit animations optimizadas: x reduced (20px → 15px)
+- Layout transitions: `duration: 0.25s` split (layout, opacity, x)
+- Botones: `touch-optimized`, `transition: 0.1s`
+
+**FinanceApp.tsx** ✨ NEW
+- Widgets: `widget-container`, `card-list-item`
+- Delays reducidos (0.24s → 0.18s, 0.3s → 0.22s)
+- Transitions: `duration: 0.18s, ease: 'easeOut'`
+
+**SpotlightSearch.tsx** ✨ NEW
+- Results list: `card-list-item`, `touch-optimized`
+- Delays limitados: `Math.min(index * 0.025, 0.15)`
+- Transitions: `duration: 0.18s, ease: 'easeOut'`
+- Layout animations: `duration: 0.2s`
+
+**CalendarApp.tsx** ✨ NEW
+- Content scroll: `smooth-scroll`, `widget-container`
+- Month swipe: reduced travel (100px → 80px)
+- Transitions: `duration: 0.25s, ease: 'easeOut'` vs spring
+- Calendar buttons: `touch-optimized`, `whileTap: 0.95`, `transition: 0.1s`
+
+**AppSwitcher.tsx** ✨ NEW
+- Cards container: `gpu-accelerate`, `app-switcher-card`
+- Card transitions: `duration: 0.3s, ease: 'easeOut'` vs spring
+- Selection indicator: `duration: 0.25s` vs spring
+
+**AddShowModal.tsx** ✨ NEW
+- Modal layer: `modal-layer`, `gpu-accelerate-full`
+- `AnimatePresence mode="wait"`
+- Slide transition: `duration: 0.3s, ease: 'easeOut'` vs spring (stiffness 500)
+- Overlay: `duration: 0.15s`
+
 ## Configuraciones de Framer Motion
 
 ### ❌ Evitar (Causa lag)

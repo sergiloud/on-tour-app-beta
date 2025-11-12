@@ -91,7 +91,7 @@ export const AppSwitcher: React.FC<AppSwitcherProps> = ({
               </motion.div>
 
               {/* Cards Container */}
-              <div className="relative h-96 flex items-center justify-center">
+              <div className="relative h-96 flex items-center justify-center gpu-accelerate">
                 {recentApps.map((app, index) => {
                   const offset = index - selectedIndex;
                   const isSelected = index === selectedIndex;
@@ -99,7 +99,7 @@ export const AppSwitcher: React.FC<AppSwitcherProps> = ({
                   return (
                     <motion.div
                       key={app.id}
-                      className="absolute w-72 h-full cursor-pointer"
+                      className="absolute w-72 h-full cursor-pointer app-switcher-card"
                       style={{
                         zIndex: recentApps.length - Math.abs(offset),
                       }}
@@ -111,9 +111,8 @@ export const AppSwitcher: React.FC<AppSwitcherProps> = ({
                         rotateY: offset * -5,
                       }}
                       transition={{
-                        type: 'spring',
-                        stiffness: 400,
-                        damping: 30,
+                        duration: 0.3,
+                        ease: 'easeOut'
                       }}
                       onClick={() => {
                         if (isSelected) {
@@ -161,8 +160,8 @@ export const AppSwitcher: React.FC<AppSwitcherProps> = ({
                       {isSelected && (
                         <motion.div
                           layoutId="selector"
-                          className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-12 h-1 bg-accent-500 rounded-full"
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-12 h-1 bg-accent-500 rounded-full gpu-accelerate"
+                          transition={{ duration: 0.25, ease: 'easeOut' }}
                         />
                       )}
                     </motion.div>

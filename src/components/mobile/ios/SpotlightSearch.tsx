@@ -173,11 +173,16 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({ isOpen, onClos
                         <motion.button
                           key={result.id}
                           onClick={() => handleSelect(result)}
-                          className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 active:bg-white/20 transition-colors text-left"
-                          initial={{ opacity: 0, x: -20 }}
+                          className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 active:bg-white/20 transition-colors text-left card-list-item touch-optimized"
+                          initial={{ opacity: 0, x: -12 }}
                           animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20, height: 0 }}
-                          transition={{ delay: index * 0.04, type: 'spring', stiffness: 400, damping: 25 }}
+                          exit={{ opacity: 0, x: 12, height: 0 }}
+                          transition={{ 
+                            delay: Math.min(index * 0.025, 0.15), 
+                            duration: 0.18, 
+                            ease: 'easeOut',
+                            layout: { duration: 0.2 }
+                          }}
                           layout
                           whileTap={{ scale: 0.98 }}
                         >

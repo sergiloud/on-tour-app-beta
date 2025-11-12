@@ -210,7 +210,7 @@ export const CalendarApp: React.FC = () => {
 
       {/* Content */}
       <motion.div 
-        className="flex-1 overflow-y-auto px-4 py-4"
+        className="flex-1 overflow-y-auto px-4 py-4 smooth-scroll"
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.2}
@@ -220,10 +220,11 @@ export const CalendarApp: React.FC = () => {
           {viewMode === 'month' ? (
             <motion.div
               key={currentMonth.toISOString()}
-              initial={{ opacity: 0, x: swipeDirection === 'left' ? 100 : swipeDirection === 'right' ? -100 : 0 }}
+              initial={{ opacity: 0, x: swipeDirection === 'left' ? 80 : swipeDirection === 'right' ? -80 : 0 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: swipeDirection === 'left' ? -100 : swipeDirection === 'right' ? 100 : 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              exit={{ opacity: 0, x: swipeDirection === 'left' ? -80 : swipeDirection === 'right' ? 80 : 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="widget-container"
             >
               {/* Weekday Headers */}
               <div className="grid grid-cols-7 gap-1 mb-2">
@@ -248,11 +249,13 @@ export const CalendarApp: React.FC = () => {
                     key={index}
                     onClick={() => setSelectedDate(isSelected ? null : dateKey)}
                     className={`
-                      relative aspect-square p-1 rounded-lg text-sm transition-all
+                      relative aspect-square p-1 rounded-lg text-sm transition-all touch-optimized
                       ${currentMonthDay ? 'text-white' : 'text-white/30'}
                       ${today ? 'bg-accent-500/20 border-2 border-accent-500' : 'border border-transparent'}
                       ${isSelected ? 'bg-white/10' : 'hover:bg-white/5'}
                     `}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.1 }}
                   >
                     <div className="font-medium">{date.getDate()}</div>
                     

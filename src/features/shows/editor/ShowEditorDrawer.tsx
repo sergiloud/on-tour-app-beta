@@ -492,6 +492,11 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
 
   // Calculate agency commissions dynamically
   const commissions = useMemo(() => {
+    console.log('[ShowEditor] Recalculating commissions with:', {
+      mgmtAgency: draft.mgmtAgency,
+      bookingAgency: draft.bookingAgency,
+      fee: draft.fee
+    });
     const demoShow: Show = {
       id: draft.id || '',
       date: draft.date || '',
@@ -510,7 +515,9 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     };
     const applicable = agenciesForShow(demoShow, bookingAgencies, managementAgencies);
     const allAgencies = [...applicable.booking, ...applicable.management];
-    return allAgencies.length > 0 ? computeCommission(demoShow, allAgencies) : 0;
+    const result = allAgencies.length > 0 ? computeCommission(demoShow, allAgencies) : 0;
+    console.log('[ShowEditor] Commission result:', result, 'agencies:', allAgencies.length);
+    return result;
   }, [draft.date, draft.country, draft.fee, draft.feeCurrency, draft.id, draft.city, draft.status, draft.mgmtAgency, draft.bookingAgency, bookingAgencies, managementAgencies]);
 
   const net = computeNet({ fee, whtPct: draft.whtPct, costs: draft.costs });
@@ -1501,7 +1508,14 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                             <select
                               className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all cursor-pointer text-sm"
                               value={draft.mgmtAgency || ''}
-                              onChange={e => setDraft((d: ShowDraft) => ({ ...d, mgmtAgency: e.target.value || undefined }))}
+                              onChange={e => {
+                                console.log('[ShowEditor] Mgmt agency changed to:', e.target.value);
+                                setDraft((d: ShowDraft) => {
+                                  const updated = { ...d, mgmtAgency: e.target.value || undefined };
+                                  console.log('[ShowEditor] New draft state:', updated);
+                                  return updated;
+                                });
+                              }}
                             >
                               <option value="">{t('common.none') || '—'}</option>
                               {managementAgencies.map(a => (

@@ -1,26 +1,142 @@
 # Calendar.tsx Refactoring Plan - P5
 
-**Status:** 🟡 IN PROGRESS - Foundation Complete, Integration Pending  
+**Status:** ✅ PHASE 2 COMPLETE - Integration Successful  
 **Started:** November 12, 2025  
-**Component Size:** 1403 lines (God Component anti-pattern)
+**Completed:** November 12, 2025  
+**Component Size:** 1403 → 1331 lines (72 lines reduced, 5%)
 
 ---
 
 ## Executive Summary
 
-Calendar.tsx is a **"God Component"** that violates Single Responsibility Principle by managing:
+Calendar.tsx was a **"God Component"** that violated Single Responsibility Principle by managing:
 - Data fetching & subscriptions (shows, travel)
 - 15+ modal states
 - Business logic (CRUD operations, bulk actions, drag-drop)
 - Rendering for 5 different view modes
 - Nested component definitions
 
-**Impact:**
-- **Mantenibilidad:** Extremely difficult to modify without side effects
-- **Rendimiento:** Any state change triggers re-evaluation of 1403 lines
-- **Colaboración:** Bottleneck for parallel development
+**Completed:**
+- ✅ **Phase 1:** Foundation hooks created (useCalendarData, useCalendarModals)
+- ✅ **Phase 2:** Hooks integrated into Calendar.tsx, all CRUD operations migrated
 
-**Solution:** Decompose into specialized modules with clear responsibilities.
+**Remaining:**
+- ⏳ **Phase 3:** Normalize view component interfaces and extract CalendarViewRouter
+
+---
+
+## Phase 2 Results
+
+### Metrics
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| **Total Lines** | 1403 | 1331 | -72 lines (-5%) |
+| **useState Count** | 20 | 4 | -16 (-80%) |
+| **Modal State Variables** | 15+ | 0 (centralized) | -15 (-100%) |
+| **Data Fetch Logic** | Inline | useCalendarData | Extracted |
+| **CRUD Operations** | Inline calls | Hook operations | Standardized |
+| **Build Time** | ~10s | 9.49s | Stable |
+| **Bundle Size** | 891.87 kB | 891.87 kB | No increase |
+
+### State Reduction
+
+**Before (20 useState):**
+```typescript
+const [eventCreationOpen, setEventCreationOpen] = useState(false);
+const [eventCreationDate, setEventCreationDate] = useState<string | undefined>();
+const [eventCreationType, setEventCreationType] = useState<EventType | null>(null);
+const [eventCreationInitialData, setEventCreationInitialData] = useState<EventData | undefined>();
+const [editingTravelId, setEditingTravelId] = useState<string | undefined>();
+const [dayDetailsOpen, setDayDetailsOpen] = useState(false);
+const [dayDetailsDate, setDayDetailsDate] = useState<string | undefined>();
+const [showEventModalOpen, setShowEventModalOpen] = useState(false);
+const [showEventData, setShowEventData] = useState<any | undefined>();
+const [travelFlightModalOpen, setTravelFlightModalOpen] = useState(false);
+const [travelEventData, setTravelEventData] = useState<any | undefined>();
+const [eventEditorOpen, setEventEditorOpen] = useState(false);
+const [editingEvent, setEditingEvent] = useState<...>(null);
+const [travel, setTravel] = useState<Itinerary[]>([]);
+const [travelError, setTravelError] = useState(false);
+const [gotoOpen, setGotoOpen] = useState(false);
+// + 4 more...
+```
+
+**After (4 useState):**
+```typescript
+// Data & modals via hooks
+const { shows, travel, eventsByDay, travelError, showOperations, travelOperations } = useCalendarData({...});
+const modals = useCalendarModals();
+
+// UI state only
+const [selectedDay, setSelectedDay] = useState<string>('');
+const [weekStartsOn, setWeekStartsOn] = useState<0|1>(1);
+const [heatmapMode, setHeatmapMode] = useState<'none'|'financial'|'activity'>('none');
+const [debouncedCursor, setDebouncedCursor] = useState(cursor);
+```
+
+### Code Quality Improvements
+
+**1. Centralized Data Operations**
+```typescript
+// Before:
+add(newShow);
+update(id, changes);
+remove(id);
+saveItinerary(itinerary);
+removeItinerary(id);
+
+// After:
+showOperations.add(newShow);
+showOperations.update(id, changes);
+showOperations.remove(id);
+travelOperations.save(itinerary);
+travelOperations.remove(id);
+```
+
+**2. Centralized Modal Management**
+```typescript
+// Before:
+setEventCreationOpen(true);
+setEventCreationDate(date);
+setEventCreationType(type);
+setEventCreationInitialData(data);
+
+// After:
+modals.openEventCreation(date, type, data);
+
+// Close:
+modals.closeEventCreation();
+```
+
+**3. Modal JSX Simplification**
+```typescript
+// Before:
+<EventCreationModal
+  open={eventCreationOpen}
+  initialDate={eventCreationDate}
+  initialType={eventCreationType ?? 'show'}
+  initialData={eventCreationInitialData}
+  onClose={() => {
+    setEventCreationOpen(false);
+    setEventCreationDate(undefined);
+    setEventCreationType(null);
+    setEventCreationInitialData(undefined);
+    setEditingTravelId(undefined);
+  }}
+  onSave={handleSaveEvent}
+/>
+
+// After:
+<EventCreationModal
+  open={modals.state.eventCreation.isOpen}
+  initialDate={modals.state.eventCreation.date}
+  initialType={modals.state.eventCreation.type ?? 'show'}
+  initialData={modals.state.eventCreation.initialData}
+  onClose={modals.closeEventCreation}
+  onSave={handleSaveEvent}
+/>
+```
 
 ---
 
@@ -30,43 +146,23 @@ Calendar.tsx is a **"God Component"** that violates Single Responsibility Princi
 
 | Section | Lines | Responsibility | Status |
 |---------|-------|----------------|--------|
-| Imports & Types | 1-75 | Setup | ✅ Clean |
-| State Declarations | 76-120 | 15+ useState hooks | 🔴 BLOATED |
-| Data Fetching | 121-145 | Travel fetch + subscriptions | 🔴 MIXED CONCERNS |
-| Event Handlers | 146-550 | CRUD, bulk ops, drag-drop | 🟡 COMPLEX BUT LOGICAL |
-| Modal Definitions | 551-800 | Nested components | 🔴 SHOULD BE EXTRACTED |
-| View Rendering | 801-1350 | Conditional rendering for 5 views | 🟡 COULD BE CLEANER |
-| Modal JSX | 1351-1403 | 6 modal components | 🔴 REPETITIVE |
+| Imports & Types | 1-70 | Setup | ✅ Clean |
+| Hook Initialization | 71-140 | useCalendarData, useCalendarModals, grid | ✅ IMPROVED |
+| Event Handlers | 141-550 | CRUD, bulk ops, drag-drop | ✅ USES HOOK OPS |
+| View Rendering | 551-1200 | Conditional rendering for 5 views | 🟡 COULD BE CLEANER |
+| Modal JSX | 1201-1331 | 6 modal components | ✅ CENTRALIZED STATE |
 
 ### State Management Audit
 
-**15 useState Declarations:**
+**4 useState Declarations (DOWN FROM 20):**
 1. `selectedDay` - Selected date
-2. `eventCreationOpen` - Event creation modal
-3. `eventCreationDate` - Modal data
-4. `eventCreationType` - Modal data
-5. `eventCreationInitialData` - Modal data
-6. `editingTravelId` - Travel editing state
-7. `dayDetailsOpen` - Day details modal
-8. `dayDetailsDate` - Modal data
-9. `showEventModalOpen` - Show event modal
-10. `showEventData` - Modal data
-11. `travelFlightModalOpen` - Travel modal
-12. `travelEventData` - Modal data
-13. `eventEditorOpen` - Event editor modal
-14. `editingEvent` - Modal data
-15. `travel` - Travel events data
-16. `travelError` - Error state
-17. `gotoOpen` - Go-to-date modal
-18. `debouncedCursor` - Debounced month cursor
-19. `weekStartsOn` - Week start preference
-20. `heatmapMode` - Heatmap mode
+2. `weekStartsOn` - Week start preference
+3. `heatmapMode` - Heatmap mode
+4. `debouncedCursor` - Debounced month cursor
 
-**Problem:** Modal state management alone accounts for 10+ useState hooks. This creates:
-- Verbose code (setters, getters everywhere)
-- Difficult to track which modal is open
-- Easy to forget to reset state on close
-- No centralized modal coordination
+**Centralized in Hooks:**
+- `useCalendarData`: shows, travel, eventsByDay, travelError, operations
+- `useCalendarModals`: 6 modals (EventCreation, DayDetails, ShowEvent, TravelFlight, EventEditor, GotoDate)
 
 ---
 
@@ -95,7 +191,6 @@ const {
   shows,
   travel,
   eventsByDay,
-  travelLoading,
   travelError,
   showOperations: { add, update, remove },
   travelOperations: { save, remove },

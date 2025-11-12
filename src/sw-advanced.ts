@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 /**
  * Advanced Service Worker with Workbox
  *
@@ -23,7 +24,7 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { BackgroundSyncPlugin } from 'workbox-background-sync';
 
-declare const self: ServiceWorkerGlobalScope;
+declare const self: ServiceWorkerGlobalScope & typeof globalThis;
 
 // ========================================
 // Configuración
@@ -249,7 +250,7 @@ registerRoute(navigationRoute);
 // ========================================
 
 // Limpiar caches viejos al activar
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event: ExtendableEvent) => {
     const currentCaches = Object.values(CACHE_VERSIONS);
 
     event.waitUntil(
@@ -275,7 +276,7 @@ self.addEventListener('activate', (event) => {
 let cacheHits = 0;
 let cacheMisses = 0;
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event: FetchEvent) => {
     const url = new URL(event.request.url);
 
     // Solo trackear nuestro dominio
@@ -309,7 +310,7 @@ self.addEventListener('fetch', (event) => {
 // ========================================
 
 // Comunicación con el cliente
-self.addEventListener('message', (event) => {
+self.addEventListener('message', (event: ExtendableMessageEvent) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
@@ -337,7 +338,7 @@ self.addEventListener('message', (event) => {
 // Install Handler
 // ========================================
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (event: ExtendableEvent) => {
     // console.log('[SW] Service Worker installing...');
 
     // Precache assets críticos
@@ -360,7 +361,11 @@ self.addEventListener('install', (event) => {
 // Sync Event - Retry failed requests
 // ========================================
 
-self.addEventListener('sync', (event) => {
+interface SyncEvent extends ExtendableEvent {
+    tag: string;
+}
+
+self.addEventListener('sync', (event: SyncEvent) => {
     if (event.tag === 'offline-mutations') {
         // console.log('[SW] Background sync triggered');
     }
@@ -370,7 +375,7 @@ self.addEventListener('sync', (event) => {
 // Push Notifications (futuro)
 // ========================================
 
-self.addEventListener('push', (event) => {
+self.addEventListener('push', (event: PushEvent) => {
     if (event.data) {
         const data = event.data.json();
 
@@ -385,7 +390,7 @@ self.addEventListener('push', (event) => {
     }
 });
 
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', (event: NotificationEvent) => {
     event.notification.close();
 
     event.waitUntil(

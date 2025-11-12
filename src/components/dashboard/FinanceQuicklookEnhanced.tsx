@@ -3,6 +3,9 @@
  *
  * Integrates useOptimizedFinanceCalculations for async calculations.
  * Shows performance metrics in development mode.
+ * 
+ * ⚠️ TEMPORARILY DISABLED: Missing component dependencies
+ * TODO: Create ThisMonth, StatusBreakdown, NetTimeline, Pipeline components
  */
 
 import React, { useEffect, useState } from 'react';
@@ -11,17 +14,21 @@ import { useFinance } from '../../context/FinanceContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useOptimizedFinanceCalculations } from '../../hooks/useOptimizedFinanceCalculations';
 import { monitorFinanceCalc } from '../../lib/performanceBudgets';
-import ThisMonth from './ThisMonth';
-import StatusBreakdown from './StatusBreakdown';
-import NetTimeline from './NetTimeline';
-import Pipeline from './Pipeline';
+// FIXME: Create missing components
+// import ThisMonth from './ThisMonth';
+// import StatusBreakdown from './StatusBreakdown';
+// import NetTimeline from './NetTimeline';
+// import Pipeline from './Pipeline';
 import { Link, prefetchByPath } from '../../routes/routing';
 import { t } from '../../lib/i18n';
 import { sub } from 'date-fns';
 
 const FinanceQuicklookEnhanced: React.FC = () => {
     const { snapshot, thisMonth, targets, updateTargets } = useFinance();
-    const { currency, exchangeRates } = useSettings();
+    const { currency } = useSettings();
+    // FIXME: exchangeRates not available in Settings type
+    // const { currency, exchangeRates } = useSettings();
+    const exchangeRates = {}; // Temporary placeholder
     const { calculateKPIs, calculateRevenue, metrics } = useOptimizedFinanceCalculations(exchangeRates);
 
     // State for async calculations
@@ -205,15 +212,28 @@ const FinanceQuicklookEnhanced: React.FC = () => {
             )}
 
             {/* Main Content */}
+            {/* FIXME: Restore when components are created
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <ThisMonth />
                 <StatusBreakdown />
             </div>
 
             <NetTimeline />
-            <Pipeline />
+
+            <Pipeline conversionRate={snapshot.conversion || 0} />
+            */}
+            
+            <div className="p-6 bg-amber-500/10 border border-amber-500/20 rounded-lg text-center">
+                <p className="text-amber-400 font-semibold mb-2">⚠️ Component Temporarily Disabled</p>
+                <p className="text-sm text-white/70">
+                    Missing dependencies: ThisMonth, StatusBreakdown, NetTimeline, Pipeline
+                </p>
+                <p className="text-xs text-white/50 mt-2">
+                    Use <Link to="/finance" className="underline hover:text-accent-400">Finance Dashboard</Link> for full functionality
+                </p>
+            </div>
         </Card>
     );
 };
 
-export default React.memo(FinanceQuicklookEnhanced);
+export default FinanceQuicklookEnhanced;

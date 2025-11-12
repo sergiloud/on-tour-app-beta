@@ -24,6 +24,8 @@ import { loadSettings } from './persist';/**
 export function calculateProfitabilityAnalysis(
   transactions: TransactionV3[]
 ): ProfitabilityAnalysis {
+  console.log('[profitabilityHelpers] Calculating from transactions:', transactions.length);
+  
   let grossIncome = 0;
   let totalCommissions = 0;
   let totalWHT = 0;
@@ -42,6 +44,7 @@ export function calculateProfitabilityAnalysis(
 
       // Agregar comisiones
       detail.commissions.forEach(c => {
+        console.log('[profitabilityHelpers] Commission:', c.name, c.amount, 'for show fee:', detail.grossFee);
         totalCommissions += c.amount;
         const existing = commissionsByName.get(c.name) || { total: 0, count: 0 };
         commissionsByName.set(c.name, {

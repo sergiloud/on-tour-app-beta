@@ -142,9 +142,10 @@ export const TravelApp: React.FC<AppComponentProps> = () => {
         <div className="flex gap-2 mb-6">
           <motion.button
             whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.1 }}
             onClick={() => setActiveTab('upcoming')}
             className={`
-              flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all
+              flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all touch-optimized
               ${activeTab === 'upcoming'
                 ? 'bg-accent-500 text-black'
                 : 'bg-white/5 text-white/70 hover:bg-white/10'
@@ -155,9 +156,10 @@ export const TravelApp: React.FC<AppComponentProps> = () => {
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.1 }}
             onClick={() => setActiveTab('completed')}
             className={`
-              flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all
+              flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all touch-optimized
               ${activeTab === 'completed'
                 ? 'bg-accent-500 text-black'
                 : 'bg-white/5 text-white/70 hover:bg-white/10'
@@ -181,13 +183,14 @@ export const TravelApp: React.FC<AppComponentProps> = () => {
       )}
 
       {/* Travel List */}
-      <div className="px-5 pb-6 space-y-2.5">
+      <div className="px-5 pb-6 space-y-2.5 smooth-scroll">
         <AnimatePresence mode="popLayout">
           {filteredTravels.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
               className="text-center py-12"
             >
               <Navigation className="w-16 h-16 text-white/20 mx-auto mb-4" />
@@ -203,18 +206,17 @@ export const TravelApp: React.FC<AppComponentProps> = () => {
               return (
                 <motion.div
                   key={travel.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
+                  exit={{ opacity: 0, y: -12 }}
                   transition={{
-                    delay: index * 0.05,
-                    type: 'spring',
-                    stiffness: 400,
-                    damping: 30,
+                    delay: Math.min(index * 0.03, 0.15),
+                    duration: 0.2,
+                    ease: 'easeOut',
                   }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedTravel(travel)}
-                  className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 overflow-hidden cursor-pointer hover:bg-white/10 transition-colors"
+                  className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 overflow-hidden cursor-pointer hover:bg-white/10 transition-colors card-list-item touch-optimized"
                 >
                   <div className="p-4">
                     <div className="flex items-start gap-3">

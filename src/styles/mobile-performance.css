@@ -138,3 +138,231 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== ADVANCED OPTIMIZATIONS (Phase 3) ===== */
+
+/* Contain layout and paint for cards */
+.card-list-item {
+  contain: layout paint;
+  content-visibility: auto;
+  will-change: transform;
+}
+
+/* Optimize modal overlays */
+.modal-layer {
+  contain: layout style paint;
+  isolation: isolate;
+  will-change: opacity;
+}
+
+/* Optimize widget containers */
+.widget-container {
+  contain: layout style;
+  content-visibility: auto;
+}
+
+/* Notification slide animations */
+.notification-slide {
+  contain: layout paint;
+  will-change: transform, opacity;
+}
+
+/* Dock icon optimizations */
+.dock-icon {
+  contain: layout style paint;
+  will-change: transform;
+}
+
+/* FAB button optimizations */
+.fab-optimized {
+  contain: layout style paint;
+  will-change: transform, opacity;
+  isolation: isolate;
+}
+
+/* App switcher card optimizations */
+.app-switcher-card {
+  contain: layout paint;
+  will-change: transform;
+  content-visibility: auto;
+}
+
+/* Contain layout and paint for repeating list items */
+.contain-layout-paint {
+  contain: layout paint;
+}
+
+/* Virtual list item optimizations */
+.virtual-list-item {
+  contain: strict;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
+}
+
+/* Image lazy loading optimization */
+.lazy-image {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 200px;
+}
+
+/* Avatar image optimization */
+.avatar-optimized {
+  image-rendering: -webkit-optimize-contrast;
+  will-change: transform;
+  contain: layout style paint;
+}
+
+/* Reduce repaints on scroll containers */
+.scroll-container-optimized {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  contain: layout style;
+}
+
+/* Badge and indicator optimizations */
+.badge-optimized {
+  contain: layout style paint;
+  will-change: contents;
+}
+
+/* Grid layout optimizations */
+.grid-optimized {
+  contain: layout style;
+  will-change: contents;
+}
+
+/* Flex layout optimizations */
+.flex-optimized {
+  contain: layout style;
+  will-change: contents;
+}
+
+/* Button interaction optimizations */
+.button-optimized {
+  contain: layout style paint;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+/* Input field optimizations */
+.input-optimized {
+  contain: layout style;
+  will-change: contents;
+}
+
+/* Loading skeleton with reduced repaints */
+.skeleton-shimmer {
+  contain: strict;
+  content-visibility: auto;
+  background: linear-gradient(90deg, 
+    rgba(255,255,255,0.05) 25%, 
+    rgba(255,255,255,0.1) 50%, 
+    rgba(255,255,255,0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+  will-change: background-position;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Text truncation with GPU acceleration */
+.truncate-optimized {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  contain: layout style;
+}
+
+/* Multi-line clamp optimization */
+.line-clamp-optimized {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  contain: layout style;
+}
+
+/* Backdrop filter optimization */
+.backdrop-optimized {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  will-change: backdrop-filter;
+  contain: layout style paint;
+}
+
+/* Shadow optimization - use sparingly */
+.shadow-optimized {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  will-change: filter;
+}
+
+/* Gradient background optimization */
+.gradient-optimized {
+  background-image: linear-gradient(to bottom, var(--gradient-from), var(--gradient-to));
+  will-change: background-position;
+  background-attachment: fixed;
+}
+
+/* Transition timing optimizations */
+.transition-fast {
+  transition-duration: 0.1s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-normal {
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-slow {
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent layout shift during font loading */
+.font-optimized {
+  font-display: swap;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent FOUT (Flash of Unstyled Text) */
+.text-stable {
+  visibility: hidden;
+}
+
+.text-stable.loaded {
+  visibility: visible;
+}
+
+/* Optimized z-index layering */
+.layer-1 { z-index: 1; isolation: isolate; }
+.layer-2 { z-index: 2; isolation: isolate; }
+.layer-3 { z-index: 3; isolation: isolate; }
+.layer-modal { z-index: 100; isolation: isolate; }
+.layer-toast { z-index: 200; isolation: isolate; }
+.layer-tooltip { z-index: 300; isolation: isolate; }
+
+/* Intersection observer targets */
+.observe-visibility {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Critical content - always visible */
+.critical-content {
+  content-visibility: visible;
+  contain: none;
+}
+

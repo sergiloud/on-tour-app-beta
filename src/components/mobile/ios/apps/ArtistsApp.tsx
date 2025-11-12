@@ -158,7 +158,7 @@ export const ArtistsApp: React.FC = () => {
                 setSelectedGenre(genre);
                 haptic('selection');
               }}
-              className={`px-4 py-2 rounded-lg capitalize whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-lg capitalize whitespace-nowrap transition-all touch-optimized ${
                 selectedGenre === genre
                   ? 'bg-blue-500 text-white'
                   : 'bg-white/5 text-white/60 hover:bg-white/10'
@@ -171,10 +171,10 @@ export const ArtistsApp: React.FC = () => {
       </div>
 
       {/* Artists List */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-5 py-4 smooth-scroll">
         {isRefreshing && (
           <div className="text-center py-4">
-            <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin-optimized" />
           </div>
         )}
 
@@ -182,14 +182,18 @@ export const ArtistsApp: React.FC = () => {
           {filteredArtists.map((artist, index) => (
             <motion.div
               key={artist.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ 
+                delay: Math.min(index * 0.03, 0.15),
+                duration: 0.2,
+                ease: 'easeOut',
+              }}
               onClick={() => {
                 setSelectedArtist(artist);
                 haptic('light');
               }}
-              className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform"
+              className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform card-list-item touch-optimized"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">

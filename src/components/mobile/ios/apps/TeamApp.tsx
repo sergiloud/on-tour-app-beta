@@ -136,7 +136,8 @@ export const TeamApp: React.FC<AppComponentProps> = () => {
           </div>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            className="w-9 h-9 rounded-lg bg-accent-500 hover:bg-accent-400 text-black flex items-center justify-center shadow-glow"
+            transition={{ duration: 0.1 }}
+            className="w-9 h-9 rounded-lg bg-accent-500 hover:bg-accent-400 text-black flex items-center justify-center shadow-glow touch-optimized"
           >
             <UserPlus className="w-5 h-5 text-black" strokeWidth={2.5} />
           </motion.button>
@@ -156,7 +157,7 @@ export const TeamApp: React.FC<AppComponentProps> = () => {
       </div>
 
       {/* Team List */}
-      <div className="px-5 pb-6 space-y-2.5">
+      <div className="px-5 pb-6 space-y-2.5 smooth-scroll">
         <AnimatePresence mode="popLayout">
           {filteredTeam.map((member, index) => {
             const ActivityIcon = member.recentActivity ? getActivityIcon(member.recentActivity.type) : null;
@@ -164,18 +165,17 @@ export const TeamApp: React.FC<AppComponentProps> = () => {
             return (
               <motion.div
                 key={member.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                exit={{ opacity: 0, y: -12 }}
                 transition={{
-                  delay: index * 0.05,
-                  type: 'spring',
-                  stiffness: 400,
-                  damping: 30,
+                  delay: Math.min(index * 0.03, 0.15),
+                  duration: 0.2,
+                  ease: 'easeOut',
                 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedMember(member)}
-                className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 overflow-hidden cursor-pointer hover:bg-white/10 transition-colors"
+                className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 overflow-hidden cursor-pointer hover:bg-white/10 transition-colors card-list-item touch-optimized"
               >
                 <div className="p-4">
                   <div className="flex items-start gap-3">

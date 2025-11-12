@@ -171,7 +171,7 @@ export const FilesApp: React.FC = () => {
                 setSelectedCategory(category);
                 haptic('selection');
               }}
-              className={`px-4 py-2 rounded-lg capitalize whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-lg capitalize whitespace-nowrap transition-all touch-optimized ${
                 selectedCategory === category
                   ? 'bg-blue-500 text-white'
                   : 'bg-white/5 text-white/60 hover:bg-white/10'
@@ -184,10 +184,10 @@ export const FilesApp: React.FC = () => {
       </div>
 
       {/* Files List */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-5 py-4 smooth-scroll">
         {isRefreshing && (
           <div className="text-center py-4">
-            <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin-optimized" />
           </div>
         )}
 
@@ -197,14 +197,18 @@ export const FilesApp: React.FC = () => {
             return (
               <motion.div
                 key={file.id}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.03 }}
+                transition={{ 
+                  delay: Math.min(index * 0.025, 0.15),
+                  duration: 0.18,
+                  ease: 'easeOut',
+                }}
                 onClick={() => {
                   setSelectedFile(file);
                   haptic('light');
                 }}
-                className={`bg-gradient-to-br ${getFileColor(file.type)} border rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform`}
+                className={`bg-gradient-to-br ${getFileColor(file.type)} border rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform card-list-item touch-optimized`}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">

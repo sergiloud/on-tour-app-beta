@@ -143,10 +143,10 @@ export const NotesApp: React.FC = () => {
       </div>
 
       {/* Notes List */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-5 py-4 smooth-scroll">
         {isRefreshing && (
           <div className="text-center py-4">
-            <div className="inline-block w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+            <div className="inline-block w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin-optimized" />
           </div>
         )}
 
@@ -154,9 +154,13 @@ export const NotesApp: React.FC = () => {
           {filteredNotes.map((note, index) => (
             <motion.div
               key={note.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03 }}
+              transition={{ 
+                delay: Math.min(index * 0.025, 0.15),
+                duration: 0.18,
+                ease: 'easeOut',
+              }}
               onClick={() => {
                 setSelectedNote(note);
                 haptic('light');
@@ -165,7 +169,7 @@ export const NotesApp: React.FC = () => {
                 note.isPinned
                   ? 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30'
                   : 'from-orange-500/20 to-orange-600/20 border-orange-500/30'
-              } border rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform relative`}
+              } border rounded-lg px-4 py-3 cursor-pointer hover:scale-[0.98] transition-transform relative card-list-item touch-optimized`}
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">

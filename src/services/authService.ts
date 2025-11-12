@@ -7,9 +7,15 @@ import {
   OAuthProvider,
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
+  setPersistence,
   User as FirebaseUser
 } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from '../lib/firebase';
+import { 
+  auth, 
+  isFirebaseConfigured, 
+  browserLocalPersistence, 
+  browserSessionPersistence 
+} from '../lib/firebase';
 import { setAuthed, setCurrentUserId } from '../lib/demoAuth';
 import { setCurrentOrgId } from '../lib/tenants';
 import { secureStorage } from '../lib/secureStorage';
@@ -32,16 +38,38 @@ const toAuthUser = (user: FirebaseUser): AuthUser => ({
 // Check if we should use Firebase or Demo auth
 const useFirebase = () => isFirebaseConfigured();
 
+/**
+ * Set auth persistence based on "Remember Me" preference
+ * - LOCAL: Session persists even after browser/tab close (remember me = true)
+ * - SESSION: Session only persists until tab/window close (remember me = false)
+ */
+export const setAuthPersistence = async (rememberMe: boolean): Promise<void> => {
+  if (useFirebase() && auth) {
+    const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+    try {
+      await setPersistence(auth, persistence);
+      console.log(`[AUTH] Persistence set to: ${rememberMe ? 'LOCAL (persistent)' : 'SESSION (temporary)'}`);
+    } catch (error) {
+      console.error('[AUTH] Error setting persistence:', error);
+      throw error;
+    }
+  }
+};
+
 // Sign in with email and password
-export const signIn = async (email: string, password: string): Promise<AuthUser> => {
+export const signIn = async (email: string, password: string, rememberMe: boolean = true): Promise<AuthUser> => {
   if (useFirebase() && auth) {
     try {
+      // Set persistence BEFORE sign-in
+      await setAuthPersistence(rememberMe);
+      
       const result = await signInWithEmailAndPassword(auth, email, password);
       const authUser = toAuthUser(result.user);
 
       // Sync with local storage
       secureStorage.setItem('auth:userId', authUser.uid);
       secureStorage.setItem('auth:email', authUser.email || '');
+      secureStorage.setItem('auth:rememberMe', rememberMe);
 
       return authUser;
     } catch (error) {
@@ -52,6 +80,7 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
     // Demo mode - fallback to existing demo auth
     setAuthed(true);
     setCurrentUserId(email);
+    secureStorage.setItem('auth:rememberMe', rememberMe);
     return {
       uid: 'demo_' + email,
       email,
@@ -62,8 +91,11 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
 };
 
 // Register new user
-export const signUp = async (email: string, password: string, displayName?: string): Promise<AuthUser> => {
+export const signUp = async (email: string, password: string, displayName?: string, rememberMe: boolean = true): Promise<AuthUser> => {
   if (useFirebase() && auth) {
+    // Set persistence BEFORE sign-up
+    await setAuthPersistence(rememberMe);
+    
     const result = await createUserWithEmailAndPassword(auth, email, password);
     const authUser = toAuthUser(result.user);
 
@@ -73,12 +105,14 @@ export const signUp = async (email: string, password: string, displayName?: stri
     // Sync with local storage
     secureStorage.setItem('auth:userId', authUser.uid);
     secureStorage.setItem('auth:email', authUser.email || '');
+    secureStorage.setItem('auth:rememberMe', rememberMe);
 
     return authUser;
   } else {
     // Demo mode
     setAuthed(true);
     setCurrentUserId(email);
+    secureStorage.setItem('auth:rememberMe', rememberMe);
     return {
       uid: 'demo_' + email,
       email,
@@ -89,14 +123,18 @@ export const signUp = async (email: string, password: string, displayName?: stri
 };
 
 // Sign in with Google
-export const signInWithGoogle = async (): Promise<AuthUser> => {
+export const signInWithGoogle = async (rememberMe: boolean = true): Promise<AuthUser> => {
   if (useFirebase() && auth) {
+    // Set persistence BEFORE sign-in
+    await setAuthPersistence(rememberMe);
+    
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const authUser = toAuthUser(result.user);
 
     secureStorage.setItem('auth:userId', authUser.uid);
     secureStorage.setItem('auth:email', authUser.email || '');
+    secureStorage.setItem('auth:rememberMe', rememberMe);
 
     return authUser;
   } else {
@@ -104,6 +142,7 @@ export const signInWithGoogle = async (): Promise<AuthUser> => {
     const demoEmail = 'demo@google.com';
     setAuthed(true);
     setCurrentUserId(demoEmail);
+    secureStorage.setItem('auth:rememberMe', rememberMe);
     return {
       uid: 'demo_google',
       email: demoEmail,
@@ -114,14 +153,18 @@ export const signInWithGoogle = async (): Promise<AuthUser> => {
 };
 
 // Sign in with Apple
-export const signInWithApple = async (): Promise<AuthUser> => {
+export const signInWithApple = async (rememberMe: boolean = true): Promise<AuthUser> => {
   if (useFirebase() && auth) {
+    // Set persistence BEFORE sign-in
+    await setAuthPersistence(rememberMe);
+    
     const provider = new OAuthProvider('apple.com');
     const result = await signInWithPopup(auth, provider);
     const authUser = toAuthUser(result.user);
 
     secureStorage.setItem('auth:userId', authUser.uid);
     secureStorage.setItem('auth:email', authUser.email || '');
+    secureStorage.setItem('auth:rememberMe', rememberMe);
 
     return authUser;
   } else {
@@ -129,6 +172,7 @@ export const signInWithApple = async (): Promise<AuthUser> => {
     const demoEmail = 'demo@apple.com';
     setAuthed(true);
     setCurrentUserId(demoEmail);
+    secureStorage.setItem('auth:rememberMe', rememberMe);
     return {
       uid: 'demo_apple',
       email: demoEmail,
@@ -148,6 +192,7 @@ export const signOut = async (): Promise<void> => {
   setAuthed(false);
   secureStorage.removeItem('auth:userId');
   secureStorage.removeItem('auth:email');
+  secureStorage.removeItem('auth:rememberMe');
   secureStorage.removeItem('demo:lastUser');
   secureStorage.removeItem('demo:lastOrg');
 };

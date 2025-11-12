@@ -1,5 +1,11 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence, Auth } from 'firebase/auth';
+import { 
+  getAuth, 
+  setPersistence, 
+  browserLocalPersistence, 
+  browserSessionPersistence,
+  Auth 
+} from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAnalytics, Analytics } from 'firebase/analytics';
 
@@ -45,7 +51,8 @@ if (isFirebaseConfigured()) {
     // Initialize Firebase
     app = initializeApp(firebaseConfig);
 
-    // Initialize Firebase Auth with persistence
+    // Initialize Firebase Auth with default LOCAL persistence (persistent across sessions)
+    // Individual auth methods can override this with SESSION persistence if "remember me" is unchecked
     auth = getAuth(app);
     setPersistence(auth, browserLocalPersistence).catch((error) => {
       console.error('Error setting persistence:', error);
@@ -84,4 +91,4 @@ if (isFirebaseConfigured()) {
 }
 
 // Export the initialized services (may be null if not configured)
-export { app, auth, db, analytics };
+export { app, auth, db, analytics, browserLocalPersistence, browserSessionPersistence };

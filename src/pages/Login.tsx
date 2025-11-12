@@ -76,7 +76,11 @@ const Login: React.FC = () => {
   const [usernameOrEmail, setUsernameOrEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
-  const [remember, setRemember] = React.useState(false);
+  // Cargar preferencia de "recordarme" desde localStorage (default: true para mejor UX en móvil)
+  const [remember, setRemember] = React.useState(() => {
+    const stored = secureStorage.getItem<boolean>('auth:rememberMe');
+    return stored !== null ? stored : true; // Default true
+  });
 
   // Validation state
   const [fieldErrors, setFieldErrors] = React.useState<{ usernameOrEmail?: string; password?: string }>({});
@@ -113,9 +117,9 @@ const Login: React.FC = () => {
         let authUser;
 
         if (provider === 'google') {
-          authUser = await authService.signInWithGoogle();
+          authUser = await authService.signInWithGoogle(remember);
         } else if (provider === 'apple') {
-          authUser = await authService.signInWithApple();
+          authUser = await authService.signInWithApple(remember);
         }
 
         if (authUser) {
@@ -194,12 +198,18 @@ const Login: React.FC = () => {
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       trackEvent(`login.sso.error.${provider}`, { code: error.code });
     }
-  }, [loginState.state, setUserId, updateProfile, usersMap]);
+  }, [loginState.state, setUserId, updateProfile, usersMap, remember]);
 
   // SSO handlers
   const handleGoogleLogin = React.useCallback(() => handleSSOLogin('google'), [handleSSOLogin]);
   const handleAppleLogin = React.useCallback(() => handleSSOLogin('apple'), [handleSSOLogin]);
   const handleMicrosoftLogin = React.useCallback(() => handleSSOLogin('microsoft'), [handleSSOLogin]);
+
+  // Persistir preferencia "recordarme" cuando cambia
+  React.useEffect(() => {
+    secureStorage.setItem('auth:rememberMe', remember);
+    try { trackEvent('login.remember.toggled', { on: remember }); } catch { }
+  }, [remember]);
 
   // Demo login handler for Danny Avila
   const handleDannyAvilaLogin = React.useCallback(async () => {
@@ -432,7 +442,7 @@ const Login: React.FC = () => {
     }
 
     try {
-      const authUser = await authService.signIn(u, p);
+      const authUser = await authService.signIn(u, p, rec);
 
       // Determine default org based on email
       let defaultOrg = ORG_AGENCY_SHALIZI;

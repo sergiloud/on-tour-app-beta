@@ -40,56 +40,62 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm z-40"
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100]"
             onClick={onClose}
           />
 
           {/* Notification Panel */}
           <motion.div
-            initial={{ y: '-100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '-100%' }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="absolute top-0 left-0 right-0 z-50"
+            initial={{ y: '-100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '-100%', opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 35, mass: 0.8 }}
+            className="fixed top-0 left-0 right-0 z-[110]"
           >
-            <div className="bg-white dark:bg-neutral-900 rounded-b-3xl shadow-2xl max-h-[80vh] overflow-hidden">
+            <div className="bg-ink-900/95 dark:bg-ink-950/95 backdrop-blur-2xl rounded-b-3xl shadow-2xl max-h-[80vh] overflow-hidden border-b border-white/10">
               {/* Header */}
-              <div className="sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-200 dark:border-neutral-700 px-6 py-4">
+              <div className="sticky top-0 bg-ink-900/80 backdrop-blur-xl border-b border-white/10 px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Bell className="w-5 h-5 text-accent-500" />
-                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                    <h2 className="text-lg font-semibold text-white">
                       Notificaciones
                     </h2>
                     {unreadCount > 0 && (
-                      <span className="bg-accent-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="bg-accent-500 text-black text-xs font-bold px-2 py-0.5 rounded-full"
+                      >
                         {unreadCount}
-                      </span>
+                      </motion.span>
                     )}
                   </div>
-                  <button
+                  <motion.button
                     onClick={onClose}
-                    className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                    whileTap={{ scale: 0.9 }}
                   >
-                    <X className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                  </button>
+                    <X className="w-5 h-5 text-white/70" />
+                  </motion.button>
                 </div>
 
                 {unreadCount > 0 && (
-                  <button
+                  <motion.button
                     onClick={markAllAsRead}
-                    className="mt-2 text-sm text-accent-500 hover:text-accent-600 font-medium"
+                    className="mt-2 text-sm text-accent-500 hover:text-accent-400 font-medium"
+                    whileTap={{ scale: 0.95 }}
                   >
                     Marcar todas como leídas
-                  </button>
+                  </motion.button>
                 )}
               </div>
 
               {/* Notification List */}
               <div className="overflow-y-auto max-h-[calc(80vh-100px)]">
                 {notifications.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-neutral-500 dark:text-neutral-400">
+                  <div className="flex flex-col items-center justify-center py-12 text-white/50">
                     <Bell className="w-12 h-12 mb-3 opacity-40" />
                     <p className="text-sm">No hay notificaciones</p>
                   </div>
@@ -103,65 +109,63 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
                           layout
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20 }}
+                          exit={{ opacity: 0, x: 20, height: 0 }}
                           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                           className={`
-                            relative border-b border-neutral-200 dark:border-neutral-700 px-6 py-4
-                            ${!notification.read ? 'bg-accent-50 dark:bg-accent-950/20' : ''}
+                            relative border-b border-white/5 px-6 py-4 hover:bg-white/5 transition-colors
+                            ${!notification.read ? 'bg-accent-500/10 border-l-4 border-l-accent-500' : ''}
                           `}
                         >
                           <div className="flex gap-3">
                             <div className={`
                               flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
-                              ${notification.type === 'show' ? 'bg-blue-100 dark:bg-blue-900/30' : ''}
-                              ${notification.type === 'task' ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}
-                              ${notification.type === 'finance' ? 'bg-green-100 dark:bg-green-900/30' : ''}
-                              ${notification.type === 'system' ? 'bg-neutral-100 dark:bg-neutral-800' : ''}
+                              ${notification.type === 'show' ? 'bg-blue-500/20' : ''}
+                              ${notification.type === 'task' ? 'bg-yellow-500/20' : ''}
+                              ${notification.type === 'finance' ? 'bg-green-500/20' : ''}
+                              ${notification.type === 'system' ? 'bg-white/10' : ''}
                             `}>
                               <Icon className={`
                                 w-5 h-5
-                                ${notification.type === 'show' ? 'text-blue-600 dark:text-blue-400' : ''}
-                                ${notification.type === 'task' ? 'text-yellow-600 dark:text-yellow-400' : ''}
-                                ${notification.type === 'finance' ? 'text-green-600 dark:text-green-400' : ''}
-                                ${notification.type === 'system' ? 'text-neutral-600 dark:text-neutral-400' : ''}
+                                ${notification.type === 'show' ? 'text-blue-400' : ''}
+                                ${notification.type === 'task' ? 'text-yellow-400' : ''}
+                                ${notification.type === 'finance' ? 'text-green-400' : ''}
+                                ${notification.type === 'system' ? 'text-white/70' : ''}
                               `} />
                             </div>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
-                                <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                                <h3 className="text-sm font-semibold text-white">
                                   {notification.title}
                                 </h3>
-                                <span className="text-xs text-neutral-500 dark:text-neutral-400 flex-shrink-0">
+                                <span className="text-xs text-white/50 flex-shrink-0">
                                   {formatTime(notification.timestamp)}
                                 </span>
                               </div>
-                              <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+                              <p className="text-sm text-white/70 line-clamp-2">
                                 {notification.message}
                               </p>
 
                               <div className="flex items-center gap-2 mt-2">
                                 {!notification.read && (
-                                  <button
+                                  <motion.button
                                     onClick={() => markAsRead(notification.id)}
-                                    className="text-xs text-accent-500 hover:text-accent-600 font-medium"
+                                    className="text-xs text-accent-500 hover:text-accent-400 font-medium"
+                                    whileTap={{ scale: 0.95 }}
                                   >
                                     Marcar como leída
-                                  </button>
+                                  </motion.button>
                                 )}
-                                <button
+                                <motion.button
                                   onClick={() => deleteNotification(notification.id)}
-                                  className="text-xs text-red-500 hover:text-red-600 font-medium"
+                                  className="text-xs text-red-400 hover:text-red-300 font-medium"
+                                  whileTap={{ scale: 0.95 }}
                                 >
                                   Eliminar
-                                </button>
+                                </motion.button>
                               </div>
                             </div>
                           </div>
-
-                          {!notification.read && (
-                            <div className="absolute right-6 top-1/2 -translate-y-1/2 w-2 h-2 bg-accent-500 rounded-full" />
-                          )}
                         </motion.div>
                       );
                     })}

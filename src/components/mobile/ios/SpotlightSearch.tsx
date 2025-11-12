@@ -102,22 +102,22 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({ isOpen, onClos
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-xl z-[100]"
             onClick={onClose}
           />
 
           {/* Search Panel */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            initial={{ opacity: 0, scale: 0.95, y: -30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="fixed top-20 left-4 right-4 z-50 bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden"
+            exit={{ opacity: 0, scale: 0.95, y: -30 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8 }}
+            className="fixed top-20 left-4 right-4 z-[110] bg-ink-900/95 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
           >
             {/* Search Input */}
             <div className="flex items-center gap-3 p-4 border-b border-white/10">
-              <Search className="w-5 h-5 text-accent-500" strokeWidth={2.5} />
+              <Search className="w-5 h-5 text-accent-500 flex-shrink-0" strokeWidth={2.5} />
               <input
                 type="text"
                 value={query}
@@ -132,19 +132,27 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({ isOpen, onClos
                   animate={{ scale: 1 }}
                   onClick={() => setQuery('')}
                   className="p-1 rounded-lg hover:bg-white/10"
+                  whileTap={{ scale: 0.9 }}
                 >
                   <X className="w-4 h-4 text-white/60" strokeWidth={2} />
                 </motion.button>
               )}
+              <motion.button
+                onClick={onClose}
+                className="p-1 rounded-lg hover:bg-white/10 flex-shrink-0"
+                whileTap={{ scale: 0.9 }}
+              >
+                <X className="w-5 h-5 text-white/60" strokeWidth={2} />
+              </motion.button>
             </div>
 
             {/* Results */}
             <div className="max-h-[60vh] overflow-y-auto">
               {results.length === 0 ? (
-                <div className="text-center py-12 text-white/40">
+                <div className="text-center py-12 text-white/50">
                   <Search className="w-12 h-12 mx-auto mb-3 opacity-40" />
                   <p className="text-sm font-medium">No se encontraron resultados</p>
-                  <p className="text-xs mt-1">Intenta con otro término</p>
+                  <p className="text-xs mt-1 text-white/40">Intenta con otro término</p>
                 </div>
               ) : (
                 <div className="p-2">
@@ -165,12 +173,13 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({ isOpen, onClos
                         <motion.button
                           key={result.id}
                           onClick={() => handleSelect(result)}
-                          className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 transition-colors text-left"
+                          className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 active:bg-white/20 transition-colors text-left"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20 }}
-                          transition={{ delay: index * 0.05 }}
+                          exit={{ opacity: 0, x: 20, height: 0 }}
+                          transition={{ delay: index * 0.04, type: 'spring', stiffness: 400, damping: 25 }}
                           layout
+                          whileTap={{ scale: 0.98 }}
                         >
                           {/* Icon */}
                           <div className={`w-10 h-10 rounded-xl ${colors.bg} flex items-center justify-center flex-shrink-0`}>

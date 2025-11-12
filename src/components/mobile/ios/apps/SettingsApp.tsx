@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { AppComponentProps } from '../../../../types/mobileOS';
 import { useNotifications, requestNotificationPermission } from '../../../../stores/notificationStore';
+import { ThemeSelector } from '../ThemeSelector';
 
 const WIDGETS_KEY = 'mobileOS:widgets';
 const HAPTIC_KEY = 'mobileOS:haptic';
@@ -25,9 +26,10 @@ interface SettingItem {
   description?: string;
   enabled?: boolean;
   onToggle?: () => void;
-  type?: 'link' | 'action' | 'toggle';
+  type?: 'link' | 'action' | 'toggle' | 'custom';
   danger?: boolean;
   onClick?: () => void;
+  component?: React.ReactNode;
 }
 
 interface SettingsSection {
@@ -260,10 +262,23 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
       icon: Palette,
       items: [
         {
-          label: 'Modo Oscuro',
-          description: 'Tema oscuro activado',
+          label: 'Tema',
+          description: 'Personaliza los colores',
+          type: 'custom',
+          component: <ThemeSelector />,
+        },
+        {
+          label: 'Modo oscuro',
+          description: 'Reducir brillo de pantalla',
           enabled: darkMode,
           onToggle: toggleDarkMode,
+          type: 'toggle',
+        },
+        {
+          label: 'Retroalimentación háptica',
+          description: 'Vibración al tocar',
+          enabled: hapticEnabled,
+          onToggle: toggleHaptic,
           type: 'toggle',
         },
       ],
@@ -351,56 +366,70 @@ export const SettingsApp: React.FC<AppComponentProps> = () => {
             {/* Section Items */}
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
               {section.items.map((item, itemIndex) => (
-                <div
-                  key={item.label}
-                  className={`
-                    p-4 flex items-center justify-between
-                    ${itemIndex !== section.items.length - 1 ? 'border-b border-white/5' : ''}
-                    ${item.type !== 'toggle' && !item.danger ? 'hover:bg-white/5 cursor-pointer' : ''}
-                    ${item.danger ? 'hover:bg-red-500/10' : ''}
-                    transition-colors
-                  `}
-                  onClick={item.type === 'action' && !item.onToggle ? () => {} : undefined}
-                >
-                  <div className="flex-1">
-                    <div className={`font-medium ${item.danger ? 'text-red-400' : 'text-white'}`}>
-                      {item.label}
+                <div key={item.label}>
+                  {/* Custom component rendering */}
+                  {item.type === 'custom' && item.component ? (
+                    <div className="p-4 border-b border-white/5 last:border-b-0">
+                      <div className="mb-3">
+                        <div className="font-medium text-white">{item.label}</div>
+                        {item.description && (
+                          <div className="text-xs text-white/50 mt-0.5">{item.description}</div>
+                        )}
+                      </div>
+                      {item.component}
                     </div>
-                    {item.description && (
-                      <div className="text-xs text-white/50 mt-0.5">{item.description}</div>
-                    )}
-                  </div>
-
-                  {/* Toggle Switch for widgets */}
-                  {item.onToggle && (
-                    <motion.button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        item.onToggle!();
-                      }}
+                  ) : (
+                    <div
                       className={`
-                        relative w-12 h-7 rounded-full transition-colors
-                        ${item.enabled ? 'bg-accent-500' : 'bg-white/20'}
+                        p-4 flex items-center justify-between
+                        ${itemIndex !== section.items.length - 1 ? 'border-b border-white/5' : ''}
+                        ${item.type !== 'toggle' && !item.danger ? 'hover:bg-white/5 cursor-pointer' : ''}
+                        ${item.danger ? 'hover:bg-red-500/10' : ''}
+                        transition-colors
                       `}
-                      whileTap={{ scale: 0.95 }}
+                      onClick={item.type === 'action' && !item.onToggle ? () => {} : undefined}
                     >
-                      <motion.div
-                        className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg"
-                        animate={{
-                          left: item.enabled ? '26px' : '4px',
-                        }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 500,
-                          damping: 30,
-                        }}
-                      />
-                    </motion.button>
-                  )}
+                      <div className="flex-1">
+                        <div className={`font-medium ${item.danger ? 'text-red-400' : 'text-white'}`}>
+                          {item.label}
+                        </div>
+                        {item.description && (
+                          <div className="text-xs text-white/50 mt-0.5">{item.description}</div>
+                        )}
+                      </div>
 
-                  {/* Arrow for links */}
-                  {item.type === 'link' && (
-                    <ChevronRight className="w-5 h-5 text-white/30" />
+                      {/* Toggle Switch for widgets */}
+                      {item.onToggle && (
+                        <motion.button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            item.onToggle!();
+                          }}
+                          className={`
+                            relative w-12 h-7 rounded-full transition-colors
+                            ${item.enabled ? 'bg-accent-500' : 'bg-white/20'}
+                          `}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <motion.div
+                            className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg"
+                            animate={{
+                              left: item.enabled ? '26px' : '4px',
+                            }}
+                            transition={{
+                              type: 'spring',
+                              stiffness: 500,
+                              damping: 30,
+                            }}
+                          />
+                        </motion.button>
+                      )}
+
+                      {/* Arrow for links */}
+                      {item.type === 'link' && (
+                        <ChevronRight className="w-5 h-5 text-white/30" />
+                      )}
+                    </div>
                   )}
                 </div>
               ))}

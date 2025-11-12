@@ -26,7 +26,7 @@ export const Dock: React.FC<DockProps> = ({
 
   return (
     <motion.div
-      className="fixed bottom-0 left-0 right-0 z-40 gpu-accelerate"
+      className="fixed bottom-0 left-0 right-0 z-50 gpu-accelerate pointer-events-none"
       style={{
         paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)',
       }}
@@ -39,10 +39,10 @@ export const Dock: React.FC<DockProps> = ({
         delay: 0.1
       }}
     >
-      <div className="mx-4 mb-2">
+      <div className="mx-4 mb-2 pointer-events-auto">
         {/* Dock Container with glass effect matching desktop sidebar */}
         <motion.div 
-          className="relative rounded-3xl overflow-hidden bg-ink-900/35 backdrop-blur-xl glass border border-white/5 gpu-accelerate"
+          className="relative rounded-3xl overflow-hidden bg-ink-900/40 backdrop-blur-2xl glass border border-white/10 gpu-accelerate shadow-2xl"
           whileHover={{ scale: 1.01 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         >

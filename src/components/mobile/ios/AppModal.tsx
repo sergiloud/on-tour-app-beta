@@ -38,14 +38,14 @@ export const AppModal: React.FC<AppModalProps> = ({
         <motion.div
           className="fixed inset-0 z-50 bg-ink-900 gpu-accelerate-full"
           style={{ y, opacity, scale }}
-          initial={{ y: '100%' }}
-          animate={{ y: 0 }}
-          exit={{ y: '100%' }}
+          initial={{ y: '100%', opacity: 0, scale: 0.9 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: '100%', opacity: 0, scale: 0.9 }}
           transition={{ 
             type: 'spring', 
-            stiffness: 400, 
+            stiffness: 450, 
             damping: 35,
-            mass: 0.5
+            mass: 0.8
           }}
         >
           {/* Drag Indicator - draggable area */}

@@ -5,9 +5,12 @@ import { Dock } from './Dock';
 import { AppModal } from './AppModal';
 import { NotificationCenter } from './NotificationCenter';
 import { SpotlightSearch } from './SpotlightSearch';
+import { ControlCenter } from './ControlCenter';
+import { LockScreen } from './LockScreen';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import { APP_REGISTRY, getDefaultLayout } from '../../../config/appRegistry';
 import { NotificationProvider, useNotifications } from '../../../stores/notificationStore';
+import { ThemeProvider } from '../../../stores/themeStore';
 import type { AppDefinition, AppLayout, MobileOSState } from '../../../types/mobileOS';
 import { Bell, Search } from 'lucide-react';
 
@@ -50,6 +53,8 @@ const MobileOSContent: React.FC = () => {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showControlCenter, setShowControlCenter] = useState(false);
+  const [isLocked, setIsLocked] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -176,7 +181,7 @@ const MobileOSContent: React.FC = () => {
       />
 
       {/* Top Action Buttons */}
-      {!openApp && !showNotifications && !showSearch && (
+      {!openApp && !showNotifications && !showSearch && !showControlCenter && (
         <>
           {/* Search Button - Top Left */}
           <motion.button
@@ -187,6 +192,19 @@ const MobileOSContent: React.FC = () => {
             className="absolute top-4 left-4 z-30 p-2 rounded-full bg-white/20 dark:bg-neutral-800/40 backdrop-blur-md shadow-lg"
           >
             <Search className="w-5 h-5 text-white dark:text-neutral-200" />
+          </motion.button>
+
+          {/* Control Center Button - Top Right Corner */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 25 }}
+            onClick={() => setShowControlCenter(true)}
+            className="absolute top-4 right-16 z-30 p-2 rounded-full bg-white/20 dark:bg-neutral-800/40 backdrop-blur-md shadow-lg"
+          >
+            <svg className="w-5 h-5 text-white dark:text-neutral-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
           </motion.button>
 
           {/* Notification Bell - Top Right */}
@@ -252,14 +270,30 @@ const MobileOSContent: React.FC = () => {
         isOpen={showSearch}
         onClose={() => setShowSearch(false)}
       />
+
+      {/* Control Center */}
+      <ControlCenter
+        isOpen={showControlCenter}
+        onClose={() => setShowControlCenter(false)}
+      />
+
+      {/* Lock Screen */}
+      <AnimatePresence>
+        <LockScreen
+          isLocked={isLocked}
+          onUnlock={() => setIsLocked(false)}
+        />
+      </AnimatePresence>
     </div>
   );
 };
 
 export const MobileOS: React.FC = () => {
   return (
-    <NotificationProvider>
-      <MobileOSContent />
-    </NotificationProvider>
+    <ThemeProvider>
+      <NotificationProvider>
+        <MobileOSContent />
+      </NotificationProvider>
+    </ThemeProvider>
   );
 };

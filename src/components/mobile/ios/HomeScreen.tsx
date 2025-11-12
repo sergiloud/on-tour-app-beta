@@ -247,7 +247,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       )}
 
       {/* SECCIÓN 2: Widgets Area - hasta el dock */}
-      <div className="flex-1 px-6 pt-6 pb-24 overflow-y-auto space-y-4">
+      <div className="flex-1 px-6 pt-6 overflow-y-auto space-y-4 pb-40" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 160px)' }}>
         {enabledWidgets.whatsNext && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}

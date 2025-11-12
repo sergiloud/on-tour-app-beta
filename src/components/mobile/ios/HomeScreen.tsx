@@ -152,14 +152,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const currentPageData = pages[currentPage];
   if (!currentPageData) return null;
 
-  // Calcular padding top según dispositivo
-  const topPadding = deviceInfo.hasNotch ? 'pt-16' : 'pt-12';
-
   return (
-    <div className={`absolute inset-0 flex flex-col overflow-hidden ${topPadding}`}>
+    <div className="absolute inset-0 flex flex-col overflow-hidden pt-8">
       {/* SECCIÓN 1: Apps Grid - 40% altura para 3 filas */}
       <div
-        className="h-[40%] px-6 pt-6 overflow-y-auto"
+        className="h-[40%] px-6 pt-4 overflow-y-auto"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { HomeScreen } from './HomeScreen';
 import { Dock } from './Dock';
 import { AppModal } from './AppModal';
-import { StatusBar } from './StatusBar';
 import { useDeviceInfo } from '../../../hooks/useDeviceInfo';
 import { APP_REGISTRY, getDefaultLayout } from '../../../config/appRegistry';
 import type { AppDefinition, AppLayout, MobileOSState } from '../../../types/mobileOS';
@@ -163,9 +162,6 @@ export const MobileOS: React.FC = () => {
           ease: "easeInOut"
         }}
       />
-
-      {/* Status Bar */}
-      {!openApp && <StatusBar />}
 
       {/* Home Screen */}
       <HomeScreen

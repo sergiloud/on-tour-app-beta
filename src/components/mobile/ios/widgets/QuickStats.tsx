@@ -44,29 +44,29 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ className = '' }) => {
       icon: Music,
       label: 'Total Shows',
       value: confirmedShows,
-      color: 'accent-500',
-      bgColor: 'accent-500/20',
+      iconColor: 'text-accent-500',
+      bgColor: 'bg-accent-500/20',
     },
     {
       icon: Calendar,
       label: 'Próximos',
       value: upcomingShows,
-      color: 'blue-400',
-      bgColor: 'blue-500/20',
+      iconColor: 'text-blue-400',
+      bgColor: 'bg-blue-500/20',
     },
     {
       icon: TrendingUp,
       label: 'Este mes',
       value: thisMonthShows,
-      color: 'purple-400',
-      bgColor: 'purple-500/20',
+      iconColor: 'text-purple-400',
+      bgColor: 'bg-purple-500/20',
     },
     {
       icon: DollarSign,
       label: 'Revenue',
       value: `€${(totalRevenue / 1000).toFixed(0)}K`,
-      color: 'green-400',
-      bgColor: 'green-500/20',
+      iconColor: 'text-green-400',
+      bgColor: 'bg-green-500/20',
     },
   ];
 
@@ -99,8 +99,8 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ className = '' }) => {
             whileHover={{ scale: 1.02, borderColor: 'rgba(255, 255, 255, 0.2)' }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className={`w-8 h-8 rounded-xl bg-${stat.bgColor} flex items-center justify-center`}>
-                <stat.icon className={`w-4 h-4 text-${stat.color}`} strokeWidth={2.5} />
+              <div className={`w-8 h-8 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
+                <stat.icon className={`w-4 h-4 ${stat.iconColor}`} strokeWidth={2.5} />
               </div>
             </div>
             <div className="text-2xl font-bold text-white mb-0.5">{stat.value}</div>

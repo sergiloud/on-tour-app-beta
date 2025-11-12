@@ -34,28 +34,41 @@ export const Dock: React.FC<DockProps> = ({
       animate={{ y: 0, opacity: 1 }}
       transition={{ 
         type: 'spring', 
-        stiffness: 300, 
-        damping: 30,
+        stiffness: 400, 
+        damping: 35,
         delay: 0.1
       }}
     >
       <div className="mx-4 mb-2">
         {/* Dock Container with glass effect matching desktop sidebar */}
-        <div 
+        <motion.div 
           className="relative rounded-3xl overflow-hidden bg-ink-900/35 backdrop-blur-xl glass border border-white/5"
+          whileHover={{ scale: 1.01 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         >
           <div className="flex items-center justify-around px-4 py-3 gap-2">
-            {displayApps.map((app) => {
+            {displayApps.map((app, index) => {
               const badgeValue = app.badge ? app.badge() : null;
               
               return (
-                <AppIcon
+                <motion.div
                   key={app.id}
-                  app={app}
-                  size="medium"
-                  badge={badgeValue}
-                  onPress={() => onAppOpen(app)}
-                />
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 400,
+                    damping: 20,
+                    delay: 0.2 + index * 0.05,
+                  }}
+                >
+                  <AppIcon
+                    app={app}
+                    size="medium"
+                    badge={badgeValue}
+                    onPress={() => onAppOpen(app)}
+                  />
+                </motion.div>
               );
             })}
 
@@ -79,7 +92,7 @@ export const Dock: React.FC<DockProps> = ({
               </motion.div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );

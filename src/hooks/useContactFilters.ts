@@ -4,7 +4,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import { useDebouncedValue } from './useDebouncedValue';
+import { useDebounce } from './useDebounce';
 import type { Contact, ContactFilters } from '../types/crm';
 import { contactStore } from '../shared/contactStore';
 
@@ -34,7 +34,7 @@ export const useContactFilters = (contacts: Contact[]): UseContactFiltersResult 
   const [sortBy, setSortBy] = useState<SortBy>('name');
 
   // ✅ Debounce del término de búsqueda para evitar filtrados excesivos
-  const debouncedSearch = useDebouncedValue(filters.search, 300);
+  const debouncedSearch = useDebounce(filters.search, 300);
 
   // Aplicar filtros con búsqueda debounceda
   const filteredContacts = useMemo(() => {

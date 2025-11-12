@@ -2,8 +2,8 @@ import type { Variants } from 'framer-motion';
 
 /**
  * iOS-native page transitions
- * Push: Slide from right
- * Pop: Slide to right
+ * Push: Slide from right with parallax
+ * Pop: Slide to right with parallax
  */
 export const pageTransitions: Variants = {
   initial: {
@@ -23,9 +23,42 @@ export const pageTransitions: Variants = {
   },
   exit: {
     x: '-30%',
-    opacity: 0,
+    opacity: 0.5,
+    scale: 0.95,
     transition: {
       duration: 0.25,
+      ease: [0.4, 0, 0.2, 1],
+    },
+  },
+};
+
+/**
+ * iOS-native page transitions with parallax effect
+ * Background page moves slower (parallax depth)
+ */
+export const pageTransitionsParallax: Variants = {
+  initial: {
+    x: '100%',
+    opacity: 0,
+  },
+  animate: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 350,
+      damping: 35,
+      mass: 0.8,
+      opacity: { duration: 0.2 },
+    },
+  },
+  exit: {
+    x: '-30%',
+    opacity: 0.7,
+    scale: 0.92,
+    filter: 'brightness(0.85)',
+    transition: {
+      duration: 0.3,
       ease: [0.4, 0, 0.2, 1],
     },
   },

@@ -79,9 +79,12 @@ export const OrgProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             
             secureStorage.setItem(K_ORGS, mergedOrgs);
             
-            // Set current org if not set
+            // Set current org if not set OR if current org doesn't exist in loaded orgs
             const firstOrg = orgs[0];
-            if (!orgId && firstOrg) {
+            const currentOrgExists = mergedOrgs.some(o => o.id === orgId);
+            
+            if (firstOrg && (!orgId || !currentOrgExists)) {
+              console.log(`[OrgContext] Setting current org to ${firstOrg.id} (previous: ${orgId})`);
               setCurrentOrgId(firstOrg.id);
               setOrgId(firstOrg.id);
             }

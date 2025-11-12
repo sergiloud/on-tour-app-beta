@@ -33,8 +33,6 @@ export function useRawTransactions(): TransactionV3[] {
   const transactionsV3 = useMemo<TransactionV3[]>(() => {
     const transactions: TransactionV3[] = [];
 
-    console.log(`[useRawTransactions] Total shows in snapshot: ${snapshot.shows.length}`);
-
     // Filtrar shows relevantes y convertir a transacciones
     snapshot.shows.forEach((show) => {
       // Incluir solo shows confirmados, pendientes, postponed
@@ -44,8 +42,6 @@ export function useRawTransactions(): TransactionV3[] {
         transactions.push(...showTransactions);
       }
     });
-
-    console.log(`[useRawTransactions] Total transactions created: ${transactions.length}`);
 
     // Ordenar por fecha descendente (más reciente primero)
     return transactions.sort((a, b) =>

@@ -270,9 +270,10 @@ export function computeCommission(show: any, agencies: AgencyConfig[]): number {
   const fee = show.fee || 0;
   if (fee <= 0) return 0;
 
-  // NEW: Only apply commission if show has an agency selected
-  const hasAgencySelected = !!(show.mgmtAgency || show.bookingAgency);
-  if (!hasAgencySelected) return 0;
+  // REMOVED: Check for explicit agency assignment
+  // Allow commissions to be calculated based on territory fallback from agenciesForShow()
+  // const hasAgencySelected = !!(show.mgmtAgency || show.bookingAgency);
+  // if (!hasAgencySelected) return 0;
 
   // Determine if show is in Americas
   const getContinent = (countryCode: string): ContinentCode | null => {

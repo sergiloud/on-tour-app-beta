@@ -1,7 +1,7 @@
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { app } from '../lib/firebase';
 
-const db = getFirestore(app);
+const db = app ? getFirestore(app) : null;
 
 export interface CompletedActions {
   userId: string;
@@ -14,8 +14,8 @@ export class FirestoreActionsService {
    * Guarda las acciones completadas del usuario
    */
   static async saveCompletedActions(userId: string, actionIds: string[]): Promise<void> {
-    if (!userId) {
-      console.warn('[FirestoreActionsService] No userId provided');
+    if (!userId || !db) {
+      console.warn('[FirestoreActionsService] No userId provided or Firebase not initialized');
       return;
     }
 
@@ -39,8 +39,8 @@ export class FirestoreActionsService {
    * Obtiene las acciones completadas del usuario
    */
   static async getCompletedActions(userId: string): Promise<string[]> {
-    if (!userId) {
-      console.warn('[FirestoreActionsService] No userId provided');
+    if (!userId || !db) {
+      console.warn('[FirestoreActionsService] No userId provided or Firebase not initialized');
       return [];
     }
 
@@ -64,8 +64,8 @@ export class FirestoreActionsService {
    * Marca una acción como completada
    */
   static async markActionCompleted(userId: string, actionId: string): Promise<void> {
-    if (!userId || !actionId) {
-      console.warn('[FirestoreActionsService] Missing userId or actionId');
+    if (!userId || !actionId || !db) {
+      console.warn('[FirestoreActionsService] Missing userId, actionId, or Firebase not initialized');
       return;
     }
 
@@ -124,8 +124,8 @@ export class FirestoreActionsService {
     userId: string,
     onUpdate: (actionIds: string[]) => void
   ): Unsubscribe {
-    if (!userId) {
-      console.warn('[FirestoreActionsService] No userId provided for subscription');
+    if (!userId || !db) {
+      console.warn('[FirestoreActionsService] No userId or Firebase not initialized for subscription');
       return () => {};
     }
 
@@ -151,8 +151,8 @@ export class FirestoreActionsService {
    * Migra acciones completadas desde localStorage a Firestore
    */
   static async migrateFromLocalStorage(userId: string): Promise<void> {
-    if (!userId) {
-      console.warn('[FirestoreActionsService] No userId for migration');
+    if (!userId || !db) {
+      console.warn('[FirestoreActionsService] No userId or Firebase not initialized for migration');
       return;
     }
 

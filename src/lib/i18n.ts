@@ -3233,7 +3233,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'profile.name': 'Nombre'
     , 'profile.role': 'Rol'
     , 'settings.connections': 'Conexiones'
-    , 'settings.profile': 'Perfil'
+    // DUPLICATE: 'settings.profile': 'Perfil' (already defined earlier in ES dict)
     , 'org.billing': 'Facturación'
     , 'org.branding': 'Branding'
     , 'org.clients': 'Clientes'

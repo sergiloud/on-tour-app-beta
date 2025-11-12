@@ -1,4 +1,4 @@
-import { ItineraryEvent, ItineraryWidgetData } from '@/types/dashboard';
+import { ItineraryEvent, ItineraryWidgetData } from '../../types/dashboard';
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: 'numeric',

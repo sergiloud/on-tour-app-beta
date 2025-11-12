@@ -30,13 +30,13 @@ export function useCalendarState() {
     } catch { return { kinds: { shows:true, travel:true }, status: { confirmed:true, pending:true, offer:true } }; }
   });
 
-  // Load from Firebase on mount
+    // Load from Firebase on mount
   useEffect(() => {
     if (userId) {
       FirestoreUserPreferencesService.getUserPreferences(userId)
         .then(prefs => {
           if (prefs?.calendar) {
-            setView(prefs.calendar.view);
+            setView(prefs.calendar.view as CalendarView); // May include 'timeline'
             setCursor(prefs.calendar.month);
             setTz(prefs.calendar.timezone);
             setFilters(prefs.calendar.filters);
@@ -52,6 +52,7 @@ export function useCalendarState() {
           console.error('Failed to load calendar preferences from Firebase:', err);
         });
     }
+    // No cleanup needed
   }, [userId]);
 
   // Sync to Firebase with debounce
@@ -61,8 +62,12 @@ export function useCalendarState() {
         const weekStart = localStorage.getItem('calendar:weekStart');
         const heatmap = localStorage.getItem('calendar:heatmap');
         
+        // Convert CalendarView to allowed subset for Firestore
+        const allowedView: 'month' | 'week' | 'day' | 'agenda' = 
+          (view === 'timeline') ? 'month' : view as 'month' | 'week' | 'day' | 'agenda';
+        
         FirestoreUserPreferencesService.saveCalendarPreferences(userId, {
-          view,
+          view: allowedView,
           month: cursor,
           timezone: tz,
           filters,
@@ -75,6 +80,7 @@ export function useCalendarState() {
 
       return () => clearTimeout(timeoutId);
     }
+    return undefined; // Explicit return when no userId
   }, [userId, view, cursor, tz, filters]);
 
   useEffect(()=>{ try { localStorage.setItem('calendar:view', view); } catch {} }, [view]);

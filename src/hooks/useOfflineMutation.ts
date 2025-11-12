@@ -10,7 +10,7 @@
  */
 
 import { useCallback } from 'react';
-import { offlineManager } from '@/lib/offlineManager';
+import { offlineManager } from '../lib/offlineManager';
 
 /**
  * useOfflineMutation Hook

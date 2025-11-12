@@ -47,7 +47,7 @@ export class FirestoreProfileService {
     try {
       if (!db) throw new Error('Firestore not initialized');
       
-      const profileRef = doc(db, 'users', userId, 'profile', 'data');
+      const profileRef = doc(db, 'users', userId, 'profile', 'main');
       const profileSnap = await getDoc(profileRef);
       
       if (profileSnap.exists()) {
@@ -71,7 +71,7 @@ export class FirestoreProfileService {
     try {
       if (!db) throw new Error('Firestore not initialized');
       
-      const prefsRef = doc(db, 'users', userId, 'preferences', 'data');
+      const prefsRef = doc(db, 'users', userId, 'preferences', 'main');
       const prefsSnap = await getDoc(prefsRef);
       
       if (prefsSnap.exists()) {
@@ -94,7 +94,7 @@ export class FirestoreProfileService {
   private static setupProfileListener(userId: string): void {
     if (!db) return;
     
-    const profileRef = doc(db, 'users', userId, 'profile', 'data');
+    const profileRef = doc(db, 'users', userId, 'profile', 'main');
     
     this.unsubscribeProfile = onSnapshot(
       profileRef,
@@ -117,7 +117,7 @@ export class FirestoreProfileService {
   private static setupPreferencesListener(userId: string): void {
     if (!db) return;
     
-    const prefsRef = doc(db, 'users', userId, 'preferences', 'data');
+    const prefsRef = doc(db, 'users', userId, 'preferences', 'main');
     
     this.unsubscribePrefs = onSnapshot(
       prefsRef,
@@ -141,7 +141,7 @@ export class FirestoreProfileService {
     try {
       if (!db) throw new Error('Firestore not initialized');
       
-      const profileRef = doc(db, 'users', userId, 'profile', 'data');
+      const profileRef = doc(db, 'users', userId, 'profile', 'main');
       
       await setDoc(profileRef, {
         ...profile,
@@ -169,7 +169,7 @@ export class FirestoreProfileService {
     try {
       if (!db) throw new Error('Firestore not initialized');
       
-      const prefsRef = doc(db, 'users', userId, 'preferences', 'data');
+      const prefsRef = doc(db, 'users', userId, 'preferences', 'main');
       
       await setDoc(prefsRef, {
         ...prefs,
@@ -264,7 +264,7 @@ export class FirestoreProfileService {
       console.log('[FirestoreProfileService] Migrating local data to Firestore...');
       
       // Check if already migrated
-      const profileRef = doc(db, 'users', userId, 'profile', 'data');
+      const profileRef = doc(db, 'users', userId, 'profile', 'main');
       const profileSnap = await getDoc(profileRef);
       
       if (profileSnap.exists()) {
@@ -321,11 +321,11 @@ export class FirestoreProfileService {
       console.log('[FirestoreProfileService] Deleting user data...');
       
       // Delete profile
-      const profileRef = doc(db, 'users', userId, 'profile', 'data');
+      const profileRef = doc(db, 'users', userId, 'profile', 'main');
       await setDoc(profileRef, { deleted: true, deletedAt: serverTimestamp() });
 
       // Delete preferences
-      const prefsRef = doc(db, 'users', userId, 'preferences', 'data');
+      const prefsRef = doc(db, 'users', userId, 'preferences', 'main');
       await setDoc(prefsRef, { deleted: true, deletedAt: serverTimestamp() });
 
       // Note: Avatar deletion should be handled separately

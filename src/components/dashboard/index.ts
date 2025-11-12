@@ -12,12 +12,7 @@ export { ShowsSummaryCard } from './ShowsSummaryCard';
 export { MissionControlSummaryCard } from './MissionControlSummaryCard';
 
 // Supporting Components
-export { ActivityFeed } from './ActivityFeed';
+export { default as ActivityFeed } from './ActivityFeed';
 export { QuickActions, getDefaultQuickActions } from './QuickActions';
 export { WelcomeCard } from './WelcomeCard';
 export { DashboardSkeleton, KPISkeleton, SummaryCardSkeleton, Skeleton } from './Skeletons';
-
-// Immersive Components
-export { HeroSection } from './HeroSection';
-export { AnimatedCounter, AnimatedSparkline } from './AnimatedCounter';
-export { ParallaxCard, ScrollTriggeredAnimation } from './ParallaxCard';

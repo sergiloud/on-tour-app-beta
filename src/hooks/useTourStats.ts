@@ -102,24 +102,19 @@ export const useTourStats = (): TourStats => {
         };
     }, [orgId]);
 
-    return useMemo(() => {
+    // Step 1: Filter shows by date range and filters
+    const filteredShows = useMemo(() => {
         const now = Date.now();
         const DAY = 24 * 60 * 60 * 1000;
-
-        // Get date range from filters
         const dateRangeDays = filters.dateRange === 'all' ? 365 : parseInt(filters.dateRange);
         const maxDate = now + dateRangeDays * DAY;
-        const days21 = now + 21 * DAY;
 
-        let all = shows
-            .filter(s => {
-                // Shows are already filtered by useShows hook (tenantId/userId)
-                // Just filter by date and validity here
-                if (!s.date) return false; // Skip shows without valid date
-                const showDate = new Date(s.date).getTime();
-                if (isNaN(showDate)) return false; // Skip invalid dates
-                return showDate >= now && showDate <= maxDate;
-            });
+        let all = shows.filter(s => {
+            if (!s.date) return false;
+            const showDate = new Date(s.date).getTime();
+            if (isNaN(showDate)) return false;
+            return showDate >= now && showDate <= maxDate;
+        });
 
         // Apply status filter
         if (filters.status !== 'all') {
@@ -136,19 +131,19 @@ export const useTourStats = (): TourStats => {
             );
         }
 
-        all = all.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return all.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [shows, filters.dateRange, filters.status, filters.searchQuery]);
 
-        // Use all shows for stats (already filtered by date range)
-        const next21 = all.filter(s => new Date(s.date).getTime() <= days21);
-
-        // Filter to only count real shows (not Personal, Meeting, etc.) for statistics
-        const realShows = all.filter(s => {
+    // Step 2: Filter real shows (excluding Personal, Meeting, etc.)
+    const realShows = useMemo(() => {
+        return filteredShows.filter(s => {
             const btnType = s.notes?.match(/__btnType:(\w+)/)?.[1];
-            return !btnType || btnType === 'show'; // Include if no btnType or if btnType is 'show'
+            return !btnType || btnType === 'show';
         });
-        const realShowsNext21 = realShows.filter(s => new Date(s.date).getTime() <= days21);
+    }, [filteredShows]);
 
-        // Stats (only for real shows)
+    // Step 3: Calculate show statistics
+    const showStatistics = useMemo(() => {
         const shows30 = realShows.length;
         const revenue30 = realShows.reduce((acc, s) => {
             const prob = STAGE_PROB[s.status] ?? 0;
@@ -159,9 +154,14 @@ export const useTourStats = (): TourStats => {
         const pending = realShows.filter(s => s.status === 'pending').length;
         const offers = realShows.filter(s => s.status === 'offer').length;
 
-        // Next show (only real shows)
+        return { shows30, revenue30, confirmed, pending, offers };
+    }, [realShows]);
+
+    // Step 4: Compute next show data
+    const nextShowData = useMemo(() => {
+        const now = Date.now();
         const nextShow = realShows.length > 0 ? realShows[0] : null;
-        const nextShowData = nextShow
+        return nextShow
             ? {
                 city: nextShow.city,
                 date: nextShow.date,
@@ -171,35 +171,22 @@ export const useTourStats = (): TourStats => {
                 lat: nextShow.lat
             }
             : null;
+    }, [realShows]);
 
-        // Agenda agrupado por día (incluye todos los eventos, incluso Personal/Meeting)
-        const agenda: AgendaDay[] = [];
-        const dayMap = new Map<string, AgendaDay>();
+    // Step 5: Build agenda from shows (next 21 days)
+    const showAgendaItems = useMemo(() => {
+        const now = Date.now();
+        const DAY = 24 * 60 * 60 * 1000;
+        const days21 = now + 21 * DAY;
+        
+        return filteredShows
+            .filter(s => new Date(s.date).getTime() <= days21)
+            .map(show => {
+                const d = new Date(show.date);
+                const dayKey = d.toISOString().split('T')[0];
 
-        // Include all events in agenda (next 21 days), not just real shows
-        const agendaEvents = all.filter(s => new Date(s.date).getTime() <= days21);
-
-        agendaEvents.forEach(show => {
-            if (!show.date) return; // Skip shows without date
-            const d = new Date(show.date);
-            if (isNaN(d.getTime())) return; // Skip invalid dates
-            const dayKey = d.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-            if (dayKey && !dayMap.has(dayKey)) {
-                const daysAway = Math.ceil((d.getTime() - now) / (24 * 60 * 60 * 1000));
-                let rel = '';
-                if (daysAway === 0) rel = 'Today';
-                else if (daysAway === 1) rel = 'Tomorrow';
-                else if (daysAway <= 7) rel = 'This week';
-                else if (daysAway <= 14) rel = 'Next week';
-                else rel = 'Later';
-
-                dayMap.set(dayKey, { day: dayKey, rel, shows: [] }); // Use ISO date string
-            }
-
-            if (dayKey) {
-                // Extract button type and color from notes if available
-                let btnType = 'show'; // Default
+                // Extract button type and color from notes
+                let btnType = 'show';
                 let color: string | undefined;
 
                 if (show.notes?.includes('__btnType:')) {
@@ -207,54 +194,59 @@ export const useTourStats = (): TourStats => {
                     if (match?.[1]) btnType = match[1];
                 }
 
-                // Extract color from notes: __dispColor:green format
                 if (show.notes?.includes('__dispColor:')) {
                     const colorMatch = show.notes.match(/__dispColor:(\w+)/);
-                    if (colorMatch?.[1]) {
-                        const colorStr = colorMatch[1];
-                        if (['green', 'blue', 'yellow', 'red', 'purple'].includes(colorStr)) {
-                            color = colorStr;
-                        }
+                    if (colorMatch?.[1] && ['green', 'blue', 'yellow', 'red', 'purple'].includes(colorMatch[1])) {
+                        color = colorMatch[1];
                     }
                 }
 
-                // If no color was extracted and btnType is 'show' (or default), set to green
                 if (!color && (!btnType || btnType === 'show')) {
                     color = 'green';
                 }
 
-                dayMap.get(dayKey)!.shows.push({
-                    id: show.id,
-                    name: (show as any).name,
-                    city: show.city,
-                    venue: show.venue || 'TBA',
-                    status: show.status,
-                    fee: show.fee,
-                    date: show.date,
-                    endDate: (show as any).endDate,
-                    lng: show.lng,
-                    lat: show.lat,
-                    btnType,
-                    eventType: 'show',
-                    color
-                });
-            }
-        });
+                return {
+                    dayKey,
+                    item: {
+                        id: show.id,
+                        name: (show as any).name,
+                        city: show.city,
+                        venue: show.venue || 'TBA',
+                        status: show.status,
+                        fee: show.fee,
+                        date: show.date,
+                        endDate: (show as any).endDate,
+                        lng: show.lng,
+                        lat: show.lat,
+                        btnType,
+                        eventType: 'show' as const,
+                        color
+                    }
+                };
+            })
+            .filter(({ dayKey }) => dayKey);
+    }, [filteredShows]);
 
-        // Add Itinerary events to agenda
+    // Step 6: Build agenda from itinerary events
+    const itineraryAgendaItems = useMemo(() => {
+        const now = Date.now();
+        const DAY = 24 * 60 * 60 * 1000;
+        const days21 = now + 21 * DAY;
+        
+        const items: Array<{ dayKey: string; item: any }> = [];
+
         itineraryEvents.forEach((event: Itinerary) => {
-            if (!event.date) return; // Skip event without date
+            if (!event.date) return;
             const d = new Date(event.date);
-            if (isNaN(d.getTime())) return; // Skip invalid dates
+            if (isNaN(d.getTime())) return;
 
-            // Only include if within next 21 days or spans across
             const eventEndDate = event.endDate ? new Date(event.endDate).getTime() : d.getTime();
             const eventStart = d.getTime();
-            if (eventStart > days21 && eventEndDate > days21) return; // Completely outside range
+            if (eventStart > days21 && eventEndDate > days21) return;
 
-            // Map button color to calendar color for Itinerary events
+            // Map button color to calendar color
             const buttonColor = event.buttonColor;
-            let eventColor = 'blue'; // Default
+            let eventColor = 'blue';
             if (buttonColor === 'emerald') eventColor = 'green';
             else if (buttonColor === 'sky') eventColor = 'blue';
             else if (buttonColor === 'amber') eventColor = 'yellow';
@@ -262,7 +254,6 @@ export const useTourStats = (): TourStats => {
             else if (buttonColor === 'purple') eventColor = 'purple';
             else if (buttonColor === 'cyan') eventColor = 'blue';
 
-            // Validate location using helper
             const isValid = isValidLocation(event.location, event.title, event.btnType);
             const validLocation = isValid ? event.location : undefined;
 
@@ -270,132 +261,138 @@ export const useTourStats = (): TourStats => {
               console.log(`[useTourStats] Filtered out invalid location "${event.location}" from event "${event.title}" (btnType="${event.btnType}")`);
             }
 
-            // For travel events (multi-day itineraries), create TWO separate agenda items
-            // One for the departure (ida) and one for the return (vuelta)
             const isTravelEvent = event.btnType === 'travel' && event.endDate && event.endDate !== event.date;
 
             if (isTravelEvent && event.endDate) {
-                // DEPARTURE (IDA) - First card on the departure date
+                // DEPARTURE
                 const departureKey = d.toISOString().split('T')[0];
-
-                if (departureKey && !dayMap.has(departureKey)) {
-                    const daysAway = Math.ceil((d.getTime() - now) / (24 * 60 * 60 * 1000));
-                    let rel = '';
-                    if (daysAway === 0) rel = 'Today';
-                    else if (daysAway === 1) rel = 'Tomorrow';
-                    else if (daysAway <= 7) rel = 'This week';
-                    else if (daysAway <= 14) rel = 'Next week';
-                    else rel = 'Later';
-
-                    dayMap.set(departureKey, { day: departureKey, rel, shows: [] });
-                }
-
                 if (departureKey) {
-                    dayMap.get(departureKey)!.shows.push({
-                        id: `${event.id}-departure`,
-                        name: `${event.departure} → ${event.destination}`, // Departure format
-                        city: event.destination || '',
-                        venue: '',
-                        status: event.status || 'confirmed',
-                        fee: 0,
-                        date: event.date,
-                        endDate: event.endDate,
-                        lng: 0,
-                        lat: 0,
-                        btnType: event.btnType,
-                        eventType: 'itinerary',
-                        departure: event.departure,
-                        destination: event.destination,
-                        color: eventColor,
-                        description: event.description,
-                        location: validLocation
+                    items.push({
+                        dayKey: departureKey,
+                        item: {
+                            id: `${event.id}-departure`,
+                            name: `${event.departure} → ${event.destination}`,
+                            city: event.destination || '',
+                            venue: '',
+                            status: event.status || 'confirmed',
+                            fee: 0,
+                            date: event.date,
+                            endDate: event.endDate,
+                            lng: 0,
+                            lat: 0,
+                            btnType: event.btnType,
+                            eventType: 'itinerary' as const,
+                            departure: event.departure,
+                            destination: event.destination,
+                            color: eventColor,
+                            description: event.description,
+                            location: validLocation
+                        }
                     });
                 }
 
-                // RETURN (VUELTA) - Second card on the return date with inverted title
+                // RETURN
                 const returnDate = new Date(event.endDate);
                 if (!isNaN(returnDate.getTime())) {
                     const returnKey = returnDate.toISOString().split('T')[0];
                     const returnTitle = event.destination && event.departure
                         ? `${event.destination} → ${event.departure}`
-                        : event.title; // Inverted: destination → departure
-
-                    if (returnKey && !dayMap.has(returnKey)) {
-                        const daysAway = Math.ceil((returnDate.getTime() - now) / (24 * 60 * 60 * 1000));
-                        let rel = '';
-                        if (daysAway === 0) rel = 'Today';
-                        else if (daysAway === 1) rel = 'Tomorrow';
-                        else if (daysAway <= 7) rel = 'This week';
-                        else if (daysAway <= 14) rel = 'Next week';
-                        else rel = 'Later';
-
-                        dayMap.set(returnKey, { day: returnKey, rel, shows: [] });
-                    }
+                        : event.title;
 
                     if (returnKey) {
-                        dayMap.get(returnKey)!.shows.push({
-                            id: `${event.id}-return`,
-                            name: returnTitle,
-                            city: event.departure || '',
-                            venue: '',
-                            status: event.status || 'confirmed',
-                            fee: 0,
-                            date: event.endDate,
-                            endDate: undefined, // Return event is single-day
-                            lng: 0,
-                            lat: 0,
-                            btnType: event.btnType,
-                            eventType: 'itinerary',
-                            departure: event.destination, // Swapped for return
-                            destination: event.departure,  // Swapped for return
-                            color: eventColor,
-                            description: event.description,
-                            location: validLocation
+                        items.push({
+                            dayKey: returnKey,
+                            item: {
+                                id: `${event.id}-return`,
+                                name: returnTitle,
+                                city: event.departure || '',
+                                venue: '',
+                                status: event.status || 'confirmed',
+                                fee: 0,
+                                date: event.endDate,
+                                endDate: undefined,
+                                lng: 0,
+                                lat: 0,
+                                btnType: event.btnType,
+                                eventType: 'itinerary' as const,
+                                departure: event.destination,
+                                destination: event.departure,
+                                color: eventColor,
+                                description: event.description,
+                                location: validLocation
+                            }
                         });
                     }
                 }
             } else {
-                // Non-travel events or single-day events - show as usual
-                const dayKey = d.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-                if (dayKey && !dayMap.has(dayKey)) {
-                    const daysAway = Math.ceil((d.getTime() - now) / (24 * 60 * 60 * 1000));
-                    let rel = '';
-                    if (daysAway === 0) rel = 'Today';
-                    else if (daysAway === 1) rel = 'Tomorrow';
-                    else if (daysAway <= 7) rel = 'This week';
-                    else if (daysAway <= 14) rel = 'Next week';
-                    else rel = 'Later';
-
-                    dayMap.set(dayKey, { day: dayKey, rel, shows: [] });
-                }
-
+                // Non-travel or single-day events
+                const dayKey = d.toISOString().split('T')[0];
                 if (dayKey) {
-                    dayMap.get(dayKey)!.shows.push({
-                        id: event.id,
-                        name: event.title,
-                        city: event.city || event.destination || '',
-                        venue: '',
-                        status: event.status || 'confirmed',
-                        fee: 0,
-                        date: event.date,
-                        endDate: event.endDate,
-                        lng: 0,
-                        lat: 0,
-                        btnType: event.btnType,
-                        eventType: 'itinerary',
-                        departure: event.departure,
-                        destination: event.destination,
-                        color: eventColor,
-                        description: event.description,
-                        location: validLocation
+                    items.push({
+                        dayKey,
+                        item: {
+                            id: event.id,
+                            name: event.title,
+                            city: event.city || event.destination || '',
+                            venue: '',
+                            status: event.status || 'confirmed',
+                            fee: 0,
+                            date: event.date,
+                            endDate: event.endDate,
+                            lng: 0,
+                            lat: 0,
+                            btnType: event.btnType,
+                            eventType: 'itinerary' as const,
+                            departure: event.departure,
+                            destination: event.destination,
+                            color: eventColor,
+                            description: event.description,
+                            location: validLocation
+                        }
                     });
                 }
             }
         });
 
-        dayMap.forEach(d => agenda.push(d));
-        agenda.sort((a, b) => {
+        return items;
+    }, [itineraryEvents]);
+
+    // Step 7: Merge and group agenda items by day
+    const agenda = useMemo(() => {
+        const now = Date.now();
+        const dayMap = new Map<string, AgendaDay>();
+
+        // Helper to ensure day exists in map
+        const ensureDay = (dayKey: string, dateMs: number) => {
+            if (!dayMap.has(dayKey)) {
+                const daysAway = Math.ceil((dateMs - now) / (24 * 60 * 60 * 1000));
+                let rel = '';
+                if (daysAway === 0) rel = 'Today';
+                else if (daysAway === 1) rel = 'Tomorrow';
+                else if (daysAway <= 7) rel = 'This week';
+                else if (daysAway <= 14) rel = 'Next week';
+                else rel = 'Later';
+
+                dayMap.set(dayKey, { day: dayKey, rel, shows: [] });
+            }
+        };
+
+        // Add show agenda items
+        showAgendaItems.forEach(({ dayKey, item }) => {
+            if (!dayKey) return;
+            ensureDay(dayKey, new Date(item.date).getTime());
+            dayMap.get(dayKey)!.shows.push(item);
+        });
+
+        // Add itinerary agenda items
+        itineraryAgendaItems.forEach(({ dayKey, item }) => {
+            if (!dayKey) return;
+            ensureDay(dayKey, new Date(item.date).getTime());
+            dayMap.get(dayKey)!.shows.push(item);
+        });
+
+        const agendaArray = Array.from(dayMap.values());
+        agendaArray.sort((a, b) => {
             const firstA = a.shows[0];
             const firstB = b.shows[0];
             if (!firstA || !firstB) return 0;
@@ -404,8 +401,16 @@ export const useTourStats = (): TourStats => {
             return aDate - bDate;
         });
 
-        // Gap detection
-        let hasGaps = false;
+        return agendaArray;
+    }, [showAgendaItems, itineraryAgendaItems]);
+
+    // Step 8: Detect gaps in confirmed shows
+    const hasGaps = useMemo(() => {
+        const now = Date.now();
+        const DAY = 24 * 60 * 60 * 1000;
+        const days21 = now + 21 * DAY;
+
+        const next21 = filteredShows.filter(s => new Date(s.date).getTime() <= days21);
         const confirmedSorted = next21
             .filter(s => s.status === 'confirmed')
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -419,21 +424,19 @@ export const useTourStats = (): TourStats => {
                     (24 * 60 * 60 * 1000)
                 );
                 if (gap > 7) {
-                    hasGaps = true;
-                    break;
+                    return true;
                 }
             }
         }
+        return false;
+    }, [filteredShows]);
 
+    return useMemo(() => {
         return {
-            shows30,
-            revenue30,
-            confirmed,
-            pending,
-            offers,
+            ...showStatistics,
             nextShow: nextShowData,
             agenda,
             hasGaps
         };
-    }, [shows, itineraryEvents, orgId, filters.dateRange, filters.status, filters.searchQuery]);
+    }, [showStatistics, nextShowData, agenda, hasGaps]);
 };

@@ -54,7 +54,7 @@ const Summary: React.FC = () => {
   // Calculate show statistics
   const showStats = useMemo(() => {
     const now = new Date();
-    const upcoming = shows.filter(s => new Date(s.date) >= now && s.status !== 'cancelled');
+    const upcoming = shows.filter(s => new Date(s.date) >= now && s.status !== 'canceled');
     const thisMonth = upcoming.filter(s => {
       const showDate = new Date(s.date);
       return showDate.getMonth() === now.getMonth() && showDate.getFullYear() === now.getFullYear();

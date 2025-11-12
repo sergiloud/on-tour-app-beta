@@ -19,7 +19,8 @@ import { monitorFinanceCalc } from '../../lib/performanceBudgets';
 // import StatusBreakdown from './StatusBreakdown';
 // import NetTimeline from './NetTimeline';
 // import Pipeline from './Pipeline';
-import { Link, prefetchByPath } from '../../routes/routing';
+import { Link } from 'react-router-dom';
+import { prefetchByPath } from '../../routes/prefetch';
 import { t } from '../../lib/i18n';
 import { sub } from 'date-fns';
 
@@ -52,6 +53,15 @@ const FinanceQuicklookEnhanced: React.FC = () => {
 
         setIsCalculating(true);
 
+        // Use snapshot values directly instead of worker for type compatibility
+        const inc = snapshot.year.income || 0;
+        const exp = snapshot.year.expenses || 0;
+        const margin = inc === 0 ? 0 : ((inc - exp) / inc) * 100;
+        
+        setKpis({ profitMargin: margin, grossMargin: margin });
+        setIsCalculating(false);
+
+        /* FIXME: useOptimizedFinanceCalculations expects different Show type
         calculateKPIs(snapshot.shows)
             .then(result => {
                 setKpis({
@@ -74,7 +84,8 @@ const FinanceQuicklookEnhanced: React.FC = () => {
                 setKpis({ profitMargin: margin, grossMargin: margin });
                 setIsCalculating(false);
             });
-    }, [snapshot.shows, snapshot.year.income, snapshot.year.expenses, calculateKPIs, metrics]);
+        */
+    }, [snapshot.year.income, snapshot.year.expenses]);
 
     // Calculate DSO (sync - simple calculation)
     useEffect(() => {

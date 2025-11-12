@@ -51,16 +51,14 @@ export function useCalendarEvents({ shows, travel, lang, kinds, filters, toDateO
       if (s.notes) {
         // Try new format first: __dispColor:green|__btnType:show|...
         const dispColorMatch = s.notes.match(/__dispColor:(\w+)/);
-        if (dispColorMatch && dispColorMatch[1]) {
-          const colorStr = dispColorMatch[1];
-          if (['accent', 'green', 'red', 'blue', 'yellow', 'purple'].includes(colorStr)) {
-            color = colorStr as CalEvent['color'];
-          }
+        const matchedColor = dispColorMatch?.[1];
+        if (matchedColor && ['accent', 'green', 'red', 'blue', 'yellow', 'purple'].includes(matchedColor)) {
+          color = matchedColor as CalEvent['color'];
         }
         // Fallback to old format: __color:green... (for backward compat)
         else if (s.notes.startsWith('__color:')) {
           const colorStr = s.notes.substring(8).split('|')[0]; // Get first part before pipe
-          if (['accent', 'green', 'red', 'blue', 'yellow', 'purple'].includes(colorStr)) {
+          if (colorStr && ['accent', 'green', 'red', 'blue', 'yellow', 'purple'].includes(colorStr)) {
             color = colorStr as CalEvent['color'];
           }
         }

@@ -401,7 +401,7 @@ const WelcomePage: React.FC = () => {
 
   // Load onboarding progress from Firebase on mount
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) return undefined;
     
     FirestoreUserPreferencesService.getUserPreferences(userId)
       .then(prefs => {
@@ -413,6 +413,7 @@ const WelcomePage: React.FC = () => {
         }
       })
       .catch(err => console.warn('[WelcomePage] Failed to load onboarding from Firebase:', err));
+    return undefined; // No cleanup
   }, [userId]);
 
   // Sync checklist to Firebase when it changes
@@ -429,6 +430,7 @@ const WelcomePage: React.FC = () => {
       }, 500);
       return () => clearTimeout(timeout);
     }
+    return undefined; // No cleanup when userId/checklist empty
   }, [checklistDone, userId]);
 
   // Track page view activity

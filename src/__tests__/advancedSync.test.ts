@@ -489,10 +489,13 @@ describe('Phase 2.6: Audit Trail', () => {
         source: 'backend',
       });
 
-      expect(entries).toHaveLength(1);
-      expect(entries[0].entityId).toBe('show-1');
-      expect(entries[0].action).toBe('update');
-      expect(entries[0].source).toBe('backend');
+  expect(entries).toHaveLength(1);
+  const entry = entries[0];
+  expect(entry).toBeDefined();
+  if (!entry) throw new Error('Expected audit trail entry');
+  expect(entry.entityId).toBe('show-1');
+  expect(entry.action).toBe('update');
+  expect(entry.source).toBe('backend');
     });
   });
 
@@ -558,11 +561,14 @@ describe('Phase 2.6: Audit Trail', () => {
 
       const entries = auditTrail.query({ entityId: 'show-1' });
 
-      expect(entries).toHaveLength(1);
-      expect(entries[0].action).toBe('update');
-      expect(entries[0].source).toBe('ui');
-      expect(entries[0].changes.before).toEqual(showBefore);
-      expect(entries[0].changes.after).toEqual(showAfter);
+  expect(entries).toHaveLength(1);
+  const entry = entries[0];
+  expect(entry).toBeDefined();
+  if (!entry) throw new Error('Expected audit trail entry');
+  expect(entry.action).toBe('update');
+  expect(entry.source).toBe('ui');
+  expect(entry.changes.before).toEqual(showBefore);
+  expect(entry.changes.after).toEqual(showAfter);
     });
   });
 });

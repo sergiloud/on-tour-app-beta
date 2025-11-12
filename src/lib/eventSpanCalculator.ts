@@ -54,6 +54,11 @@ export function calculateEventSpans(
   // Get grid boundaries
   const gridStart = gridDates[0];
   const gridEnd = gridDates[gridDates.length - 1];
+  
+  if (!gridStart || !gridEnd) {
+    // Empty grid
+    return spansByDate;
+  }
 
   events.forEach((event) => {
     // Only include events that overlap with visible grid
@@ -100,14 +105,18 @@ export function calculateEventSpans(
       occupiedRows.get(date)!.add(row);
     }
 
+    const firstSpan = spanDates[0];
+    const lastSpan = spanDates[spanDates.length - 1];
+    if (!firstSpan || !lastSpan) return; // Safety check
+
     // Create span info for this event
     const spanInfo: EventSpanInfo = {
       event,
-      startDate: spanDates[0],
-      endDate: spanDates[spanDates.length - 1],
+      startDate: firstSpan,
+      endDate: lastSpan,
       spanDays: spanDates.length,
-      isStart: spanDates[0] === event.date.slice(0, 10),
-      isEnd: spanDates[spanDates.length - 1] === (event.endDate ? event.endDate.slice(0, 10) : event.date.slice(0, 10)),
+      isStart: firstSpan === event.date.slice(0, 10),
+      isEnd: lastSpan === (event.endDate ? event.endDate.slice(0, 10) : event.date.slice(0, 10)),
       row,
     };
 

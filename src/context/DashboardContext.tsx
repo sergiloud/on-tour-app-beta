@@ -42,7 +42,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
             const timeoutId = setTimeout(() => {
                 FirestoreUserPreferencesService.saveDashboardFilters(userId, {
                     dateRange: filters.dateRange,
-                    status: filters.status,
+                    statusFilter: filters.status === 'all' ? [] : [filters.status],
                     searchQuery: filters.searchQuery
                 }).catch(err => {
                     console.error('Failed to sync dashboard filters to Firebase:', err);
@@ -51,6 +51,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
 
             return () => clearTimeout(timeoutId);
         }
+        return undefined; // Explicit return when no userId
     }, [userId, filters]);
 
     // Load from Firebase on mount
@@ -67,6 +68,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                     console.error('Failed to load dashboard filters from Firebase:', err);
                 });
         }
+        // No cleanup needed
     }, [userId]);
 
     const updateFilters = useCallback((newFilters: Partial<DashboardFilters>) => {
@@ -93,7 +95,11 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         setFilters(defaultFilters);
         localStorage.removeItem('on-tour-dashboard-filters');
         if (userId) {
-            FirestoreUserPreferencesService.saveDashboardFilters(userId, defaultFilters).catch(err => {
+            FirestoreUserPreferencesService.saveDashboardFilters(userId, {
+                dateRange: defaultFilters.dateRange,
+                statusFilter: [],
+                searchQuery: defaultFilters.searchQuery
+            }).catch(err => {
                 console.error('Failed to reset dashboard filters in Firebase:', err);
             });
         }

@@ -36,6 +36,7 @@ export const testPeriodFiltering = () => {
   console.log('\nFechas con timestamp:');
   timestampDates.forEach(date => {
     const dateOnly = date.split('T')[0];
+    if (!dateOnly) return; // Guard against undefined
     const inPeriod = dateOnly >= period.start && dateOnly <= period.end;
     console.log(`${date} → ${dateOnly}: ${inPeriod ? '✅' : '❌'}`);
   });

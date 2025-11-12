@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
-import { renderWithProvidersAtRoute } from '../test-utils';
-import { Route, Routes } from 'react-router-dom';
+import { renderWithProviders } from './setupComponentTests';
+import { Route, Routes, MemoryRouter } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import DashboardOverview from '../pages/Dashboard';
 
@@ -15,9 +15,17 @@ function App() {
   );
 }
 
+function AppWithRouter() {
+  return (
+    <MemoryRouter initialEntries={['/dashboard']}>
+      <App />
+    </MemoryRouter>
+  );
+}
+
 describe.skip('Language selector', () => {
   it('switches to Spanish and updates strings', () => {
-  renderWithProvidersAtRoute(<App />, '/dashboard');
+  renderWithProviders(<AppWithRouter />);
     const select = screen.getByRole('combobox', { name: /language/i });
     fireEvent.change(select, { target: { value: 'es' } });
     // After switching, Action Hub and other components should show Spanish strings

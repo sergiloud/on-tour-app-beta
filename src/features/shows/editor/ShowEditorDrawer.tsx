@@ -387,7 +387,9 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
 
   // Detect date conflicts with other shows
   useEffect(() => {
-    const conflict = detectDateConflict(draft.date, draft.endDate, allShows, initial.id || '');
+    if (!draft.date) return; // Guard against undefined date
+    const endDateStr: string | undefined = draft.endDate ? String(draft.endDate) : undefined;
+    const conflict = detectDateConflict(String(draft.date), endDateStr, allShows, initial.id || '');
     setDateConflict(conflict);
   }, [draft.date, draft.endDate, allShows, initial.id]);
 
@@ -1415,8 +1417,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       type="time"
                       data-field="startTime"
                       className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-sm"
-                      value={draft.startTime || ''}
-                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, startTime: e.target.value }))}
+                      value={(draft as any).startTime || ''}
+                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, startTime: e.target.value } as ShowDraft))}
                     />
                   </label>
                 </div>

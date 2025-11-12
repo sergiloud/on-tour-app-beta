@@ -59,24 +59,30 @@ export const FinancialDistributionChart: React.FC<Props> = ({
   // Añadir comisiones
   analysis.commissionsBreakdown.byCommissioner.forEach((item, idx) => {
     totalAmount += item.total;
+    const colorIndex = idx % COLORS.commissions.length;
+    const color = COLORS.commissions[colorIndex];
+    if (!color) return; // Skip if color is undefined
     chartData.push({
       name: item.name,
       value: item.total,
       type: 'commission',
       percentage: 0, // Se calculará después
-      color: COLORS.commissions[idx % COLORS.commissions.length] || COLORS.commissions[0]
+      color
     });
   });
 
   // Añadir gastos
   expenses.forEach((item, idx) => {
     totalAmount += item.amount;
+    const colorIndex = idx % COLORS.expenses.length;
+    const color = COLORS.expenses[colorIndex];
+    if (!color) return; // Skip if color is undefined
     chartData.push({
       name: item.category,
       value: item.amount,
       type: 'expense',
       percentage: 0,
-      color: COLORS.expenses[idx % COLORS.expenses.length] || COLORS.expenses[0]
+      color
     });
   });
 

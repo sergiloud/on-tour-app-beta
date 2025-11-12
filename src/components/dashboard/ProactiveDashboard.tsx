@@ -10,7 +10,7 @@ import { KeyPerformanceKPI } from './KeyPerformanceKPI';
 import { FinanceSummaryCard } from './FinanceSummaryCard';
 import { ShowsSummaryCard } from './ShowsSummaryCard';
 import { MissionControlSummaryCard } from './MissionControlSummaryCard';
-import { ActivityFeed } from './ActivityFeed';
+import ActivityFeed from './ActivityFeed';
 import { QuickActions, getDefaultQuickActions } from './QuickActions';
 import { WelcomeCard } from './WelcomeCard';
 import { DashboardSkeleton } from './Skeletons';

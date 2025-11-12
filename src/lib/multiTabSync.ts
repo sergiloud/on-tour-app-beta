@@ -88,10 +88,8 @@ export class MultiTabSyncManager {
       this.lastSync = Date.now();
     };
 
-    this.channel.onerror = (error) => {
-      console.error('BroadcastChannel error:', error);
-      this.status = 'error';
-    };
+    // Note: BroadcastChannel doesn't support onerror in TypeScript types
+    // Error handling is done through message validation instead
   }
 
   /**

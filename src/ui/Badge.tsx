@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { badgeVariants } from '@/lib/designSystem/tokens';
+import { badgeVariants } from '../lib/designSystem/tokens';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';

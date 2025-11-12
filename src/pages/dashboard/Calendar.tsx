@@ -471,7 +471,12 @@ const Calendar: React.FC = () => {
     );
   };
 
-  const monthLabel = new Date(`${cursor}-01`).toLocaleDateString(lang, { year: 'numeric', month: 'long', timeZone: tz });
+  // Memoize monthLabel to avoid recreation on every render
+  const monthLabel = useMemo(() => 
+    new Date(`${cursor}-01`).toLocaleDateString(lang, { year: 'numeric', month: 'long', timeZone: tz }),
+    [cursor, lang, tz]
+  );
+
   const weekLabel = useMemo(() => {
     const base = selectedDay || `${cursor}-01`;
     const d0 = new Date(base);
@@ -482,9 +487,20 @@ const Calendar: React.FC = () => {
     const fmt = (d: Date) => d.toLocaleDateString(lang, { month: 'short', day: 'numeric', timeZone: tz });
     return `${fmt(start)} – ${fmt(end)}`;
   }, [selectedDay, cursor, lang, tz, weekStartsOn]);
-  const dayLabel = selectedDay ? new Date(selectedDay).toLocaleDateString(lang, { weekday: 'long', month: 'long', day: 'numeric', timeZone: tz }) : monthLabel;
+  
+  // Memoize dayLabel to avoid recreation on every render
+  const dayLabel = useMemo(() => 
+    selectedDay 
+      ? new Date(selectedDay).toLocaleDateString(lang, { weekday: 'long', month: 'long', day: 'numeric', timeZone: tz }) 
+      : monthLabel,
+    [selectedDay, lang, tz, monthLabel]
+  );
 
-  const selectedEvents = selectedDay ? (eventsByDay.get(selectedDay) || []) : [];
+  // Memoize selectedEvents to avoid filtering on every render
+  const selectedEvents = useMemo(() => 
+    selectedDay ? (eventsByDay.get(selectedDay) || []) : [],
+    [selectedDay, eventsByDay]
+  );
 
   // Memoized values for Week/Day views (hooks must not be inside conditionals)
   const weekStart = useMemo(() => {

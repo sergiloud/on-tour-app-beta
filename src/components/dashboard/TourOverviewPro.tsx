@@ -188,7 +188,7 @@ export const TourOverviewPro: React.FC = () => {
                                 <div className="font-bold text-lg truncate group-hover:text-accent-300 transition-colors">{sanitizeName(data.nextShow.city)}</div>
                                 <div className="text-xs opacity-70 mt-1 flex items-center gap-2">
                                     <MapPin className="w-3 h-3" />
-                                    <span>{sanitizeName(data.nextShow.venue)}</span>
+                                    <span>{sanitizeName(data.nextShow.venue || '')}</span>
                                     <span className="opacity-50">·</span>
                                     <span>{new Date(data.nextShow.date).toLocaleDateString('en-US', {
                                         weekday: 'short', month: 'short', day: 'numeric'

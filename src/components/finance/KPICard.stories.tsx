@@ -244,6 +244,12 @@ export const ConComparacionNeutra: Story = {
 // ============================================================================
 
 export const GridDashboard: Story = {
+  args: {
+    title: 'Dashboard Grid',
+    value: '€45,250',
+    icon: DollarSign,
+    colorScheme: 'accent',
+  },
   render: () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <KPICard

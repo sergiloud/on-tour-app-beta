@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { animationPresets, transitionTokens } from '@/lib/designSystem/tokens';
+import { animationPresets, transitionTokens } from './tokens';
 
 /**
  * Hook para controlar el estado de carga/error con animación

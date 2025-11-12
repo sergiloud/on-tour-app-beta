@@ -39,39 +39,22 @@ const TourAgendaComponent: React.FC = () => {
     const { shows: allShows } = useShows();
 
     // Build full agenda when showAll is true
-    const fullAgenda = React.useMemo(() => {
-        if (!showAll) return data.agenda;
-        
+    // Step 1: Filter and sort future shows
+    const futureShows = React.useMemo(() => {
+        if (!showAll) return [];
         const now = Date.now();
-        const dayMap = new Map<string, any>();
-        
-        // Filter future shows only
-        const futureShows = allShows.filter(s => {
-            if (!s.date) return false;
-            const showDate = new Date(s.date).getTime();
-            return !isNaN(showDate) && showDate >= now;
-        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return allShows
+            .filter(s => {
+                if (!s.date) return false;
+                const showDate = new Date(s.date).getTime();
+                return !isNaN(showDate) && showDate >= now;
+            })
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [showAll, allShows]);
 
-        futureShows.forEach(show => {
-            const d = new Date(show.date);
-            const dayKey = d.toISOString().split('T')[0];
-            
-            if (!dayKey) return; // Skip if date formatting fails
-
-            if (!dayMap.has(dayKey)) {
-                const daysAway = Math.ceil((d.getTime() - now) / (24 * 60 * 60 * 1000));
-                let rel = '';
-                if (daysAway === 0) rel = 'Today';
-                else if (daysAway === 1) rel = 'Tomorrow';
-                else if (daysAway <= 7) rel = 'This week';
-                else if (daysAway <= 14) rel = 'Next week';
-                else if (daysAway <= 30) rel = 'This month';
-                else if (daysAway <= 60) rel = 'Next month';
-                else rel = 'Later';
-
-                dayMap.set(dayKey, { day: dayKey, rel, shows: [] });
-            }
-
+    // Step 2: Enrich shows with metadata (btnType, color)
+    const enrichedShows = React.useMemo(() => {
+        return futureShows.map(show => {
             // Extract metadata from notes
             let btnType = 'show';
             let color: string | undefined;
@@ -92,7 +75,7 @@ const TourAgendaComponent: React.FC = () => {
                 color = 'green';
             }
 
-            dayMap.get(dayKey)!.shows.push({
+            return {
                 id: show.id,
                 name: (show as any).name,
                 city: show.city,
@@ -105,11 +88,43 @@ const TourAgendaComponent: React.FC = () => {
                 lat: show.lat,
                 btnType,
                 color
-            });
+            };
+        });
+    }, [futureShows]);
+
+    // Step 3: Group shows by day with relative labels
+    const fullAgenda = React.useMemo(() => {
+        if (!showAll) return data.agenda;
+        
+        const now = Date.now();
+        const dayMap = new Map<string, any>();
+
+        enrichedShows.forEach(show => {
+            const d = new Date(show.date);
+            const dayKey = d.toISOString().split('T')[0];
+            
+            if (!dayKey) return; // Skip if date formatting fails
+
+            if (!dayMap.has(dayKey)) {
+                const daysAway = Math.ceil((d.getTime() - now) / (24 * 60 * 60 * 1000));
+                let rel = '';
+                if (daysAway === 0) rel = 'Today';
+                else if (daysAway === 1) rel = 'Tomorrow';
+                else if (daysAway <= 7) rel = 'This week';
+                else if (daysAway <= 14) rel = 'Next week';
+                else if (daysAway <= 30) rel = 'This month';
+                else if (daysAway <= 60) rel = 'Next month';
+                else rel = 'Later';
+
+                dayMap.set(dayKey, { day: dayKey, rel, shows: [] });
+            }
+
+            dayMap.get(dayKey)!.shows.push(show);
         });
 
         return Array.from(dayMap.values()).sort((a, b) => a.day.localeCompare(b.day));
-    }, [showAll, data.agenda, allShows]);
+    }, [showAll, data.agenda, enrichedShows]);
+
 
     // Memoize retry handler
     const handleRetry = React.useCallback(() => {

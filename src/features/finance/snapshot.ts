@@ -58,7 +58,10 @@ export function buildFinanceSnapshotFromShows(shows: FinanceShow[], now = new Da
         fee: s.fee,
         status: s.status,
         mgmtAgency: (s as any).mgmtAgency,       // Include selected agencies
-        bookingAgency: (s as any).bookingAgency  // for commission calculation
+        bookingAgency: (s as any).bookingAgency, // for commission calculation
+        __version: 0,
+        __modifiedAt: Date.now(),
+        __modifiedBy: 'snapshot'
       };
 
       // Get applicable agencies for this show

@@ -72,10 +72,12 @@ export const groupTransactionsByPeriod = (
       groups[key] = { income: 0, expenses: 0, date: periodDate };
     }
 
+    const group = groups[key]!; // Safe: we just initialized it above
+
     if (transaction.type === 'income') {
-      groups[key].income += transaction.amount;
+      group.income += transaction.amount;
     } else {
-      groups[key].expenses += transaction.amount;
+      group.expenses += transaction.amount;
     }
   });
 

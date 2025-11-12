@@ -151,9 +151,12 @@ describe('FASE 5.4: Integration Tests', () => {
       showStore.addShow(newShow);
 
       const shows = showStore.getAll();
-      expect(shows.length).toBe(1);
-      expect(shows[0].__version).toBe(1);
-      expect(shows[0].__modifiedBy).toBe('tab-a');
+  expect(shows.length).toBe(1);
+  const show = shows[0];
+  expect(show).toBeDefined();
+  if (!show) throw new Error('Expected show entry');
+  expect(show.__version).toBe(1);
+  expect(show.__modifiedBy).toBe('tab-a');
     });
 
     it('should detect conflicts with version mismatch', () => {

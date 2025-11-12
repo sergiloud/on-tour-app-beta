@@ -68,6 +68,35 @@ const Travel: React.FC = () => {
   const unpinById = (id: string) => setPinned(list => list.filter(x => x.id !== id));
   const openAddToTrip = (r: FlightResult) => smartRef.current?.openAddToTrip(r);
 
+  // Memoized flight sorting function
+  const sortedResults = useMemo(() => {
+    const [key, direction] = resultsSort.split(':');
+    const dir = direction === 'asc' ? 1 : -1;
+    return [...results].sort((a, b) => {
+      if (key === 'price') return (a.price - b.price) * dir;
+      if (key === 'duration') return (a.durationM - b.durationM) * dir;
+      if (key === 'stops') return (a.stops - b.stops) * dir;
+      return 0;
+    });
+  }, [results, resultsSort]);
+
+  // Memoized grouped flights sorting
+  const sortedGrouped = useMemo(() => {
+    if (!grouped) return undefined;
+    const [key, direction] = resultsSort.split(':');
+    const dir = direction === 'asc' ? 1 : -1;
+    const sorted: Record<string, FlightResult[]> = {};
+    for (const date of Object.keys(grouped).sort()) {
+      sorted[date] = [...(grouped[date] ?? [])].sort((a, b) => {
+        if (key === 'price') return (a.price - b.price) * dir;
+        if (key === 'duration') return (a.durationM - b.durationM) * dir;
+        if (key === 'stops') return (a.stops - b.stops) * dir;
+        return 0;
+      });
+    }
+    return sorted;
+  }, [grouped, resultsSort]);
+
   const handleFlightDrop = (flight: FlightResult, date: string) => {
     // Find or create a trip for this date
     const trips = listTrips();
@@ -279,39 +308,21 @@ const Travel: React.FC = () => {
                             <div className="h-16 rounded bg-interactive" />
                             <div className="h-16 rounded bg-interactive" />
                           </div>
-                        ) : grouped && Object.keys(grouped).length > 0 ? (
+                        ) : sortedGrouped && Object.keys(sortedGrouped).length > 0 ? (
                           <div className="space-y-4">
-                            {Object.keys(grouped).sort().map(date => {
+                            {Object.keys(sortedGrouped).map(date => {
                               const d = new Date(date);
                               const label = d.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
-                              const [k, dir] = resultsSort.split(':');
-                              const arr = [...(grouped[date] ?? [])].sort((a, b) => {
-                                const direction = dir === 'asc' ? 1 : -1;
-                                if (k === 'price') return (a.price - b.price) * direction;
-                                if (k === 'duration') return (a.durationM - b.durationM) * direction;
-                                if (k === 'stops') return (a.stops - b.stops) * direction;
-                                return 0;
-                              });
                               return (
                                 <div key={date} className="space-y-2">
                                   <div className="text-xs font-semibold opacity-80">{label}</div>
-                                  <FlightResults results={arr} onAdd={openAddToTrip} onPin={togglePin} pinnedIds={pinnedIds} />
+                                  <FlightResults results={sortedGrouped[date] ?? []} onAdd={openAddToTrip} onPin={togglePin} pinnedIds={pinnedIds} />
                                 </div>
                               );
                             })}
                           </div>
                         ) : results.length > 0 ? (
-                          (() => {
-                            const [k, dir] = resultsSort.split(':');
-                            const sorted = [...results].sort((a, b) => {
-                              const direction = dir === 'asc' ? 1 : -1;
-                              if (k === 'price') return (a.price - b.price) * direction;
-                              if (k === 'duration') return (a.durationM - b.durationM) * direction;
-                              if (k === 'stops') return (a.stops - b.stops) * direction;
-                              return 0;
-                            });
-                            return <FlightResults results={sorted} onAdd={openAddToTrip} onPin={togglePin} pinnedIds={pinnedIds} />;
-                          })()
+                          <FlightResults results={sortedResults} onAdd={openAddToTrip} onPin={togglePin} pinnedIds={pinnedIds} />
                         ) : (
                           <div className="text-center py-10">
                             <p className="text-sm opacity-70">{t('common.noResults') || 'No results'}</p>

@@ -40,7 +40,19 @@ describe.skip('CTA navigation', () => {
       window.localStorage.setItem('ac:tab', 'pending');
     } catch {}
     const soon = new Date(Date.now() + 3*86400000).toISOString();
-    showStore.addShow({ id:'test-opp-1', city:'CTA City', country:'ES', lat:0, lng:0, date:soon, fee:1500, status:'confirmed' });
+    showStore.addShow({
+      id: 'test-opp-1',
+      city: 'CTA City',
+      country: 'ES',
+      lat: 0,
+      lng: 0,
+      date: soon,
+      fee: 1500,
+      status: 'confirmed',
+      __version: 0,
+      __modifiedAt: Date.now(),
+      __modifiedBy: 'test-suite'
+    });
     render(
       <Wrapper>
         <ActionHub />

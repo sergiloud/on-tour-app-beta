@@ -201,10 +201,11 @@ export function agenciesForShow(
     return { booking: [], management: [] };
   }
 
-  // Check if show is within active agency period
-  if (!isWithinAgencyPeriod(show.date)) {
-    return { booking: [], management: [] };
-  }
+  // REMOVED: Agency period filter - calculate commissions for ALL shows with agencies
+  // The period filter should be controlled by the Finance tab date selector, not here
+  // if (!isWithinAgencyPeriod(show.date)) {
+  //   return { booking: [], management: [] };
+  // }
 
   // Determine continent from country code
   const getContinent = (countryCode: string): ContinentCode | null => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, PanInfo } from 'framer-motion';
 import type { AppDefinition } from '../../../types/mobileOS';
 
 interface AppIconProps {
@@ -11,6 +11,8 @@ interface AppIconProps {
   onPress?: () => void;
   onLongPress?: () => void;
   isDragging?: boolean;
+  onDragStart?: () => void;
+  onDragEnd?: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
 }
 
 const SIZE_STYLES = {
@@ -34,6 +36,8 @@ export const AppIcon: React.FC<AppIconProps> = ({
   onPress,
   onLongPress,
   isDragging = false,
+  onDragStart,
+  onDragEnd,
 }) => {
   const [isPressed, setIsPressed] = React.useState(false);
   const longPressTimer = React.useRef<number | null>(null);
@@ -71,6 +75,12 @@ export const AppIcon: React.FC<AppIconProps> = ({
   return (
     <motion.div
       className="flex flex-col items-center gap-1.5 relative"
+      drag={isEditing}
+      dragSnapToOrigin={false}
+      dragElastic={0.2}
+      dragMomentum={false}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       animate={isEditing ? { y: [0, -2, 0] } : {}}
       transition={isEditing ? { 
         repeat: Infinity, 

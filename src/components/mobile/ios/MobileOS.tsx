@@ -119,6 +119,14 @@ export const MobileOS: React.FC = () => {
     setIsEditMode(false);
   };
 
+  // Handle layout change (drag & drop)
+  const handleLayoutChange = (newPages: AppLayout['pages']) => {
+    setLayout(prev => ({
+      ...prev,
+      pages: newPages,
+    }));
+  };
+
   return (
     <div className="fixed inset-0 bg-dark-900 overflow-hidden">
       {/* Animated Background - Zen & Dynamic */}
@@ -170,6 +178,7 @@ export const MobileOS: React.FC = () => {
         onAppOpen={handleAppOpen}
         onEnterEditMode={handleEnterEditMode}
         onExitEditMode={handleExitEditMode}
+        onLayoutChange={handleLayoutChange}
       />
 
       {/* Dock */}

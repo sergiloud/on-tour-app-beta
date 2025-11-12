@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { AppIcon } from './AppIcon';
 import { WhatsNext } from './widgets/WhatsNext';
 import { QuickStats } from './widgets/QuickStats';
@@ -19,6 +19,7 @@ interface HomeScreenProps {
   onAppOpen: (app: AppDefinition) => void;
   onEnterEditMode: () => void;
   onExitEditMode: () => void;
+  onLayoutChange?: (pages: AppPage[]) => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -31,9 +32,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onAppOpen,
   onEnterEditMode,
   onExitEditMode,
+  onLayoutChange,
 }) => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [draggedAppId, setDraggedAppId] = useState<string | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const deviceInfo = useDeviceInfo();
 
   // Calcular espacio superior según dispositivo
@@ -70,6 +74,79 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
     setTouchStart(0);
     setTouchEnd(0);
+  };
+
+  const handleDragStart = (appId: string, index: number) => {
+    if (!isEditMode) return;
+    setDraggedAppId(appId);
+    setDraggedIndex(index);
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
+    }
+  };
+
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo, targetIndex: number) => {
+    if (!isEditMode || draggedIndex === null || !onLayoutChange || !currentPageData) {
+      setDraggedAppId(null);
+      setDraggedIndex(null);
+      return;
+    }
+
+    // Calculate drop position based on drag offset
+    const gridElement = event.currentTarget as HTMLElement;
+    const gridRect = gridElement.getBoundingClientRect();
+    const dropX = info.point.x - gridRect.left;
+    const dropY = info.point.y - gridRect.top;
+
+    // Calculate grid dimensions (4 columns)
+    const columns = 4;
+    const cellWidth = gridRect.width / columns;
+    const cellHeight = cellWidth; // Square cells
+
+    // Calculate target row and column
+    const targetCol = Math.floor(dropX / cellWidth);
+    const targetRow = Math.floor(dropY / cellHeight);
+    const calculatedTargetIndex = targetRow * columns + targetCol;
+
+    // Ensure target is within bounds
+    const maxIndex = currentPageData.apps.length - 1;
+    const finalTargetIndex = Math.max(0, Math.min(calculatedTargetIndex, maxIndex));
+
+    if (draggedIndex !== finalTargetIndex) {
+      // Reorder apps in current page
+      const newPages = [...pages];
+      const pageToUpdate = newPages[currentPage];
+      if (!pageToUpdate) return;
+      
+      const currentPageApps = [...pageToUpdate.apps];
+      
+      // Remove dragged app
+      const [draggedApp] = currentPageApps.splice(draggedIndex, 1);
+      
+      // Only insert if we have a valid app
+      if (draggedApp) {
+        // Insert at target position
+        currentPageApps.splice(finalTargetIndex, 0, draggedApp);
+      }
+      
+      // Update page
+      newPages[currentPage] = {
+        id: pageToUpdate.id,
+        apps: currentPageApps,
+      };
+
+      // Notify parent
+      onLayoutChange(newPages);
+
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate(20);
+      }
+    }
+
+    setDraggedAppId(null);
+    setDraggedIndex(null);
   };
 
   const currentPageData = pages[currentPage];
@@ -128,8 +205,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   size="medium"
                   isEditing={isEditMode}
                   badge={badgeValue}
+                  isDragging={draggedAppId === appId}
                   onPress={() => onAppOpen(app)}
                   onLongPress={onEnterEditMode}
+                  onDragStart={() => handleDragStart(appId, index)}
+                  onDragEnd={(event, info) => handleDragEnd(event, info, index)}
                 />
               </motion.div>
             );

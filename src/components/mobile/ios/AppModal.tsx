@@ -37,11 +37,6 @@ export const AppModal: React.FC<AppModalProps> = ({
       {isOpen && (
         <motion.div
           className="fixed inset-0 z-50 bg-ink-900 gpu-accelerate-full"
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0, bottom: 0.5 }}
-          onDragStart={() => setIsDragging(true)}
-          onDragEnd={handleDragEnd}
           style={{ y, opacity, scale }}
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
@@ -53,8 +48,16 @@ export const AppModal: React.FC<AppModalProps> = ({
             mass: 0.5
           }}
         >
-          {/* Drag Indicator */}
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20">
+          {/* Drag Indicator - draggable area */}
+          <motion.div 
+            className="absolute top-0 left-0 right-0 h-8 z-20 flex items-center justify-center cursor-grab active:cursor-grabbing"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={handleDragEnd}
+            style={{ y }}
+          >
             <motion.div 
               className="w-10 h-1 rounded-full bg-white/30"
               animate={{
@@ -63,7 +66,7 @@ export const AppModal: React.FC<AppModalProps> = ({
               }}
               transition={{ duration: 0.2 }}
             />
-          </div>
+          </motion.div>
 
           {/* Header matching desktop glass style */}
           <div 

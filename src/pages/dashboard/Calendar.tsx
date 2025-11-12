@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useShows } from '../../hooks/useShows';
 import { useEventSelection } from '../../hooks/useEventSelection';
 import type { Show } from '../../lib/shows';
 import { useSettings } from '../../context/SettingsContext';
 import { t } from '../../lib/i18n';
-import { fetchItinerariesGentle, onItinerariesUpdated, Itinerary, saveItinerary, removeItinerary } from '../../services/travelApi';
+import { Itinerary } from '../../services/travelApi';
 import StatusBadge from '../../ui/StatusBadge';
 import { countryLabel } from '../../lib/countries';
 import { useNavigate } from 'react-router-dom';
 import { trackEvent } from '../../lib/telemetry';
 import { useCalendarState } from '../../hooks/useCalendarState';
 import { useCalendarMatrix } from '../../hooks/useCalendarMatrix';
+import { useCalendarData } from '../../hooks/useCalendarData';
+import { useCalendarModals } from '../../hooks/useCalendarModals';
 import CalendarToolbar from '../../components/calendar/CalendarToolbar';
 import BulkOperationsToolbar from '../../components/calendar/BulkOperationsToolbar';
 import type { EventButton } from '../../components/calendar/DraggableEventButtons';
@@ -21,7 +22,6 @@ import DayGrid from '../../components/calendar/DayGrid';
 import AgendaList from '../../components/calendar/AgendaList';
 import { TimelineView } from '../../components/calendar/TimelineView';
 import { CalEvent } from '../../components/calendar/types';
-import { useCalendarEvents } from '../../hooks/useCalendarEvents';
 import { parseICS } from '../../lib/calendar/ics';
 import EventCreationModal, { EventType, EventData } from '../../components/calendar/EventCreationModal';
 import DayDetailsModal from '../../components/calendar/DayDetailsModal';
@@ -71,14 +71,68 @@ const Calendar: React.FC = () => {
   // Performance monitoring
   usePerfMonitor('Calendar:render');
   
-  const { shows, add, update, remove } = useShows();
+  // Settings & navigation
   const { lang } = useSettings();
   const navigate = useNavigate();
+  
+  // Calendar state (view, cursor, filters, tz)
   const { view, setView, cursor, setCursor, tz, setTz, filters, setFilters, today } = useCalendarState();
   const year = Number(cursor.slice(0, 4));
   const month = Number(cursor.slice(5, 7));
+  
+  // Debounced cursor for data fetching
+  const [debouncedCursor, setDebouncedCursor] = useState(cursor);
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedCursor(cursor), 180);
+    return () => clearTimeout(id);
+  }, [cursor]);
+  
+  // UI state
+  const [weekStartsOn, setWeekStartsOn] = useState<0 | 1>(() => { 
+    try { return Number(localStorage.getItem('calendar:weekStart') || '1') as 0 | 1; } 
+    catch { return 1; } 
+  });
+  
+  // Calendar grid matrix
+  const grid = useCalendarMatrix(year, month, weekStartsOn);
+  
+  // Data management (shows + travel)
+  const {
+    shows,
+    travel,
+    eventsByDay,
+    travelError,
+    showOperations,
+    travelOperations,
+  } = useCalendarData({
+    debouncedCursor,
+    filters: { kinds: filters.kinds, status: filters.status },
+    lang,
+    tz,
+    toDateOnlyTz,
+  });
+  
+  // Modal management
+  const modals = useCalendarModals();
+  
+  // UI state
   const [selectedDay, setSelectedDay] = useState<string>('');
-
+  const [heatmapMode, setHeatmapMode] = useState<'none' | 'financial' | 'activity'>(() => { 
+    try { return (localStorage.getItem('calendar:heatmap') || 'none') as 'none' | 'financial' | 'activity'; } 
+    catch { return 'none'; } 
+  });
+  
+  // Persist UI preferences
+  useEffect(() => { 
+    try { localStorage.setItem('calendar:weekStart', String(weekStartsOn)); } 
+    catch { } 
+  }, [weekStartsOn]);
+  
+  useEffect(() => { 
+    try { localStorage.setItem('calendar:heatmap', heatmapMode); } 
+    catch { } 
+  }, [heatmapMode]);
+  
   // Multi-selection hook
   const {
     selectedEventIds,
@@ -88,62 +142,6 @@ const Calendar: React.FC = () => {
     getSelectedCount,
     getSelectedIds,
   } = useEventSelection();
-
-  // Modal states
-  const [eventCreationOpen, setEventCreationOpen] = useState(false);
-  const [eventCreationDate, setEventCreationDate] = useState<string | undefined>(undefined);
-  const [eventCreationType, setEventCreationType] = useState<EventType | null>(null);
-  const [eventCreationInitialData, setEventCreationInitialData] = useState<EventData | undefined>(undefined);
-  const [editingTravelId, setEditingTravelId] = useState<string | undefined>(undefined);
-  const [dayDetailsOpen, setDayDetailsOpen] = useState(false);
-  const [dayDetailsDate, setDayDetailsDate] = useState<string | undefined>(undefined);
-
-  // New modal states for editing events inline
-  const [showEventModalOpen, setShowEventModalOpen] = useState(false);
-  const [showEventData, setShowEventData] = useState<any | undefined>(undefined);
-  const [travelFlightModalOpen, setTravelFlightModalOpen] = useState(false);
-  const [travelEventData, setTravelEventData] = useState<any | undefined>(undefined);
-
-  // Event editor modal state
-  const [eventEditorOpen, setEventEditorOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<(Show & { kind: 'show' }) | (Itinerary & { kind: 'travel' }) | null>(null);
-
-  const [travel, setTravel] = useState<Itinerary[]>([]);
-  const [travelError, setTravelError] = useState(false);
-  const [gotoOpen, setGotoOpen] = useState(false);
-  const [debouncedCursor, setDebouncedCursor] = useState(cursor);
-  const [weekStartsOn, setWeekStartsOn] = useState<0 | 1>(() => { try { return Number(localStorage.getItem('calendar:weekStart') || '1') as 0 | 1; } catch { return 1; } });
-  const [heatmapMode, setHeatmapMode] = useState<'none' | 'financial' | 'activity'>(() => { try { return (localStorage.getItem('calendar:heatmap') || 'none') as 'none' | 'financial' | 'activity'; } catch { return 'none'; } });
-  useEffect(() => { try { localStorage.setItem('calendar:weekStart', String(weekStartsOn)); } catch { } }, [weekStartsOn]);
-  useEffect(() => { try { localStorage.setItem('calendar:heatmap', heatmapMode); } catch { } }, [heatmapMode]);
-  useEffect(() => {
-    const id = setTimeout(() => setDebouncedCursor(cursor), 180);
-    return () => clearTimeout(id);
-  }, [cursor]);
-  // Gentle refresh travel whenever visible month changes
-  useEffect(() => {
-    const year = Number(debouncedCursor.slice(0, 4));
-    const month = Number(debouncedCursor.slice(5, 7));
-    const from = new Date(year, month - 1, 1).toISOString().slice(0, 10);
-    const to = new Date(year, month, 0).toISOString().slice(0, 10);
-    const ac = new AbortController();
-    setTravelError(false);
-    fetchItinerariesGentle({ from, to }, { signal: ac.signal }).then(res => {
-      setTravel(res.data);
-    }).catch(err => {
-      if ((err as any)?.name !== 'AbortError') setTravelError(true);
-    });
-    const unsub = onItinerariesUpdated((e) => {
-      // naive key match by from/to; update regardless
-      setTravel(e.data);
-    });
-    return () => { ac.abort(); unsub(); };
-  }, [debouncedCursor]);
-
-  // Merge shows + travel into day buckets
-  const eventsByDay = useCalendarEvents({ shows, travel, lang, kinds: filters.kinds, filters: { status: filters.status }, toDateOnlyTz, tz });
-
-  const grid = useCalendarMatrix(year, month, weekStartsOn);
 
   const changeMonth = useCallback((delta: number) => {
     const d = new Date(year, month - 1 + delta, 1);
@@ -196,16 +194,14 @@ const Calendar: React.FC = () => {
       const id = ev.id.split(':')[1];
       const show = shows.find(s => s.id === id);
       if (show) {
-        setEditingEvent({ ...show, kind: 'show' });
-        setEventEditorOpen(true);
+        modals.openEventEditor({ ...show, kind: 'show' });
       }
     } else {
       // Find the itinerary/travel event
       const travelId = ev.id.split(':')[1] || ev.id;
       const itinerary = travel.find(t => t.id === travelId);
       if (itinerary) {
-        setEditingEvent({ ...itinerary, kind: 'travel' });
-        setEventEditorOpen(true);
+        modals.openEventEditor({ ...itinerary, kind: 'travel' });
       }
     }
   };
@@ -215,11 +211,11 @@ const Calendar: React.FC = () => {
     if ('kind' in event && event.kind === 'show') {
       // It's a show
       const show = event as Show;
-      update(show.id, show);
+      showOperations.update(show.id, show);
     } else {
       // It's an itinerary
       const itinerary = event as Itinerary;
-      await saveItinerary(itinerary);
+      await travelOperations.save(itinerary);
     }
   };
 
@@ -250,7 +246,7 @@ const Calendar: React.FC = () => {
           } else if (itineraryEvent.endDate) {
             updatedTravel.endDate = undefined;
           }
-          saveItinerary(updatedTravel);
+          travelOperations.save(updatedTravel);
         } else {
           // Adjust end date
           endDate.setDate(endDate.getDate() + deltaDays);
@@ -264,7 +260,7 @@ const Calendar: React.FC = () => {
           } else {
             updatedTravel.endDate = newEndStr;
           }
-          saveItinerary(updatedTravel);
+          travelOperations.save(updatedTravel);
         }
       } catch (err) {
         // Handle error silently
@@ -305,7 +301,7 @@ const Calendar: React.FC = () => {
           updateData.endDate = undefined;
         }
 
-        update(actualEventId, updateData);
+        showOperations.update(actualEventId, updateData);
       } else {
         // Adjust end date (move the ending)
         endDate.setDate(endDate.getDate() + deltaDays);
@@ -327,7 +323,7 @@ const Calendar: React.FC = () => {
           updateData.endDate = `${newEndStr}T00:00:00`;
         }
 
-        update(actualEventId, updateData);
+        showOperations.update(actualEventId, updateData);
       }
     } catch (err) {
       // Handle error silently
@@ -338,12 +334,12 @@ const Calendar: React.FC = () => {
   const handleBulkDelete = useCallback(() => {
     const selectedIds = getSelectedIds();
     selectedIds.forEach(id => {
-      remove(id);
+      showOperations.remove(id);
     });
     announce(`Deleted ${selectedIds.length} event${selectedIds.length !== 1 ? 's' : ''}`);
     trackEvent('calendar.bulk.delete', { count: selectedIds.length });
     clearSelection();
-  }, [getSelectedIds, remove, clearSelection]);
+  }, [getSelectedIds, showOperations, clearSelection]);
 
   const handleBulkMove = useCallback((direction: 'forward' | 'backward', days: number) => {
     const selectedIds = getSelectedIds();
@@ -355,7 +351,7 @@ const Calendar: React.FC = () => {
         const currentDate = new Date(show.date);
         currentDate.setDate(currentDate.getDate() + delta);
         const newDateStr = currentDate.toISOString().slice(0, 10);
-        update(id, { date: `${newDateStr}T00:00:00` } as any);
+        showOperations.update(id, { date: `${newDateStr}T00:00:00` } as any);
       }
     });
 
@@ -363,7 +359,7 @@ const Calendar: React.FC = () => {
     announce(`Moved ${selectedIds.length} event${selectedIds.length !== 1 ? 's' : ''} ${dirText} by ${days} day${days !== 1 ? 's' : ''}`);
     trackEvent('calendar.bulk.move', { count: selectedIds.length, direction, days });
     clearSelection();
-  }, [getSelectedIds, shows, update, clearSelection]);
+  }, [getSelectedIds, shows, showOperations, clearSelection]);
 
   // prev/next per view
   const onPrev = () => {
@@ -456,7 +452,7 @@ const Calendar: React.FC = () => {
               <div className="text-xs text-slate-300 dark:text-white/50">{t('calendar.goto.hint') || 'Press Enter to go'}</div>
               <div className="flex gap-2">
                 <button
-                  className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-white text-sm font-medium transition-colors"
+                  className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-700 dark:text-white text-sm font-medium transition-colors"
                   onClick={onClose}
                 >
                   {t('common.cancel') || 'Cancel'}
@@ -552,7 +548,7 @@ const Calendar: React.FC = () => {
     const onToday = () => goToday();
     const onGotoKey = (e: KeyboardEvent) => {
       const meta = (e.ctrlKey || e.metaKey);
-      if (meta && (e.key === 'g' || e.key === 'G')) { e.preventDefault(); setGotoOpen(true); }
+      if (meta && (e.key === 'g' || e.key === 'G')) { e.preventDefault(); modals.openGotoDate(); }
       // Alt+Left/Right navigate within Week/Day views
       if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         if (view === 'week' || view === 'day') {
@@ -602,16 +598,16 @@ const Calendar: React.FC = () => {
             __modifiedAt: Date.now(),
             __modifiedBy: 'system'
           };
-          add(newShow);
+          showOperations.add(newShow);
           trackEvent('calendar.create.event', { type: 'show', date: data.date });
           announce(`Show created in ${data.city}, ${data.country}`);
           break;
 
         case 'travel':
           try {
-            if (editingTravelId) {
+            if (modals.state.travelFlight.editingId) {
               // Update existing travel event
-              const existingTravel = travel.find(t => t.id === editingTravelId);
+              const existingTravel = travel.find(t => t.id === modals.state.travelFlight.editingId);
               if (existingTravel) {
                 const updatedTravel: Itinerary = {
                   ...existingTravel,
@@ -637,8 +633,7 @@ const Calendar: React.FC = () => {
                 } as any;
 
                 // NOTE: Do NOT call setTravel directly - the subscription from saveItinerary will update React state
-                await saveItinerary(updatedTravel);
-                setEditingTravelId(undefined);
+                await travelOperations.save(updatedTravel);
                 trackEvent('calendar.edit.event', { type: 'travel', from: data.date, to: data.dateEnd });
                 announce(`Travel event updated from ${data.origin} to ${data.destination}`);
               }
@@ -672,7 +667,7 @@ const Calendar: React.FC = () => {
 
               // Persist itinerary to travel store
               // NOTE: Do NOT call setTravel directly - the subscription from saveItinerary will update React state
-              await saveItinerary(it);
+              await travelOperations.save(it);
               trackEvent('calendar.create.event', { type: 'travel', from: data.date, to: data.dateEnd });
               announce(`Travel event created from ${data.origin} to ${data.destination}`);
             }
@@ -685,48 +680,26 @@ const Calendar: React.FC = () => {
         case 'rehearsal':
         case 'break':
           try {
-            if (editingTravelId) {
-              // Update existing meeting/rehearsal/break event
-              const existingEvent = travel.find(t => t.id === editingTravelId);
-              if (existingEvent) {
-                const updatedEvent: Itinerary = {
-                  ...existingEvent,
-                  date: data.date,
-                  title: data.title || data.type,
-                  status: data.status || 'pending',
-                  description: data.description,
-                  location: data.location,
-                  btnType: data.type,
-                  endDate: data.dateEnd,
-                } as any;
+            // For meeting/rehearsal/break, always create new events
+            // (Editing is handled via EventEditorModal, not EventCreationModal)
+            const eid = generateId();
+            const eventItinerary: Itinerary = {
+              id: eid,
+              date: data.date,
+              title: data.title || data.type,
+              team: 'A',
+              city: undefined,
+              status: data.status || 'pending',
+              description: data.description,
+              location: data.location,
+              btnType: data.type,
+              endDate: data.dateEnd,
+            } as any;
 
-                // NOTE: Do NOT call setTravel directly - the subscription from saveItinerary will update React state
-                await saveItinerary(updatedEvent);
-                setEditingTravelId(undefined);
-                trackEvent('calendar.edit.event', { type: data.type, date: data.date });
-                announce(`${data.type} event updated`);
-              }
-            } else {
-              // Create new meeting/rehearsal/break event
-              const eid = generateId();
-              const eventItinerary: Itinerary = {
-                id: eid,
-                date: data.date,
-                title: data.title || data.type,
-                team: 'A',
-                city: undefined,
-                status: data.status || 'pending',
-                description: data.description,
-                location: data.location,
-                btnType: data.type,
-                endDate: data.dateEnd,
-              } as any;
-
-              // NOTE: Do NOT call setTravel directly - the subscription from saveItinerary will update React state
-              await saveItinerary(eventItinerary);
-              trackEvent('calendar.create.event', { type: data.type, date: data.date });
-              announce(`${data.type} event created`);
-            }
+            // NOTE: Do NOT call setTravel directly - the subscription from saveItinerary will update React state
+            await travelOperations.save(eventItinerary);
+            trackEvent('calendar.create.event', { type: data.type, date: data.date });
+            announce(`${data.type} event created`);
           } catch (err) {
             // Handle error silently
           }
@@ -756,7 +729,7 @@ const Calendar: React.FC = () => {
         onPrev={onPrev}
         onNext={onNext}
         onToday={goToday}
-        onGoToDate={() => setGotoOpen(true)}
+        onGoToDate={() => modals.openGotoDate()}
         view={view}
         setView={(v) => { setView(v); try { trackEvent('cal.view.change', { view: v }); } catch { }; announce((t('calendar.view.announce') || '{v} view').replace('{v}', t(`calendar.view.${v}`) || v)); }}
         tz={tz}
@@ -781,7 +754,7 @@ const Calendar: React.FC = () => {
                 if (parts[0]) city = parts[0].toUpperCase();
                 if (parts[1]) country = parts[1].toUpperCase().slice(0, 2);
               }
-              add({ id, city, country, lat: 0, lng: 0, date: `${dateOnly}T00:00:00`, fee: 0, status: 'pending', __version: 0, __modifiedAt: Date.now(), __modifiedBy: 'system' } as Show);
+              showOperations.add({ id, city, country, lat: 0, lng: 0, date: `${dateOnly}T00:00:00`, fee: 0, status: 'pending', __version: 0, __modifiedAt: Date.now(), __modifiedBy: 'system' } as Show);
               created++;
             }
             announce((t('calendar.import.done') || 'Imported {n} events').replace('{n}', String(created)));
@@ -815,7 +788,7 @@ const Calendar: React.FC = () => {
               __modifiedAt: Date.now(),
               __modifiedBy: 'system'
             } as Show;
-            add(newShow);
+            showOperations.add(newShow);
             announce(`Show created: ${button.label} on ${dateStr}`);
           } else {
             // Create Itinerary for all other types (travel, personal, meeting, soundcheck, rehearsal, interview, other)
@@ -836,9 +809,9 @@ const Calendar: React.FC = () => {
               destination: button.type === 'travel' ? destination : undefined,
               startTime: undefined
             };
-            saveItinerary(it).then(() => {
+            travelOperations.save(it).then(() => {
               announce(`${button.type} event created: ${button.label} on ${dateStr}`);
-            }).catch((err) => {
+            }).catch((err: any) => {
               // Handle error silently
             });
           }
@@ -868,7 +841,7 @@ const Calendar: React.FC = () => {
               const id = ev.id.split(':')[1];
               const show = shows.find(s => s.id === id);
               if (show) {
-                setShowEventData({
+                const showData = {
                   id: show.id,
                   date: show.date.slice(0, 10),
                   title: show.city,
@@ -876,8 +849,8 @@ const Calendar: React.FC = () => {
                   country: show.country,
                   status: show.status,
                   notes: show.notes,
-                });
-                setShowEventModalOpen(true);
+                };
+                modals.openShowEvent(showData);
               }
             } else if (ev.kind === 'travel') {
               // For travel events, open TravelFlightModal with travel data
@@ -886,10 +859,8 @@ const Calendar: React.FC = () => {
               const travelEvent = travel.find(t => t.id === id);
               console.log('Travel event found:', travelEvent);
               if (travelEvent) {
-                // Open TravelFlightModal with travel event data
-                setEditingTravelId(id);
                 // Pre-fill the modal with travel data
-                setEventCreationInitialData({
+                const travelData = {
                   type: 'travel',
                   date: travelEvent.date.slice(0, 10),
                   dateEnd: (travelEvent as any).endDate || (travelEvent as any).dateEnd,
@@ -905,18 +876,15 @@ const Calendar: React.FC = () => {
                   arrivalTerminal: (travelEvent as any).arrivalTerminal,
                   seat: (travelEvent as any).seat,
                   notes: (travelEvent as any).description || (travelEvent as any).notes,
-                } as EventData);
-                setTravelFlightModalOpen(true);
+                } as EventData;
+                modals.openTravelFlight(travelData, id);
               }
             } else {
               // For other events (meeting, rehearsal, break, etc), open EventCreationModal
               const id = ev.id.split(':')[1];
               const otherEvent = travel.find(t => t.id === id);
               if (otherEvent) {
-                setEditingTravelId(id);
-                setEventCreationType(ev.kind as EventType);
-                setEventCreationDate(otherEvent.date.slice(0, 10));
-                setEventCreationInitialData({
+                const eventData = {
                   type: ev.kind as EventType,
                   date: otherEvent.date.slice(0, 10),
                   dateEnd: (otherEvent as any).endDate,
@@ -924,8 +892,8 @@ const Calendar: React.FC = () => {
                   description: (otherEvent as any).description,
                   location: (otherEvent as any).location,
                   color: (otherEvent as any).buttonColor as any,
-                } as EventData);
-                setEventCreationOpen(true);
+                } as EventData;
+                modals.openEventCreation(otherEvent.date.slice(0, 10), ev.kind as EventType, eventData);
               }
             }
           }}
@@ -944,13 +912,13 @@ const Calendar: React.FC = () => {
                 // Duplicate itinerary
                 const newId = generateId();
                 const copy: Itinerary = { ...foundItinerary, id: newId, date: iso };
-                saveItinerary(copy).catch(err => {
+                travelOperations.save(copy).catch(err => {
                   console.error('Failed to duplicate itinerary:', err);
                 });
               } else {
                 // Move itinerary
                 const updated: Itinerary = { ...foundItinerary, date: iso };
-                saveItinerary(updated).catch(err => {
+                travelOperations.save(updated).catch(err => {
                   console.error('Failed to move itinerary:', err);
                 });
               }
@@ -963,16 +931,16 @@ const Calendar: React.FC = () => {
               if (duplicate) {
                 const newId = generateId();
                 const copy: Show = { ...found, id: newId, date: iso };
-                add(copy);
+                showOperations.add(copy);
               } else {
-                update(id, { date: iso });
+                showOperations.update(id, { date: iso });
               }
             }
           }}
           onQuickAddSave={(dateStr, data) => {
             const id = generateId();
             const newShow: Show = { id, city: data.city, country: data.country, lat: 0, lng: 0, date: `${dateStr}T00:00:00`, fee: Number(data.fee || 0), status: 'pending', __version: 0, __modifiedAt: Date.now(), __modifiedBy: 'system' } as Show;
-            add(newShow);
+            showOperations.add(newShow);
             try { trackEvent('cal.create.quick', { id, day: dateStr }); } catch { }
             navigate(`/dashboard/shows?edit=${id}`);
           }}
@@ -981,14 +949,14 @@ const Calendar: React.FC = () => {
             if (!eventId.startsWith('show:') && eventId.includes(':')) {
               const [eventType, itineraryId] = eventId.split(':');
               if (itineraryId) {
-                removeItinerary(itineraryId).catch(err => {
+                travelOperations.remove(itineraryId).catch((err: any) => {
                   // Handle error silently
                 });
               }
             } else {
               // It's a show event
               const id = eventId.split(':')[1] || eventId;
-              remove(id);
+              showOperations.remove(id);
             }
             try { trackEvent('cal.drag.delete_outside', { id: eventId }); } catch { }
           }}
@@ -1008,7 +976,7 @@ const Calendar: React.FC = () => {
               const id = ev.id.split(':')[1];
               const show = shows.find(s => s.id === id);
               if (show) {
-                setShowEventData({
+                const showData = {
                   id: show.id,
                   date: show.date.slice(0, 10),
                   title: show.city,
@@ -1016,8 +984,8 @@ const Calendar: React.FC = () => {
                   country: show.country,
                   status: show.status,
                   notes: show.notes,
-                });
-                setShowEventModalOpen(true);
+                };
+                modals.openShowEvent(showData);
               }
             } else if (ev.kind === 'travel') {
               // For travel events, open TravelFlightModal with travel data
@@ -1026,10 +994,7 @@ const Calendar: React.FC = () => {
               const travelEvent = travel.find(t => t.id === id);
               console.log('Travel event found:', travelEvent);
               if (travelEvent) {
-                // Open TravelFlightModal with travel event data
-                setEditingTravelId(id);
-                // Pre-fill the modal with travel data
-                setEventCreationInitialData({
+                const travelData = {
                   type: 'travel',
                   date: travelEvent.date.slice(0, 10),
                   dateEnd: (travelEvent as any).endDate || (travelEvent as any).dateEnd,
@@ -1045,18 +1010,15 @@ const Calendar: React.FC = () => {
                   arrivalTerminal: (travelEvent as any).arrivalTerminal,
                   seat: (travelEvent as any).seat,
                   notes: (travelEvent as any).description || (travelEvent as any).notes,
-                } as EventData);
-                setTravelFlightModalOpen(true);
+                } as EventData;
+                modals.openTravelFlight(travelData, id);
               }
             } else {
               // For other events (meeting, rehearsal, break, etc), open EventCreationModal
               const id = ev.id.split(':')[1];
               const otherEvent = travel.find(t => t.id === id);
               if (otherEvent) {
-                setEditingTravelId(id);
-                setEventCreationType(ev.kind as EventType);
-                setEventCreationDate(otherEvent.date.slice(0, 10));
-                setEventCreationInitialData({
+                const eventData = {
                   type: ev.kind as EventType,
                   date: otherEvent.date.slice(0, 10),
                   dateEnd: (otherEvent as any).endDate,
@@ -1064,8 +1026,8 @@ const Calendar: React.FC = () => {
                   description: (otherEvent as any).description,
                   location: (otherEvent as any).location,
                   color: (otherEvent as any).buttonColor as any,
-                } as EventData);
-                setEventCreationOpen(true);
+                } as EventData;
+                modals.openEventCreation(otherEvent.date.slice(0, 10), ev.kind as EventType, eventData);
               }
             }
           }}
@@ -1082,7 +1044,7 @@ const Calendar: React.FC = () => {
               const id = ev.id.split(':')[1];
               const show = shows.find(s => s.id === id);
               if (show) {
-                setShowEventData({
+                const showData = {
                   id: show.id,
                   date: show.date.slice(0, 10),
                   title: show.city,
@@ -1090,19 +1052,14 @@ const Calendar: React.FC = () => {
                   country: show.country,
                   status: show.status,
                   notes: show.notes,
-                });
-                setShowEventModalOpen(true);
+                };
+                modals.openShowEvent(showData);
               }
             } else {
               const id = ev.id.split(':')[1];
               const travelEvent = travel.find(t => t.id === id);
               if (travelEvent) {
-                // Open EventCreationModal with travel event data
-                setEditingTravelId(id);
-                setEventCreationDate(travelEvent.date.slice(0, 10));
-                setEventCreationType('travel');
-                // Pre-fill the modal with travel data
-                setEventCreationInitialData({
+                const eventData = {
                   type: 'travel',
                   date: travelEvent.date.slice(0, 10),
                   dateEnd: (travelEvent as any).dateEnd,
@@ -1118,8 +1075,8 @@ const Calendar: React.FC = () => {
                   arrivalTerminal: (travelEvent as any).arrivalTerminal,
                   seat: (travelEvent as any).seat,
                   notes: (travelEvent as any).notes,
-                } as EventData);
-                setEventCreationOpen(true);
+                } as EventData;
+                modals.openEventCreation(travelEvent.date.slice(0, 10), 'travel', eventData);
               }
             }
           }}
@@ -1134,7 +1091,7 @@ const Calendar: React.FC = () => {
               const id = ev.id.split(':')[1];
               const show = shows.find(s => s.id === id);
               if (show) {
-                setShowEventData({
+                const showData = {
                   id: show.id,
                   date: show.date.slice(0, 10),
                   title: show.city,
@@ -1142,18 +1099,15 @@ const Calendar: React.FC = () => {
                   country: show.country,
                   status: show.status,
                   notes: show.notes,
-                });
-                setShowEventModalOpen(true);
+                };
+                modals.openShowEvent(showData);
               }
             } else if (ev.kind === 'travel') {
               // For travel events, open TravelFlightModal with travel data
               const id = ev.id.split(':')[1];
               const travelEvent = travel.find(t => t.id === id);
               if (travelEvent) {
-                // Open TravelFlightModal with travel event data
-                setEditingTravelId(id);
-                // Pre-fill the modal with travel data
-                setEventCreationInitialData({
+                const travelData = {
                   type: 'travel',
                   date: travelEvent.date.slice(0, 10),
                   dateEnd: (travelEvent as any).endDate || (travelEvent as any).dateEnd,
@@ -1169,18 +1123,15 @@ const Calendar: React.FC = () => {
                   arrivalTerminal: (travelEvent as any).arrivalTerminal,
                   seat: (travelEvent as any).seat,
                   notes: (travelEvent as any).description || (travelEvent as any).notes,
-                } as EventData);
-                setTravelFlightModalOpen(true);
+                } as EventData;
+                modals.openTravelFlight(travelData, id);
               }
             } else {
               // For other events (meeting, rehearsal, break, etc), open EventCreationModal
               const id = ev.id.split(':')[1];
               const otherEvent = travel.find(t => t.id === id);
               if (otherEvent) {
-                setEditingTravelId(id);
-                setEventCreationType(ev.kind as EventType);
-                setEventCreationDate(otherEvent.date.slice(0, 10));
-                setEventCreationInitialData({
+                const eventData = {
                   type: ev.kind as EventType,
                   date: otherEvent.date.slice(0, 10),
                   dateEnd: (otherEvent as any).endDate,
@@ -1188,8 +1139,8 @@ const Calendar: React.FC = () => {
                   description: (otherEvent as any).description,
                   location: (otherEvent as any).location,
                   color: (otherEvent as any).buttonColor as any,
-                } as EventData);
-                setEventCreationOpen(true);
+                } as EventData;
+                modals.openEventCreation(otherEvent.date.slice(0, 10), ev.kind as EventType, eventData);
               }
             }
           }}
@@ -1237,30 +1188,20 @@ const Calendar: React.FC = () => {
 
       {/* Event Creation Modal */}
       <EventCreationModal
-        open={eventCreationOpen}
-        initialDate={eventCreationDate}
-        initialType={eventCreationType ?? 'show'}
-        initialData={eventCreationInitialData}
-        onClose={() => {
-          console.log('Closing EventCreationModal');
-          setEventCreationOpen(false);
-          setEventCreationDate(undefined);
-          setEventCreationType(null);
-          setEventCreationInitialData(undefined);
-          setEditingTravelId(undefined);
-        }}
+        open={modals.state.eventCreation.isOpen}
+        initialDate={modals.state.eventCreation.date}
+        initialType={modals.state.eventCreation.type ?? 'show'}
+        initialData={modals.state.eventCreation.initialData}
+        onClose={modals.closeEventCreation}
         onSave={handleSaveEvent}
       />
 
       {/* Day Details Modal */}
       <DayDetailsModal
-        open={dayDetailsOpen}
-        day={dayDetailsDate}
-        events={dayDetailsDate ? eventsByDay.get(dayDetailsDate) || [] : []}
-        onClose={() => {
-          setDayDetailsOpen(false);
-          setDayDetailsDate(undefined);
-        }}
+        open={modals.state.dayDetails.isOpen}
+        day={modals.state.dayDetails.date}
+        events={modals.state.dayDetails.date ? eventsByDay.get(modals.state.dayDetails.date) || [] : []}
+        onClose={modals.closeDayDetails}
         onCreateEvent={handleCreateEvent}
       />
 
@@ -1272,8 +1213,8 @@ const Calendar: React.FC = () => {
       )}
 
       <GoToDateDialog
-        open={gotoOpen}
-        onClose={() => setGotoOpen(false)}
+        open={modals.state.gotoDate.isOpen}
+        onClose={modals.closeGotoDate}
         onGo={(iso) => {
           if (!iso) return;
           const d = new Date(iso);
@@ -1286,16 +1227,13 @@ const Calendar: React.FC = () => {
 
       {/* Show Event Modal */}
       <ShowEventModal
-        open={showEventModalOpen}
-        onClose={() => {
-          setShowEventModalOpen(false);
-          setShowEventData(undefined);
-        }}
-        initialData={showEventData}
+        open={modals.state.showEvent.isOpen}
+        onClose={modals.closeShowEvent}
+        initialData={modals.state.showEvent.data}
         onSave={(data) => {
           if (data.id) {
             // Update existing show
-            update(data.id, {
+            showOperations.update(data.id, {
               date: data.date,
               city: data.city,
               country: data.country,
@@ -1318,25 +1256,21 @@ const Calendar: React.FC = () => {
               __modifiedAt: Date.now(),
               __modifiedBy: 'system',
             } as Show;
-            add(newShow);
+            showOperations.add(newShow);
           }
         }}
       />
 
       {/* Travel Flight Modal */}
       <TravelFlightModal
-        open={travelFlightModalOpen}
-        onClose={() => {
-          setTravelFlightModalOpen(false);
-          setEventCreationInitialData(undefined);
-          setEditingTravelId(undefined);
-        }}
-        initialData={eventCreationInitialData}
+        open={modals.state.travelFlight.isOpen}
+        onClose={modals.closeTravelFlight}
+        initialData={modals.state.travelFlight.data}
         onSave={async (data) => {
           try {
             // Build itinerary object with flight details
             const itinerary: Itinerary = {
-              id: editingTravelId || generateId(),
+              id: modals.state.travelFlight.editingId || generateId(),
               date: data.date,
               endDate: data.dateEnd,
               title: `${data.origin} → ${data.destination}`,
@@ -1365,11 +1299,9 @@ const Calendar: React.FC = () => {
               arrivalTime: data.arrivalTime,
             } as any;
 
-            await saveItinerary(extendedItinerary);
-            announce(`Travel event ${editingTravelId ? 'updated' : 'created'}`);
-            setTravelFlightModalOpen(false);
-            setEventCreationInitialData(undefined);
-            setEditingTravelId(undefined);
+            await travelOperations.save(extendedItinerary);
+            announce(`Travel event ${modals.state.travelFlight.editingId ? 'updated' : 'created'}`);
+            modals.closeTravelFlight();
           } catch (err) {
             console.error('Error saving travel event:', err);
             announce('Error saving travel event');
@@ -1379,12 +1311,9 @@ const Calendar: React.FC = () => {
 
       {/* Event Editor Modal */}
       <EventEditorModal
-        open={eventEditorOpen}
-        event={editingEvent}
-        onClose={() => {
-          setEventEditorOpen(false);
-          setEditingEvent(null);
-        }}
+        open={modals.state.eventEditor.isOpen}
+        event={modals.state.eventEditor.event}
+        onClose={modals.closeEventEditor}
         onSave={handleSaveEditedEvent}
       />
 

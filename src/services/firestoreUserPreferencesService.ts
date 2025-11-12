@@ -289,10 +289,12 @@ class FirestoreUserPreferencesService {
       // Remove old draft for this show
       const filteredDrafts = currentDrafts.filter(d => d.showId !== showId);
       
-      // Add new draft
+      // Add new draft - remove undefined fields (Firestore doesn't allow them)
+      const cleanDraft = this.removeUndefined(draft);
+      
       const newDraft: ShowDraft = {
         showId,
-        draft,
+        draft: cleanDraft,
         timestamp: Date.now()
       };
       

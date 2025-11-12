@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import Login from '../pages/Login';
+const Login = React.lazy(() => import('../pages/Login'));
 import DashboardLayout from '../layouts/DashboardLayout';
 import { OrgProvider } from '../context/OrgContext';
 import { isAuthed } from '../lib/demoAuth';
@@ -97,7 +97,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 
       <AnimatePresence mode="wait">
         {showLogin ? (
-          <Login key="login" />
+          <Suspense key="login-suspense" fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-pulse text-accent-500">Cargando...</div></div>}>
+            <Login key="login" />
+          </Suspense>
         ) : (
           <OrgProvider key="dashboard">
             {children}

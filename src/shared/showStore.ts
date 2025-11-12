@@ -1,17 +1,9 @@
 import { DemoShow, Show, normalizeShow } from '../lib/shows';
 import { multiTabSync } from '../lib/multiTabSync';
 import { offlineManager } from '../lib/offlineManager';
+import { HybridShowService } from '../services/hybridShowService';
 
 type Listener = (shows: Show[]) => void;
-
-// Import HybridShowService for Firebase sync
-let HybridShowService: any = null;
-// Lazy load to avoid circular dependencies
-import('../services/hybridShowService').then(({ HybridShowService: svc }) => {
-  HybridShowService = svc;
-}).catch(() => {
-  // Service not available (tests, offline, etc.)
-});
 
 // Primary storage key for shows
 const LS_KEY = 'shows-store-v3';

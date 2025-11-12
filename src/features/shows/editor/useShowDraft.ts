@@ -87,13 +87,15 @@ export function useShowDraft(initial: ShowDraft){
   costs.sort((a: Cost, b: Cost)=> (a.type||'').localeCompare(b.type||'') || (a.desc||'').localeCompare(b.desc||'') || a.id.localeCompare(b.id));
   const feeCurrency = (d as any).feeCurrency as ('EUR'|'USD'|'GBP'|'AUD'|undefined);
   
-  // Preserve promoter/venue fields
+  // Preserve promoter/venue/agency fields
   const promoter = (d as any).promoter;
   const promoterId = (d as any).promoterId;
   const venue = (d as any).venue;
   const venueId = (d as any).venueId;
+  const mgmtAgency = d.mgmtAgency;
+  const bookingAgency = d.bookingAgency;
   
-  return { ...d, date, fee, feeCurrency, whtPct, mgmtPct, bookingPct, costs, promoter, promoterId, venue, venueId };
+  return { ...d, date, fee, feeCurrency, whtPct, mgmtPct, bookingPct, costs, promoter, promoterId, venue, venueId, mgmtAgency, bookingAgency };
   }
 
   function reset(newInitial: ShowDraft){

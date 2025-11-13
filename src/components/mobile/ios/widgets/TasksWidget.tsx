@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
 import { hapticSelection } from '../../../../lib/haptics';
+import { useFilteredShows } from '../../../../features/shows/selectors';
+import { useSettings } from '../../../../context/SettingsContext';
 
 interface Task {
   id: string;
@@ -9,46 +11,100 @@ interface Task {
   priority: 'high' | 'medium' | 'low';
   deadline?: string;
   completed: boolean;
+  showId?: string;
 }
 
 interface TasksWidgetProps {
   className?: string;
 }
 
-// Mock data - en producción vendría de un store
-const MOCK_TASKS: Task[] = [
-  {
-    id: '1',
-    title: 'Revisar contratos Madrid',
-    priority: 'high',
-    deadline: 'Hoy',
-    completed: false,
-  },
-  {
-    id: '2',
-    title: 'Confirmar hotel Barcelona',
-    priority: 'medium',
-    deadline: 'Mañana',
-    completed: false,
-  },
-  {
-    id: '3',
-    title: 'Enviar rider técnico',
-    priority: 'low',
-    deadline: '3 días',
-    completed: true,
-  },
-];
-
 export const TasksWidget: React.FC<TasksWidgetProps> = ({ className = '' }) => {
-  const [tasks, setTasks] = React.useState<Task[]>(MOCK_TASKS);
+  const { shows } = useFilteredShows();
+  const { fmtMoney } = useSettings();
+  const [completedTasks, setCompletedTasks] = React.useState<Set<string>>(new Set());
+
+  // Generate tasks from shows data (similar to ActionHub logic)
+  const tasks = useMemo((): Task[] => {
+    const now = Date.now();
+    const DAY = 24 * 60 * 60 * 1000;
+    const result: Task[] = [];
+
+    // Filter to only include real shows
+    const realShows = shows.filter((show: any) => {
+      const btnType = show.notes?.match(/__btnType:(\w+)/)?.[1];
+      return !btnType || btnType === 'show';
+    });
+
+    realShows.forEach((show: any) => {
+      const showDate = new Date(show.date).getTime();
+      const daysUntil = Math.ceil((showDate - now) / DAY);
+
+      // Critical: Shows without contracts within 7 days
+      if (show.status === 'pending' && daysUntil <= 7 && daysUntil > 0) {
+        result.push({
+          id: `contract-${show.id}`,
+          title: `Revisar contratos ${show.city}`,
+          priority: 'high',
+          deadline: daysUntil === 0 ? 'Hoy' : daysUntil === 1 ? 'Mañana' : `${daysUntil} días`,
+          completed: completedTasks.has(`contract-${show.id}`),
+          showId: show.id
+        });
+      }
+
+      // High: Payment issues
+      if (show.status === 'confirmed' && !show.depositReceived && daysUntil <= 30) {
+        result.push({
+          id: `deposit-${show.id}`,
+          title: `Solicitar depósito ${show.city}`,
+          priority: 'high',
+          deadline: daysUntil === 0 ? 'Hoy' : daysUntil === 1 ? 'Mañana' : `${daysUntil} días`,
+          completed: completedTasks.has(`deposit-${show.id}`),
+          showId: show.id
+        });
+      }
+
+      // Medium: Travel logistics needed
+      if (show.status === 'confirmed' && daysUntil <= 14 && daysUntil > 7) {
+        result.push({
+          id: `travel-${show.id}`,
+          title: `Reservar viaje ${show.city}`,
+          priority: 'medium',
+          deadline: `${daysUntil} días`,
+          completed: completedTasks.has(`travel-${show.id}`),
+          showId: show.id
+        });
+      }
+
+      // Opportunity: High-value pending shows
+      if (show.status === 'offer' && show.fee > 10000) {
+        result.push({
+          id: `opportunity-${show.id}`,
+          title: `Revisar oferta ${fmtMoney(show.fee)} en ${show.city}`,
+          priority: 'medium',
+          deadline: daysUntil > 0 ? `${daysUntil} días` : undefined,
+          completed: completedTasks.has(`opportunity-${show.id}`),
+          showId: show.id
+        });
+      }
+    });
+
+    // Sort by priority and deadline
+    return result.sort((a, b) => {
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    }).slice(0, 5); // Show max 5 tasks in widget
+  }, [shows, fmtMoney, completedTasks]);
 
   const toggleTask = (id: string) => {
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+    setCompletedTasks(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
 
     hapticSelection();
   };

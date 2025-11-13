@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plane, 
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { AppComponentProps } from '../../../../types/mobileOS';
 import { usePullToRefresh } from '../../../../hooks/usePullToRefresh';
+import { fetchItineraries, type Itinerary } from '../../../../services/travelApi';
 
 interface TravelItem {
   id: string;
@@ -28,49 +29,58 @@ interface TravelItem {
   status: 'upcoming' | 'completed' | 'cancelled';
 }
 
-const MOCK_TRAVEL: TravelItem[] = [
-  {
-    id: '1',
-    type: 'flight',
-    title: 'Vuelo Barcelona - Madrid',
-    from: 'BCN',
-    to: 'MAD',
-    date: new Date('2025-11-15T10:30:00'),
-    time: '10:30',
-    confirmation: 'ABC123',
-    status: 'upcoming',
-  },
-  {
-    id: '2',
-    type: 'hotel',
-    title: 'Hotel NH Collection Madrid',
-    to: 'Madrid',
-    date: new Date('2025-11-15T15:00:00'),
-    time: '15:00 Check-in',
-    confirmation: 'RES456',
-    status: 'upcoming',
-  },
-  {
-    id: '3',
-    type: 'car',
-    title: 'Alquiler de coche',
-    to: 'Madrid',
-    date: new Date('2025-11-16T09:00:00'),
-    time: '09:00',
-    confirmation: 'CAR789',
-    status: 'upcoming',
-  },
-];
+// Convert Itinerary to TravelItem
+function itineraryToTravelItem(it: Itinerary): TravelItem {
+  const now = new Date();
+  const itemDate = new Date(it.date);
+  const status: 'upcoming' | 'completed' | 'cancelled' = 
+    it.status === 'cancelled' ? 'cancelled' :
+    itemDate > now ? 'upcoming' : 'completed';
+
+  // Map btnType to travel type
+  const type = it.btnType === 'travel' ? 
+    (it.departure && it.destination ? 'flight' : 'other') :
+    it.btnType === 'other' ? 'other' : 'other';
+
+  return {
+    id: it.id,
+    type,
+    title: it.title,
+    from: it.departure,
+    to: it.destination || it.city,
+    date: itemDate,
+    time: it.startTime ? new Date(it.startTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : undefined,
+    confirmation: it.description,
+    status
+  };
+}
 
 export const TravelApp: React.FC<AppComponentProps> = () => {
-  const [travels, setTravels] = useState<TravelItem[]>(MOCK_TRAVEL);
+  const [travels, setTravels] = useState<TravelItem[]>([]);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'completed'>('upcoming');
   const [selectedTravel, setSelectedTravel] = useState<TravelItem | null>(null);
 
+  // Load real travel data from travelApi
+  const loadTravelData = useCallback(async () => {
+    try {
+      const itineraries = await fetchItineraries({});
+      const items = itineraries
+        .filter(it => it.btnType === 'travel') // Only travel items
+        .map(itineraryToTravelItem);
+      setTravels(items);
+    } catch (error) {
+      console.error('[TravelApp] Error loading travel data:', error);
+      setTravels([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTravelData();
+  }, [loadTravelData]);
+
   const { isRefreshing } = usePullToRefresh({
     onRefresh: async () => {
-      // Simulate data refresh
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await loadTravelData();
     },
   });
 

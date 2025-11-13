@@ -43,22 +43,47 @@ export default async function handler(req: any, res: any) {
     // Fetch calendars using the client's built-in method
     const calendars = await client.fetchCalendars();
 
-    // Filter out reminder/task calendars (only show event calendars)
+    console.log('[CONNECT] Total calendars found:', calendars.length);
+    console.log('[CONNECT] Calendar details:', calendars.map((c: any) => ({
+      url: c.url,
+      name: c.displayName,
+      components: c.components,
+      resourcetype: c.resourcetype
+    })));
+
+    // Filter to ONLY event calendars (VEVENT component)
+    // iCloud returns both VEVENT (calendar events) and VTODO (reminders/tasks)
     const eventCalendars = calendars.filter((cal: any) => {
+      // Check if calendar supports VEVENT component
+      const components = cal.components || [];
+      const supportsEvents = components.includes('VEVENT');
+      const supportsTodos = components.includes('VTODO');
+      
+      // Only return calendars that support events but NOT exclusively todos
+      // Some calendars support both, we want those too
+      if (!supportsEvents) {
+        console.log('[CONNECT] Filtering out (no VEVENT):', cal.displayName);
+        return false;
+      }
+      
+      // Additional URL-based filtering for safety
       const url = cal.url?.toLowerCase() || '';
       const displayName = cal.displayName?.toLowerCase() || '';
-      const description = cal.description?.toLowerCase() || '';
       
-      // Exclude reminder/task calendars by URL patterns
-      const isReminder = url.includes('/reminders/') || 
-                        url.includes('/tasks/') ||
-                        displayName.includes('reminder') ||
-                        displayName.includes('task') ||
-                        description.includes('reminder') ||
-                        description.includes('task');
+      const isReminderCalendar = url.includes('/reminders/') || 
+                                  displayName === 'reminders' ||
+                                  displayName === 'tasks';
       
-      return !isReminder;
+      if (isReminderCalendar) {
+        console.log('[CONNECT] Filtering out (reminder URL/name):', cal.displayName);
+        return false;
+      }
+      
+      console.log('[CONNECT] Keeping calendar:', cal.displayName, '(components:', components.join(', '), ')');
+      return true;
     });
+
+    console.log('[CONNECT] Event calendars after filter:', eventCalendars.length);
 
     // Return calendars and credentials
     return res.status(200).json({
@@ -67,6 +92,7 @@ export default async function handler(req: any, res: any) {
         displayName: cal.displayName,
         description: cal.description,
         ctag: cal.ctag,
+        components: cal.components, // Include components for debugging
       })),
       credentials: {
         provider,

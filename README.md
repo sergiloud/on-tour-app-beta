@@ -373,3 +373,4 @@ npm test
 ---
 
 If you expand this README beyond the venue field later, consider adding: architecture overview, routing & prefetch strategy, i18n workflow, and accessibility conventions.
+# Build Thu Nov 13 23:42:38 WET 2025

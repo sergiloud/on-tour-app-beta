@@ -117,6 +117,7 @@ export default async function handler(req: any, res: any) {
             try {
               const event = parseICSToEvent(obj.data);
               if (event) {
+                console.log('[Import] Parsed event:', event);
                 await db
                   .collection('users')
                   .doc(userId)
@@ -128,6 +129,9 @@ export default async function handler(req: any, res: any) {
                     syncedAt: new Date().toISOString(),
                   });
                 imported++;
+                console.log('[Import] Saved event to Firestore:', event.id);
+              } else {
+                console.log('[Import] Failed to parse event, skipping');
               }
             } catch (err) {
               errors.push(`Import error: ${err instanceof Error ? err.message : 'Unknown'}`);
@@ -246,13 +250,16 @@ function parseICSToEvent(icsString: string): any | null {
 
     if (!uidMatch?.[1] || !summaryMatch?.[1] || !dtStartMatch?.[1]) return null;
 
+    const startDate = parseDateString(dtStartMatch[1].trim());
+    const endDate = dtEndMatch?.[1] ? parseDateString(dtEndMatch[1].trim()) : null;
+
     return {
       id: uidMatch[1].trim(),
       title: summaryMatch[1].trim(),
-      startDate: parseDateString(dtStartMatch[1].trim()),
-      endDate: dtEndMatch?.[1] ? parseDateString(dtEndMatch[1].trim()) : null,
+      date: startDate.slice(0, 10), // YYYY-MM-DD format expected by hook
+      endDate: endDate ? endDate.slice(0, 10) : undefined,
       location: locationMatch?.[1]?.trim() || undefined,
-      notes: descriptionMatch?.[1]?.trim() || undefined,
+      description: descriptionMatch?.[1]?.trim() || undefined,
     };
   } catch {
     return null;
@@ -263,17 +270,21 @@ function parseICSToEvent(icsString: string): any | null {
 function convertToICS(event: any): string {
   const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   
+  // Support both date and startDate fields
+  const startDate = event.date || event.startDate;
+  const endDateValue = event.endDate || startDate;
+  
   return `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//On Tour App//Calendar Sync//EN
 BEGIN:VEVENT
 UID:${event.id}
 DTSTAMP:${now}
-DTSTART:${formatDate(event.startDate)}
-DTEND:${formatDate(event.endDate || event.startDate)}
+DTSTART:${formatDate(startDate)}
+DTEND:${formatDate(endDateValue)}
 SUMMARY:${escapeText(event.title)}
 ${event.location ? `LOCATION:${escapeText(event.location)}` : ''}
-${event.notes ? `DESCRIPTION:${escapeText(event.notes)}` : ''}
+${event.description || event.notes ? `DESCRIPTION:${escapeText(event.description || event.notes || '')}` : ''}
 END:VEVENT
 END:VCALENDAR`;
 }

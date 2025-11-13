@@ -95,7 +95,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
         currency: 'EUR',
         category: formData.category,
         description: formData.description,
-        date: formData.date || new Date().toISOString().split('T')[0],
+        date: formData.date as string, // Always initialized in state
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };

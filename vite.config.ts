@@ -7,15 +7,16 @@ import path from 'path';
 export default defineConfig({
   base: '/', // Always use root path for Vercel deployment
   esbuild: {
-    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [], // Keep console.log for debugging
     legalComments: 'none',
     logOverride: {
       'css-syntax-error': 'silent'
     },
     treeShaking: true,
-    minifyIdentifiers: true, // Enable for smaller bundles
+    minifyIdentifiers: false, // Disable to prevent variable reference errors
     minifySyntax: true,
     minifyWhitespace: true,
+    keepNames: true, // Preserve function/class names to avoid reference errors
   },
   css: {
     // Fix CSS syntax warnings during minification
@@ -100,62 +101,59 @@ export default defineConfig({
     minify: 'esbuild',
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     cssCodeSplit: true,
-    modulePreload: false, // Disable modulePreload to avoid MIME type issues
+    modulePreload: {
+      polyfill: true,
+    },
     rollupOptions: {
-      preserveEntrySignatures: 'strict',
       output: {
         format: 'es',
-        // Simplified chunking strategy - only separate truly independent heavy libs
+        // Safer chunking strategy - let Vite handle most dependencies automatically
         manualChunks: (id) => {
-          // Core vendor bundle - critical for initial render
-          if (id.includes('node_modules/react') || 
-              id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/scheduler') ||
-              id.includes('react-router-dom')) {
-            return 'vendor';
+          // Only separate truly independent libraries
+          if (id.includes('node_modules')) {
+            // Core React libs - must stay together
+            if (id.includes('react') || 
+                id.includes('react-dom') ||
+                id.includes('scheduler') ||
+                id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            
+            // Firebase - keep consolidated
+            if (id.includes('firebase') || id.includes('@firebase')) {
+              return 'vendor-firebase';
+            }
+            
+            // MapLibre - heavy and isolated
+            if (id.includes('maplibre-gl')) {
+              return 'vendor-maplibre';
+            }
+            
+            // Framer Motion - heavy animations lib
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            
+            // All other node_modules in one chunk to avoid dependency resolution issues
+            return 'vendor-libs';
           }
-          
-          // MapLibre - only loaded in Travel/Mission, safe to separate
-          if (id.includes('maplibre-gl')) {
-            return 'maplibre';
-          }
-          
-          // Excel export - only loaded on export action, safe to separate
-          if (id.includes('exceljs') || id.includes('xlsx')) {
-            return 'export-excel';
-          }
-          
-          // Firebase - keep consolidated
-          if (id.includes('firebase') || id.includes('@firebase')) {
-            return 'firebase';
-          }
-          
-          // Framer Motion - animations, can be separated
-          if (id.includes('framer-motion')) {
-            return 'animations';
-          }
-          
-          // Let Vite handle the rest automatically (including Recharts, D3, icons, etc)
-          // This prevents internal dependency resolution errors
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
-        // Optimize exports
         exports: 'auto',
         generatedCode: {
           constBindings: true,
         },
-        // Compact output
         compact: true,
+        // Ensure proper interop for external dependencies
+        interop: 'auto',
       },
     },
-    chunkSizeWarningLimit: 1000, // Warn for chunks > 1MB
+    chunkSizeWarningLimit: 1000,
     reportCompressedSize: false,
     cssMinify: 'esbuild',
-    assetsInlineLimit: 4096, // Inline assets < 4KB as base64
-    // Enable compression
-    terserOptions: undefined,
+    assetsInlineLimit: 4096,
   },
   server: {
     host: true,

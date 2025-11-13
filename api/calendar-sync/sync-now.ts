@@ -148,6 +148,7 @@ export default async function handler(req: any, res: any) {
         if (!targetCalendar) {
           errors.push('Calendar not found for export');
         } else {
+          // Export calendar events (exclude those synced from CalDAV to avoid duplicates)
           const eventsSnapshot = await db
             .collection('users')
             .doc(userId)
@@ -168,7 +169,39 @@ export default async function handler(req: any, res: any) {
               
               exported++;
             } catch (err) {
-              errors.push(`Export error: ${err instanceof Error ? err.message : 'Unknown'}`);
+              errors.push(`Export event error: ${err instanceof Error ? err.message : 'Unknown'}`);
+            }
+          }
+
+          // Export shows as calendar events
+          const showsSnapshot = await db
+            .collection('shows')
+            .get();
+
+          for (const doc of showsSnapshot.docs) {
+            try {
+              const show = doc.data();
+              // Convert show to calendar event format
+              const event = {
+                id: `show-${doc.id}`,
+                title: `Show: ${show.city}, ${show.country}`,
+                date: show.date?.slice(0, 10) || '', // YYYY-MM-DD
+                endDate: show.endDate?.slice(0, 10),
+                location: `${show.city}, ${show.country}`,
+                description: `Status: ${show.status}\nFee: ${show.fee || 0}`,
+              };
+              
+              const icsData = convertToICS(event);
+              
+              await client.createCalendarObject({
+                calendar: targetCalendar,
+                filename: `show-${doc.id}.ics`,
+                iCalString: icsData,
+              });
+              
+              exported++;
+            } catch (err) {
+              errors.push(`Export show error: ${err instanceof Error ? err.message : 'Unknown'}`);
             }
           }
         }

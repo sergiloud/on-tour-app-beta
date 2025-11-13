@@ -2,6 +2,7 @@ import { Show } from '../lib/shows';
 import { FirestoreShowService } from './firestoreShowService';
 import { isFirebaseConfigured } from '../lib/firebase';
 import { getCurrentUserId } from '../lib/demoAuth';
+import { logger } from '../lib/logger';
 
 /**
  * Hybrid Show Service - Uses both localStorage and Firestore
@@ -17,7 +18,7 @@ export class HybridShowService {
    */
   static async initialize(userId: string): Promise<void> {
     if (!isFirebaseConfigured()) {
-      console.log('🔥 Firebase not configured, using localStorage only');
+      logger.info('[HybridShowService] Firebase not configured, using localStorage only', { userId });
       return;
     }
 
@@ -30,7 +31,7 @@ export class HybridShowService {
         // Migrate existing localStorage data to Firestore
         const migrated = await FirestoreShowService.migrateFromLocalStorage(userId);
         if (migrated > 0) {
-          console.log(`✅ Migrated ${migrated} shows to cloud storage`);
+          logger.info('[HybridShowService] Migrated shows to cloud storage', { userId, count: migrated });
         }
         localStorage.setItem(migrationKey, 'true');
       }
@@ -41,9 +42,9 @@ export class HybridShowService {
       // Set up real-time sync
       this.setupRealtimeSync(userId);
       
-      console.log('✅ Hybrid show service initialized');
+      logger.info('[HybridShowService] Hybrid show service initialized', { userId });
     } catch (error) {
-      console.error('❌ Failed to initialize hybrid service:', error);
+      logger.error('[HybridShowService] Failed to initialize hybrid service', error as Error, { userId });
     }
   }
 
@@ -60,9 +61,9 @@ export class HybridShowService {
     if (isFirebaseConfigured()) {
       try {
         await FirestoreShowService.saveShow(show, userId);
-        console.log(`✅ Show ${show.id} saved to cloud`);
+        logger.info('[HybridShowService] Show saved to cloud', { userId, showId: show.id });
       } catch (error) {
-        console.warn('⚠️ Failed to save to cloud, saved locally:', error);
+        logger.warn('[HybridShowService] Failed to save to cloud, saved locally', { userId, showId: show.id, error: String(error) });
       }
     }
   }
@@ -83,7 +84,7 @@ export class HybridShowService {
           return cloudShows;
         }
       } catch (error) {
-        console.warn('⚠️ Failed to load from cloud, using local data:', error);
+        logger.warn('[HybridShowService] Failed to load from cloud, using local data', { userId, error: String(error) });
       }
     }
 
@@ -105,9 +106,9 @@ export class HybridShowService {
     if (isFirebaseConfigured()) {
       try {
         await FirestoreShowService.deleteShow(showId, userId);
-        console.log(`✅ Show ${showId} deleted from cloud`);
+        logger.info('[HybridShowService] Show deleted from cloud', { userId, showId });
       } catch (error) {
-        console.warn('⚠️ Failed to delete from cloud, deleted locally:', error);
+        logger.warn('[HybridShowService] Failed to delete from cloud, deleted locally', { userId, showId, error: String(error) });
       }
     }
   }
@@ -140,7 +141,7 @@ export class HybridShowService {
       
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(shows));
     } catch (error) {
-      console.error('Failed to save to localStorage:', error);
+      logger.error('[HybridShowService] Failed to save to localStorage', error as Error, { showId: show.id });
     }
   }
 
@@ -152,10 +153,10 @@ export class HybridShowService {
       const cloudShows = await FirestoreShowService.getUserShows(userId);
       if (cloudShows.length > 0) {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cloudShows));
-        console.log(`✅ Synced ${cloudShows.length} shows from cloud`);
+        logger.info('[HybridShowService] Synced shows from cloud', { userId, count: cloudShows.length });
       }
     } catch (error) {
-      console.warn('⚠️ Failed to sync from cloud:', error);
+      logger.warn('[HybridShowService] Failed to sync from cloud', { userId, error: String(error) });
     }
   }
 
@@ -166,13 +167,13 @@ export class HybridShowService {
     try {
       FirestoreShowService.subscribeToUserShows(userId, (shows) => {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(shows));
-        console.log(`🔄 Real-time sync: ${shows.length} shows updated`);
+        logger.info('[HybridShowService] Real-time sync updated', { userId, count: shows.length });
         
         // Notify other parts of the app
         window.dispatchEvent(new CustomEvent('shows-updated', { detail: shows }));
       });
     } catch (error) {
-      console.warn('⚠️ Failed to set up real-time sync:', error);
+      logger.warn('[HybridShowService] Failed to set up real-time sync', { userId, error: String(error) });
     }
   }
 

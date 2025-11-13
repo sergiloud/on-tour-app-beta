@@ -19,6 +19,8 @@ export type Itinerary = {
 };
 export type ItineraryFilters = { from?: string; to?: string; team?: 'all'|'A'|'B' };
 
+import { logger } from '../lib/logger';
+
 // Helper to check if a location is valid (not a junk value)
 export function isValidLocation(location: string | undefined, title?: string, btnType?: string): boolean {
   if (!location || typeof location !== 'string') return false;
@@ -136,7 +138,7 @@ export function nuclearCleanupLocations(): void {
     const cleaned = list.map(it => {
       if (it.location) {
         modified = true;
-        console.log(`[travelApi NUCLEAR] Removing ALL locations - deleted "${it.location}" from "${it.title}"`);
+        logger.info('[travelApi NUCLEAR] Removing ALL locations', { location: it.location, title: it.title, id: it.id });
         const { location, ...rest } = it;
         return rest;
       }
@@ -144,13 +146,13 @@ export function nuclearCleanupLocations(): void {
     });
 
     if (modified) {
-      console.log(`[travelApi NUCLEAR] Cleanup complete - removed ALL location fields`);
+      logger.info('[travelApi NUCLEAR] Cleanup complete - removed ALL location fields', { count: list.length });
       localStorage.setItem('travel:itineraries', JSON.stringify(cleaned));
       cache.clear();
       _emitUpdated(keyOf({}), cleaned);
     }
   } catch (err) {
-    console.error('[travelApi] Nuclear cleanup error:', err);
+    logger.error('[travelApi] Nuclear cleanup error', err as Error);
   }
 }
 
@@ -169,7 +171,7 @@ export function cleanupItineraryLocations(): void {
       // If location exists and is NOT valid, remove it
       if (it.location && !isValidLocation(it.location, it.title, it.btnType)) {
         modified = true;
-        console.log(`[travelApi] Removing invalid location "${it.location}" from event id="${it.id}" title="${it.title}"`);
+        logger.info('[travelApi] Removing invalid location', { location: it.location, id: it.id, title: it.title });
         const { location, ...rest } = it;
         return rest;
       }
@@ -179,13 +181,13 @@ export function cleanupItineraryLocations(): void {
     if (modified) {
       const withLocation = cleaned.filter((c: any) => c.location).length;
       const removed = list.length - withLocation;
-      console.log(`[travelApi] Cleaned up ${removed} invalid location values`);
+      logger.info('[travelApi] Cleaned up invalid location values', { removed, remaining: withLocation });
       localStorage.setItem('travel:itineraries', JSON.stringify(cleaned));
       cache.clear();
       _emitUpdated(keyOf({}), cleaned);
     }
   } catch (err) {
-    console.error('[travelApi] Error during location cleanup:', err);
+    logger.error('[travelApi] Error during location cleanup', err as Error);
   }
 }
 
@@ -227,7 +229,7 @@ export async function saveItinerary(it: Itinerary): Promise<Itinerary> {
     _emitUpdated(keyOf({}), list);
     return cleanedIt;
   } catch (err) {
-    console.error('[saveItinerary] Error:', err);
+    logger.error('[saveItinerary] Error', err as Error, { itineraryId: it.id });
     throw err;
   }
 }
@@ -258,7 +260,7 @@ function _emitUpdated(key: string, data: Itinerary[]) {
     try {
       cb({ type: 'updated', key, data });
     } catch (e) {
-      console.error('[travelApi] Subscriber callback error:', e);
+      logger.error('[travelApi] Subscriber callback error', e as Error, { key });
     }
   });
 }

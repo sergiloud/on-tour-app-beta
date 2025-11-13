@@ -7,6 +7,7 @@
 import { FirestoreContactService } from './firestoreContactService';
 import { contactStore } from '../shared/contactStore';
 import { isFirebaseConfigured } from '../lib/firebase';
+import { logger } from '../lib/logger';
 import type { Contact } from '../types/crm';
 
 export class HybridContactService {
@@ -38,7 +39,7 @@ export class HybridContactService {
       // Setup real-time sync
       this.setupRealtimeSync(userId);
     } catch (error) {
-      console.error('❌ Failed to initialize hybrid contact service:', error);
+      logger.error('Failed to initialize hybrid contact service', error as Error, { userId });
     }
   }
 
@@ -54,7 +55,7 @@ export class HybridContactService {
       try {
         await FirestoreContactService.saveContact(contact, userId);
       } catch (error) {
-        console.warn('⚠️ Failed to save contact to cloud, saved locally:', error);
+        logger.warn('Failed to save contact to cloud, saved locally', { userId, contactId: contact.id, error });
       }
     }
   }
@@ -67,11 +68,11 @@ export class HybridContactService {
     updates: Partial<Contact>,
     userId: string
   ): Promise<void> {
-    console.log('[HybridContactService] Updating contact:', {
+    logger.info('[HybridContactService] Updating contact', {
       contactId,
+      userId,
       hasNotes: !!updates.notes,
-      notesCount: updates.notes?.length || 0,
-      updates
+      notesCount: updates.notes?.length || 0
     });
 
     // Update localStorage first
@@ -82,14 +83,15 @@ export class HybridContactService {
       try {
         const contact = contactStore.getById(contactId);
         if (contact) {
-          console.log('[HybridContactService] Saving to Firestore:', {
+          logger.info('[HybridContactService] Saving to Firestore', {
             contactId: contact.id,
+            userId,
             notesInContact: contact.notes?.length || 0
           });
           await FirestoreContactService.saveContact(contact, userId);
         }
       } catch (error) {
-        console.warn('⚠️ Failed to update contact in cloud:', error);
+        logger.warn('Failed to update contact in cloud', { userId, contactId, error });
       }
     }
   }
@@ -110,7 +112,7 @@ export class HybridContactService {
         
         return cloudContacts;
       } catch (error) {
-        console.warn('⚠️ Failed to load from cloud, using local data:', error);
+        logger.warn('Failed to load from cloud, using local data', { userId, error });
       }
     }
 
@@ -130,7 +132,7 @@ export class HybridContactService {
       try {
         await FirestoreContactService.deleteContact(contactId, userId);
       } catch (error) {
-        console.warn('⚠️ Failed to delete from cloud, deleted locally:', error);
+        logger.warn('Failed to delete from cloud, deleted locally', { userId, contactId, error });
       }
     }
   }
@@ -149,9 +151,9 @@ export class HybridContactService {
       // ✅ Batch update - una sola notificación para todos los contactos
       contactStore.setAll(cloudContacts);
       
-      console.log(`[HybridContactService] ✅ Synced ${cloudContacts.length} contacts from cloud`);
+      logger.info('[HybridContactService] Synced contacts from cloud', { userId, count: cloudContacts.length });
     } catch (error) {
-      console.warn('⚠️ Failed to sync from cloud:', error);
+      logger.warn('Failed to sync from cloud', { userId, error });
     }
   }
 
@@ -172,7 +174,7 @@ export class HybridContactService {
         window.dispatchEvent(new CustomEvent('contacts-updated', { detail: contacts }));
       });
     } catch (error) {
-      console.warn('⚠️ Failed to set up real-time sync:', error);
+      logger.warn('Failed to set up real-time sync', { userId, error });
       return () => {};
     }
   }

@@ -24,6 +24,7 @@ import {
 import { setAuthed, setCurrentUserId } from '../lib/demoAuth';
 import { setCurrentOrgId } from '../lib/tenants';
 import { secureStorage } from '../lib/secureStorage';
+import { logger } from '../lib/logger';
 
 export type AuthUser = {
   uid: string;
@@ -53,9 +54,9 @@ export const setAuthPersistence = async (rememberMe: boolean): Promise<void> => 
     const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
     try {
       await setPersistence(auth, persistence);
-      console.log(`[AUTH] Persistence set to: ${rememberMe ? 'LOCAL (persistent)' : 'SESSION (temporary)'}`);
+      logger.info('[AUTH] Persistence set', { persistenceType: rememberMe ? 'LOCAL' : 'SESSION' });
     } catch (error) {
-      console.error('[AUTH] Error setting persistence:', error);
+      logger.error('[AUTH] Error setting persistence', error as Error);
       throw error;
     }
   }
@@ -78,7 +79,7 @@ export const signIn = async (email: string, password: string, rememberMe: boolea
 
       return authUser;
     } catch (error) {
-      console.error('[AUTH] Firebase sign-in error:', error);
+      logger.error('[AUTH] Firebase sign-in error', error as Error, { email });
       throw error;
     }
   } else {
@@ -211,7 +212,7 @@ export const resetPassword = async (email: string): Promise<void> => {
     await sendPasswordResetEmail(auth, email);
   } else {
     // Demo mode - just simulate
-    console.log('Demo mode: Password reset email would be sent to', email);
+    logger.info('Demo mode: Password reset email simulated', { email });
   }
 };
 

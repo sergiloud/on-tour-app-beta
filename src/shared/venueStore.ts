@@ -3,6 +3,7 @@
  * Similar pattern to contactStore for consistency
  */
 import type { Venue } from '../types/venue';
+import { logger } from '../lib/logger';
 
 class VenueStore {
   private venues: Map<string, Venue> = new Map();
@@ -42,7 +43,7 @@ class VenueStore {
         this.updateCache();
       }
     } catch (error) {
-      console.error('[VenueStore] Error loading from localStorage:', error);
+      logger.error('[VenueStore] Error loading from localStorage', error as Error);
     }
   }
 
@@ -51,7 +52,7 @@ class VenueStore {
       const data = Array.from(this.venues.values());
       localStorage.setItem('on-tour-venues', JSON.stringify(data));
     } catch (error) {
-      console.error('[VenueStore] Error saving to localStorage:', error);
+      logger.error('[VenueStore] Error saving to localStorage', error as Error, { count: this.venues.size });
     }
   }
 

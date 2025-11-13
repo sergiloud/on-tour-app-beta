@@ -2,6 +2,7 @@ import { DemoShow, Show, normalizeShow } from '../lib/shows';
 import { multiTabSync } from '../lib/multiTabSync';
 import { offlineManager } from '../lib/offlineManager';
 import { HybridShowService } from '../services/hybridShowService';
+import { logger } from '../lib/logger';
 
 type Listener = (shows: Show[]) => void;
 
@@ -60,7 +61,7 @@ class ShowStore {
         };
       } catch (e) {
         // BroadcastChannel not available (older browsers)
-        console.warn('BroadcastChannel not available, cross-tab sync disabled', e);
+        logger.warn('BroadcastChannel not available, cross-tab sync disabled', { error: e });
       }
     }
 
@@ -73,7 +74,7 @@ class ShowStore {
         }
       });
     } catch (e) {
-      console.warn('multiTabSync integration failed', e);
+      logger.warn('multiTabSync integration failed', { error: e });
     }
   }
 
@@ -97,7 +98,7 @@ class ShowStore {
           source: this.currentUserId
         });
       } catch (e) {
-        console.warn('Failed to broadcast shows update', e);
+        logger.warn('Failed to broadcast shows update', { error: e });
       }
     }
 
@@ -108,7 +109,7 @@ class ShowStore {
         payload: this.shows
       });
     } catch (e) {
-      console.warn('Failed to broadcast via multiTabSync', e);
+      logger.warn('Failed to broadcast via multiTabSync', { error: e });
     }
 
     this.notifyListeners();
@@ -137,7 +138,7 @@ class ShowStore {
     // Sync to Firebase
     if (HybridShowService) {
       HybridShowService.saveShow(normalized).catch((err: Error) => {
-        console.warn('Failed to sync show to Firebase:', err);
+        logger.warn('Failed to sync show to Firebase', { showId: normalized.id, error: err });
       });
     }
   }
@@ -179,7 +180,7 @@ class ShowStore {
     // Sync to Firebase
     if (HybridShowService) {
       HybridShowService.saveShow(next).catch((err: Error) => {
-        console.warn('Failed to sync show update to Firebase:', err);
+        logger.warn('Failed to sync show update to Firebase', { showId: id, error: err });
       });
     }
   }
@@ -194,7 +195,7 @@ class ShowStore {
       try {
         await HybridShowService.deleteShow(id);
       } catch (err) {
-        console.warn('Failed to sync show deletion to Firebase:', err);
+        logger.warn('Failed to sync show deletion to Firebase', { showId: id, error: err });
         // Optionally: rollback the optimistic update here if needed
       }
     }
@@ -214,7 +215,7 @@ class ShowStore {
       );
       return operation;
     } catch (e) {
-      console.warn('Failed to queue offline operation', e);
+      logger.warn('Failed to queue offline operation', { type, showId, error: e });
       return null;
     }
   }
@@ -226,7 +227,7 @@ class ShowStore {
     try {
       return offlineManager.getState();
     } catch (e) {
-      console.warn('Failed to get offline status', e);
+      logger.warn('Failed to get offline status', { error: e });
       return null;
     }
   }

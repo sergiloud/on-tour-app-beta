@@ -4,6 +4,7 @@
  */
 
 import type { Contact, ContactFilters, ContactStats } from '../types/crm';
+import { logger } from '../lib/logger';
 
 class ContactStore {
   private contacts: Map<string, Contact> = new Map();
@@ -45,7 +46,7 @@ class ContactStore {
         this.updateCache();
       }
     } catch (error) {
-      console.error('[ContactStore] Error loading from localStorage:', error);
+      logger.error('[ContactStore] Error loading from localStorage', error as Error);
     }
   }
 
@@ -54,7 +55,7 @@ class ContactStore {
     this.loadFromLocalStorage();
     // Notificar a todos los listeners (React Query, componentes, etc.)
     this.listeners.forEach((listener) => listener());
-    console.log(`[ContactStore] Reloaded ${this.contacts.size} contacts from localStorage`);
+    logger.info('[ContactStore] Reloaded contacts from localStorage', { count: this.contacts.size });
   }
 
   private saveToLocalStorage(): void {
@@ -62,7 +63,7 @@ class ContactStore {
       const data = Array.from(this.contacts.values());
       localStorage.setItem('on-tour-contacts', JSON.stringify(data));
     } catch (error) {
-      console.error('[ContactStore] Error saving to localStorage:', error);
+      logger.error('[ContactStore] Error saving to localStorage', error as Error, { count: this.contacts.size });
     }
   }
 
@@ -105,12 +106,10 @@ class ContactStore {
         ...updates,
         updatedAt: new Date().toISOString(),
       };
-      console.log('[ContactStore] Updating contact:', {
+      logger.info('[ContactStore] Updating contact', {
         id,
         hasNotes: !!updated.notes,
-        notesCount: updated.notes?.length || 0,
-        oldNotes: contact.notes?.length || 0,
-        newNotes: updates.notes?.length || 0
+        notesCount: updated.notes?.length || 0
       });
       this.contacts.set(id, updated);
       this.notify();
@@ -268,7 +267,7 @@ class ContactStore {
       });
       this.notify();
     } catch (error) {
-      console.error('[ContactStore] Error importing contacts:', error);
+      logger.error('[ContactStore] Error importing contacts', error as Error);
       throw new Error('Invalid contact data format');
     }
   }

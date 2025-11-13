@@ -5,6 +5,7 @@
  */
 
 import { Show } from '../lib/shows';
+import { logger } from '../lib/logger';
 
 export interface WeatherData {
   temp: number;
@@ -46,7 +47,7 @@ function mapWeatherCondition(code: number): WeatherData['condition'] {
  */
 async function fetchWeatherByCoords(lat: number, lon: number): Promise<WeatherData | null> {
   if (!OPENWEATHER_API_KEY) {
-    console.warn('[WeatherService] OpenWeatherMap API key not configured');
+    logger.warn('[WeatherService] OpenWeatherMap API key not configured');
     return null;
   }
 
@@ -56,7 +57,7 @@ async function fetchWeatherByCoords(lat: number, lon: number): Promise<WeatherDa
     const response = await fetch(url);
     
     if (!response.ok) {
-      console.error('[WeatherService] API error:', response.status);
+      logger.error('[WeatherService] API error', new Error(`HTTP ${response.status}`), { status: response.status });
       return null;
     }
 
@@ -82,7 +83,7 @@ async function fetchWeatherByCoords(lat: number, lon: number): Promise<WeatherDa
 
     return weatherData;
   } catch (error) {
-    console.error('[WeatherService] Fetch error:', error);
+    logger.error('[WeatherService] Fetch error', error as Error, { lat, lon });
     return null;
   }
 }
@@ -98,7 +99,7 @@ export async function getCurrentLocationWeather(): Promise<WeatherData | null> {
 
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      console.warn('[WeatherService] Geolocation not supported');
+      logger.warn('[WeatherService] Geolocation not supported');
       resolve(null);
       return;
     }
@@ -118,7 +119,7 @@ export async function getCurrentLocationWeather(): Promise<WeatherData | null> {
         resolve(weather);
       },
       (error) => {
-        console.warn('[WeatherService] Geolocation error:', error.message);
+        logger.warn('[WeatherService] Geolocation error', { errorMessage: error.message, code: error.code });
         resolve(null);
       },
       {
@@ -134,7 +135,7 @@ export async function getCurrentLocationWeather(): Promise<WeatherData | null> {
  */
 export async function getShowLocationWeather(show: Show): Promise<WeatherData | null> {
   if (!show.lat || !show.lng) {
-    console.warn('[WeatherService] Show missing coordinates:', show.city);
+    logger.warn('[WeatherService] Show missing coordinates', { city: show.city, showId: show.id });
     return null;
   }
 

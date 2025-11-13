@@ -3,6 +3,7 @@ import { doc, setDoc, getDoc, onSnapshot, collection, query, where, getDocs, upd
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { UserProfile, UserPrefs } from '../lib/demoAuth';
 import { upsertUserProfile, upsertUserPrefs } from '../lib/demoAuth';
+import { logger } from '../lib/logger';
 
 /**
  * Firestore Profile Service
@@ -20,7 +21,7 @@ export class FirestoreProfileService {
    */
   static async initialize(userId: string): Promise<void> {
     try {
-      console.log('[FirestoreProfileService] Initializing for user:', userId);
+      logger.info('[FirestoreProfileService] Initializing for user', { userId });
       
       // Clean up existing listeners
       this.cleanup();
@@ -33,9 +34,9 @@ export class FirestoreProfileService {
       this.setupProfileListener(userId);
       this.setupPreferencesListener(userId);
       
-      console.log('[FirestoreProfileService] Initialized successfully');
+      logger.info('[FirestoreProfileService] Initialized successfully', { userId });
     } catch (error) {
-      console.error('[FirestoreProfileService] Initialization error:', error);
+      logger.error('[FirestoreProfileService] Initialization error', error as Error, { userId });
       throw error;
     }
   }
@@ -52,14 +53,14 @@ export class FirestoreProfileService {
       
       if (profileSnap.exists()) {
         const data = profileSnap.data() as UserProfile;
-        console.log('[FirestoreProfileService] Profile loaded:', data);
+        logger.info('[FirestoreProfileService] Profile loaded', { userId, hasAvatar: !!data.avatarUrl });
         upsertUserProfile(data);
         return data;
       }
       
       return null;
     } catch (error) {
-      console.error('[FirestoreProfileService] Error loading profile:', error);
+      logger.error('[FirestoreProfileService] Error loading profile', error as Error, { userId });
       return null;
     }
   }
@@ -76,14 +77,14 @@ export class FirestoreProfileService {
       
       if (prefsSnap.exists()) {
         const data = prefsSnap.data() as UserPrefs;
-        console.log('[FirestoreProfileService] Preferences loaded:', data);
+        logger.info('[FirestoreProfileService] Preferences loaded', { userId, theme: data.theme });
         upsertUserPrefs(userId, data);
         return data;
       }
       
       return null;
     } catch (error) {
-      console.error('[FirestoreProfileService] Error loading preferences:', error);
+      logger.error('[FirestoreProfileService] Error loading preferences', error as Error, { userId });
       return null;
     }
   }
@@ -101,12 +102,12 @@ export class FirestoreProfileService {
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data() as UserProfile;
-          console.log('[FirestoreProfileService] Profile updated:', data);
+          logger.info('[FirestoreProfileService] Profile updated', { userId, hasAvatar: !!data.avatarUrl });
           upsertUserProfile(data);
         }
       },
       (error) => {
-        console.error('[FirestoreProfileService] Profile listener error:', error);
+        logger.error('[FirestoreProfileService] Profile listener error', error as Error, { userId });
       }
     );
   }

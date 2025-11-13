@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Settings } from 'lucide-react';
 import { slideUp, staggerFast, fadeIn } from '../../lib/animations';
 import { ProgressBar } from '../../ui/ProgressBar';
 import type { BudgetCategory } from '../../hooks/useFinanceData';
 import { usePerfMonitor } from '../../lib/perfMonitor';
+import { EditBudgetModal } from './EditBudgetModal';
 
 export interface BudgetsTabProps {
   /** Categorías de presupuesto */
@@ -12,6 +13,9 @@ export interface BudgetsTabProps {
 
   /** Función de formateo de dinero */
   fmtMoney: (amount: number) => string;
+
+  /** Callback para actualizar presupuestos */
+  onUpdateBudgets?: (budgets: Record<string, number>) => void;
 }
 
 /**
@@ -24,16 +28,38 @@ export interface BudgetsTabProps {
 export function BudgetsTab({
   budgetCategories,
   fmtMoney,
+  onUpdateBudgets,
 }: BudgetsTabProps) {
   // Performance monitoring
   usePerfMonitor('BudgetsTab:render');
   
+  // State for edit modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const handleSaveBudgets = (budgets: Record<string, number>) => {
+    if (onUpdateBudgets) {
+      onUpdateBudgets(budgets);
+    }
+    setIsEditModalOpen(false);
+  };
+  
   return (
     <div className="space-y-4">
       <div className="glass rounded-xl border border-theme p-6 hover:border-accent-500/30 transition-fast">
-        <div className="mb-5">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">Presupuestos por Categoría</h3>
-          <p className="text-xs text-slate-300 dark:text-white/40">Seguimiento de ejecución presupuestaria</p>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">Presupuestos por Categoría</h3>
+            <p className="text-xs text-slate-300 dark:text-white/40">Seguimiento de ejecución presupuestaria</p>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setIsEditModalOpen(true)}
+            className="px-4 py-2 bg-accent-500/20 border border-accent-500/30 rounded-lg text-xs text-accent-400 hover:bg-accent-500/30 transition-fast font-medium flex items-center gap-2"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            Editar Presupuestos
+          </motion.button>
         </div>
         <div className="space-y-5">
           {budgetCategories.map((budget) => {
@@ -125,6 +151,14 @@ export function BudgetsTab({
           </div>
         </div>
       </div>
+
+      {/* Edit Budget Modal */}
+      <EditBudgetModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        budgetCategories={budgetCategories}
+        onSave={handleSaveBudgets}
+      />
     </div>
   );
 }

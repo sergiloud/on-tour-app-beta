@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 
@@ -21,6 +22,8 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
   totalMissions,
   completedToday
 }) => {
+  const navigate = useNavigate();
+  
   const getPriorityColor = (priority: Mission['priority']) => {
     switch (priority) {
       case 'high': return 'text-red-400';
@@ -56,10 +59,7 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
       className="p-6 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-pointer"
-      onClick={() => {
-        // TODO: Navigate to mission control
-        // console.log('Navigate to mission control');
-      }}
+      onClick={() => navigate('/dashboard/mission/lab')}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">

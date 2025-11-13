@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 
@@ -15,6 +16,8 @@ export const FinanceSummaryCard: React.FC<FinanceSummaryCardProps> = ({
   trend,
   status
 }) => {
+  const navigate = useNavigate();
+  
   const getStatusColor = () => {
     switch (status) {
       case 'positive': return 'text-green-400 border-green-500/20 bg-green-500/5';
@@ -53,10 +56,7 @@ export const FinanceSummaryCard: React.FC<FinanceSummaryCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className={`p-6 rounded-xl border backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-pointer ${getStatusColor()}`}
-      onClick={() => {
-        // TODO: Navigate to finance section
-        // console.log('Navigate to finance');
-      }}
+      onClick={() => navigate('/dashboard/finance')}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">

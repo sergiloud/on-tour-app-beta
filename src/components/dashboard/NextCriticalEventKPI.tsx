@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 
@@ -17,6 +18,8 @@ export const NextCriticalEventKPI: React.FC<NextCriticalEventKPIProps> = ({
   timeUntil,
   urgency
 }) => {
+  const navigate = useNavigate();
+  
   const getUrgencyColor = () => {
     switch (urgency) {
       case 'critical': return 'text-red-400 border-red-500/20 bg-red-500/10';
@@ -55,10 +58,7 @@ export const NextCriticalEventKPI: React.FC<NextCriticalEventKPIProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.1 }}
       className={`p-6 rounded-xl border backdrop-blur-sm cursor-pointer hover:scale-105 transition-transform duration-200 ${getUrgencyColor()}`}
-      onClick={() => {
-        // TODO: Navigate to event details
-        // console.log('Navigate to event:', eventName);
-      }}
+      onClick={() => navigate('/dashboard/calendar')}
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">

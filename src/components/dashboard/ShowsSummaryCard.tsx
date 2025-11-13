@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 import { sanitizeName } from '../../lib/sanitize';
@@ -20,6 +21,8 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
   upcomingShows,
   totalShows
 }) => {
+  const navigate = useNavigate();
+
   const getStatusColor = (status: Show['status']) => {
     switch (status) {
       case 'confirmed': return 'text-green-400';
@@ -44,10 +47,7 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
       className="p-6 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-pointer"
-      onClick={() => {
-        // TODO: Navigate to shows section
-        // console.log('Navigate to shows');
-      }}
+      onClick={() => navigate('/dashboard/shows')}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="flex items-center justify-between p-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
+                className="flex items-center justify-between p-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-slate-900 dark:text-white truncate">

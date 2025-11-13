@@ -100,11 +100,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
         updatedAt: new Date().toISOString()
       };
 
-      console.log('[DEBUG AddTransactionModal] userId:', userId);
-      console.log('[DEBUG AddTransactionModal] transaction:', transaction);
-      
       await FirestoreFinanceService.saveTransaction(transaction, userId);
-      console.log('[DEBUG AddTransactionModal] Firestore save completed');
 
       logger.info('Transaction saved successfully', {
         component: 'AddTransactionModal',
@@ -114,9 +110,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
       });
 
       // Emit event to refresh transaction list
-      console.log('[DEBUG AddTransactionModal] Dispatching event finance:transaction:created');
       window.dispatchEvent(new CustomEvent('finance:transaction:created', { detail: transaction }));
-      console.log('[DEBUG AddTransactionModal] Event dispatched');
 
       setSaveStatus('success');
 
@@ -198,9 +192,9 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                   </div>
                   <button
                     onClick={onClose}
-                    className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 flex items-center justify-center transition-all group"
+                    className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 flex items-center justify-center transition-all group"
                   >
-                    <X className="w-4 h-4 text-slate-400 dark:text-white/60 group-hover:text-slate-900 dark:hover:text-white" />
+                    <X className="w-4 h-4 text-slate-400 dark:text-white/60 group-hover:text-slate-900 dark:group-hover:text-white" />
                   </button>
                 </div>
               </div>
@@ -253,7 +247,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     required
-                    className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-slate-300 dark:border-white/20 transition-colors"
+                    className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-slate-300 dark:focus:border-white/20 transition-colors"
                   />
                 </div>
 

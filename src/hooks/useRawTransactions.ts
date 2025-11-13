@@ -51,10 +51,8 @@ export function useRawTransactions(): TransactionV3[] {
   // Listen for transaction updates
   useEffect(() => {
     const handleTransactionUpdate = () => {
-      console.log('[DEBUG useRawTransactions] Event received, incrementing refreshTrigger');
       setRefreshTrigger(prev => prev + 1);
     };
-    console.log('[DEBUG useRawTransactions] Attaching event listeners');
     window.addEventListener('finance:transaction:created', handleTransactionUpdate);
     window.addEventListener('finance:transaction:updated', handleTransactionUpdate);
     window.addEventListener('finance:transaction:deleted', handleTransactionUpdate);
@@ -67,20 +65,14 @@ export function useRawTransactions(): TransactionV3[] {
   
   // Load manual transactions from Firestore
   useEffect(() => {
-    console.log('[DEBUG useRawTransactions] Load effect - userId:', userId, 'refreshTrigger:', refreshTrigger);
-    if (!userId) {
-      console.log('[DEBUG useRawTransactions] No userId, skipping load');
-      return;
-    }
+    if (!userId) return;
     
     const loadManualTransactions = async () => {
       try {
-        console.log('[DEBUG useRawTransactions] Fetching transactions for userId:', userId);
         const transactions = await FirestoreFinanceService.getUserTransactions(userId);
-        console.log('[DEBUG useRawTransactions] Fetched transactions:', transactions.length, transactions);
         setManualTransactions(transactions);
       } catch (error) {
-        console.error('[DEBUG useRawTransactions] Failed to load manual transactions:', error);
+        console.error('Failed to load manual transactions:', error);
         setManualTransactions([]);
       }
     };
@@ -89,14 +81,10 @@ export function useRawTransactions(): TransactionV3[] {
   }, [userId, refreshTrigger]);
   
   // Obtener snapshot de datos - recalculate when orgId changes
-  const snapshot = useMemo(() => {
-    console.log('[DEBUG useRawTransactions] Building snapshot for orgId:', orgId);
-    return buildFinanceSnapshot();
-  }, [orgId]);
+  const snapshot = useMemo(() => buildFinanceSnapshot(), [orgId]);
 
   // Transformar shows a transacciones V3
   const transactionsV3 = useMemo<TransactionV3[]>(() => {
-    console.log('[DEBUG useRawTransactions] useMemo recalculating - manualTransactions.length:', manualTransactions.length, 'orgId:', orgId);
     const transactions: TransactionV3[] = [];
 
     // 1. Add transactions from shows
@@ -108,8 +96,6 @@ export function useRawTransactions(): TransactionV3[] {
         transactions.push(...showTransactions);
       }
     });
-
-    console.log('[DEBUG useRawTransactions] Show transactions:', transactions.length);
 
     // 2. Add manual transactions from Firestore
     manualTransactions.forEach((manualTx) => {
@@ -127,18 +113,12 @@ export function useRawTransactions(): TransactionV3[] {
       transactions.push(txV3);
     });
 
-    console.log('[DEBUG useRawTransactions] Total transactions after manual:', transactions.length);
-
     // Ordenar por fecha descendente (más reciente primero)
-    const sorted = transactions.sort((a, b) =>
+    return transactions.sort((a, b) =>
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
-    
-    console.log('[DEBUG useRawTransactions] Returning sorted transactions:', sorted.length);
-    return sorted;
-  }, [snapshot.shows, manualTransactions, orgId]); // Add orgId to dependencies
+  }, [snapshot.shows, manualTransactions, orgId]);
 
-  console.log('[DEBUG useRawTransactions] Hook returning transactionsV3:', transactionsV3.length);
   return transactionsV3;
 }
 

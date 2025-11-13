@@ -105,6 +105,13 @@ class ContactStore {
         ...updates,
         updatedAt: new Date().toISOString(),
       };
+      console.log('[ContactStore] Updating contact:', {
+        id,
+        hasNotes: !!updated.notes,
+        notesCount: updated.notes?.length || 0,
+        oldNotes: contact.notes?.length || 0,
+        newNotes: updates.notes?.length || 0
+      });
       this.contacts.set(id, updated);
       this.notify();
     }

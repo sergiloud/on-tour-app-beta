@@ -21,7 +21,7 @@ import {
   AlertCircle,
   FileText,
 } from 'lucide-react';
-import type { Contact, ContactType, ContactPriority, ContactStatus } from '../../types/crm';
+import type { Contact, ContactType, ContactPriority, ContactStatus, ContactNote } from '../../types/crm';
 import { CONTACT_TYPE_LABELS, COMMON_TAGS } from '../../types/crm';
 
 interface ContactEditorModalProps {
@@ -82,7 +82,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
     if (!validateForm()) return;
 
     // Prepare notes array
-    const notes: any[] = [];
+    const notes: ContactNote[] = [];
     if (formData.generalNotes.trim()) {
       // If editing, preserve the first note's ID and timestamp
       const existingNote = contact?.notes?.[0];
@@ -99,12 +99,21 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
 
     const { generalNotes, ...contactData } = formData;
 
-    onSave({
+    const finalContactData = {
       ...contactData,
       notes,
       interactions: contact?.interactions || [],
       lastContactedAt: contact?.lastContactedAt,
+    };
+
+    console.log('[ContactEditorModal] Saving contact with notes:', {
+      contactId: contact?.id,
+      notesCount: notes.length,
+      firstNote: notes[0],
+      fullData: finalContactData
     });
+
+    onSave(finalContactData);
   };
 
   const handleAddTag = () => {

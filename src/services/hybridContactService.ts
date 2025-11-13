@@ -67,6 +67,13 @@ export class HybridContactService {
     updates: Partial<Contact>,
     userId: string
   ): Promise<void> {
+    console.log('[HybridContactService] Updating contact:', {
+      contactId,
+      hasNotes: !!updates.notes,
+      notesCount: updates.notes?.length || 0,
+      updates
+    });
+
     // Update localStorage first
     contactStore.update(contactId, updates);
 
@@ -75,6 +82,10 @@ export class HybridContactService {
       try {
         const contact = contactStore.getById(contactId);
         if (contact) {
+          console.log('[HybridContactService] Saving to Firestore:', {
+            contactId: contact.id,
+            notesInContact: contact.notes?.length || 0
+          });
           await FirestoreContactService.saveContact(contact, userId);
         }
       } catch (error) {

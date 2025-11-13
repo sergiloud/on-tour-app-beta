@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import type { Contact, ContactType, ContactPriority, ContactStatus, ContactNote } from '../../types/crm';
 import { CONTACT_TYPE_LABELS, COMMON_TAGS } from '../../types/crm';
+import { logger } from '../../lib/logger';
 
 interface ContactEditorModalProps {
   contact?: Contact;
@@ -106,11 +107,10 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
       lastContactedAt: contact?.lastContactedAt,
     };
 
-    console.log('[ContactEditorModal] Saving contact with notes:', {
+    logger.info('[ContactEditorModal] Saving contact with notes', {
       contactId: contact?.id,
       notesCount: notes.length,
-      firstNote: notes[0],
-      fullData: finalContactData
+      hasNotes: notes.length > 0
     });
 
     onSave(finalContactData);

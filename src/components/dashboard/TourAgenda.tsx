@@ -23,6 +23,7 @@ import { useTourStats } from '../../hooks/useTourStats';
 import { useShows } from '../../hooks/useShows';
 import { useCalendarData } from '../../hooks/useCalendarData';
 import { isValidLocation, Itinerary } from '../../services/travelApi';
+import { logger } from '../../lib/logger';
 import { sanitizeName } from '../../lib/sanitize';
 import { Show } from '../../lib/shows';
 import { usePerfMonitor } from '../../lib/perfMonitor';
@@ -245,7 +246,7 @@ const TourAgendaComponent: React.FC = () => {
 
     // Memoize unified event click handler - Open drawer
     const handleEventClick = React.useCallback((event: AgendaEvent) => {
-        console.log('[TourAgenda] Event clicked, opening drawer:', { id: event.id, type: event.type, city: event.city });
+        logger.info('[TourAgenda] Event clicked, opening drawer', { eventId: event.id, type: event.type, city: event.city });
         setSelectedEvent(event);
         setIsDrawerOpen(true);
     }, []);

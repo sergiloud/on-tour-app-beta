@@ -49,14 +49,6 @@ export function CalendarSyncModal({ isOpen, onClose }: Props) {
   };
 
   const handleConnect = async () => {
-    // Check if backend is available (development vs production)
-    const isProduction = window.location.hostname.includes('vercel.app');
-    
-    if (isProduction) {
-      error('Calendar sync backend not deployed yet. Use Import/Export for now.');
-      return;
-    }
-    
     if (provider === 'caldav' && !calendarUrl) {
       error('Please enter calendar URL');
       return;
@@ -189,21 +181,6 @@ export function CalendarSyncModal({ isOpen, onClose }: Props) {
           {/* Step: Connect */}
           {step === 'connect' && (
             <div className="space-y-4">
-              {/* Production Warning */}
-              {window.location.hostname.includes('vercel.app') && (
-                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                    <div className="text-xs text-amber-200">
-                      <p className="font-medium mb-1">Backend not deployed yet</p>
-                      <p className="text-amber-300/80">
-                        Calendar sync requires backend deployment. For now, use <strong>Import/Export</strong> buttons to sync manually.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Provider Selection */}
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">

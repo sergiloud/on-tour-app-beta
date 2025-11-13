@@ -125,12 +125,12 @@ export class FirestoreProfileService {
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data() as UserPrefs;
-          console.log('[FirestoreProfileService] Preferences updated:', data);
+          logger.info('[FirestoreProfileService] Preferences updated', { userId, hasData: !!data });
           upsertUserPrefs(userId, data);
         }
       },
       (error) => {
-        console.error('[FirestoreProfileService] Preferences listener error:', error);
+        logger.error('[FirestoreProfileService] Preferences listener error', error as Error, { userId });
       }
     );
   }
@@ -150,7 +150,7 @@ export class FirestoreProfileService {
         updatedAt: serverTimestamp()
       }, { merge: true });
       
-      console.log('[FirestoreProfileService] Profile saved');
+      logger.info('[FirestoreProfileService] Profile saved', { userId });
       
       // Update local storage
       const currentProfile = await this.loadProfile(userId);
@@ -158,7 +158,7 @@ export class FirestoreProfileService {
         upsertUserProfile({ ...currentProfile, ...profile });
       }
     } catch (error) {
-      console.error('[FirestoreProfileService] Error saving profile:', error);
+      logger.error('[FirestoreProfileService] Error saving profile', error as Error, { userId });
       throw error;
     }
   }
@@ -177,12 +177,12 @@ export class FirestoreProfileService {
         updatedAt: serverTimestamp()
       }, { merge: true });
       
-      console.log('[FirestoreProfileService] Preferences saved');
+      logger.info('[FirestoreProfileService] Preferences saved', { userId });
       
       // Update local storage
       upsertUserPrefs(userId, prefs);
     } catch (error) {
-      console.error('[FirestoreProfileService] Error saving preferences:', error);
+      logger.error('[FirestoreProfileService] Error saving preferences', error as Error, { userId });
       throw error;
     }
   }
@@ -212,19 +212,19 @@ export class FirestoreProfileService {
       const avatarRef = ref(this.storage, `users/${userId}/avatars/${fileName}`);
 
       // Upload the file
-      console.log('[FirestoreProfileService] Uploading avatar...');
+      logger.info('[FirestoreProfileService] Uploading avatar', { userId, fileName });
       await uploadBytes(avatarRef, file);
 
       // Get the download URL
       const downloadURL = await getDownloadURL(avatarRef);
-      console.log('[FirestoreProfileService] Avatar uploaded:', downloadURL);
+      logger.info('[FirestoreProfileService] Avatar uploaded', { userId, url: downloadURL });
 
       // Update profile with new avatar URL
       await this.saveProfile(userId, { avatarUrl: downloadURL });
 
       return downloadURL;
     } catch (error) {
-      console.error('[FirestoreProfileService] Error uploading avatar:', error);
+      logger.error('[FirestoreProfileService] Error uploading avatar', error as Error, { userId });
       throw error;
     }
   }
@@ -245,12 +245,12 @@ export class FirestoreProfileService {
 
       // Delete the file
       await deleteObject(avatarRef);
-      console.log('[FirestoreProfileService] Avatar deleted');
+      logger.info('[FirestoreProfileService] Avatar deleted', { userId });
 
       // Update profile to remove avatar URL
       await this.saveProfile(userId, { avatarUrl: undefined });
     } catch (error) {
-      console.error('[FirestoreProfileService] Error deleting avatar:', error);
+      logger.error('[FirestoreProfileService] Error deleting avatar', error as Error, { userId });
       throw error;
     }
   }
@@ -262,14 +262,14 @@ export class FirestoreProfileService {
     try {
       if (!db) throw new Error('Firestore not initialized');
       
-      console.log('[FirestoreProfileService] Migrating local data to Firestore...');
+      logger.info('[FirestoreProfileService] Migrating local data to Firestore', { userId });
       
       // Check if already migrated
       const profileRef = doc(db, 'users', userId, 'profile', 'main');
       const profileSnap = await getDoc(profileRef);
       
       if (profileSnap.exists()) {
-        console.log('[FirestoreProfileService] Data already migrated');
+        logger.info('[FirestoreProfileService] Data already migrated', { userId });
         return;
       }
 
@@ -287,9 +287,9 @@ export class FirestoreProfileService {
         await this.savePreferences(userId, localPrefs);
       }
 
-      console.log('[FirestoreProfileService] Migration completed');
+      logger.info('[FirestoreProfileService] Migration completed', { userId });
     } catch (error) {
-      console.error('[FirestoreProfileService] Migration error:', error);
+      logger.error('[FirestoreProfileService] Migration error', error as Error, { userId });
     }
   }
 
@@ -307,7 +307,7 @@ export class FirestoreProfileService {
         exportedAt: new Date().toISOString()
       };
     } catch (error) {
-      console.error('[FirestoreProfileService] Error exporting data:', error);
+      logger.error('[FirestoreProfileService] Error exporting data', error as Error, { userId });
       throw error;
     }
   }
@@ -319,7 +319,7 @@ export class FirestoreProfileService {
     try {
       if (!db) throw new Error('Firestore not initialized');
       
-      console.log('[FirestoreProfileService] Deleting user data...');
+      logger.info('[FirestoreProfileService] Deleting user data', { userId });
       
       // Delete profile
       const profileRef = doc(db, 'users', userId, 'profile', 'main');
@@ -332,9 +332,9 @@ export class FirestoreProfileService {
       // Note: Avatar deletion should be handled separately
       // as we need the URL to delete from Storage
 
-      console.log('[FirestoreProfileService] User data deleted');
+      logger.info('[FirestoreProfileService] User data deleted', { userId });
     } catch (error) {
-      console.error('[FirestoreProfileService] Error deleting data:', error);
+      logger.error('[FirestoreProfileService] Error deleting data', error as Error, { userId });
       throw error;
     }
   }

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../lib/i18n';
 import { useAuth } from '../../context/AuthContext';
+import { logger } from '../../lib/logger';
 
 // Import all dashboard components
 import { FinancialHealthKPI } from './FinancialHealthKPI';
@@ -276,7 +277,7 @@ export const ProactiveDashboard: React.FC<ProactiveDashboardProps> = ({
   const handleViewCalendar = () => navigate('/dashboard/calendar');
   const handleExportData = () => {
     // Export functionality would be implemented here
-    console.log('[ProactiveDashboard] Export data requested');
+    logger.info('[ProactiveDashboard] Export data requested');
   };
 
   const quickActions = getDefaultQuickActions(

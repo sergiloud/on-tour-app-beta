@@ -7,6 +7,7 @@ import type { CalEvent } from './types';
 import { t } from '../../lib/i18n';
 import { DragToMoveHandler } from './DragToMoveHandler';
 import { useMultiSelect, MultiSelectPanel } from './MultiSelectManager';
+import { logger } from '../../lib/logger';
 
 type Props = {
   weekStart: string; // Monday as YYYY-MM-DD
@@ -301,11 +302,17 @@ const WeekGrid: React.FC<Props> = ({ weekStart, eventsByDay, tz, onOpen, onCreat
         selectedCount={multiSelect.count}
         onMove={() => {
           // Move selected events to a date (would open date picker in real implementation)
-          console.log('Move selected:', Array.from(multiSelect.selectedIds));
+          logger.info('[WeekGrid] Move selected events requested', { 
+            selectedIds: Array.from(multiSelect.selectedIds), 
+            count: multiSelect.count 
+          });
         }}
         onCopy={() => {
           // Copy selected events
-          console.log('Copy selected:', Array.from(multiSelect.selectedIds));
+          logger.info('[WeekGrid] Copy selected events requested', { 
+            selectedIds: Array.from(multiSelect.selectedIds),
+            count: multiSelect.count 
+          });
         }}
         onDelete={() => {
           // Delete selected events

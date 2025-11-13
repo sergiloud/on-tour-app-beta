@@ -414,7 +414,7 @@ const WelcomePage: React.FC = () => {
           setChecklistDone(boolArray);
         }
       })
-      .catch(err => console.warn('[WelcomePage] Failed to load onboarding from Firebase:', err));
+      .catch(err => logger.warn('[WelcomePage] Failed to load onboarding from Firebase', err as Error));
     return undefined; // No cleanup
   }, [userId]);
 
@@ -428,7 +428,7 @@ const WelcomePage: React.FC = () => {
           welcomeSteps: stepIds,
           lastVisit: Date.now(),
           activities: []
-        }).catch(err => console.warn('[WelcomePage] Failed to save onboarding to Firebase:', err));
+        }).catch(err => logger.warn('[WelcomePage] Failed to save onboarding to Firebase', err as Error));
       }, 500);
       return () => clearTimeout(timeout);
     }

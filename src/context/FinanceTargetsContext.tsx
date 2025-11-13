@@ -19,6 +19,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
+import { logger } from '../lib/logger';
 
 export interface FinanceTargets {
   /** Objetivo de beneficio neto anual */
@@ -81,7 +82,7 @@ function loadTargetsFromStorage(): Partial<FinanceTargets> {
       return JSON.parse(stored) as Partial<FinanceTargets>;
     }
   } catch (error) {
-    console.error('[FinanceTargetsContext] Error loading from localStorage:', error);
+    logger.error('[FinanceTargetsContext] Error loading from localStorage', error as Error);
   }
   return {};
 }
@@ -93,7 +94,7 @@ function saveTargetsToStorage(targets: FinanceTargets): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(targets));
   } catch (error) {
-    console.error('[FinanceTargetsContext] Error saving to localStorage:', error);
+    logger.error('[FinanceTargetsContext] Error saving to localStorage', error as Error);
   }
 }
 

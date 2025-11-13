@@ -11,6 +11,7 @@ interface AppIconProps {
   badge?: number | string | null;
   onPress?: () => void;
   onLongPress?: (event: React.MouseEvent | React.TouchEvent) => void;
+  onDelete?: (appId: string) => void;
   isDragging?: boolean;
   onDragStart?: () => void;
   onDragEnd?: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
@@ -36,6 +37,7 @@ export const AppIcon: React.FC<AppIconProps> = ({
   badge,
   onPress,
   onLongPress,
+  onDelete,
   isDragging = false,
   onDragStart,
   onDragEnd,
@@ -181,7 +183,13 @@ export const AppIcon: React.FC<AppIconProps> = ({
             className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-20"
             onClick={(e) => {
               e.stopPropagation();
-              // TODO: Handle delete
+              if (onDelete) {
+                // Haptic feedback for delete
+                if (navigator.vibrate) {
+                  navigator.vibrate(50);
+                }
+                onDelete(app.id);
+              }
             }}
           >
             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { t } from '../../lib/i18n';
 import { useAuth } from '../../context/AuthContext';
 
@@ -266,12 +267,17 @@ export const ProactiveDashboard: React.FC<ProactiveDashboardProps> = ({
   }, []);
 
   // Quick action handlers
-  const handleAddShow = () => { /* TODO */ };
-  const handleViewFinance = () => { /* TODO */ };
-  const handleCreateMission = () => { /* TODO */ };
-  const handleBookTravel = () => { /* TODO */ };
-  const handleViewCalendar = () => { /* TODO */ };
-  const handleExportData = () => { /* TODO */ };
+  const navigate = useNavigate();
+  
+  const handleAddShow = () => navigate('/dashboard/shows');
+  const handleViewFinance = () => navigate('/dashboard/finance');
+  const handleCreateMission = () => navigate('/dashboard/mission/lab');
+  const handleBookTravel = () => navigate('/dashboard/travel');
+  const handleViewCalendar = () => navigate('/dashboard/calendar');
+  const handleExportData = () => {
+    // Export functionality would be implemented here
+    console.log('[ProactiveDashboard] Export data requested');
+  };
 
   const quickActions = getDefaultQuickActions(
     handleAddShow,
@@ -287,8 +293,8 @@ export const ProactiveDashboard: React.FC<ProactiveDashboardProps> = ({
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
         <WelcomeCard
-          onGetStarted={() => setData({} as DashboardData)} // This would trigger data loading
-          onImportData={() => { /* TODO */ }}
+          onGetStarted={() => setData({} as DashboardData)}
+          onImportData={() => navigate('/dashboard/shows')}
         />
       </div>
     );

@@ -26,6 +26,7 @@ interface HomeScreenProps {
   };
   onPageChange: (page: number) => void;
   onAppOpen: (app: AppDefinition) => void;
+  onAppDelete?: (appId: string) => void;
   onEnterEditMode: () => void;
   onExitEditMode: () => void;
   onLayoutChange?: (pages: AppPage[]) => void;
@@ -39,6 +40,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   enabledWidgets,
   onPageChange,
   onAppOpen,
+  onAppDelete,
   onEnterEditMode,
   onExitEditMode,
   onLayoutChange,
@@ -235,6 +237,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     setTimeout(() => {
                       isInteractingWithApp.current = false;
                     }, 300);
+                  }}
+                  onDelete={(id) => {
+                    if (onAppDelete) {
+                      onAppDelete(id);
+                    }
                   }}
                   onLongPress={(e) => {
                     isInteractingWithApp.current = true;

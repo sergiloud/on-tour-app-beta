@@ -19,6 +19,7 @@ import {
 import { useTheme } from '../../hooks/useTheme';
 import { useHighContrast } from '../../context/HighContrastContext';
 import PageHeader from '../../components/common/PageHeader';
+import { logger } from '../../lib/logger';
 
 type Tab = 'profile' | 'account' | 'preferences' | 'agencies' | 'notifications' | 'privacy' | 'integrations' | 'data';
 
@@ -212,7 +213,7 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
   const handleDelete = (id: string) => {
     if (confirm('Delete this agency?')) {
       removeAgency(id);
-      console.log('[ProfileSettings] ✅ Agency deleted');
+      logger.info('[ProfileSettings] Agency deleted', { agencyId: id });
     }
   };
 
@@ -508,13 +509,13 @@ export const ProfileSettings: React.FC = () => {
       try {
         await FirestoreProfileService.saveProfile(userId, formData);
       } catch (error) {
-        console.log('Firestore save failed (demo mode):', error);
+        logger.info('Firestore save failed (demo mode)', { userId });
       }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
-      console.error('Error saving profile:', error);
+      logger.error('Error saving profile', error as Error, { userId });
     } finally {
       setIsSaving(false);
     }
@@ -529,13 +530,13 @@ export const ProfileSettings: React.FC = () => {
       try {
         await FirestoreProfileService.saveProfile(userId, notifications);
       } catch (error) {
-        console.log('Firestore save failed (demo mode):', error);
+        logger.info('Firestore save failed (demo mode)', { userId });
       }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
-      console.error('Error saving notifications:', error);
+      logger.error('Error saving notifications', error as Error, { userId });
     } finally {
       setIsSaving(false);
     }
@@ -550,13 +551,13 @@ export const ProfileSettings: React.FC = () => {
       try {
         await FirestoreProfileService.saveProfile(userId, privacy);
       } catch (error) {
-        console.log('Firestore save failed (demo mode):', error);
+        logger.info('Firestore save failed (demo mode)', { userId });
       }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
-      console.error('Error saving privacy:', error);
+      logger.error('Error saving privacy', error as Error, { userId });
     } finally {
       setIsSaving(false);
     }
@@ -569,13 +570,13 @@ export const ProfileSettings: React.FC = () => {
       try {
         await FirestoreProfileService.savePreferences(userId, prefs);
       } catch (error) {
-        console.log('Firestore save failed (demo mode):', error);
+        logger.info('Firestore save failed (demo mode)', { userId });
       }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      logger.error('Error saving preferences', error as Error, { userId });
     } finally {
       setIsSaving(false);
     }
@@ -632,7 +633,7 @@ export const ProfileSettings: React.FC = () => {
       const avatarUrl = await FirestoreProfileService.uploadAvatar(userId, file);
       updateProfile({ avatarUrl });
     } catch (error: any) {
-      console.error('Error uploading avatar:', error);
+      logger.error('Error uploading avatar', error as Error, { userId });
       toast.error(error.message || 'Failed to upload avatar');
     } finally {
       setUploadingAvatar(false);
@@ -655,7 +656,7 @@ export const ProfileSettings: React.FC = () => {
       // User will be logged out automatically
       window.location.href = '/';
     } catch (error: any) {
-      console.error('Error deleting account:', error);
+      logger.error('Error deleting account', error as Error, { userId });
       setDeleteAccountError(error.message || 'Failed to delete account');
     } finally {
       setIsDeletingAccount(false);
@@ -676,7 +677,7 @@ export const ProfileSettings: React.FC = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error exporting data:', error);
+      logger.error('Error exporting data', error as Error, { userId });
     }
   };
 

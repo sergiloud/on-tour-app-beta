@@ -3,26 +3,8 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getDB } from '../utils/firebase';
 import { encrypt } from '../utils/encryption';
-
-// Initialize Firebase Admin if not already initialized
-let db: any;
-try {
-  if (!db) {
-    const app = initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-    db = getFirestore(app);
-  }
-} catch (error) {
-  console.error('Firebase init error:', error);
-}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('[ENABLE] Request received');
@@ -48,11 +30,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    if (!db) {
-      console.error('[ENABLE] Database not available');
-      return res.status(500).json({ error: 'Database not available' });
-    }
-
     // Encrypt password
     console.log('[ENABLE] Starting encryption');
     let encryptedPassword: string;
@@ -69,6 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Save sync configuration to Firestore
     console.log('[ENABLE] Saving to Firestore');
+    const db = getDB();
     await db
       .collection('users')
       .doc(userId)

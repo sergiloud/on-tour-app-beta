@@ -3,27 +3,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-
-// Initialize Firebase Admin
-let db: any;
-try {
-  if (getApps().length === 0) {
-    const app = initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-    db = getFirestore(app);
-  } else {
-    db = getFirestore();
-  }
-} catch (error) {
-  console.error('Firebase init error:', error);
-}
+import { getDB } from '../utils/firebase';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -37,10 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'User ID required' });
     }
 
-    if (!db) {
-      return res.status(500).json({ error: 'Database not available' });
-    }
-
+    const db = getDB();
     const configDoc = await db
       .collection('users')
       .doc(userId)
@@ -53,6 +30,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const config = configDoc.data();
+    if (!config) {
+      return res.status(200).json({ enabled: false });
+    }
     
     return res.status(200).json({
       enabled: config.enabled || false,

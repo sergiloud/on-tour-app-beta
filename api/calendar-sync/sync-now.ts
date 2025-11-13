@@ -3,26 +3,9 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getDB } from '../utils/firebase';
 import { createDAVClient } from 'tsdav';
 import { decrypt } from '../utils/encryption';
-
-let db: any;
-try {
-  if (getApps().length === 0) {
-    initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-  }
-  db = getFirestore();
-} catch (error) {
-  console.error('Firebase init error:', error);
-}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -36,9 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'User ID required' });
     }
 
-    if (!db) {
-      return res.status(500).json({ error: 'Database not available' });
-    }
+    const db = getDB();
 
     // Get sync configuration
     const configDoc = await db
@@ -48,11 +29,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .doc('config')
       .get();
 
-    if (!configDoc.exists || !configDoc.data().enabled) {
+    if (!configDoc.exists) {
       return res.status(400).json({ error: 'Calendar sync not enabled' });
     }
 
     const config = configDoc.data();
+    if (!config || !config.enabled) {
+      return res.status(400).json({ error: 'Calendar sync not enabled' });
+    }
+
     const { calendarUrl, direction, credentials } = config;
 
     // Decrypt password using AES-256-GCM

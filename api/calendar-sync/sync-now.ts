@@ -2,9 +2,52 @@
  * Vercel Serverless Function - Manual Sync Trigger
  */
 
-import { getDB } from '../utils/firebase';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 import { createDAVClient } from 'tsdav';
-import { decrypt } from '../utils/encryption';
+import { createDecipheriv } from 'crypto';
+
+// Firebase initialization
+function getDB() {
+  if (getApps().length === 0) {
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }),
+    });
+  }
+  return getFirestore();
+}
+
+// Decryption function
+function decrypt(encryptedText: string): string {
+  const key = process.env.CALENDAR_ENCRYPTION_KEY;
+  if (!key || key.length !== 64) {
+    throw new Error('Invalid encryption key');
+  }
+  
+  const parts = encryptedText.split(':');
+  const [ivHex, authTagHex, encryptedHex] = parts;
+  
+  if (!ivHex || !authTagHex || !encryptedHex) {
+    throw new Error('Invalid encrypted text format');
+  }
+  
+  const keyBuffer = Buffer.from(key, 'hex');
+  const iv = Buffer.from(ivHex, 'hex');
+  const authTag = Buffer.from(authTagHex, 'hex');
+  const encrypted = Buffer.from(encryptedHex, 'hex');
+  
+  const decipher = createDecipheriv('aes-256-gcm', keyBuffer, iv);
+  decipher.setAuthTag(authTag);
+  
+  let decrypted = decipher.update(encrypted);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  
+  return decrypted.toString('utf8');
+}
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

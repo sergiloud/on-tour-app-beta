@@ -2,8 +2,41 @@
  * Vercel Serverless Function - Enable Calendar Sync
  */
 
-import { getDB } from '../utils/firebase';
-import { encrypt } from '../utils/encryption';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { createCipheriv, randomBytes } from 'crypto';
+
+// Firebase initialization
+function getDB() {
+  if (getApps().length === 0) {
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }),
+    });
+  }
+  return getFirestore();
+}
+
+// Encryption function
+function encrypt(text: string): string {
+  const key = process.env.CALENDAR_ENCRYPTION_KEY;
+  if (!key || key.length !== 64) {
+    throw new Error('Invalid encryption key');
+  }
+  
+  const keyBuffer = Buffer.from(key, 'hex');
+  const iv = randomBytes(16);
+  const cipher = createCipheriv('aes-256-gcm', keyBuffer, iv);
+  
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  const authTag = cipher.getAuthTag();
+  
+  return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
+}
 
 export default async function handler(req: any, res: any) {
   console.log('[ENABLE] Request received');

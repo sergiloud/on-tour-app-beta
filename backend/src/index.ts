@@ -15,10 +15,14 @@ import { createEmailRouter } from './routes/email.js';
 import { createRealtimeRouter } from './routes/realtime.js';
 import auditRouter from './routes/audit.js';
 import organizationsRouter from './routes/organizations.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import { authRouter } from './routes/auth.js';
+import { usersRouter } from './routes/users.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
+import { generalRateLimit } from './middleware/rateLimiting.js';
 import { logger } from './utils/logger.js';
 import { webSocketService } from './services/WebSocketService.js';
+import { initializeFirebaseAdmin } from './config/firebase.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,11 +45,29 @@ async function initializeDatabase() {
   }
 }
 
+// Initialize Firebase Admin
+function initializeFirebase() {
+  try {
+    const initialized = initializeFirebaseAdmin();
+    if (initialized) {
+      logger.info('🔥 Firebase Admin initialized successfully');
+    } else {
+      logger.warn('⚠️  Firebase Admin not configured - authentication features disabled');
+    }
+  } catch (error) {
+    logger.error('❌ Firebase Admin initialization failed:', error);
+    // No exit - la app puede funcionar sin Firebase en modo demo
+  }
+}
+
 // Middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(pinoHttp({ logger }));
+
+// Security: Rate limiting global (antes de las rutas)
+app.use(generalRateLimit);
 
 // Setup Swagger documentation
 setupSwagger(app);
@@ -63,26 +85,41 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
+// Authentication routes (sin authMiddleware - manejan su propia autenticación)
+app.use('/api/auth', authRouter);
+
+// User management with Firebase Auth + Firestore
+app.use('/api/users', usersRouter);
+
+// Protected routes (requieren autenticación)
 app.use('/api/organizations', organizationsRouter);
 app.use('/api/shows', authMiddleware, showsRouter);
 app.use('/api/finance', authMiddleware, financeRouter);
 app.use('/api/travel', authMiddleware, travelRouter);
 app.use('/api/audit', authMiddleware, auditRouter);
+
+// External service routes
 app.use('/api/amadeus', createAmadeusRouter(logger));
 app.use('/api/stripe', createStripeRouter(logger));
 app.use('/api/email', createEmailRouter(logger));
 app.use('/api/realtime', createRealtimeRouter());
 
-// Error handling
+// Security: Handle 404 errors (antes del error handler)
+app.use(notFoundHandler);
+
+// Error handling global (DEBE SER EL ÚLTIMO MIDDLEWARE)
 app.use(errorHandler);
 
 // Start server
 async function start() {
+  // Initialize services
   await initializeDatabase();
+  initializeFirebase();
 
   server.listen(PORT, () => {
     logger.info(`🚀 Server running on port ${PORT}`);
     logger.info(`🔌 WebSocket server ready for connections`);
+    logger.info(`🔥 Firebase Auth integration active`);
     logger.info(`📚 API Docs available at http://localhost:${PORT}/api-docs`);
   });
 }

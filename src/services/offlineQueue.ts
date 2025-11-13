@@ -11,6 +11,14 @@ interface QueuedOperation {
   data?: any;
   timestamp: number;
   retries: number;
+  /** Optimistic mode: UI already updated, revert on failure */
+  optimistic?: boolean;
+  /** Callback to revert optimistic update */
+  onRevert?: () => void;
+  /** Callback on success */
+  onSuccess?: () => void;
+  /** Callback on failure */
+  onFailure?: (error: Error) => void;
 }
 
 class OfflineQueueService {
@@ -54,12 +62,19 @@ class OfflineQueueService {
 
   /**
    * Add operation to queue
+   * @param optimistic If true, assumes success and only reverts on failure
    */
   addOperation(
     type: QueuedOperation['type'],
     collection: QueuedOperation['collection'],
     entityId: string,
-    data?: any
+    data?: any,
+    options?: {
+      optimistic?: boolean;
+      onRevert?: () => void;
+      onSuccess?: () => void;
+      onFailure?: (error: Error) => void;
+    }
   ): void {
     const operation: QueuedOperation = {
       id: crypto.randomUUID(),
@@ -68,13 +83,22 @@ class OfflineQueueService {
       entityId,
       data,
       timestamp: Date.now(),
-      retries: 0
+      retries: 0,
+      optimistic: options?.optimistic,
+      onRevert: options?.onRevert,
+      onSuccess: options?.onSuccess,
+      onFailure: options?.onFailure,
     };
 
     this.queue.push(operation);
     this.saveQueue();
 
-    console.log(`📥 Queued ${type} operation for ${collection}/${entityId}`);
+    console.log(`📥 Queued ${type} operation for ${collection}/${entityId}${options?.optimistic ? ' (optimistic)' : ''}`);
+    
+    // If online and optimistic, process immediately
+    if (navigator.onLine && options?.optimistic) {
+      this.processQueue();
+    }
   }
 
   /**
@@ -109,13 +133,29 @@ class OfflineQueueService {
       try {
         await this.executeOperation(operation);
         console.log(`✅ Processed ${operation.type} on ${operation.collection}/${operation.entityId}`);
+        
+        // Call success callback if provided
+        if (operation.onSuccess) {
+          operation.onSuccess();
+        }
       } catch (error) {
         console.error(`❌ Failed to process operation:`, error);
         
+        // If optimistic, revert the UI change
+        if (operation.optimistic && operation.onRevert) {
+          console.log(`⏪ Reverting optimistic update for ${operation.collection}/${operation.entityId}`);
+          operation.onRevert();
+        }
+        
+        // Call failure callback if provided
+        if (operation.onFailure) {
+          operation.onFailure(error as Error);
+        }
+        
         operation.retries++;
         
-        if (operation.retries < this.maxRetries) {
-          // Retry later
+        if (operation.retries < this.maxRetries && !operation.optimistic) {
+          // Only retry non-optimistic operations
           failedOps.push(operation);
         } else {
           console.error(`❌ Operation failed after ${this.maxRetries} retries, discarding`, operation);

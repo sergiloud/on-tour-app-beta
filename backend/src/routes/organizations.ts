@@ -4,6 +4,9 @@ import { tenantMiddleware } from "../middleware/tenantMiddleware.js";
 import { organizationService } from "../services/OrganizationService.js";
 import { seedProphecyShows, isProphecySeeded } from '../scripts/seedProphecyData.js';
 import { logger } from "../utils/logger.js";
+import { asyncErrorHandler, AppError } from "../middleware/errorHandler.js";
+import { registrationRateLimit } from "../middleware/rateLimiting.js";
+import { validateRegistration, handleValidationErrors } from "../middleware/validation.js";
 
 const router = Router();
 
@@ -30,16 +33,19 @@ const router = Router();
  *   "logoUrl": "https://..."
  * }
  */
-router.post("/", authMiddleware, async (req: Request, res: Response) => {
-  try {
+router.post("/", 
+  registrationRateLimit,    // Protección contra spam de organizaciones
+  authMiddleware, 
+  asyncErrorHandler(async (req: Request, res: Response) => {
     const { name, description, websiteUrl, logoUrl } = req.body;
 
     // Validate required fields
     if (!name || typeof name !== "string" || name.trim().length === 0) {
-      return res.status(400).json({
-        error: "Bad request",
-        message: "Organization name is required and must be a non-empty string",
-      });
+      throw new AppError(
+        "Organization name is required and must be a non-empty string",
+        400,
+        "INVALID_ORGANIZATION_NAME"
+      );
     }
 
     // Create organization
@@ -60,14 +66,8 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
       success: true,
       data: organization,
     });
-  } catch (error) {
-    logger.error(error, "Failed to create organization");
-    res.status(500).json({
-      error: "Internal server error",
-      message: "Failed to create organization",
-    });
-  }
-});
+  })
+);
 
 /**
  * GET /api/organizations

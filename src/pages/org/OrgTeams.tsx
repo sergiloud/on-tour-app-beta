@@ -1,17 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Users2, Plus } from 'lucide-react';
 import { useOrg } from '../../context/OrgContext';
 import { t } from '../../lib/i18n';
 import PageHeader from '../../components/common/PageHeader';
 import { OrgEmptyState, OrgSectionHeader } from '../../components/org/OrgModernCards';
+import { TeamCreationModal } from '../../components/org/TeamCreationModal';
+import { addTeam } from '../../lib/tenants';
+import { logger } from '../../lib/logger';
 
 const OrgTeams: React.FC = () => {
-  const { org, teams } = useOrg();
+  const { org, teams, refresh } = useOrg();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  
   if (!org) return null;
 
   const handleCreateTeam = () => {
-    // TODO: Implement team creation modal
+    setShowCreateModal(true);
+  };
+
+  const handleSaveTeam = (teamData: { name: string; description?: string }) => {
+    const result = addTeam(org.id, teamData.name);
+    
+    if (result) {
+      logger.info('Team created successfully', {
+        component: 'OrgTeams',
+        teamId: result.teamId,
+        orgId: org.id,
+        teamName: teamData.name
+      });
+      
+      // Refresh context to show new team
+      refresh();
+      
+      setShowCreateModal(false);
+    } else {
+      logger.error('Failed to create team', new Error('addTeam returned undefined'), {
+        component: 'OrgTeams',
+        orgId: org.id,
+        teamName: teamData.name
+      });
+    }
   };
 
   return (
@@ -123,6 +152,13 @@ const OrgTeams: React.FC = () => {
           ))}
         </motion.div>
       )}
+
+      {/* Team Creation Modal */}
+      <TeamCreationModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSave={handleSaveTeam}
+      />
     </motion.div>
   );
 };

@@ -1,5 +1,6 @@
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { app } from '../lib/firebase';
+import { logger } from '../lib/logger';
 
 const db = app ? getFirestore(app) : null;
 
@@ -15,7 +16,7 @@ export class FirestoreActionsService {
    */
   static async saveCompletedActions(userId: string, actionIds: string[]): Promise<void> {
     if (!userId || !db) {
-      console.warn('[FirestoreActionsService] No userId provided or Firebase not initialized');
+      logger.warn('[FirestoreActionsService] No userId provided or Firebase not initialized', { userId });
       return;
     }
 
@@ -28,9 +29,9 @@ export class FirestoreActionsService {
       };
 
       await setDoc(actionsRef, data, { merge: true });
-      console.log('[FirestoreActionsService] Completed actions saved:', actionIds.length);
+      logger.info('[FirestoreActionsService] Completed actions saved', { userId, count: actionIds.length });
     } catch (error) {
-      console.error('[FirestoreActionsService] Error saving completed actions:', error);
+      logger.error('[FirestoreActionsService] Error saving completed actions', error as Error, { userId });
       throw error;
     }
   }
@@ -40,7 +41,7 @@ export class FirestoreActionsService {
    */
   static async getCompletedActions(userId: string): Promise<string[]> {
     if (!userId || !db) {
-      console.warn('[FirestoreActionsService] No userId provided or Firebase not initialized');
+      logger.warn('[FirestoreActionsService] No userId provided or Firebase not initialized', { userId });
       return [];
     }
 
@@ -55,7 +56,7 @@ export class FirestoreActionsService {
 
       return [];
     } catch (error) {
-      console.error('[FirestoreActionsService] Error getting completed actions:', error);
+      logger.error('[FirestoreActionsService] Error getting completed actions', error as Error, { userId });
       return [];
     }
   }
@@ -65,7 +66,7 @@ export class FirestoreActionsService {
    */
   static async markActionCompleted(userId: string, actionId: string): Promise<void> {
     if (!userId || !actionId || !db) {
-      console.warn('[FirestoreActionsService] Missing userId, actionId, or Firebase not initialized');
+      logger.warn('[FirestoreActionsService] Missing userId, actionId, or Firebase not initialized', { userId, actionId });
       return;
     }
 
@@ -76,7 +77,7 @@ export class FirestoreActionsService {
         await this.saveCompletedActions(userId, updatedActions);
       }
     } catch (error) {
-      console.error('[FirestoreActionsService] Error marking action completed:', error);
+      logger.error('[FirestoreActionsService] Error marking action completed', error as Error, { userId, actionId });
       throw error;
     }
   }
@@ -86,7 +87,7 @@ export class FirestoreActionsService {
    */
   static async unmarkActionCompleted(userId: string, actionId: string): Promise<void> {
     if (!userId || !actionId) {
-      console.warn('[FirestoreActionsService] Missing userId or actionId');
+      logger.warn('[FirestoreActionsService] Missing userId or actionId', { userId, actionId });
       return;
     }
 
@@ -95,7 +96,7 @@ export class FirestoreActionsService {
       const updatedActions = currentActions.filter(id => id !== actionId);
       await this.saveCompletedActions(userId, updatedActions);
     } catch (error) {
-      console.error('[FirestoreActionsService] Error unmarking action:', error);
+      logger.error('[FirestoreActionsService] Error unmarking action', error as Error, { userId, actionId });
       throw error;
     }
   }
@@ -105,14 +106,14 @@ export class FirestoreActionsService {
    */
   static async clearCompletedActions(userId: string): Promise<void> {
     if (!userId) {
-      console.warn('[FirestoreActionsService] No userId provided');
+      logger.warn('[FirestoreActionsService] No userId provided', { userId });
       return;
     }
 
     try {
       await this.saveCompletedActions(userId, []);
     } catch (error) {
-      console.error('[FirestoreActionsService] Error clearing actions:', error);
+      logger.error('[FirestoreActionsService] Error clearing actions', error as Error, { userId });
       throw error;
     }
   }
@@ -125,7 +126,7 @@ export class FirestoreActionsService {
     onUpdate: (actionIds: string[]) => void
   ): Unsubscribe {
     if (!userId || !db) {
-      console.warn('[FirestoreActionsService] No userId or Firebase not initialized for subscription');
+      logger.warn('[FirestoreActionsService] No userId or Firebase not initialized for subscription', { userId });
       return () => {};
     }
 
@@ -142,7 +143,7 @@ export class FirestoreActionsService {
         }
       },
       (error) => {
-        console.error('[FirestoreActionsService] Error in subscription:', error);
+        logger.error('[FirestoreActionsService] Error in subscription', error as Error, { userId });
       }
     );
   }
@@ -152,7 +153,7 @@ export class FirestoreActionsService {
    */
   static async migrateFromLocalStorage(userId: string): Promise<void> {
     if (!userId || !db) {
-      console.warn('[FirestoreActionsService] No userId or Firebase not initialized for migration');
+      logger.warn('[FirestoreActionsService] No userId or Firebase not initialized for migration', { userId });
       return;
     }
 
@@ -160,24 +161,24 @@ export class FirestoreActionsService {
       // Verificar si ya hay datos en Firestore
       const existingActions = await this.getCompletedActions(userId);
       if (existingActions.length > 0) {
-        console.log('[FirestoreActionsService] Firestore data already exists, skipping migration');
+        logger.info('[FirestoreActionsService] Firestore data already exists, skipping migration', { userId });
         return;
       }
 
       // Obtener datos de localStorage
       const localData = localStorage.getItem('on-tour-completed-actions');
       if (!localData) {
-        console.log('[FirestoreActionsService] No localStorage data to migrate');
+        logger.info('[FirestoreActionsService] No localStorage data to migrate', { userId });
         return;
       }
 
       const localActions: string[] = JSON.parse(localData);
       if (localActions.length > 0) {
         await this.saveCompletedActions(userId, localActions);
-        console.log(`[FirestoreActionsService] Migrated ${localActions.length} completed actions from localStorage`);
+        logger.info('[FirestoreActionsService] Migrated completed actions from localStorage', { userId, count: localActions.length });
       }
     } catch (error) {
-      console.error('[FirestoreActionsService] Error during migration:', error);
+      logger.error('[FirestoreActionsService] Error during migration', error as Error, { userId });
     }
   }
 }

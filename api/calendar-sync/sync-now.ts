@@ -5,7 +5,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { createDAVClient, fetchCalendarObjects, createCalendarObject } from 'tsdav';
+import { createDAVClient } from 'tsdav';
 
 let db: any;
 try {
@@ -75,29 +75,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Import from CalDAV to Firestore
     if (direction === 'import' || direction === 'bidirectional') {
       try {
-        const calendarObjects = await fetchCalendarObjects({
-          client: client as any,
-          calendar: { url: calendarUrl } as any,
-        });
+        const calendars = await client.fetchCalendars();
+        const targetCalendar = calendars.find((cal: any) => cal.url === calendarUrl);
+        
+        if (!targetCalendar) {
+          errors.push('Calendar not found');
+        } else {
+          const calendarObjects = await client.fetchCalendarObjects({
+            calendar: targetCalendar,
+          });
 
-        for (const obj of calendarObjects) {
-          try {
-            const event = parseICSToEvent(obj.data);
-            if (event) {
-              await db
-                .collection('users')
-                .doc(userId)
-                .collection('calendarEvents')
-                .doc(event.id)
-                .set({
-                  ...event,
-                  syncedFrom: 'caldav',
-                  syncedAt: new Date().toISOString(),
-                });
-              imported++;
+          for (const obj of calendarObjects) {
+            try {
+              const event = parseICSToEvent(obj.data);
+              if (event) {
+                await db
+                  .collection('users')
+                  .doc(userId)
+                  .collection('calendarEvents')
+                  .doc(event.id)
+                  .set({
+                    ...event,
+                    syncedFrom: 'caldav',
+                    syncedAt: new Date().toISOString(),
+                  });
+                imported++;
+              }
+            } catch (err) {
+              errors.push(`Import error: ${err instanceof Error ? err.message : 'Unknown'}`);
             }
-          } catch (err) {
-            errors.push(`Import error: ${err instanceof Error ? err.message : 'Unknown'}`);
           }
         }
       } catch (err) {
@@ -108,28 +114,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Export from Firestore to CalDAV
     if (direction === 'export' || direction === 'bidirectional') {
       try {
-        const eventsSnapshot = await db
-          .collection('users')
-          .doc(userId)
-          .collection('calendarEvents')
-          .where('syncedFrom', '!=', 'caldav')
-          .get();
+        const calendars = await client.fetchCalendars();
+        const targetCalendar = calendars.find((cal: any) => cal.url === calendarUrl);
+        
+        if (!targetCalendar) {
+          errors.push('Calendar not found for export');
+        } else {
+          const eventsSnapshot = await db
+            .collection('users')
+            .doc(userId)
+            .collection('calendarEvents')
+            .where('syncedFrom', '!=', 'caldav')
+            .get();
 
-        for (const doc of eventsSnapshot.docs) {
-          try {
-            const event = doc.data();
-            const icsData = convertToICS(event);
-            
-            await createCalendarObject({
-              client: client as any,
-              calendar: { url: calendarUrl } as any,
-              filename: `${event.id}.ics`,
-              iCalString: icsData,
-            } as any);
-            
-            exported++;
-          } catch (err) {
-            errors.push(`Export error: ${err instanceof Error ? err.message : 'Unknown'}`);
+          for (const doc of eventsSnapshot.docs) {
+            try {
+              const event = doc.data();
+              const icsData = convertToICS(event);
+              
+              await client.createCalendarObject({
+                calendar: targetCalendar,
+                filename: `${event.id}.ics`,
+                iCalString: icsData,
+              });
+              
+              exported++;
+            } catch (err) {
+              errors.push(`Export error: ${err instanceof Error ? err.message : 'Unknown'}`);
+            }
           }
         }
       } catch (err) {

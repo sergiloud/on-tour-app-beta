@@ -3,7 +3,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createDAVClient, fetchCalendars } from 'tsdav';
+import { createDAVClient } from 'tsdav';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
@@ -41,10 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       defaultAccountType: 'caldav',
     });
 
-    // Fetch calendars
-    const calendars = await fetchCalendars({ 
-      client: client as any,
-    });
+    // Fetch calendars using the client's built-in method
+    const calendars = await client.fetchCalendars();
 
     // Return calendars and credentials
     return res.status(200).json({

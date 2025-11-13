@@ -107,35 +107,22 @@ export default defineConfig({
     rollupOptions: {
       output: {
         format: 'es',
-        // Safer chunking strategy - let Vite handle most dependencies automatically
+        // Simplified chunking - avoid circular dependencies
         manualChunks: (id) => {
-          // Only separate truly independent libraries
           if (id.includes('node_modules')) {
-            // Core React libs - must stay together
-            if (id.includes('react') || 
-                id.includes('react-dom') ||
-                id.includes('scheduler') ||
-                id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            
-            // Firebase - keep consolidated
-            if (id.includes('firebase') || id.includes('@firebase')) {
-              return 'vendor-firebase';
-            }
-            
-            // MapLibre - heavy and isolated
+            // MapLibre - heavy and truly independent (no React dependency)
             if (id.includes('maplibre-gl')) {
               return 'vendor-maplibre';
             }
             
-            // Framer Motion - heavy animations lib
-            if (id.includes('framer-motion')) {
-              return 'vendor-framer';
+            // Firebase - independent from React core
+            if (id.includes('firebase') || id.includes('@firebase')) {
+              return 'vendor-firebase';
             }
             
-            // All other node_modules in one chunk to avoid dependency resolution issues
-            return 'vendor-libs';
+            // Everything else in one vendor chunk to prevent dependency issues
+            // This includes React, React-DOM, Framer Motion, and all other libs
+            return 'vendor';
           }
         },
         chunkFileNames: 'assets/[name]-[hash].js',

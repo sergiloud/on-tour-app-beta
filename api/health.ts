@@ -2,9 +2,7 @@
  * Vercel Serverless Function - Health Check for Encryption
  */
 
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   const checks = {
     firebaseProjectId: !!process.env.FIREBASE_PROJECT_ID,
     firebaseClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,

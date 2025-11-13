@@ -2,11 +2,10 @@
  * Vercel Serverless Function - Enable Calendar Sync
  */
 
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getDB } from '../utils/firebase';
 import { encrypt } from '../utils/encryption';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   console.log('[ENABLE] Request received');
   
   if (req.method !== 'POST') {

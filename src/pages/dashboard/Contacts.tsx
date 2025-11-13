@@ -27,6 +27,7 @@ import { CONTACT_TYPE_LABELS } from '../../types/crm';
 import { ContactEditorModal } from '../../components/crm/ContactEditorModal';
 import { contactStore } from '../../shared/contactStore';
 import { useToast } from '../../context/ToastContext';
+import { logger } from '../../lib/logger';
 
 type CategoryTab = 'all' | 'label_rep' | 'promoter' | 'agent' | 'manager' | 'venue_manager' | 'media' | 'other';
 
@@ -189,7 +190,7 @@ export const Contacts: React.FC = () => {
       }
       setShowEditor(false); setEditingContact(undefined);
     } catch (error) { 
-      console.error(error); 
+      logger.error('Error saving contact', error as Error);
       toast.error('Error al guardar contacto'); 
     }
   };
@@ -201,7 +202,7 @@ export const Contacts: React.FC = () => {
         if (selectedContact?.id === id) setSelectedContact(null);
         toast.success('Contacto eliminado');
       } catch (error) { 
-        console.error(error); 
+        logger.error('Error deleting contact', error as Error, { contactId: id });
         toast.error('Error al eliminar'); 
       }
     }
@@ -252,7 +253,7 @@ export const Contacts: React.FC = () => {
         contactStore.import(JSON.parse(text));
         toast.success('Importado correctamente');
       } catch (error) { 
-        console.error(error); 
+        logger.error('Error importing contacts', error as Error);
         toast.error('Error al importar'); 
       }
     };
@@ -922,7 +923,7 @@ export const Contacts: React.FC = () => {
                                 notes: updatedNotes
                               });
                             } catch (error) {
-                              console.error('Error saving note:', error);
+                              logger.error('Error saving note', error as Error, { contactId: selectedContact.id });
                               toast.error('Error al guardar la nota');
                             }
                           }
@@ -956,7 +957,7 @@ export const Contacts: React.FC = () => {
                                         notes: updatedNotes
                                       });
                                     } catch (error) {
-                                      console.error('Error deleting note:', error);
+                                      logger.error('Error deleting note', error as Error, { contactId: selectedContact.id, noteIndex: index });
                                       toast.error('Error al eliminar la nota');
                                     }
                                   }

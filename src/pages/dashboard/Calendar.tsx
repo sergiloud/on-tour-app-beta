@@ -33,6 +33,7 @@ import EventEditorModal from '../../components/calendar/EventEditorModal';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { usePerfMonitor } from '../../lib/perfMonitor';
 import { generateId } from '../../lib/id';
+import { logger } from '../../lib/logger';
 
 // Calendar event type is shared in components/calendar/types
 
@@ -500,7 +501,7 @@ const Calendar: React.FC = () => {
     const handleEventCreation = (e: CustomEvent) => {
       const { date, type, initialData } = e.detail;
       
-      console.log('[Calendar] Received calendar event creation:', { date, type, initialData });
+      logger.info('[Calendar] Received calendar event creation', { date, type, initialData });
       
       // Abrir modal de eventos de calendario para tipos no-show/travel
       if (!['show', 'travel'].includes(type)) {
@@ -889,7 +890,7 @@ const Calendar: React.FC = () => {
             announce(`Travel event ${modals.state.travelFlight.editingId ? 'updated' : 'created'}`);
             modals.closeTravelFlight();
           } catch (err) {
-            console.error('Error saving travel event:', err);
+            logger.error('Error saving travel event', err as Error);
             announce('Error saving travel event');
           }
         }}
@@ -960,7 +961,7 @@ const Calendar: React.FC = () => {
             
             setCalendarEventModal(prev => ({ ...prev, isOpen: false }));
           } catch (error) {
-            console.error('Error saving calendar event:', error);
+            logger.error('Error saving calendar event', error as Error);
             announce('Error saving calendar event');
           }
         }}
@@ -970,7 +971,7 @@ const Calendar: React.FC = () => {
             setCalendarEventModal(prev => ({ ...prev, isOpen: false }));
             announce('Calendar event deleted successfully');
           } catch (error) {
-            console.error('Error deleting calendar event:', error);
+            logger.error('Error deleting calendar event', error as Error);
             announce('Error deleting calendar event');
           }
         }}

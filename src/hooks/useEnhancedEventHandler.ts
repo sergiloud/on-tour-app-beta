@@ -12,6 +12,7 @@ import { Show } from '../lib/shows';
 import { Itinerary } from '../services/travelApi';
 import { useCalendarModals } from './useCalendarModals';
 import { CalendarEventInput } from '../services/calendarEventService';
+import { logger } from '../lib/logger';
 
 interface UseEnhancedEventHandlerParams {
   shows: Show[];
@@ -41,7 +42,7 @@ export function useEnhancedEventHandler({
    * Manejar apertura de eventos - distingue entre tipos
    */
   const handleEventOpen = useCallback((ev: CalEvent) => {
-    console.log('[Calendar] Opening event:', { id: ev.id, kind: ev.kind, title: ev.title });
+    logger.info('[Calendar] Opening event', { id: ev.id, kind: ev.kind, title: ev.title });
     
     // Determinar el tipo de evento por el prefijo del ID
     const [eventType, eventId] = ev.id.split(':');
@@ -116,7 +117,7 @@ export function useEnhancedEventHandler({
       }
       
       default: {
-        console.warn('[Calendar] Unknown event type:', eventType, ev);
+        logger.warn('[Calendar] Unknown event type', { eventType, event: ev });
         // Fallback - try to open as calendar event
         modals.openEventCreation(ev.date, 'meeting');
       }
@@ -127,7 +128,7 @@ export function useEnhancedEventHandler({
    * Manejar eliminación de eventos
    */
   const handleEventDelete = useCallback(async (eventId: string) => {
-    console.log('[Calendar] Deleting event:', eventId);
+    logger.info('[Calendar] Deleting event', { eventId });
     
     const [eventType, id] = eventId.split(':');
     
@@ -148,10 +149,10 @@ export function useEnhancedEventHandler({
           break;
           
         default:
-          console.warn('[Calendar] Cannot delete unknown event type:', eventType);
+          logger.warn('[Calendar] Cannot delete unknown event type', { eventType });
       }
     } catch (error) {
-      console.error('[Calendar] Error deleting event:', error);
+      logger.error('[Calendar] Error deleting event', error as Error, { eventId });
       throw error;
     }
   }, [showOperations, travelOperations, deleteCalendarEvent]);
@@ -160,7 +161,7 @@ export function useEnhancedEventHandler({
    * Manejar movimiento de eventos via drag & drop
    */
   const handleEventMove = useCallback(async (eventId: string, newDate: string, duplicate = false) => {
-    console.log('[Calendar] Moving event:', { eventId, newDate, duplicate });
+    logger.info('[Calendar] Moving event', { eventId, newDate, duplicate });
     
     const [eventType, id] = eventId.split(':');
     
@@ -234,10 +235,10 @@ export function useEnhancedEventHandler({
         }
         
         default:
-          console.warn('[Calendar] Cannot move unknown event type:', eventType);
+          logger.warn('[Calendar] Cannot move unknown event type', { eventType });
       }
     } catch (error) {
-      console.error('[Calendar] Error moving event:', error);
+      logger.error('[Calendar] Error moving event', error as Error, { eventId, newDate });
       throw error;
     }
   }, [shows, travel, calendarEvents, showOperations, travelOperations, createCalendarEvent, updateCalendarEvent]);
@@ -250,7 +251,7 @@ export function useEnhancedEventHandler({
     date: string,
     buttonData?: any
   ) => {
-    console.log('[Calendar] Creating event from drop:', { eventType, date, buttonData });
+    logger.info('[Calendar] Creating event from drop', { eventType, date, buttonData });
     
     try {
       if (eventType === 'show') {
@@ -289,7 +290,7 @@ export function useEnhancedEventHandler({
         await createCalendarEvent(eventData);
       }
     } catch (error) {
-      console.error('[Calendar] Error creating event from drop:', error);
+      logger.error('[Calendar] Error creating event from drop', error as Error, { eventType, date });
       throw error;
     }
   }, [showOperations, travelOperations, createCalendarEvent]);

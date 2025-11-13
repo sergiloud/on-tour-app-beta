@@ -20,6 +20,7 @@ import type { TransactionV3 } from '../../types/financeV3';
 import { useTransactionFilters } from '../../hooks/useTransactionFilters';
 import { useSavedFilters } from '../../hooks/useSavedFilters';
 import { usePerfMonitor } from '../../lib/perfMonitor';
+import { EditTransactionModal } from './EditTransactionModal';
 
 const EXPENSE_CATEGORIES = [
   'Alojamiento',
@@ -65,6 +66,10 @@ export function TransactionsTab({
   // Performance monitoring
   usePerfMonitor('TransactionsTab:render');
   
+  // Estado para modal de edición
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionV3 | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   // Hook de filtrado (gestiona su propio estado)
   const {
     filterType,
@@ -485,7 +490,11 @@ export function TransactionsTab({
                         key={transaction.id}
                         data-index={virtualRow.index}
                         ref={rowVirtualizer.measureElement}
-                        className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:bg-white/[0.03] transition-colors group"
+                        onClick={() => {
+                          setSelectedTransaction(transaction);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="border-b border-slate-100 dark:border-white/5 hover:bg-white/5 transition-colors group cursor-pointer"
                       >
                         <td className="px-4 py-3.5 text-sm text-slate-500 dark:text-white/70 whitespace-nowrap">
                           {new Date(transaction.date).toLocaleDateString('es-ES')}
@@ -512,8 +521,10 @@ export function TransactionsTab({
                           </div>
                         </td>
                         <td className="px-4 py-3.5 text-right">
-                          <p className={`text-sm font-semibold tabular-nums ${
-                            transaction.type === 'income' ? 'text-accent-400' : 'text-amber-400'
+                          <p className={`text-sm font-semibold tabular-nums transition-colors ${
+                            transaction.type === 'income' 
+                              ? 'text-accent-400 group-hover:text-accent-400' 
+                              : 'text-amber-400 group-hover:text-amber-400'
                           }`}>
                             {transaction.type === 'income' ? '+' : '−'}{fmtMoney(transaction.amount)}
                           </p>
@@ -556,6 +567,19 @@ export function TransactionsTab({
           </table>
         </div>
       </div>
+
+      {/* Modal de Edición */}
+      {selectedTransaction && (
+        <EditTransactionModal
+          transaction={selectedTransaction}
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedTransaction(null);
+          }}
+          fmtMoney={fmtMoney}
+        />
+      )}
     </div>
   );
 }

@@ -16,7 +16,7 @@ export default defineConfig({
     minifyIdentifiers: false, // Disable to prevent variable reference errors
     minifySyntax: true,
     minifyWhitespace: true,
-    keepNames: true, // Preserve function/class names to avoid reference errors
+    keepNames: false, // Disable keepNames - causing __name errors
   },
   css: {
     // Fix CSS syntax warnings during minification

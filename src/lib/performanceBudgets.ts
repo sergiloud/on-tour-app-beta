@@ -6,6 +6,7 @@
  */
 
 import { toast } from 'sonner';
+import { logger } from './logger';
 
 export interface PerformanceBudget {
     metric: string;
@@ -110,7 +111,13 @@ class PerformanceBudgetMonitor {
         }
 
         // Console log for debugging
-        console.warn(`[Performance Budget] ${severity.toUpperCase()}: ${message}`);
+        logger.warn(`${severity.toUpperCase()}: ${message}`, {
+            component: 'performanceBudgetMonitor',
+            metric,
+            current,
+            budget,
+            unit
+        });
     }
 
     /**
@@ -180,7 +187,10 @@ export function monitorWebVitals() {
         if (vitals.inp) monitor.check('INP', vitals.inp);
         if (vitals.ttfb) monitor.check('TTFB', vitals.ttfb);
     } catch (error) {
-        console.error('[Performance Budget] Failed to parse web vitals:', error);
+        logger.error('Failed to parse web vitals', error instanceof Error ? error : new Error(String(error)), {
+            component: 'performanceBudgetMonitor',
+            action: 'monitorWebVitals'
+        });
     }
 }
 

@@ -15,6 +15,7 @@ import i18next from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 import { secureStorage } from '../secureStorage';
+import { logger } from '../logger';
 
 // Language type
 export type Language = 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt';
@@ -41,7 +42,11 @@ const loadLanguageResources = async (
     const module = await import(`../../locales/${lng}/${namespace}.json`);
     return module.default || module;
   } catch (err) {
-    console.warn(`[i18n] Failed to load ${lng}/${namespace}:`, err);
+    logger.warn(`Failed to load ${lng}/${namespace}`, {
+      component: 'i18n',
+      language: lng,
+      namespace
+    });
     // Fallback to English
     if (lng !== 'en') {
       const fallback = await import(`../../locales/en/${namespace}.json`);
@@ -69,7 +74,11 @@ const lazyLoadBackend = {
       );
       callback(null, resources);
     } catch (error) {
-      console.error(`[i18n] Error loading ${language}/${namespace}:`, error);
+      logger.error(`Error loading ${language}/${namespace}`, error instanceof Error ? error : new Error(String(error)), {
+        component: 'i18n',
+        language,
+        namespace
+      });
       callback(error, null);
     }
   },
@@ -120,12 +129,18 @@ export async function initializeI18n() {
         // Disable warnings for development
         saveMissing: false,
         missingKeyHandler: (lngs: readonly string[], ns: string, key: string) => {
-          console.warn(`[i18n] Missing translation: ${ns}:${key}`);
+          logger.warn(`Missing translation: ${ns}:${key}`, {
+            component: 'i18n',
+            namespace: ns,
+            key
+          });
         },
       },
       (err) => {
         if (err) {
-          console.error('[i18n] Initialization error:', err);
+          logger.error('Initialization error', err instanceof Error ? err : new Error(String(err)), {
+            component: 'i18n'
+          });
         }
       }
     );
@@ -164,7 +179,10 @@ export async function changeLanguage(lang: Language) {
     secureStorage.setItem('app.language', lang);
     return lang;
   } catch (err) {
-    console.error('[i18n] Error changing language:', err);
+    logger.error('Error changing language', err instanceof Error ? err : new Error(String(err)), {
+      component: 'i18n',
+      language: lang
+    });
     throw err;
   }
 }

@@ -9,6 +9,8 @@
  * - Event queue for offline scenarios
  */
 
+import { logger } from './logger';
+
 export type SyncEvent = {
   type: 'shows-updated' | 'show-created' | 'show-deleted' | 'sync-start' | 'sync-complete' | 'conflict-detected';
   payload?: any;
@@ -108,7 +110,11 @@ export class MultiTabSyncManager {
       this.enqueueEvent(fullEvent);
       this.triggerListeners(fullEvent.type, fullEvent);
     } catch (error) {
-      console.error('Failed to broadcast event:', error);
+      logger.error('Failed to broadcast event', error instanceof Error ? error : new Error(String(error)), {
+        component: 'MultiTabSyncManager',
+        action: 'broadcast',
+        eventType: event.type
+      });
       this.status = 'error';
     }
   }
@@ -142,7 +148,10 @@ export class MultiTabSyncManager {
         try {
           callback(event);
         } catch (error) {
-          console.error('Listener error:', error);
+          logger.error('Listener error', error instanceof Error ? error : new Error(String(error)), {
+            component: 'MultiTabSyncManager',
+            eventType
+          });
         }
       });
     }
@@ -185,7 +194,10 @@ export class MultiTabSyncManager {
     try {
       localStorage.setItem('__SYNC_QUEUE__', JSON.stringify(this.eventQueue.slice(-100)));
     } catch (error) {
-      console.warn('Failed to persist sync queue:', error);
+      logger.warn('Failed to persist sync queue', {
+        component: 'MultiTabSyncManager',
+        action: 'persistQueue'
+      });
     }
   }
 
@@ -199,7 +211,10 @@ export class MultiTabSyncManager {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.warn('Failed to restore sync queue:', error);
+      logger.warn('Failed to restore sync queue', {
+        component: 'MultiTabSyncManager',
+        action: 'restoreQueueFromStorage'
+      });
     }
     return [];
   }
@@ -331,7 +346,10 @@ export class MultiTabSyncManager {
 
       localStorage.setItem('__SYNC_LOGS__', JSON.stringify(logs));
     } catch (error) {
-      console.warn('Failed to log sync event:', error);
+      logger.warn('Failed to log sync event', {
+        component: 'MultiTabSyncManager',
+        action: 'logEvent'
+      });
     }
   }
 

@@ -3,6 +3,8 @@
  * Provides robust wrappers for fetch calls with automatic retries and timeouts
  */
 
+import { logger } from './logger';
+
 export interface FetchOptions extends RequestInit {
   timeout?: number;
   retries?: number;
@@ -112,7 +114,11 @@ export const safeStorage = {
       if (!item) return fallback;
       return JSON.parse(item) as T;
     } catch (error) {
-      console.error(`[SafeStorage] Error reading key "${key}":`, error);
+      logger.error(`Error reading key "${key}"`, error instanceof Error ? error : new Error(String(error)), {
+        component: 'safeStorage',
+        action: 'get',
+        key
+      });
       return fallback;
     }
   },
@@ -122,7 +128,11 @@ export const safeStorage = {
       localStorage.setItem(key, JSON.stringify(value));
       return true;
     } catch (error) {
-      console.error(`[SafeStorage] Error writing key "${key}":`, error);
+      logger.error(`Error writing key "${key}"`, error instanceof Error ? error : new Error(String(error)), {
+        component: 'safeStorage',
+        action: 'set',
+        key
+      });
       return false;
     }
   },
@@ -132,7 +142,11 @@ export const safeStorage = {
       localStorage.removeItem(key);
       return true;
     } catch (error) {
-      console.error(`[SafeStorage] Error removing key "${key}":`, error);
+      logger.error(`Error removing key "${key}"`, error instanceof Error ? error : new Error(String(error)), {
+        component: 'safeStorage',
+        action: 'remove',
+        key
+      });
       return false;
     }
   },
@@ -142,7 +156,10 @@ export const safeStorage = {
       localStorage.clear();
       return true;
     } catch (error) {
-      console.error('[SafeStorage] Error clearing storage:', error);
+      logger.error('Error clearing storage', error instanceof Error ? error : new Error(String(error)), {
+        component: 'safeStorage',
+        action: 'clear'
+      });
       return false;
     }
   },
@@ -252,7 +269,9 @@ export async function safePromiseAll<T>(
     if (result.status === 'fulfilled') {
       return result.value;
     } else {
-      console.error('[SafePromiseAll] Promise rejected:', result.reason);
+      logger.error('Promise rejected', result.reason instanceof Error ? result.reason : new Error(String(result.reason)), {
+        component: 'safePromiseAll'
+      });
       return null;
     }
   });

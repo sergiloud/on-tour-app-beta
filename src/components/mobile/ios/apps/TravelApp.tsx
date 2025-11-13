@@ -16,6 +16,7 @@ import {
 import type { AppComponentProps } from '../../../../types/mobileOS';
 import { usePullToRefresh } from '../../../../hooks/usePullToRefresh';
 import { fetchItineraries, type Itinerary } from '../../../../services/travelApi';
+import { logger } from '../../../../lib/logger';
 
 interface TravelItem {
   id: string;
@@ -69,7 +70,10 @@ export const TravelApp: React.FC<AppComponentProps> = () => {
         .map(itineraryToTravelItem);
       setTravels(items);
     } catch (error) {
-      console.error('[TravelApp] Error loading travel data:', error);
+      logger.error('Error loading travel data', error instanceof Error ? error : new Error(String(error)), {
+        component: 'TravelApp',
+        action: 'loadTravelData'
+      });
       setTravels([]);
     }
   }, []);

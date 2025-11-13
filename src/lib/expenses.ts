@@ -5,6 +5,7 @@
  */
 
 import { secureStorage } from './secureStorage';
+import { logger } from './logger';
 
 export type ExpenseCategory =
     | 'travel'
@@ -99,7 +100,10 @@ export function loadExpenses(): Expense[] {
             return expenses;
         }
     } catch (err) {
-        console.error('Failed to load expenses from secureStorage:', err);
+        logger.error('Failed to load expenses from secureStorage', err instanceof Error ? err : new Error(String(err)), {
+            component: 'expenses',
+            action: 'loadExpenses'
+        });
     }
     return [];
 }
@@ -111,7 +115,10 @@ export function saveExpenses(expenses: Expense[]): void {
     try {
         secureStorage.setItem(EXPENSES_LS_KEY, expenses);
     } catch (err) {
-        console.error('Failed to save expenses to secureStorage:', err);
+        logger.error('Failed to save expenses to secureStorage', err instanceof Error ? err : new Error(String(err)), {
+            component: 'expenses',
+            action: 'saveExpenses'
+        });
     }
 }
 
@@ -120,7 +127,10 @@ export function saveExpenses(expenses: Expense[]): void {
  * DISABLED FOR PRODUCTION BETA - all data should come from Firestore
  */
 export function loadDemoExpenses(): { added: number; total: number } {
-    console.log('[Expenses] Demo expense loading disabled for production');
+    logger.info('Demo expense loading disabled for production', {
+        component: 'expenses',
+        action: 'loadDemoExpenses'
+    });
     return { added: 0, total: 0 };
     
     /* COMMENTED OUT FOR PRODUCTION
@@ -147,7 +157,10 @@ export function clearExpenses(): void {
     try {
         secureStorage.removeItem(EXPENSES_LS_KEY);
     } catch (err) {
-        console.error('Failed to clear expenses from secureStorage:', err);
+        logger.error('Failed to clear expenses from secureStorage', err instanceof Error ? err : new Error(String(err)), {
+            component: 'expenses',
+            action: 'clearExpenses'
+        });
     }
 }
 

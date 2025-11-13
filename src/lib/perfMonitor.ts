@@ -5,6 +5,8 @@
  * Logs automáticos en desarrollo, silencioso en producción.
  */
 
+import { logger } from './logger';
+
 /**
  * Ejemplo de uso:
  * 
@@ -33,17 +35,36 @@ export function trackInteraction(name: string): () => void {
 
     if (import.meta.env.DEV) {
       if (duration > ERROR_THRESHOLD) {
-        console.error(`❌ SLOW: ${name} took ${duration.toFixed(2)}ms`);
+        logger.error(`SLOW: ${name} took ${duration.toFixed(2)}ms`, new Error('Performance threshold exceeded'), {
+          component: 'perfMonitor',
+          interaction: name,
+          duration: duration.toFixed(2),
+          threshold: ERROR_THRESHOLD
+        });
       } else if (duration > WARN_THRESHOLD) {
-        console.warn(`⚠️ ${name} took ${duration.toFixed(2)}ms`);
+        logger.warn(`${name} took ${duration.toFixed(2)}ms`, {
+          component: 'perfMonitor',
+          interaction: name,
+          duration: duration.toFixed(2),
+          threshold: WARN_THRESHOLD
+        });
       } else {
-        console.log(`✅ ${name}: ${duration.toFixed(2)}ms`);
+        logger.info(`${name}: ${duration.toFixed(2)}ms`, {
+          component: 'perfMonitor',
+          interaction: name,
+          duration: duration.toFixed(2)
+        });
       }
     }
 
     // En producción, solo logear si es muy lento
     if (import.meta.env.PROD && duration > ERROR_THRESHOLD) {
-      console.warn(`Performance issue: ${name} took ${duration.toFixed(2)}ms`);
+      logger.warn(`Performance issue: ${name} took ${duration.toFixed(2)}ms`, {
+        component: 'perfMonitor',
+        interaction: name,
+        duration: duration.toFixed(2),
+        critical: true
+      });
     }
   };
 }

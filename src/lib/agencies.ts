@@ -6,6 +6,7 @@
 
 import { AgencyConfig, ContinentCode } from '../context/SettingsContext';
 import { loadSettings, saveSettings } from './persist';
+import { logger } from './logger';
 
 /**
  * Generate initial agencies for Danny Avila
@@ -67,7 +68,10 @@ export function loadAgencies(): { booking: AgencyConfig[]; management: AgencyCon
       management: settings.managementAgencies || []
     };
   } catch (e) {
-    console.error('[agencies] loadAgencies error:', e);
+    logger.error('loadAgencies error', e instanceof Error ? e : new Error(String(e)), {
+      component: 'agencies',
+      action: 'loadAgencies'
+    });
     return { booking: [], management: [] };
   }
 }
@@ -96,10 +100,16 @@ export function saveAgencies(booking: AgencyConfig[], management: AgencyConfig[]
       window.dispatchEvent(new CustomEvent('storage', { detail: { key: 'settings-v1' } }));
       // console.log('[agencies] Dispatched storage event');
     } catch (e) {
-      console.error('[agencies] Failed to dispatch event:', e);
+      logger.error('Failed to dispatch event', e instanceof Error ? e : new Error(String(e)), {
+        component: 'agencies',
+        action: 'saveAgencies'
+      });
     }
   } catch (e) {
-    console.error('[agencies] Failed to save agencies:', e);
+    logger.error('Failed to save agencies', e instanceof Error ? e : new Error(String(e)), {
+      component: 'agencies',
+      action: 'saveAgencies'
+    });
   }
 }
 
@@ -133,7 +143,10 @@ export function loadUserAgencies() {
       management: mergedManagement.length
     };
   } catch (e) {
-    console.error('[agencies] Failed to load demo agencies:', e);
+    logger.error('Failed to load demo agencies', e instanceof Error ? e : new Error(String(e)), {
+      component: 'agencies',
+      action: 'loadUserAgencies'
+    });
     return { loaded: false, error: String(e) };
   }
 }
@@ -146,7 +159,10 @@ export function clearAgencies() {
     saveAgencies([], []);
     return { cleared: true };
   } catch (e) {
-    console.error('Failed to clear agencies:', e);
+    logger.error('Failed to clear agencies', e instanceof Error ? e : new Error(String(e)), {
+      component: 'agencies',
+      action: 'clearAgencies'
+    });
     return { cleared: false, error: String(e) };
   }
 }
@@ -164,7 +180,10 @@ export function forceReplaceAgencies() {
       management: initial.management.length
     };
   } catch (e) {
-    console.error('Failed to force replace agencies:', e);
+    logger.error('Failed to force replace agencies', e instanceof Error ? e : new Error(String(e)), {
+      component: 'agencies',
+      action: 'forceReplaceAgencies'
+    });
     return { replaced: false, error: String(e) };
   }
 }

@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { t } from '../../lib/i18n';
 import { signOut } from '../../services/authService';
+import { logger } from '../../lib/logger';
 import {
   Cog6ToothIcon,
   UserCircleIcon,
@@ -45,7 +46,10 @@ export const MoreMenu: React.FC<MoreMenuProps> = ({ onClose }) => {
       navigate('/auth/login');
       onClose?.();
     } catch (error) {
-      console.error('Failed to logout:', error);
+      logger.error('Failed to logout', error instanceof Error ? error : new Error(String(error)), {
+        component: 'MoreMenu',
+        action: 'handleLogout'
+      });
       // Even if logout fails, navigate to login page
       navigate('/auth/login');
       onClose?.();

@@ -4,6 +4,7 @@
  */
 
 import { safeParseNumber, safeParseDate, safeString } from './validators';
+import { logger } from './logger';
 
 /**
  * Safe array map with error handling
@@ -14,7 +15,9 @@ export function safeMap<T, U>(
   fallback: U[] = []
 ): U[] {
   if (!Array.isArray(array)) {
-    console.error('[SafeMap] Input is not an array');
+    logger.error('Input is not an array', new Error('Invalid input'), {
+      component: 'safeMap'
+    });
     return fallback;
   }
 
@@ -27,7 +30,10 @@ export function safeMap<T, U>(
         results.push(transform(item, i));
       }
     } catch (error) {
-      console.error(`[SafeMap] Error transforming item at index ${i}:`, error);
+      logger.error(`Error transforming item at index ${i}`, error instanceof Error ? error : new Error(String(error)), {
+        component: 'safeMap',
+        index: i
+      });
       // Continue processing other items
     }
   }
@@ -43,7 +49,9 @@ export function safeFilter<T>(
   predicate: (item: T, index: number) => boolean
 ): T[] {
   if (!Array.isArray(array)) {
-    console.error('[SafeFilter] Input is not an array');
+    logger.error('Input is not an array', new Error('Invalid input'), {
+      component: 'safeFilter'
+    });
     return [];
   }
 
@@ -56,7 +64,10 @@ export function safeFilter<T>(
         results.push(item);
       }
     } catch (error) {
-      console.error(`[SafeFilter] Error filtering item at index ${i}:`, error);
+      logger.error(`Error filtering item at index ${i}`, error instanceof Error ? error : new Error(String(error)), {
+        component: 'safeFilter',
+        index: i
+      });
       // Continue processing other items
     }
   }
@@ -73,7 +84,9 @@ export function safeReduce<T, U>(
   initial: U
 ): U {
   if (!Array.isArray(array)) {
-    console.error('[SafeReduce] Input is not an array');
+    logger.error('Input is not an array', new Error('Invalid input'), {
+      component: 'safeReduce'
+    });
     return initial;
   }
 
@@ -86,7 +99,10 @@ export function safeReduce<T, U>(
         accumulator = reducer(accumulator, item, i);
       }
     } catch (error) {
-      console.error(`[SafeReduce] Error reducing item at index ${i}:`, error);
+      logger.error(`Error reducing item at index ${i}`, error instanceof Error ? error : new Error(String(error)), {
+        component: 'safeReduce',
+        index: i
+      });
       // Continue with current accumulator
     }
   }
@@ -129,7 +145,9 @@ export function safeMerge<T extends Record<string, any>>(
 
     return result;
   } catch (error) {
-    console.error('[SafeMerge] Error merging objects:', error);
+    logger.error('Error merging objects', error instanceof Error ? error : new Error(String(error)), {
+      component: 'safeMerge'
+    });
     return target;
   }
 }
@@ -146,13 +164,17 @@ export function safeJsonParse<T>(
     const parsed = JSON.parse(json);
 
     if (validator && !validator(parsed)) {
-      console.warn('[SafeJsonParse] Data failed validation');
+      logger.warn('Data failed validation', {
+        component: 'safeJsonParse'
+      });
       return fallback ?? null;
     }
 
     return parsed as T;
   } catch (error) {
-    console.error('[SafeJsonParse] Parse error:', error);
+    logger.error('Parse error', error instanceof Error ? error : new Error(String(error)), {
+      component: 'safeJsonParse'
+    });
     return fallback ?? null;
   }
 }
@@ -235,7 +257,9 @@ export function safeClone<T>(obj: T): T {
     // Fallback to JSON parse/stringify
     return JSON.parse(JSON.stringify(obj));
   } catch (error) {
-    console.error('[SafeClone] Clone error:', error);
+    logger.error('Clone error', error instanceof Error ? error : new Error(String(error)), {
+      component: 'safeClone'
+    });
     return obj;
   }
 }
@@ -274,7 +298,9 @@ export function uniqueBy<T>(
         result.push(item);
       }
     } catch (error) {
-      console.error('[UniqueBy] Error getting key:', error);
+      logger.error('Error getting key', error instanceof Error ? error : new Error(String(error)), {
+        component: 'uniqueBy'
+      });
     }
   }
 
@@ -297,7 +323,9 @@ export function groupBy<T>(
       group.push(item);
       groups.set(key, group);
     } catch (error) {
-      console.error('[GroupBy] Error grouping item:', error);
+      logger.error('Error grouping item', error instanceof Error ? error : new Error(String(error)), {
+        component: 'groupBy'
+      });
     }
   }
 

@@ -62,6 +62,16 @@ service cloud.firestore {
       match /preferences/{document=**} {
         allow read, write: if isOwner(userId);
       }
+      
+      // Calendar sync configuration
+      match /calendarSync/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Calendar events
+      match /calendarEvents/{eventId} {
+        allow read, write: if isOwner(userId);
+      }
     }
     
     // Public data (if any) - currently none

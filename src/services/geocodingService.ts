@@ -4,6 +4,8 @@
  * Uses country center + deterministic city offset to spread shows geographically
  */
 
+import { logger } from '../lib/logger';
+
 interface GeocodeResult {
   lat: number;
   lng: number;
@@ -102,7 +104,7 @@ export async function geocodeLocation(
   const baseCoords = countryCoordinates[countryCode];
 
   if (!baseCoords) {
-    console.warn(`[Geocoding] Unknown country code: ${country}`);
+    logger.warn('[Geocoding] Unknown country code', { country });
     geocodeCache.set(cacheKey, null);
     return null;
   }
@@ -120,7 +122,7 @@ export async function geocodeLocation(
     country,
   };
 
-  console.log(`[Geocoding] ✓ ${city}, ${country} → (${result.lat.toFixed(4)}, ${result.lng.toFixed(4)})`);
+  logger.info('[Geocoding] Geocoded location', { city, country, lat: result.lat.toFixed(4), lng: result.lng.toFixed(4) });
 
   // Cache the result
   geocodeCache.set(cacheKey, result);

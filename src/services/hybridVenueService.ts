@@ -7,6 +7,7 @@
 import { FirestoreVenueService } from './firestoreVenueService';
 import { venueStore } from '../shared/venueStore';
 import { isFirebaseConfigured } from '../lib/firebase';
+import { logger } from '../lib/logger';
 import type { Venue } from '../types/venue';
 
 export class HybridVenueService {
@@ -39,7 +40,7 @@ export class HybridVenueService {
       // Setup real-time sync
       this.setupRealtimeSync(userId);
     } catch (error) {
-      console.error('❌ Failed to initialize hybrid venue service:', error);
+      logger.error('[HybridVenueService] Failed to initialize hybrid venue service', error as Error, { userId });
     }
   }
 
@@ -55,7 +56,7 @@ export class HybridVenueService {
       try {
         await FirestoreVenueService.saveVenue(venue, userId);
       } catch (error) {
-        console.warn('⚠️ Failed to save venue to cloud, saved locally:', error);
+        logger.warn('[HybridVenueService] Failed to save venue to cloud, saved locally', { userId, venueId: venue.id, error: String(error) });
       }
     }
   }
@@ -79,7 +80,7 @@ export class HybridVenueService {
           await FirestoreVenueService.saveVenue(venue, userId);
         }
       } catch (error) {
-        console.warn('⚠️ Failed to update venue in cloud, updated locally:', error);
+        logger.warn('[HybridVenueService] Failed to update venue in cloud, updated locally', { userId, venueId, error: String(error) });
       }
     }
   }
@@ -96,7 +97,7 @@ export class HybridVenueService {
       try {
         await FirestoreVenueService.deleteVenue(venueId, userId);
       } catch (error) {
-        console.warn('⚠️ Failed to delete venue from cloud, deleted locally:', error);
+        logger.warn('[HybridVenueService] Failed to delete venue from cloud, deleted locally', { userId, venueId, error: String(error) });
       }
     }
   }
@@ -123,10 +124,10 @@ export class HybridVenueService {
       const cloudVenues = await FirestoreVenueService.getUserVenues(userId);
       if (cloudVenues.length > 0) {
         venueStore.setAll(cloudVenues);
-        console.log(`✅ Synced ${cloudVenues.length} venues from cloud`);
+        logger.info('[HybridVenueService] Synced venues from cloud', { userId, count: cloudVenues.length });
       }
     } catch (error) {
-      console.warn('⚠️ Failed to sync venues from cloud:', error);
+      logger.warn('[HybridVenueService] Failed to sync venues from cloud', { userId, error: String(error) });
     }
   }
 
@@ -142,10 +143,10 @@ export class HybridVenueService {
     try {
       this.unsubscribe = FirestoreVenueService.listenToUserVenues(userId, (venues) => {
         venueStore.setAll(venues);
-        console.log(`🔄 Real-time sync: ${venues.length} venues updated`);
+        logger.info('[HybridVenueService] Real-time sync updated', { userId, count: venues.length });
       });
     } catch (error) {
-      console.warn('⚠️ Failed to setup real-time sync for venues:', error);
+      logger.warn('[HybridVenueService] Failed to setup real-time sync for venues', { userId, error: String(error) });
     }
   }
 

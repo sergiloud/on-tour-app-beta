@@ -13,6 +13,7 @@ import {
   type Unsubscribe
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { logger } from '../lib/logger';
 
 export interface UserProfile {
   id: string;
@@ -242,17 +243,17 @@ export class FirestoreUserService {
       throw new Error('Firestore not initialized');
     }
 
-    console.log('[FirestoreUserService] Loading settings for user:', userId);
+    logger.info('[FirestoreUserService] Loading settings for user', { userId });
     const settingsRef = doc(db, `users/${userId}/profile/settings`);
     const settingsSnap = await getDoc(settingsRef);
 
     if (!settingsSnap.exists()) {
-      console.log('[FirestoreUserService] No settings found for user:', userId);
+      logger.info('[FirestoreUserService] No settings found for user', { userId });
       return null;
     }
 
     const data = settingsSnap.data();
-    console.log('[FirestoreUserService] Settings loaded:', data);
+    logger.info('[FirestoreUserService] Settings loaded', { userId });
     return {
       ...data,
       updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt
@@ -406,7 +407,7 @@ export class FirestoreUserService {
 
       return true;
     } catch (error) {
-      console.error('❌ Failed to migrate user data:', error);
+      logger.error('[FirestoreUserService] Failed to migrate user data', error as Error, { userId });
       return false;
     }
   }

@@ -3,6 +3,8 @@
  * Useful for network failures, timeouts, etc.
  */
 
+import { logger } from '../lib/logger';
+
 interface RetryOptions {
   maxAttempts?: number;
   delayMs?: number;
@@ -47,10 +49,12 @@ export async function retryOperation<T>(
         ? delayMs * Math.pow(2, attempt - 1)
         : delayMs * attempt;
 
-      console.warn(
-        `⚠️ Operation failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms...`,
-        lastError.message
-      );
+      logger.warn('[RetryService] Operation failed, retrying', { 
+        attempt, 
+        maxAttempts, 
+        delayMs: delay, 
+        error: lastError.message 
+      });
 
       // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -101,9 +105,9 @@ export async function retryFirestoreOperation<T>(
     backoff: 'exponential',
     onRetry: (attempt, error) => {
       if (isRetryableError(error)) {
-        console.log(`🔄 Retrying ${operationName} (attempt ${attempt})...`);
+        logger.info('[RetryService] Retrying Firestore operation', { operationName, attempt });
       } else {
-        console.error(`❌ Non-retryable error in ${operationName}:`, error);
+        logger.error('[RetryService] Non-retryable error in Firestore operation', error, { operationName });
         throw error; // Don't retry non-retryable errors
       }
     }

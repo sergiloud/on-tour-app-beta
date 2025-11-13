@@ -7,6 +7,8 @@ import TrendsAnalysis from './TrendsAnalysis';
 import { useFinance } from '../../../context/FinanceContext';
 import { useSettings } from '../../../context/SettingsContext';
 import { announce } from '../../../lib/announcer';
+import { exportToCSV, exportToXLSX, formatCurrency, formatPercentage, formatDate } from '../../../lib/exportUtils';
+import { logger } from '../../../lib/logger';
 
 type AnalysisSubTab = 'performance' | 'pivot' | 'aging' | 'trends';
 
@@ -54,9 +56,105 @@ const AnalysisHub: React.FC<AnalysisHubProps> = ({ onDrillThrough }) => {
     }, [snapshot]);
 
     const handleExport = (format: 'csv' | 'xlsx') => {
-        announce(`Exporting ${activeSubTab} data as ${format.toUpperCase()}`);
-        // TODO: Implement export logic per sub-tab
-        // console.log(`Exporting ${activeSubTab} as ${format}`);
+        try {
+            if (!snapshot) {
+                announce('No data available to export');
+                return;
+            }
+
+            const currency = 'EUR'; // Use settings currency
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `finance-analysis-${activeSubTab}-${timestamp}`;
+
+            // Export logic per sub-tab
+            let exportData: Array<Record<string, any>> = [];
+            
+            switch (activeSubTab) {
+                case 'performance':
+                    // Export margin breakdown data by region/country
+                    exportData = snapshot.shows.map(show => {
+                        const income = show.fee || 0;
+                        const expenses = show.cost || 0;
+                        const net = income - expenses;
+                        const margin = income > 0 ? (net / income) * 100 : 0;
+                        
+                        return {
+                            'Show': show.venue || show.name || 'N/A',
+                            'Date': formatDate(show.date),
+                            'City': show.city || '',
+                            'Country': show.country || '',
+                            'Income': formatCurrency(income, currency),
+                            'Expenses': formatCurrency(expenses, currency),
+                            'Net': formatCurrency(net, currency),
+                            'Margin %': formatPercentage(margin, 1),
+                            'Status': show.status || '',
+                        };
+                    });
+                    break;
+
+                case 'pivot':
+                    // Export P&L pivot table data
+                    exportData = [{
+                        'Period': 'Year',
+                        'Income': formatCurrency(snapshot.year.income || 0, currency),
+                        'Expenses': formatCurrency(snapshot.year.expenses || 0, currency),
+                        'Net': formatCurrency(snapshot.year.net || 0, currency),
+                        'Margin %': formatPercentage(snapshot.year.income ? ((snapshot.year.net || 0) / snapshot.year.income) * 100 : 0, 1),
+                    }];
+                    break;
+
+                case 'aging':
+                    // Export AR aging data
+                    exportData = snapshot.shows
+                        .filter(show => (show.fee || 0) > 0 && show.status === 'confirmed')
+                        .map(show => {
+                            const daysSince = Math.floor((Date.now() - new Date(show.date).getTime()) / (1000 * 60 * 60 * 24));
+                            const bucket = daysSince <= 30 ? '0-30 days' : 
+                                          daysSince <= 60 ? '31-60 days' :
+                                          daysSince <= 90 ? '61-90 days' : '90+ days';
+                            
+                            return {
+                                'Show': show.venue || show.name || 'N/A',
+                                'Date': formatDate(show.date),
+                                'Amount': formatCurrency(show.fee || 0, currency),
+                                'Days Outstanding': daysSince,
+                                'Aging Bucket': bucket,
+                                'Status': show.status || '',
+                            };
+                        });
+                    break;
+
+                case 'trends':
+                    // Export trend analysis data
+                    exportData = snapshot.shows.map(show => ({
+                        'Show': show.venue || show.name || 'N/A',
+                        'Date': formatDate(show.date),
+                        'Month': new Date(show.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }),
+                        'Income': formatCurrency(show.fee || 0, currency),
+                        'Expenses': formatCurrency(show.cost || 0, currency),
+                        'Net': formatCurrency((show.fee || 0) - (show.cost || 0), currency),
+                    }));
+                    break;
+            }
+
+            // Execute export
+            if (format === 'csv') {
+                exportToCSV(exportData, filename);
+                announce(`Exported ${activeSubTab} data as CSV (${exportData.length} rows)`);
+            } else {
+                exportToXLSX(exportData, filename, activeSubTab);
+                announce(`Exported ${activeSubTab} data as XLSX (${exportData.length} rows)`);
+            }
+
+            logger.info('[AnalysisHub] Data exported successfully', { 
+                format, 
+                subTab: activeSubTab, 
+                rows: exportData.length 
+            });
+        } catch (error) {
+            logger.error('[AnalysisHub] Export failed', error as Error, { format, subTab: activeSubTab });
+            announce('Export failed. Please try again.');
+        }
     };
 
     return (

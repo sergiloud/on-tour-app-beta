@@ -13,6 +13,7 @@ import { useCalendarMatrix } from '../../hooks/useCalendarMatrix';
 import { useCalendarData } from '../../hooks/useCalendarData';
 import { useCalendarModals } from '../../hooks/useCalendarModals';
 import { useCalendarActions } from '../../hooks/useCalendarActions';
+import { useCalendarAutoSync } from '../../hooks/useCalendarAutoSync';
 import CalendarToolbar from '../../components/calendar/CalendarToolbar';
 import BulkOperationsToolbar from '../../components/calendar/BulkOperationsToolbar';
 import type { EventButton } from '../../components/calendar/DraggableEventButtons';
@@ -69,6 +70,9 @@ const Calendar: React.FC = () => {
   // Settings & navigation
   const { lang } = useSettings();
   const navigate = useNavigate();
+  
+  // Auto-sync for calendar changes
+  const { triggerSync } = useCalendarAutoSync();
   
   // Calendar state (view, cursor, filters, tz)
   const { view, setView, cursor, setCursor, tz, setTz, filters, setFilters, today } = useCalendarState();
@@ -565,6 +569,8 @@ const Calendar: React.FC = () => {
   // Handler para guardar evento
   const handleSaveEvent = async (data: EventData) => {
     await actions.saveEvent(data, modals.state.travelFlight.editingId);
+    // Trigger auto-sync after creating/editing event
+    triggerSync();
   };
 
   // Handler para abrir modal de detalles del día

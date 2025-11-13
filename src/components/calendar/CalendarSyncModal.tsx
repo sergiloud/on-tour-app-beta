@@ -295,8 +295,11 @@ export function CalendarSyncModal({ isOpen, onClose }: Props) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-3">
-                  Select Calendar
+                  Select Calendar to Sync
                 </label>
+                <p className="text-xs text-white/50 mb-3">
+                  Choose an event calendar (task/reminder calendars are filtered out)
+                </p>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {calendars.map((cal) => (
                     <label
@@ -311,6 +314,7 @@ export function CalendarSyncModal({ isOpen, onClose }: Props) {
                         onChange={(e) => setSelectedCalendar(e.target.value)}
                         className="text-accent-500 focus:ring-accent-500"
                       />
+                      <CalendarIcon className="w-4 h-4 text-accent-400 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">{cal.displayName}</p>
                         {cal.description && (

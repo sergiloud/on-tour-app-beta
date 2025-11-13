@@ -43,17 +43,35 @@ export default async function handler(req: any, res: any) {
     // Fetch calendars using the client's built-in method
     const calendars = await client.fetchCalendars();
 
+    // Filter out reminder/task calendars (only show event calendars)
+    const eventCalendars = calendars.filter((cal: any) => {
+      const url = cal.url?.toLowerCase() || '';
+      const displayName = cal.displayName?.toLowerCase() || '';
+      const description = cal.description?.toLowerCase() || '';
+      
+      // Exclude reminder/task calendars by URL patterns
+      const isReminder = url.includes('/reminders/') || 
+                        url.includes('/tasks/') ||
+                        displayName.includes('reminder') ||
+                        displayName.includes('task') ||
+                        description.includes('reminder') ||
+                        description.includes('task');
+      
+      return !isReminder;
+    });
+
     // Return calendars and credentials
     return res.status(200).json({
-      calendars: calendars.map((cal: any) => ({
+      calendars: eventCalendars.map((cal: any) => ({
         url: cal.url,
         displayName: cal.displayName,
         description: cal.description,
+        ctag: cal.ctag,
       })),
       credentials: {
         provider,
         email,
-        password, // TODO: Encrypt this properly
+        password, // Will be encrypted when enabling sync
         serverUrl: davServerUrl,
       },
     });

@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { AppRouter } from './routes/AppRouter';
-import { ToastProvider } from './ui/Toast';
+import { ToastProvider as UIToastProvider } from './ui/Toast';
+import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { ShowModalProvider } from './context/ShowModalContext';
 import { GlobalShowModal } from './components/common/GlobalShowModal';
@@ -82,15 +83,17 @@ export const App: React.FC = () => {
         closeButton
       />
 
-      <ToastProvider>
-        <AuthProvider>
-          <ShowModalProvider>
-            <AppRouter />
-            <GlobalShowModal />
-            <PWAComponents />
-          </ShowModalProvider>
-        </AuthProvider>
-      </ToastProvider>
+      <UIToastProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <ShowModalProvider>
+              <AppRouter />
+              <GlobalShowModal />
+              <PWAComponents />
+            </ShowModalProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </UIToastProvider>
     </>
   );
 };

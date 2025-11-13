@@ -9,6 +9,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarEventType, CalendarEventInput } from '../../services/calendarEventService';
+import { useToast } from '../../context/ToastContext';
 
 interface CalendarEventModalProps {
   open: boolean;
@@ -63,6 +64,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
 
   const [formData, setFormData] = useState<CalendarEventInput & { id?: string }>({
     type: initialType,
@@ -126,7 +128,7 @@ const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title?.trim()) {
-      alert('Title is required');
+      toast.warning('Title is required');
       return;
     }
     

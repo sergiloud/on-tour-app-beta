@@ -20,6 +20,7 @@ import ArtistQuickPanel from './components/ArtistQuickPanel';
 import { useNavigate } from 'react-router-dom';
 import { setCurrentOrgId } from '../../lib/tenants';
 import FirestoreUserPreferencesService from '../../services/firestoreUserPreferencesService';
+import { useToast } from '../../context/ToastContext';
 
 // Activity tracking utilities
 const trackActivity = (userId: string, activity: { type: string; item: string; timestamp: number }) => {
@@ -366,6 +367,7 @@ const WelcomePage: React.FC = () => {
   const { profile, userId } = useAuth();
   const { orgId, org } = useOrg();
   const navigate = useNavigate();
+  const toast = useToast();
   const h1Ref = useRef<HTMLHeadingElement>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [showConnect, setShowConnect] = useState(false);
@@ -494,8 +496,7 @@ const WelcomePage: React.FC = () => {
     // Handle priority action clicks - in real app, this would navigate or open modals
     logger.debug('Priority action clicked', { component: 'WelcomePage', actionId });
     trackEvent('welcome.priority_action', { actionId });
-    // For demo, just show an alert
-    alert(`Action: ${actionId} - This would navigate to the relevant section in a real app`);
+    toast.info(`Action: ${actionId} - Navigation to relevant section would occur here`);
   };
 
   return (

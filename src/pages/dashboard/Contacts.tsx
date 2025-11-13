@@ -26,6 +26,7 @@ import type { Contact } from '../../types/crm';
 import { CONTACT_TYPE_LABELS } from '../../types/crm';
 import { ContactEditorModal } from '../../components/crm/ContactEditorModal';
 import { contactStore } from '../../shared/contactStore';
+import { useToast } from '../../context/ToastContext';
 
 type CategoryTab = 'all' | 'label_rep' | 'promoter' | 'agent' | 'manager' | 'venue_manager' | 'media' | 'other';
 
@@ -41,6 +42,7 @@ const CATEGORY_TABS: { id: CategoryTab; label: string; icon: React.ReactNode }[]
 ];
 
 export const Contacts: React.FC = () => {
+  const toast = useToast();
   const { data: contacts = [], isLoading, isError, error } = useContactsQuery();
   const { data: stats } = useContactStatsQuery();
   const { shows } = useShows();
@@ -178,10 +180,18 @@ export const Contacts: React.FC = () => {
 
   const handleSaveContact = async (contactData: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      if (editingContact) await updateContactMutation.mutateAsync({ id: editingContact.id, data: contactData });
-      else await createContactMutation.mutateAsync(contactData);
+      if (editingContact) {
+        await updateContactMutation.mutateAsync({ id: editingContact.id, data: contactData });
+        toast.success('Contacto actualizado correctamente');
+      } else {
+        await createContactMutation.mutateAsync(contactData);
+        toast.success('Contacto creado correctamente');
+      }
       setShowEditor(false); setEditingContact(undefined);
-    } catch (error) { console.error(error); alert('Error al guardar contacto'); }
+    } catch (error) { 
+      console.error(error); 
+      toast.error('Error al guardar contacto'); 
+    }
   };
 
   const handleDeleteContact = async (id: string) => {
@@ -189,7 +199,11 @@ export const Contacts: React.FC = () => {
       try {
         await deleteContactMutation.mutateAsync(id);
         if (selectedContact?.id === id) setSelectedContact(null);
-      } catch (error) { console.error(error); alert('Error al eliminar'); }
+        toast.success('Contacto eliminado');
+      } catch (error) { 
+        console.error(error); 
+        toast.error('Error al eliminar'); 
+      }
     }
   };
 
@@ -236,8 +250,11 @@ export const Contacts: React.FC = () => {
       try {
         const text = await file.text();
         contactStore.import(JSON.parse(text));
-        alert('Importado correctamente');
-      } catch (error) { console.error(error); alert('Error al importar'); }
+        toast.success('Importado correctamente');
+      } catch (error) { 
+        console.error(error); 
+        toast.error('Error al importar'); 
+      }
     };
     input.click();
   };
@@ -634,7 +651,7 @@ export const Contacts: React.FC = () => {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(`${selectedContact.firstName} ${selectedContact.lastName}\n${selectedContact.email || ''}\n${selectedContact.phone || ''}`);
-                      alert('Contacto copiado al portapapeles');
+                      toast.success('Contacto copiado al portapapeles');
                     }}
                     className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-interactive hover:bg-interactive-hover border border-slate-200 dark:border-white/10 hover:border-blue-500/40 transition-all duration-150 group"
                     title="Copiar info"
@@ -756,7 +773,7 @@ export const Contacts: React.FC = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               navigator.clipboard.writeText(selectedContact.email!);
-                              alert('Email copiado');
+                              toast.success('Email copiado');
                             }}
                             className="p-2 rounded-lg hover:bg-interactive-hover text-slate-400 dark:text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-150"
                           >
@@ -784,7 +801,7 @@ export const Contacts: React.FC = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               navigator.clipboard.writeText(selectedContact.phone!);
-                              alert('Teléfono copiado');
+                              toast.success('Teléfono copiado');
                             }}
                             className="p-2 rounded-lg hover:bg-interactive-hover text-slate-400 dark:text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-150"
                           >
@@ -906,7 +923,7 @@ export const Contacts: React.FC = () => {
                               });
                             } catch (error) {
                               console.error('Error saving note:', error);
-                              alert('Error al guardar la nota');
+                              toast.error('Error al guardar la nota');
                             }
                           }
                         }}
@@ -940,7 +957,7 @@ export const Contacts: React.FC = () => {
                                       });
                                     } catch (error) {
                                       console.error('Error deleting note:', error);
-                                      alert('Error al eliminar la nota');
+                                      toast.error('Error al eliminar la nota');
                                     }
                                   }
                                 }}

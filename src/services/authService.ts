@@ -11,6 +11,7 @@ import {
   updatePassword,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  deleteUser,
   User as FirebaseUser
 } from 'firebase/auth';
 import { 
@@ -241,6 +242,52 @@ export const changePassword = async (currentPassword: string, newPassword: strin
       throw new Error('For security, please log out and log in again before changing your password');
     } else {
       throw new Error(error.message || 'Failed to change password');
+    }
+  }
+};
+
+/**
+ * Delete user account
+ * Requires recent re-authentication with password
+ */
+export const deleteAccount = async (currentPassword: string): Promise<void> => {
+  if (!useFirebase() || !auth) {
+    // Demo mode - just clear local data
+    secureStorage.clear();
+    setAuthed(false);
+    setCurrentUserId('');
+    setCurrentOrgId('');
+    return;
+  }
+
+  const user = auth.currentUser;
+  if (!user || !user.email) {
+    throw new Error('No authenticated user');
+  }
+
+  try {
+    // Re-authenticate before deleting (required by Firebase)
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+    
+    // Delete the user
+    await deleteUser(user);
+
+    // Clear local data
+    secureStorage.clear();
+    setAuthed(false);
+    setCurrentUserId('');
+    setCurrentOrgId('');
+  } catch (error: any) {
+    // Provide user-friendly error messages
+    if (error.code === 'auth/wrong-password') {
+      throw new Error('Incorrect password');
+    } else if (error.code === 'auth/requires-recent-login') {
+      throw new Error('Please log out and log in again before deleting your account');
+    } else if (error.code === 'auth/too-many-requests') {
+      throw new Error('Too many attempts. Please try again later');
+    } else {
+      throw new Error(error.message || 'Failed to delete account');
     }
   }
 };

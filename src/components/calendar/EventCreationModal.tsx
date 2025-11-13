@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export type EventType = 'show' | 'travel' | 'meeting' | 'rehearsal' | 'break';
+export type EventType = 'show' | 'travel' | 'meeting' | 'rehearsal' | 'break' | 'other';
 
 export interface EventData {
   type: EventType;
@@ -45,7 +45,8 @@ const eventTypeConfig: Record<EventType, { label: string; description: string }>
   travel: { label: 'Travel', description: 'Trip or transportation' },
   meeting: { label: 'Meeting', description: 'Meeting or appointment' },
   rehearsal: { label: 'Rehearsal', description: 'Practice or rehearsal' },
-  break: { label: 'Break', description: 'Time off or break' }
+  break: { label: 'Break', description: 'Time off or break' },
+  other: { label: 'Other Event', description: 'Custom calendar event' }
 };
 
 const EventCreationModal: React.FC<Props> = ({

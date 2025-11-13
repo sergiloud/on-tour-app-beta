@@ -28,6 +28,7 @@ import EventCreationModal, { EventType, EventData } from '../../components/calen
 import DayDetailsModal from '../../components/calendar/DayDetailsModal';
 import TravelFlightModal from '../../components/calendar/TravelFlightModal';
 import ShowEventModal from '../../components/calendar/ShowEventModal';
+import CalendarEventModal from '../../components/calendar/CalendarEventModal';
 import EventEditorModal from '../../components/calendar/EventEditorModal';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { usePerfMonitor } from '../../lib/perfMonitor';
@@ -107,6 +108,15 @@ const Calendar: React.FC = () => {
   
   // Modal management
   const modals = useCalendarModals();
+  
+  // Estado para el modal de eventos de calendario
+  const [calendarEventModal, setCalendarEventModal] = useState({
+    isOpen: false,
+    selectedEvent: null as any,
+    initialDate: undefined as string | undefined,
+    initialType: 'other' as any,
+    initialData: undefined as any,
+  });
   
   // Business logic actions
   const actions = useCalendarActions({
@@ -255,20 +265,35 @@ const Calendar: React.FC = () => {
         modals.openTravelFlight(travelData, id);
       }
     } else {
-      // For other events (meeting, rehearsal, break, etc), open EventCreationModal
+      // For other events (meeting, rehearsal, break, other, etc), open CalendarEventModal
       const id = ev.id.split(':')[1];
+      
+      // Try to find in calendar events first (future: when Firebase is integrated)
+      // For now, check in travel array as it may be stored there temporarily
       const otherEvent = travel.find(t => t.id === id);
+      
       if (otherEvent) {
-        const eventData = {
-          type: ev.kind as EventType,
-          date: otherEvent.date.slice(0, 10),
-          dateEnd: (otherEvent as any).endDate,
-          title: otherEvent.title,
-          description: (otherEvent as any).description,
-          location: (otherEvent as any).location,
-          color: (otherEvent as any).buttonColor as any,
-        } as EventData;
-        modals.openEventCreation(otherEvent.date.slice(0, 10), ev.kind as EventType, eventData);
+        // Open CalendarEventModal for editing
+        setCalendarEventModal({
+          isOpen: true,
+          selectedEvent: {
+            id: otherEvent.id,
+            type: ev.kind as any,
+            title: otherEvent.title,
+            date: otherEvent.date.slice(0, 10),
+            dateEnd: (otherEvent as any).endDate,
+            description: (otherEvent as any).description,
+            location: (otherEvent as any).location,
+            color: (otherEvent as any).buttonColor as any,
+            time: (otherEvent as any).startTime,
+            timeEnd: (otherEvent as any).endTime,
+            attendees: (otherEvent as any).attendees,
+            notes: (otherEvent as any).notes,
+          },
+          initialDate: otherEvent.date.slice(0, 10),
+          initialType: ev.kind as any,
+          initialData: undefined,
+        });
       }
     }
   }, [shows, travel, modals]);
@@ -469,6 +494,35 @@ const Calendar: React.FC = () => {
     }
     return filtered;
   }, [eventsByDay, cursor, year, month]);
+
+  // Listen for calendar event creation from drag & drop
+  useEffect(() => {
+    const handleEventCreation = (e: CustomEvent) => {
+      const { date, type, initialData } = e.detail;
+      
+      console.log('[Calendar] Received calendar event creation:', { date, type, initialData });
+      
+      // Abrir modal de eventos de calendario para tipos no-show/travel
+      if (!['show', 'travel'].includes(type)) {
+        setCalendarEventModal({
+          isOpen: true,
+          selectedEvent: null,
+          initialDate: date,
+          initialType: type === 'other' ? 'other' : type,
+          initialData: initialData,
+        });
+      } else {
+        // Para show/travel, usar el modal existente
+        modals.openEventCreation(date, type, initialData);
+      }
+    };
+    
+    window.addEventListener('calendar:openEventCreation' as any, handleEventCreation);
+    
+    return () => {
+      window.removeEventListener('calendar:openEventCreation' as any, handleEventCreation);
+    };
+  }, [modals]);
 
   // Global keyboard shortcuts (T/←/→/PgUp/PgDn)
   useEffect(() => {
@@ -847,6 +901,82 @@ const Calendar: React.FC = () => {
         event={modals.state.eventEditor.event}
         onClose={modals.closeEventEditor}
         onSave={handleSaveEditedEvent}
+      />
+
+      {/* Calendar Event Modal */}
+      <CalendarEventModal
+        open={calendarEventModal.isOpen}
+        onClose={() => setCalendarEventModal(prev => ({ ...prev, isOpen: false }))}
+        onSave={async (eventData) => {
+          try {
+            if (calendarEventModal.selectedEvent?.id) {
+              // Actualizar evento existente
+              // Por ahora, actualizamos en el array de travel (temporal hasta integrar Firebase)
+              const eventId = calendarEventModal.selectedEvent.id;
+              
+              // Construir el objeto itinerary actualizado
+              const updatedEvent = {
+                id: eventId,
+                date: eventData.date,
+                endDate: eventData.dateEnd,
+                title: eventData.title || 'Untitled',
+                team: 'A' as const,
+                city: eventData.location || '',
+                status: 'pending' as const,
+                btnType: eventData.type,
+                description: eventData.description,
+                location: eventData.location,
+                buttonColor: eventData.color,
+                startTime: eventData.time,
+                endTime: eventData.timeEnd,
+                attendees: eventData.attendees,
+              } as any;
+              
+              await travelOperations.save(updatedEvent);
+              announce('Calendar event updated successfully');
+            } else {
+              // Crear nuevo evento usando travel operations (temporal)
+              const newId = generateId();
+              const newEvent = {
+                id: newId,
+                date: eventData.date,
+                endDate: eventData.dateEnd,
+                title: eventData.title || 'Untitled',
+                team: 'A' as const,
+                city: eventData.location || '',
+                status: 'pending' as const,
+                btnType: eventData.type,
+                description: eventData.description,
+                location: eventData.location,
+                buttonColor: eventData.color,
+                startTime: eventData.time,
+                endTime: eventData.timeEnd,
+                attendees: eventData.attendees,
+              } as any;
+              
+              await travelOperations.save(newEvent);
+              announce('Calendar event created successfully');
+            }
+            
+            setCalendarEventModal(prev => ({ ...prev, isOpen: false }));
+          } catch (error) {
+            console.error('Error saving calendar event:', error);
+            announce('Error saving calendar event');
+          }
+        }}
+        onDelete={async (eventId) => {
+          try {
+            await travelOperations.remove(eventId);
+            setCalendarEventModal(prev => ({ ...prev, isOpen: false }));
+            announce('Calendar event deleted successfully');
+          } catch (error) {
+            console.error('Error deleting calendar event:', error);
+            announce('Error deleting calendar event');
+          }
+        }}
+        initialDate={calendarEventModal.initialDate}
+        initialType={calendarEventModal.initialType}
+        initialData={calendarEventModal.selectedEvent}
       />
 
       {/* Bulk operations toolbar */}

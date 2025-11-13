@@ -19,6 +19,7 @@ import {
   Facebook,
   Tag,
   AlertCircle,
+  FileText,
 } from 'lucide-react';
 import type { Contact, ContactType, ContactPriority, ContactStatus } from '../../types/crm';
 import { CONTACT_TYPE_LABELS, COMMON_TAGS } from '../../types/crm';
@@ -52,6 +53,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
     priority: contact?.priority || ('medium' as ContactPriority),
     status: contact?.status || ('active' as ContactStatus),
     tags: contact?.tags || [],
+    generalNotes: contact?.notes?.[0]?.content || '', // First note as general notes
   });
 
   const [newTag, setNewTag] = useState('');
@@ -79,9 +81,27 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
 
     if (!validateForm()) return;
 
+    // Prepare notes array
+    const notes: any[] = [];
+    if (formData.generalNotes.trim()) {
+      // If editing, preserve the first note's ID and timestamp
+      const existingNote = contact?.notes?.[0];
+      notes.push({
+        id: existingNote?.id || `note-${Date.now()}`,
+        content: formData.generalNotes.trim(),
+        createdAt: existingNote?.createdAt || new Date().toISOString(),
+      });
+    }
+    // Preserve other existing notes if any
+    if (contact?.notes && contact.notes.length > 1) {
+      notes.push(...contact.notes.slice(1));
+    }
+
+    const { generalNotes, ...contactData } = formData;
+
     onSave({
-      ...formData,
-      notes: contact?.notes || [],
+      ...contactData,
+      notes,
       interactions: contact?.interactions || [],
       lastContactedAt: contact?.lastContactedAt,
     });
@@ -527,6 +547,26 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                 </div>
               )}
             </div>
+
+            {/* General Notes */}
+            <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-5">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-accent-400" />
+                Notas Generales
+              </h3>
+              <textarea
+                value={formData.generalNotes}
+                onChange={(e) =>
+                  setFormData({ ...formData, generalNotes: e.target.value })
+                }
+                rows={6}
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast resize-none"
+                placeholder="Añade notas, comentarios o información adicional sobre este contacto..."
+              />
+              <p className="text-xs text-slate-400 dark:text-white/40 mt-2">
+                Usa este espacio para información importante, recordatorios o contexto sobre este contacto.
+              </p>
+            </div>
           </div>
         </form>
 
@@ -539,7 +579,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-fast font-medium"
+              className="px-6 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white hover:bg-slate-200 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-fast font-medium"
             >
               Cancelar
             </button>

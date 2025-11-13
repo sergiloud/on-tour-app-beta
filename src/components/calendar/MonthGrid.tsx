@@ -372,15 +372,44 @@ const MonthGrid: React.FC<Props> = ({ grid, eventsByDay, today, selectedDay, set
                   }
                 }
 
-                // Validate button
-                if (button && (button.type === 'show' || button.type === 'travel') && button.label && button.id) {
-                  setQuickCreatorButton(button);
-                  setQuickCreatorDate(cell.dateStr);
-                  setQuickCreatorOpen(true);
-                  announce((t('calendar.announce.dragDetected') || 'Event button detected on {d}').replace('{d}', cell.dateStr));
-                  trackEvent('cal.drag.detected', { buttonId: button.id, day: cell.dateStr });
-                  setDragOverDay('');
-                  return;
+                // Validate button - accept all event types
+                if (button && button.type && button.label && button.id) {
+                  // For calendar events (meeting, rehearsal, break, other), open EventCreationModal directly
+                  if (button.type === 'meeting' || button.type === 'rehearsal' || button.type === 'other' || button.type === 'personal' || button.type === 'interview' || button.type === 'soundcheck') {
+                    // Map button types to valid EventTypes
+                    let eventType: string = button.type;
+                    if (button.type === 'personal' || button.type === 'interview' || button.type === 'soundcheck') {
+                      eventType = 'other'; // Map additional types to 'other'
+                    }
+                    
+                    // Trigger calendar event creation modal instead of quick creator
+                    const eventCreationEvent = new CustomEvent('calendar:openEventCreation', {
+                      detail: {
+                        date: cell.dateStr,
+                        type: eventType,
+                        initialData: {
+                          title: button.label,
+                          color: button.color
+                        }
+                      }
+                    });
+                    window.dispatchEvent(eventCreationEvent);
+                    announce((t('calendar.announce.calendarEventCreated') || 'Calendar event created on {d}').replace('{d}', cell.dateStr));
+                    trackEvent('cal.calendar.create', { buttonId: button.id, day: cell.dateStr, type: button.type });
+                    setDragOverDay('');
+                    return;
+                  }
+                  
+                  // For show and travel events, use the existing quick creator
+                  if (button.type === 'show' || button.type === 'travel') {
+                    setQuickCreatorButton(button);
+                    setQuickCreatorDate(cell.dateStr);
+                    setQuickCreatorOpen(true);
+                    announce((t('calendar.announce.dragDetected') || 'Event button detected on {d}').replace('{d}', cell.dateStr));
+                    trackEvent('cal.drag.detected', { buttonId: button.id, day: cell.dateStr });
+                    setDragOverDay('');
+                    return;
+                  }
                 }
 
                 // Handle event resize (drag handles on edges)

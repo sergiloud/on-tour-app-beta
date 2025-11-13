@@ -9,7 +9,11 @@ import {
   TrendingUp,
   MapIcon,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  Plane,
+  Users,
+  Music,
+  Tag
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { Link } from 'react-router-dom';
@@ -17,23 +21,48 @@ import { useMissionControl } from '../../context/MissionControlContext';
 import { prefetchByPath } from '../../routes/prefetch';
 import { useTourStats } from '../../hooks/useTourStats';
 import { useShows } from '../../hooks/useShows';
-import { isValidLocation } from '../../services/travelApi';
+import { useCalendarData } from '../../hooks/useCalendarData';
+import { isValidLocation, Itinerary } from '../../services/travelApi';
 import { sanitizeName } from '../../lib/sanitize';
-import ShowDetailModal from '../shows/ShowDetailModal';
 import { Show } from '../../lib/shows';
 import { usePerfMonitor } from '../../lib/perfMonitor';
+import EventDetailDrawer from './EventDetailDrawer';
+
+// Tipo unificado para eventos en la agenda
+type AgendaEvent = {
+  id: string;
+  type: 'show' | 'travel' | 'meeting' | 'rehearsal' | 'break' | 'other';
+  date: string;
+  endDate?: string;
+  title: string;
+  city?: string;
+  venue?: string;
+  status?: string;
+  fee?: number;
+  lng?: number;
+  lat?: number;
+  color?: string;
+  location?: string;
+  description?: string;
+  origin?: string;
+  destination?: string;
+  time?: string;
+  timeEnd?: string;
+  btnType?: string;
+  rawData?: Show | Itinerary | any; // Datos originales para los modales
+};
 
 const TourAgendaComponent: React.FC = () => {
     // Performance monitoring
     usePerfMonitor('TourAgenda:render');
     
-    const { fmtMoney } = useSettings();
+    const { fmtMoney, lang } = useSettings();
     const { setFocus } = useMissionControl();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showAll, setShowAll] = useState(false); // Toggle between 21 days and all shows
-    const [selectedShow, setSelectedShow] = useState<Show | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     // Check if user prefers reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -41,6 +70,21 @@ const TourAgendaComponent: React.FC = () => {
     // Use custom hook for tour stats
     const data = useTourStats();
     const { shows: allShows } = useShows();
+    
+    // Get calendar data (includes travel and calendar events)
+    const {
+        travel,
+        travelOperations,
+    } = useCalendarData({
+        debouncedCursor: new Date().toISOString().slice(0, 7), // Current month
+        filters: { 
+            kinds: { shows: true, travel: true }, 
+            status: { confirmed: true, pending: true, offer: true } 
+        },
+        lang,
+        tz: 'UTC',
+        toDateOnlyTz: (iso: string, _tz: string) => iso.slice(0, 10),
+    });
 
     // Build full agenda when showAll is true
     // Step 1: Filter and sort future shows
@@ -96,15 +140,77 @@ const TourAgendaComponent: React.FC = () => {
         });
     }, [futureShows]);
 
-    // Step 3: Group shows by day with relative labels
+    // Step 2.5: Convert to unified AgendaEvent format and merge with travel
+    const allUnifiedEvents = React.useMemo((): AgendaEvent[] => {
+        if (!showAll) return [];
+        
+        const now = Date.now();
+        const events: AgendaEvent[] = [];
+
+        // Add enriched shows
+        enrichedShows.forEach(show => {
+            events.push({
+                id: `show:${show.id}`,
+                type: 'show',
+                date: show.date,
+                endDate: show.endDate,
+                title: show.name || show.city,
+                city: show.city,
+                venue: show.venue,
+                status: show.status,
+                fee: show.fee,
+                lng: show.lng,
+                lat: show.lat,
+                color: show.color,
+                btnType: show.btnType,
+                rawData: allShows.find(s => s.id === show.id),
+            });
+        });
+
+        // Add travel events
+        travel.forEach(item => {
+            const itemDate = new Date(item.date).getTime();
+            if (!isNaN(itemDate) && itemDate >= now) {
+                // Determine event type from btnType
+                const btnType = (item as any).btnType || 'travel';
+                let eventType: AgendaEvent['type'] = 'travel';
+                
+                if (['meeting', 'rehearsal', 'break', 'other'].includes(btnType)) {
+                    eventType = btnType as AgendaEvent['type'];
+                }
+
+                events.push({
+                    id: `${eventType}:${item.id}`,
+                    type: eventType,
+                    date: item.date,
+                    endDate: (item as any).endDate,
+                    title: item.title || `${(item as any).departure || ''} → ${item.city || item.destination || ''}`.trim(),
+                    city: item.city || item.destination,
+                    location: (item as any).location,
+                    description: (item as any).description,
+                    origin: (item as any).departure,
+                    destination: item.city || item.destination,
+                    time: (item as any).startTime,
+                    color: (item as any).buttonColor || ((item as any).btnType === 'travel' ? 'blue' : 'purple'),
+                    btnType,
+                    rawData: item,
+                });
+            }
+        });
+
+        // Sort all events by date
+        return events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [showAll, enrichedShows, travel, allShows]);
+
+    // Step 3: Group events by day with relative labels
     const fullAgenda = React.useMemo(() => {
         if (!showAll) return data.agenda;
         
         const now = Date.now();
         const dayMap = new Map<string, any>();
 
-        enrichedShows.forEach(show => {
-            const d = new Date(show.date);
+        allUnifiedEvents.forEach(event => {
+            const d = new Date(event.date);
             const dayKey = d.toISOString().split('T')[0];
             
             if (!dayKey) return; // Skip if date formatting fails
@@ -123,12 +229,11 @@ const TourAgendaComponent: React.FC = () => {
                 dayMap.set(dayKey, { day: dayKey, rel, shows: [] });
             }
 
-            dayMap.get(dayKey)!.shows.push(show);
+            dayMap.get(dayKey)!.shows.push(event);
         });
 
         return Array.from(dayMap.values()).sort((a, b) => a.day.localeCompare(b.day));
-    }, [showAll, data.agenda, enrichedShows]);
-
+    }, [showAll, data.agenda, allUnifiedEvents]);
 
     // Memoize retry handler
     const handleRetry = React.useCallback(() => {
@@ -138,11 +243,11 @@ const TourAgendaComponent: React.FC = () => {
         setTimeout(() => setIsLoading(false), 500);
     }, []);
 
-    // Memoize click handler for shows
-    const handleShowClick = React.useCallback((show: any) => {
-        console.log('[TourAgenda] Show clicked:', { id: show.id, city: show.city });
-        setSelectedShow(show);
-        setIsModalOpen(true);
+    // Memoize unified event click handler - Open drawer
+    const handleEventClick = React.useCallback((event: AgendaEvent) => {
+        console.log('[TourAgenda] Event clicked, opening drawer:', { id: event.id, type: event.type, city: event.city });
+        setSelectedEvent(event);
+        setIsDrawerOpen(true);
     }, []);
 
     // Memoize center map handler
@@ -366,86 +471,107 @@ const TourAgendaComponent: React.FC = () => {
                                 </div>
                                 <ul className="divide-y divide-slate-200 dark:divide-white/5">
                                     {day.shows
-                                        .filter((show: Show) => {
-                                            const isMultiDay = (show as any).endDate && (show as any).endDate !== show.date;
+                                        .filter((event: AgendaEvent) => {
+                                            const isMultiDay = event.endDate && event.endDate !== event.date;
                                             if (isMultiDay) {
-                                                const eventStartDate = show.date;
+                                                const eventStartDate = event.date;
                                                 return eventStartDate.split('T')[0] === day.day;
                                             }
                                             return true;
                                         })
-                                        .map((show: Show) => (
-                                        <li
-                                            key={show.id}
-                                            className={`p-2 hover:bg-white/8 transition-all duration-200 cursor-pointer group/item border-l-2 ${
-                                                (show as any).color === 'green'
-                                                    ? 'border-l-green-500/40 hover:bg-green-500/5'
-                                                    : (show as any).color === 'blue'
-                                                    ? 'border-l-blue-500/40 hover:bg-blue-500/5'
-                                                    : (show as any).color === 'yellow'
-                                                    ? 'border-l-yellow-500/40 hover:bg-yellow-500/5'
-                                                    : (show as any).color === 'red'
-                                                    ? 'border-l-red-500/40 hover:bg-red-500/5'
-                                                    : (show as any).color === 'purple'
-                                                    ? 'border-l-purple-500/40 hover:bg-purple-500/5'
-                                                    : 'border-l-accent-500/40 hover:bg-accent-500/5'
-                                            }`}
-                                            onClick={() => handleShowClick(show)}
-                                            role="button"
-                                            tabIndex={0}
-                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleShowClick(show); } }}
-                                            aria-label={`${(show as any).btnType || 'Show'} in ${show.city} on ${new Date(show.date).toLocaleDateString()}`}
-                                        >
-                                            <div className="flex items-center justify-between gap-2">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-1.5 mb-0.5">
-                                                        <span className={`font-semibold truncate ${
-                                                            (!((show as any).btnType) || (show as any).btnType === 'show')
-                                                                ? 'text-sm'
-                                                                : 'text-xs'
-                                                        }`}>
-                                                            {(!((show as any).btnType) || (show as any).btnType === 'show')
-                                                                ? sanitizeName((show as any).name || show.city)
-                                                                : sanitizeName((show as any).name || (show as any).btnType.charAt(0).toUpperCase() + (show as any).btnType.slice(1))
-                                                            }
-                                                        </span>
-                                                        {(!((show as any).btnType) || (show as any).btnType === 'show') && (
-                                                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold flex-shrink-0 uppercase tracking-wide ${
-                                                                show.status === 'confirmed'
-                                                                    ? 'bg-green-500/25 text-green-300'
-                                                                    : show.status === 'pending'
-                                                                    ? 'bg-amber-500/25 text-amber-300'
-                                                                    : 'bg-blue-500/25 text-blue-300'
-                                                            }`}>
-                                                                {show.status}
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                        .map((event: AgendaEvent) => {
+                                            // Determine icon for event type
+                                            const EventIcon = 
+                                                event.type === 'show' ? Music :
+                                                event.type === 'travel' ? Plane :
+                                                event.type === 'meeting' ? Users :
+                                                event.type === 'rehearsal' ? Music :
+                                                event.type === 'break' ? Clock :
+                                                Tag;
 
-                                                    <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-white/60">
-                                                        {show.city && show.city.trim() && (
-                                                            <div className="flex items-center gap-1 truncate">
-                                                                <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-                                                                <span className="truncate">{sanitizeName(show.city)}</span>
+                                            return (
+                                                <li
+                                                    key={event.id}
+                                                    className={`p-2 hover:bg-white/8 transition-all duration-200 cursor-pointer group/item border-l-2 ${
+                                                        event.color === 'green'
+                                                            ? 'border-l-green-500/40 hover:bg-green-500/5'
+                                                            : event.color === 'blue'
+                                                            ? 'border-l-blue-500/40 hover:bg-blue-500/5'
+                                                            : event.color === 'yellow'
+                                                            ? 'border-l-yellow-500/40 hover:bg-yellow-500/5'
+                                                            : event.color === 'red'
+                                                            ? 'border-l-red-500/40 hover:bg-red-500/5'
+                                                            : event.color === 'purple'
+                                                            ? 'border-l-purple-500/40 hover:bg-purple-500/5'
+                                                            : 'border-l-accent-500/40 hover:bg-accent-500/5'
+                                                    }`}
+                                                    onClick={() => handleEventClick(event)}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEventClick(event); } }}
+                                                    aria-label={`${event.type} in ${event.city} on ${new Date(event.date).toLocaleDateString()}`}
+                                                >
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                                <EventIcon className="w-3 h-3 flex-shrink-0 opacity-70" />
+                                                                <span className={`font-semibold truncate ${
+                                                                    event.type === 'show'
+                                                                        ? 'text-sm'
+                                                                        : 'text-xs'
+                                                                }`}>
+                                                                    {event.type === 'show'
+                                                                        ? sanitizeName(event.title)
+                                                                        : sanitizeName(event.title || (event.type ? event.type.charAt(0).toUpperCase() + event.type.slice(1) : 'Event'))
+                                                                    }
+                                                                </span>
+                                                                {event.type === 'show' && event.status && (
+                                                                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold flex-shrink-0 uppercase tracking-wide ${
+                                                                        event.status === 'confirmed'
+                                                                            ? 'bg-green-500/25 text-green-300'
+                                                                            : event.status === 'pending'
+                                                                            ? 'bg-amber-500/25 text-amber-300'
+                                                                            : 'bg-blue-500/25 text-blue-300'
+                                                                    }`}>
+                                                                        {event.status}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-white/60">
+                                                                {event.city && event.city.trim() && (
+                                                                    <div className="flex items-center gap-1 truncate">
+                                                                        <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+                                                                        <span className="truncate">{sanitizeName(event.city)}</span>
+                                                                    </div>
+                                                                )}
+                                                                {event.type === 'show' && event.venue && event.venue !== 'TBA' && (
+                                                                    <>
+                                                                        <span className="text-slate-300 dark:text-white/30">•</span>
+                                                                        <span className="truncate">{sanitizeName(event.venue)}</span>
+                                                                    </>
+                                                                )}
+                                                                {event.type === 'travel' && event.origin && event.destination && (
+                                                                    <span className="truncate text-[10px]">{sanitizeName(event.origin)} → {sanitizeName(event.destination)}</span>
+                                                                )}
+                                                                {['meeting', 'rehearsal', 'break', 'other'].includes(event.type) && event.location && (
+                                                                    <>
+                                                                        <span className="text-slate-300 dark:text-white/30">•</span>
+                                                                        <span className="truncate">{sanitizeName(event.location)}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {event.type === 'show' && event.fee && event.fee > 0 && (
+                                                            <div className="text-[11px] font-semibold text-green-400 flex-shrink-0">
+                                                                {fmtMoney(event.fee)}
                                                             </div>
                                                         )}
-                                                        {show.venue && show.venue !== 'TBA' && (
-                                                            <>
-                                                                <span className="text-slate-300 dark:text-white/30">•</span>
-                                                                <span className="truncate">{sanitizeName(show.venue)}</span>
-                                                            </>
-                                                        )}
                                                     </div>
-                                                </div>
-
-                                                {(!((show as any).btnType) || (show as any).btnType === 'show') && show.fee > 0 && (
-                                                    <div className="text-[11px] font-semibold text-green-400 flex-shrink-0">
-                                                        {fmtMoney(show.fee)}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </li>
-                                    ))}
+                                                </li>
+                                            );
+                                        })}
                                 </ul>
                             </div>
                         ))
@@ -453,14 +579,30 @@ const TourAgendaComponent: React.FC = () => {
                 </div>
             </div>
 
-            {/* Show Detail Modal */}
-            <ShowDetailModal
-                show={selectedShow}
-                isOpen={isModalOpen}
+            {/* Event Detail Drawer */}
+            <EventDetailDrawer
+                isOpen={isDrawerOpen}
                 onClose={() => {
-                    setIsModalOpen(false);
-                    setSelectedShow(null);
+                    setIsDrawerOpen(false);
+                    setSelectedEvent(null);
                 }}
+                event={selectedEvent ? {
+                    id: selectedEvent.id,
+                    type: selectedEvent.type,
+                    title: selectedEvent.title,
+                    date: selectedEvent.date,
+                    endDate: selectedEvent.endDate,
+                    city: selectedEvent.city,
+                    venue: selectedEvent.venue,
+                    status: selectedEvent.status as 'confirmed' | 'pending' | 'offer' | undefined,
+                    fee: selectedEvent.fee,
+                    origin: selectedEvent.origin,
+                    destination: selectedEvent.destination,
+                    time: selectedEvent.time,
+                    location: selectedEvent.location,
+                    description: selectedEvent.description,
+                    color: selectedEvent.color,
+                } : null}
             />
         </div>
     );

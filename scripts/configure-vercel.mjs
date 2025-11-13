@@ -107,10 +107,15 @@ async function main() {
     const projectId = await getProjectId();
     console.log(`✅ Proyecto encontrado: ${PROJECT_NAME} (${projectId})\n`);
     
-    // Configurar las 3 variables
+    // Generar clave de encriptación
+    const { randomBytes } = await import('crypto');
+    const encryptionKey = randomBytes(32).toString('hex');
+    
+    // Configurar las 4 variables
     await setEnvVar(projectId, 'FIREBASE_PROJECT_ID', firebaseKey.project_id);
     await setEnvVar(projectId, 'FIREBASE_CLIENT_EMAIL', firebaseKey.client_email);
     await setEnvVar(projectId, 'FIREBASE_PRIVATE_KEY', firebaseKey.private_key);
+    await setEnvVar(projectId, 'CALENDAR_ENCRYPTION_KEY', encryptionKey);
     
     console.log('\n✅ Todas las variables configuradas correctamente!\n');
     console.log('🔄 Ahora necesitas hacer un redeploy en Vercel:');

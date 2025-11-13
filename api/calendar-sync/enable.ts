@@ -5,6 +5,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { encrypt } from '../utils/encryption';
 
 // Initialize Firebase Admin if not already initialized
 let db: any;
@@ -51,7 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         direction,
         credentials: {
           ...credentials,
-          password: Buffer.from(credentials.password).toString('base64'), // Simple encoding for now
+          password: encrypt(credentials.password), // AES-256-GCM encryption
         },
         lastSync: null,
         createdAt: new Date().toISOString(),

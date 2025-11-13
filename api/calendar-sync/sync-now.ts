@@ -6,6 +6,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { createDAVClient } from 'tsdav';
+import { decrypt } from '../utils/encryption';
 
 let db: any;
 try {
@@ -54,8 +55,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const config = configDoc.data();
     const { calendarUrl, direction, credentials } = config;
 
-    // Decode password
-    const password = Buffer.from(credentials.password, 'base64').toString('utf-8');
+    // Decrypt password using AES-256-GCM
+    const password = decrypt(credentials.password);
 
     // Create DAV client
     const client = await createDAVClient({
@@ -183,15 +184,15 @@ function parseICSToEvent(icsString: string): any | null {
     const locationMatch = icsString.match(/LOCATION:(.*)/);
     const descriptionMatch = icsString.match(/DESCRIPTION:(.*)/);
 
-    if (!uidMatch || !summaryMatch || !dtStartMatch) return null;
+    if (!uidMatch?.[1] || !summaryMatch?.[1] || !dtStartMatch?.[1]) return null;
 
     return {
       id: uidMatch[1].trim(),
       title: summaryMatch[1].trim(),
       startDate: parseDateString(dtStartMatch[1].trim()),
-      endDate: dtEndMatch ? parseDateString(dtEndMatch[1].trim()) : null,
-      location: locationMatch ? locationMatch[1].trim() : undefined,
-      notes: descriptionMatch ? descriptionMatch[1].trim() : undefined,
+      endDate: dtEndMatch?.[1] ? parseDateString(dtEndMatch[1].trim()) : null,
+      location: locationMatch?.[1]?.trim() || undefined,
+      notes: descriptionMatch?.[1]?.trim() || undefined,
     };
   } catch {
     return null;

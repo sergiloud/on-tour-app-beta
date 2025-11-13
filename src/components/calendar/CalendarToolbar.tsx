@@ -5,6 +5,7 @@ import DraggableEventButtons, { EventButton } from './DraggableEventButtons';
 import QuickSearch from './QuickSearch';
 import { CalendarSyncModal } from './CalendarSyncModal';
 import * as eventButtonsService from '../../services/eventButtonsService';
+import { useAuth } from '../../context/AuthContext';
 
 type Props = {
   title: string;
@@ -39,16 +40,20 @@ const CalendarToolbar: React.FC<Props> = ({ title, onPrev, onNext, onToday, onGo
   const [showSyncModal, setShowSyncModal] = React.useState(false);
   const [eventButtons, setEventButtons] = React.useState<EventButton[]>([]);
   const [buttonsLoading, setButtonsLoading] = React.useState(true);
+  const { userId } = useAuth();
 
   // Load event buttons from Firestore on mount
   React.useEffect(() => {
-    loadEventButtons();
-  }, []);
+    if (userId) {
+      loadEventButtons();
+    }
+  }, [userId]);
 
   const loadEventButtons = async () => {
+    if (!userId) return;
+    
     try {
       setButtonsLoading(true);
-      const userId = 'current-user-id'; // TODO: Get from auth context
       const buttons = await eventButtonsService.getEventButtons(userId);
       setEventButtons(buttons);
       

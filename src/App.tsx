@@ -31,9 +31,8 @@ export const App: React.FC = () => {
     // Skip in dev mode for faster HMR
     if (import.meta.env.DEV) return;
 
-    // SERVICE WORKER DISABLED - causes MIME type errors on Vercel
-    // TODO: Re-enable after fixing Vercel configuration
-    // swManager.register();
+    // Register service worker for offline support and better caching
+    swManager.register();
 
     // Use requestIdleCallback for better performance
     if ('requestIdleCallback' in window) {
@@ -72,8 +71,8 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {/* SERVICE WORKER DISABLED - causes MIME type errors on Vercel */}
-      {/* <ServiceWorkerUpdater /> */}
+      {/* Service Worker update notifications */}
+      <ServiceWorkerUpdater />
 
       {/* Sonner toast notifications */}
       <Toaster

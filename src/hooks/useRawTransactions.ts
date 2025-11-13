@@ -89,10 +89,14 @@ export function useRawTransactions(): TransactionV3[] {
   }, [userId, refreshTrigger]);
   
   // Obtener snapshot de datos - recalculate when orgId changes
-  const snapshot = useMemo(() => buildFinanceSnapshot(), [orgId]);
+  const snapshot = useMemo(() => {
+    console.log('[DEBUG useRawTransactions] Building snapshot for orgId:', orgId);
+    return buildFinanceSnapshot();
+  }, [orgId]);
 
   // Transformar shows a transacciones V3
   const transactionsV3 = useMemo<TransactionV3[]>(() => {
+    console.log('[DEBUG useRawTransactions] useMemo recalculating - manualTransactions.length:', manualTransactions.length, 'orgId:', orgId);
     const transactions: TransactionV3[] = [];
 
     // 1. Add transactions from shows
@@ -104,6 +108,8 @@ export function useRawTransactions(): TransactionV3[] {
         transactions.push(...showTransactions);
       }
     });
+
+    console.log('[DEBUG useRawTransactions] Show transactions:', transactions.length);
 
     // 2. Add manual transactions from Firestore
     manualTransactions.forEach((manualTx) => {
@@ -121,12 +127,18 @@ export function useRawTransactions(): TransactionV3[] {
       transactions.push(txV3);
     });
 
+    console.log('[DEBUG useRawTransactions] Total transactions after manual:', transactions.length);
+
     // Ordenar por fecha descendente (más reciente primero)
-    return transactions.sort((a, b) =>
+    const sorted = transactions.sort((a, b) =>
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
-  }, [snapshot.shows, manualTransactions]);
+    
+    console.log('[DEBUG useRawTransactions] Returning sorted transactions:', sorted.length);
+    return sorted;
+  }, [snapshot.shows, manualTransactions, orgId]); // Add orgId to dependencies
 
+  console.log('[DEBUG useRawTransactions] Hook returning transactionsV3:', transactionsV3.length);
   return transactionsV3;
 }
 

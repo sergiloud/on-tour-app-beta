@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { FirestoreProfileService } from '../../services/firestoreProfileService';
+import { changePassword } from '../../services/authService';
 import { t } from '../../lib/i18n';
 import { 
   User, Mail, Phone, MapPin, Link as LinkIcon, Globe, 
@@ -412,6 +413,13 @@ export const ProfileSettings: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordError, setPasswordError] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   
   // Profile form state
   const [formData, setFormData] = useState({
@@ -564,6 +572,47 @@ export const ProfileSettings: React.FC = () => {
       console.error('Error saving preferences:', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Change password
+  const handleChangePassword = async () => {
+    setPasswordError('');
+    
+    // Validation
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError('All fields are required');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      setPasswordError('New password must be different from current password');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    
+    try {
+      await changePassword(passwordData.currentPassword, passwordData.newPassword);
+      
+      // Success!
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowPasswordChange(false);
+      alert('Password changed successfully!');
+    } catch (error: any) {
+      setPasswordError(error.message || 'Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -1041,58 +1090,89 @@ export const ProfileSettings: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm"
+                        onClick={() => !isChangingPassword && setShowPasswordChange(false)}
                       >
-                        <div className="glass rounded-2xl border border-slate-200 dark:border-white/10 p-6 max-w-md w-full shadow-2xl">
+                        <div 
+                          className="glass rounded-2xl border border-slate-200 dark:border-white/10 p-6 max-w-md w-full shadow-2xl"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Change Password</h3>
                             <button
-                              onClick={() => setShowPasswordChange(false)}
-                              className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+                              onClick={() => !isChangingPassword && setShowPasswordChange(false)}
+                              disabled={isChangingPassword}
+                              className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center transition-colors disabled:opacity-50"
                             >
                               <X className="w-5 h-5 text-slate-500 dark:text-white/50" />
                             </button>
                           </div>
+                          
+                          {passwordError && (
+                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                              <div className="flex items-center gap-2 text-red-400 text-sm">
+                                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                                <span>{passwordError}</span>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="space-y-4">
                             <Input
                               label="Current Password"
-                              value=""
-                              onChange={() => {}}
+                              value={passwordData.currentPassword}
+                              onChange={(value) => setPasswordData({ ...passwordData, currentPassword: value })}
                               type="password"
                               icon={<Lock className="w-4 h-4" />}
                               placeholder="Enter current password"
+                              disabled={isChangingPassword}
                             />
                             <Input
                               label="New Password"
-                              value=""
-                              onChange={() => {}}
+                              value={passwordData.newPassword}
+                              onChange={(value) => setPasswordData({ ...passwordData, newPassword: value })}
                               type="password"
                               icon={<Key className="w-4 h-4" />}
-                              placeholder="Enter new password"
+                              placeholder="Enter new password (min 6 characters)"
+                              disabled={isChangingPassword}
                             />
                             <Input
                               label="Confirm New Password"
-                              value=""
-                              onChange={() => {}}
+                              value={passwordData.confirmPassword}
+                              onChange={(value) => setPasswordData({ ...passwordData, confirmPassword: value })}
                               type="password"
                               icon={<Key className="w-4 h-4" />}
                               placeholder="Confirm new password"
+                              disabled={isChangingPassword}
                             />
                             <div className="flex gap-3 pt-2">
                               <button
-                                onClick={() => setShowPasswordChange(false)}
-                                className="flex-1 px-4 py-2.5 rounded-lg bg-white dark:bg-dark-800 text-slate-700 dark:text-white/90 font-medium hover:bg-white/10 transition-all"
+                                onClick={() => {
+                                  setShowPasswordChange(false);
+                                  setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                  setPasswordError('');
+                                }}
+                                disabled={isChangingPassword}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-white dark:bg-dark-800 text-slate-700 dark:text-white/90 font-medium hover:bg-white/10 transition-all disabled:opacity-50"
                               >
                                 Cancel
                               </button>
                               <button
-                                onClick={() => {
-                                  alert('Password change functionality will be implemented with Firebase Auth');
-                                  setShowPasswordChange(false);
-                                }}
-                                className="flex-1 px-4 py-2.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white font-medium transition-all shadow-sm"
+                                onClick={handleChangePassword}
+                                disabled={isChangingPassword}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white font-medium transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                               >
-                                Update Password
+                                {isChangingPassword ? (
+                                  <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Updating...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save className="w-4 h-4" />
+                                    <span>Update Password</span>
+                                  </>
+                                )}
                               </button>
                             </div>
                           </div>

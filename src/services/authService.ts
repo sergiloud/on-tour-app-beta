@@ -8,6 +8,9 @@ import {
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
   setPersistence,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   User as FirebaseUser
 } from 'firebase/auth';
 import { 
@@ -204,6 +207,41 @@ export const resetPassword = async (email: string): Promise<void> => {
   } else {
     // Demo mode - just simulate
     console.log('Demo mode: Password reset email would be sent to', email);
+  }
+};
+
+// Change password (requires re-authentication)
+export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+  if (!useFirebase() || !auth || !auth.currentUser) {
+    throw new Error('Firebase auth not available or user not logged in');
+  }
+
+  const user = auth.currentUser;
+  const email = user.email;
+
+  if (!email) {
+    throw new Error('No email associated with this account');
+  }
+
+  // Re-authenticate user with current password
+  const credential = EmailAuthProvider.credential(email, currentPassword);
+  
+  try {
+    await reauthenticateWithCredential(user, credential);
+    
+    // Update password
+    await updatePassword(user, newPassword);
+  } catch (error: any) {
+    // Provide more user-friendly error messages
+    if (error.code === 'auth/wrong-password') {
+      throw new Error('Current password is incorrect');
+    } else if (error.code === 'auth/weak-password') {
+      throw new Error('New password is too weak. Use at least 6 characters');
+    } else if (error.code === 'auth/requires-recent-login') {
+      throw new Error('For security, please log out and log in again before changing your password');
+    } else {
+      throw new Error(error.message || 'Failed to change password');
+    }
   }
 };
 

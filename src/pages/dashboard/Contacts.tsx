@@ -882,11 +882,32 @@ export const Contacts: React.FC = () => {
                         rows={4}
                       />
                       <button
-                        onClick={() => {
-                          if (newNote.trim()) {
-                            // Aquí agregarías la lógica para guardar la nota
-                            alert('Nota guardada (funcionalidad por implementar)');
-                            setNewNote('');
+                        onClick={async () => {
+                          if (newNote.trim() && selectedContact) {
+                            try {
+                              const newNoteObj = {
+                                id: `note-${Date.now()}`,
+                                content: newNote.trim(),
+                                createdAt: new Date().toISOString(),
+                              };
+                              
+                              const updatedNotes = [newNoteObj, ...(selectedContact.notes || [])];
+                              
+                              await updateContactMutation.mutateAsync({
+                                id: selectedContact.id,
+                                data: { notes: updatedNotes }
+                              });
+                              
+                              setNewNote('');
+                              // Update selected contact to show new note immediately
+                              setSelectedContact({
+                                ...selectedContact,
+                                notes: updatedNotes
+                              });
+                            } catch (error) {
+                              console.error('Error saving note:', error);
+                              alert('Error al guardar la nota');
+                            }
                           }
                         }}
                         disabled={!newNote.trim()}
@@ -901,10 +922,41 @@ export const Contacts: React.FC = () => {
                     <div className="space-y-3">
                       {selectedContact.notes && selectedContact.notes.length > 0 ? (
                         selectedContact.notes.map((note: any, index: number) => (
-                          <div key={index} className="p-4 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg hover:bg-interactive-hover hover:border-theme-strong transition-all duration-150">
-                            <div className="text-sm text-slate-700 dark:text-slate-700 dark:text-white/90 mb-2 leading-relaxed">{note.content || note}</div>
+                          <div key={note.id || index} className="p-4 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg hover:bg-interactive-hover hover:border-theme-strong transition-all duration-150 group">
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="text-sm text-slate-700 dark:text-slate-700 dark:text-white/90 leading-relaxed flex-1">{note.content || note}</div>
+                              <button
+                                onClick={async () => {
+                                  if (confirm('¿Eliminar esta nota?')) {
+                                    try {
+                                      const updatedNotes = selectedContact.notes.filter((n: any, i: number) => i !== index);
+                                      await updateContactMutation.mutateAsync({
+                                        id: selectedContact.id,
+                                        data: { notes: updatedNotes }
+                                      });
+                                      setSelectedContact({
+                                        ...selectedContact,
+                                        notes: updatedNotes
+                                      });
+                                    } catch (error) {
+                                      console.error('Error deleting note:', error);
+                                      alert('Error al eliminar la nota');
+                                    }
+                                  }
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/20 rounded"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                              </button>
+                            </div>
                             <div className="text-xs text-slate-300 dark:text-white/50 font-medium">
-                              {note.createdAt ? new Date(note.createdAt).toLocaleString('es-ES') : 'Sin fecha'}
+                              {note.createdAt ? new Date(note.createdAt).toLocaleString('es-ES', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              }) : 'Sin fecha'}
                             </div>
                           </div>
                         ))
@@ -912,6 +964,7 @@ export const Contacts: React.FC = () => {
                         <div className="text-center py-12 text-slate-400 dark:text-white/40 text-sm">
                           <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
                           <p className="font-medium">No hay notas aún</p>
+                          <p className="text-xs mt-1">Escribe tu primera nota arriba</p>
                         </div>
                       )}
                     </div>

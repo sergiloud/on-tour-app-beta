@@ -6,6 +6,7 @@ import { activityTracker } from '../lib/activityTracker';
 import { HybridShowService } from '../services/hybridShowService';
 import { HybridContactService } from '../services/hybridContactService';
 import { HybridVenueService } from '../services/hybridVenueService';
+import { logger } from '../lib/logger';
 
 interface AuthCtx {
   userId: string;
@@ -55,36 +56,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           FirestoreProfileService.initialize(id);
         });
       } catch (e) {
-        console.warn('Could not initialize profile service:', e);
+        logger.warn('Could not initialize profile service', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
 
       // Initialize ALL hybrid services for real users
       try {
         HybridShowService.initialize(id);
       } catch (e) {
-        console.warn('Could not initialize hybrid show service:', e);
+        logger.warn('Could not initialize hybrid show service', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
       
       try {
         HybridContactService.initialize(id);
       } catch (e) {
-        console.warn('Could not initialize hybrid contact service:', e);
+        logger.warn('Could not initialize hybrid contact service', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
 
       try {
         HybridVenueService.initialize(id);
       } catch (e) {
-        console.warn('Could not initialize hybrid venue service:', e);
+        logger.warn('Could not initialize hybrid venue service', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
 
-      // TODO: Initialize finance, travel, org, and user services
-      // These will be created as hybrid services following the same pattern
+      // Initialize Firestore services for finance, travel, org, user
+      // NOTE: These currently use Firestore directly. Hybrid services can be created later if needed.
       try {
         import('../services/firestoreUserService').then(({ FirestoreUserService }) => {
           FirestoreUserService.migrateFromLocalStorage(id);
         });
       } catch (e) {
-        console.warn('Could not initialize user service:', e);
+        logger.warn('Could not initialize user service', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
 
       try {
@@ -92,7 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           FirestoreFinanceService.migrateFromLocalStorage(id);
         });
       } catch (e) {
-        console.warn('Could not initialize finance service:', e);
+        logger.warn('Could not initialize finance service', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
 
       try {
@@ -100,7 +125,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           FirestoreTravelService.migrateFromLocalStorage(id);
         });
       } catch (e) {
-        console.warn('Could not initialize travel service:', e);
+        logger.warn('Could not initialize travel service', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
 
       try {
@@ -108,7 +137,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           FirestoreOrgService.migrateFromLocalStorage(id);
         });
       } catch (e) {
-        console.warn('Could not initialize org service:', e);
+        logger.warn('Could not initialize org service', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
     }
     
@@ -118,7 +151,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { loadProphecyData } = require('../lib/prophecyDataset');
         loadProphecyData();
       } catch (e) {
-        console.warn('Could not load frontend Prophecy data:', e);
+        logger.warn('Could not load frontend Prophecy data', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       }
 
       // DISABLED FOR PRODUCTION BETA
@@ -128,7 +165,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ProphecyBackendService.initializeProphecyUser('org_artist_prophecy');
         });
       } catch (e) {
-        console.warn('Could not initialize backend Prophecy data:', e);
+        logger.warn('Could not initialize backend Prophecy data', {
+          component: 'AuthContext',
+          userId: id,
+          error: e instanceof Error ? e.message : String(e)
+        });
       } */
     }
   }, []);

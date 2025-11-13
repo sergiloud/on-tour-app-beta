@@ -161,6 +161,7 @@ const Section: React.FC<{
 // Agencies Manager Component
 const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type }) => {
   const { bookingAgencies, managementAgencies, addAgency, updateAgency, removeAgency } = useSettings();
+  const toast = useToast();
   const agencies = type === 'booking' ? bookingAgencies : managementAgencies;
   const maxAgencies = 5;
 
@@ -176,7 +177,7 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
 
   const handleAdd = () => {
     if (agencies.length >= maxAgencies) {
-      alert(`Maximum ${maxAgencies} ${type} agencies allowed`);
+      toast.warning(`Maximum ${maxAgencies} ${type} agencies allowed`);
       return;
     }
 
@@ -192,8 +193,9 @@ const AgenciesManager: React.FC<{ type: 'booking' | 'management' }> = ({ type })
 
     if (result.ok) {
       resetForm();
+      toast.success('Agency added successfully');
     } else {
-      alert(result.reason || 'Could not add agency');
+      toast.error(result.reason || 'Could not add agency');
     }
   };
 
@@ -615,7 +617,7 @@ export const ProfileSettings: React.FC = () => {
       // Success!
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setShowPasswordChange(false);
-      alert('Password changed successfully!');
+      toast.success('Password changed successfully!');
     } catch (error: any) {
       setPasswordError(error.message || 'Failed to change password');
     } finally {
@@ -989,7 +991,7 @@ export const ProfileSettings: React.FC = () => {
                       <button 
                         onClick={() => {
                           navigator.clipboard.writeText(userId);
-                          alert('User ID copied to clipboard!');
+                          toast.success('User ID copied to clipboard!');
                         }}
                         className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors"
                       >
@@ -1928,7 +1930,7 @@ export const ProfileSettings: React.FC = () => {
                           onClick={() => {
                             if (confirm('Clear all cached data? This will not delete your account data.')) {
                               localStorage.removeItem('on-tour-cache');
-                              alert('Cache cleared successfully!');
+                              toast.success('Cache cleared successfully!');
                             }
                           }}
                           className="px-4 py-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 border border-slate-300 dark:border-white/10 text-sm font-medium transition-all"

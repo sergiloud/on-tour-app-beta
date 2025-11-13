@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 import { useAuth } from '../../context/AuthContext';
 import { useOrg } from '../../context/OrgContext';
+import { useToast } from '../../context/ToastContext';
 import { getLinkAgencyToArtist, getSeatsUsage, listLinks, listMembers, listTeams, ORG_AGENCY_SHALIZI, ORG_ARTIST_DANNY, type Link as DemoLink } from '../../lib/tenants';
 import { useFilteredShows } from '../../features/shows/selectors';
 import { buildFinanceSnapshot } from '../../features/finance/snapshot';
@@ -329,6 +330,7 @@ const OrgOverview: React.FC = () => {
   const { profile } = useAuth();
   const { orgId, org } = useOrg();
   const navigate = useNavigate();
+  const toast = useToast();
   const h1Ref = useRef<HTMLHeadingElement>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [showConnect, setShowConnect] = useState(false);
@@ -365,8 +367,7 @@ const OrgOverview: React.FC = () => {
     // Handle priority action clicks - in real app, this would navigate or open modals
     logger.debug('Priority action clicked', { component: 'OrgOverview', actionId });
     trackEvent('org.priority_action', { actionId });
-    // For demo, just show an alert
-    alert(`Action: ${actionId} - This would navigate to the relevant section in a real app`);
+    toast.info(`Action: ${actionId} - This would navigate to the relevant section in a real app`);
   };
 
   // Track page view activity

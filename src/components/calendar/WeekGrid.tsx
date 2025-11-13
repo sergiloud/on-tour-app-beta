@@ -225,15 +225,23 @@ const WeekGrid: React.FC<Props> = ({ weekStart, eventsByDay, tz, onOpen, onCreat
                   <DragToMoveHandler
                     key={l.id}
                     event={weekEv}
-                    onMove={(eventId, newDate, newStartHour) => {
-                      // Handle moving event to new time
-                      console.log(`Move event ${eventId} to ${newDate} at ${newStartHour}:00`);
-                      // TODO: Call parent handler
+                    onMove={(eventId, newDate, newStartTime) => {
+                      // Call parent handler to move event
+                      if (onMoveEvent) {
+                        if (newStartTime && typeof newStartTime === 'string') {
+                          const hour = parseInt(newStartTime.split(':')[0] || '0', 10);
+                          onMoveEvent(eventId, newDate, hour);
+                        } else {
+                          onMoveEvent(eventId, newDate);
+                        }
+                      }
                     }}
                     onCopy={(eventId, newDate) => {
-                      // Handle copying event
-                      console.log(`Copy event ${eventId} to ${newDate}`);
-                      // TODO: Call parent handler
+                      // Copy event by creating a duplicate at the new date
+                      if (onMoveEvent) {
+                        // Use move handler with undefined startHour to preserve original time
+                        onMoveEvent(eventId, newDate);
+                      }
                     }}
                   >
                     <motion.div

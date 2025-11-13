@@ -69,38 +69,75 @@ export interface FinanceTargetsProviderProps {
   initialTargets?: Partial<FinanceTargets>;
 }
 
+const STORAGE_KEY = 'finance_targets';
+
+/**
+ * Load targets from localStorage
+ */
+function loadTargetsFromStorage(): Partial<FinanceTargets> {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored) as Partial<FinanceTargets>;
+    }
+  } catch (error) {
+    console.error('[FinanceTargetsContext] Error loading from localStorage:', error);
+  }
+  return {};
+}
+
+/**
+ * Save targets to localStorage
+ */
+function saveTargetsToStorage(targets: FinanceTargets): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(targets));
+  } catch (error) {
+    console.error('[FinanceTargetsContext] Error saving to localStorage:', error);
+  }
+}
+
 /**
  * Provider de objetivos financieros
  *
- * TODO (Features futuras):
- * - Persistir en localStorage
- * - Sincronizar con API de usuario
- * - Soportar múltiples perfiles de objetivos
+ * Features:
+ * ✅ Persiste en localStorage
+ * - Sincronizar con API de usuario (TODO: backend integration)
+ * - Soportar múltiples perfiles de objetivos (TODO: multi-tenant)
  */
 export function FinanceTargetsProvider({
   children,
   initialTargets
 }: FinanceTargetsProviderProps) {
-  const [targets, setTargets] = useState<FinanceTargets>(() => ({
-    ...DEFAULT_TARGETS,
-    ...initialTargets,
-  }));
+  const [targets, setTargets] = useState<FinanceTargets>(() => {
+    const stored = loadTargetsFromStorage();
+    return {
+      ...DEFAULT_TARGETS,
+      ...stored,
+      ...initialTargets,
+    };
+  });
 
   const updateTargets = useCallback((newTargets: Partial<FinanceTargets>) => {
-    setTargets(prev => ({
-      ...prev,
-      ...newTargets,
-    }));
-
-    // TODO: Persistir en localStorage
-    // localStorage.setItem('finance_targets', JSON.stringify({ ...targets, ...newTargets }));
-
-    // TODO: Sincronizar con backend
-    // api.updateUserTargets({ ...targets, ...newTargets });
+    setTargets(prev => {
+      const updated = {
+        ...prev,
+        ...newTargets,
+      };
+      
+      // Persist to localStorage
+      saveTargetsToStorage(updated);
+      
+      // TODO: Sincronizar con backend
+      // api.updateUserTargets(updated);
+      
+      return updated;
+    });
   }, []);
 
   const resetToDefaults = useCallback(() => {
     setTargets(DEFAULT_TARGETS);
+    saveTargetsToStorage(DEFAULT_TARGETS);
   }, []);
 
   const value = useMemo(() => ({

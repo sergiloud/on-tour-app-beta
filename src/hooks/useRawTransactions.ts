@@ -51,8 +51,10 @@ export function useRawTransactions(): TransactionV3[] {
   // Listen for transaction updates
   useEffect(() => {
     const handleTransactionUpdate = () => {
+      console.log('[DEBUG useRawTransactions] Event received, incrementing refreshTrigger');
       setRefreshTrigger(prev => prev + 1);
     };
+    console.log('[DEBUG useRawTransactions] Attaching event listeners');
     window.addEventListener('finance:transaction:created', handleTransactionUpdate);
     window.addEventListener('finance:transaction:updated', handleTransactionUpdate);
     window.addEventListener('finance:transaction:deleted', handleTransactionUpdate);
@@ -65,14 +67,20 @@ export function useRawTransactions(): TransactionV3[] {
   
   // Load manual transactions from Firestore
   useEffect(() => {
-    if (!userId) return;
+    console.log('[DEBUG useRawTransactions] Load effect - userId:', userId, 'refreshTrigger:', refreshTrigger);
+    if (!userId) {
+      console.log('[DEBUG useRawTransactions] No userId, skipping load');
+      return;
+    }
     
     const loadManualTransactions = async () => {
       try {
+        console.log('[DEBUG useRawTransactions] Fetching transactions for userId:', userId);
         const transactions = await FirestoreFinanceService.getUserTransactions(userId);
+        console.log('[DEBUG useRawTransactions] Fetched transactions:', transactions.length, transactions);
         setManualTransactions(transactions);
       } catch (error) {
-        console.error('Failed to load manual transactions:', error);
+        console.error('[DEBUG useRawTransactions] Failed to load manual transactions:', error);
         setManualTransactions([]);
       }
     };

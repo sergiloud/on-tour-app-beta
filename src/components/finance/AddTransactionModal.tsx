@@ -100,7 +100,11 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
         updatedAt: new Date().toISOString()
       };
 
+      console.log('[DEBUG AddTransactionModal] userId:', userId);
+      console.log('[DEBUG AddTransactionModal] transaction:', transaction);
+      
       await FirestoreFinanceService.saveTransaction(transaction, userId);
+      console.log('[DEBUG AddTransactionModal] Firestore save completed');
 
       logger.info('Transaction saved successfully', {
         component: 'AddTransactionModal',
@@ -110,7 +114,9 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
       });
 
       // Emit event to refresh transaction list
+      console.log('[DEBUG AddTransactionModal] Dispatching event finance:transaction:created');
       window.dispatchEvent(new CustomEvent('finance:transaction:created', { detail: transaction }));
+      console.log('[DEBUG AddTransactionModal] Event dispatched');
 
       setSaveStatus('success');
 

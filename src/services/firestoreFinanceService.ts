@@ -69,17 +69,27 @@ export class FirestoreFinanceService {
    * Save transaction to Firestore
    */
   static async saveTransaction(transaction: FinanceTransaction, userId: string): Promise<void> {
+    console.log('[DEBUG FirestoreFinanceService] saveTransaction called');
+    console.log('[DEBUG FirestoreFinanceService] userId:', userId);
+    console.log('[DEBUG FirestoreFinanceService] transaction:', transaction);
+    
     if (!db) {
+      console.error('[DEBUG FirestoreFinanceService] Firestore not initialized!');
       throw new Error('Firestore not initialized');
     }
 
-    const transactionRef = doc(db, `users/${userId}/transactions/${transaction.id}`);
+    const path = `users/${userId}/transactions/${transaction.id}`;
+    console.log('[DEBUG FirestoreFinanceService] Firestore path:', path);
+    
+    const transactionRef = doc(db, path);
     const transactionData = this.removeUndefined({
       ...transaction,
       updatedAt: Timestamp.now()
     });
 
+    console.log('[DEBUG FirestoreFinanceService] Data to save:', transactionData);
     await setDoc(transactionRef, transactionData, { merge: true });
+    console.log('[DEBUG FirestoreFinanceService] setDoc completed successfully');
   }
 
   /**
@@ -111,15 +121,24 @@ export class FirestoreFinanceService {
    * Get all transactions for a user
    */
   static async getUserTransactions(userId: string): Promise<FinanceTransaction[]> {
+    console.log('[DEBUG FirestoreFinanceService] getUserTransactions called for userId:', userId);
+    
     if (!db) {
+      console.error('[DEBUG FirestoreFinanceService] Firestore not initialized!');
       throw new Error('Firestore not initialized');
     }
 
-    const transactionsRef = collection(db, `users/${userId}/transactions`);
+    const path = `users/${userId}/transactions`;
+    console.log('[DEBUG FirestoreFinanceService] Query path:', path);
+    
+    const transactionsRef = collection(db, path);
     const q = query(transactionsRef, orderBy('date', 'desc'));
+    
+    console.log('[DEBUG FirestoreFinanceService] Executing query...');
     const querySnapshot = await getDocs(q);
+    console.log('[DEBUG FirestoreFinanceService] Query returned', querySnapshot.docs.length, 'documents');
 
-    return querySnapshot.docs.map(doc => {
+    const transactions = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         ...data,
@@ -129,6 +148,9 @@ export class FirestoreFinanceService {
         updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt
       } as FinanceTransaction;
     });
+    
+    console.log('[DEBUG FirestoreFinanceService] Returning transactions:', transactions);
+    return transactions;
   }
 
   /**

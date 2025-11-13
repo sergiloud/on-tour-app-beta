@@ -109,6 +109,9 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
         amount: transaction.amount
       });
 
+      // Emit event to refresh transaction list
+      window.dispatchEvent(new CustomEvent('finance:transaction:created', { detail: transaction }));
+
       setSaveStatus('success');
 
       // Reset form and close after short delay

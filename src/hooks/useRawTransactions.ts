@@ -3,6 +3,8 @@ import { buildFinanceSnapshot } from '../features/finance/snapshot';
 import { showToTransactionV3 } from '../lib/profitabilityHelpers';
 import type { TransactionV3 } from '../types/financeV3';
 import { getCurrentOrgId } from '../lib/tenants';
+import { FirestoreFinanceService, type FinanceTransaction } from '../services/firestoreFinanceService';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Custom hook para la capa de adquisición de datos
@@ -12,7 +14,8 @@ import { getCurrentOrgId } from '../lib/tenants';
  *
  * ABSTRACCIÓN DE LA FUENTE:
  * El resto de la aplicación NO conoce de dónde vienen las transacciones:
- * - Actualmente: buildFinanceSnapshot() (datos locales)
+ * - Shows: buildFinanceSnapshot() (datos locales)
+ * - Manual: FirestoreFinanceService (transacciones manuales)
  * - Futuro: API REST, GraphQL, IndexedDB, etc.
  *
  * Solo modificando ESTE hook se puede cambiar toda la fuente de datos
@@ -27,8 +30,14 @@ import { getCurrentOrgId } from '../lib/tenants';
  * @returns TransactionV3[] - Transacciones ordenadas por fecha descendente
  */
 export function useRawTransactions(): TransactionV3[] {
+  const { userId } = useAuth();
+  
   // Track orgId changes to invalidate snapshot cache
   const [orgId, setOrgId] = useState(() => getCurrentOrgId());
+  
+  // State for manual transactions from Firestore
+  const [manualTransactions, setManualTransactions] = useState<FinanceTransaction[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   useEffect(() => {
     const handleOrgChange = (e: any) => {
@@ -39,6 +48,38 @@ export function useRawTransactions(): TransactionV3[] {
     return () => window.removeEventListener('tenant:changed' as any, handleOrgChange);
   }, []);
   
+  // Listen for transaction updates
+  useEffect(() => {
+    const handleTransactionUpdate = () => {
+      setRefreshTrigger(prev => prev + 1);
+    };
+    window.addEventListener('finance:transaction:created', handleTransactionUpdate);
+    window.addEventListener('finance:transaction:updated', handleTransactionUpdate);
+    window.addEventListener('finance:transaction:deleted', handleTransactionUpdate);
+    return () => {
+      window.removeEventListener('finance:transaction:created', handleTransactionUpdate);
+      window.removeEventListener('finance:transaction:updated', handleTransactionUpdate);
+      window.removeEventListener('finance:transaction:deleted', handleTransactionUpdate);
+    };
+  }, []);
+  
+  // Load manual transactions from Firestore
+  useEffect(() => {
+    if (!userId) return;
+    
+    const loadManualTransactions = async () => {
+      try {
+        const transactions = await FirestoreFinanceService.getUserTransactions(userId);
+        setManualTransactions(transactions);
+      } catch (error) {
+        console.error('Failed to load manual transactions:', error);
+        setManualTransactions([]);
+      }
+    };
+    
+    loadManualTransactions();
+  }, [userId, refreshTrigger]);
+  
   // Obtener snapshot de datos - recalculate when orgId changes
   const snapshot = useMemo(() => buildFinanceSnapshot(), [orgId]);
 
@@ -46,7 +87,7 @@ export function useRawTransactions(): TransactionV3[] {
   const transactionsV3 = useMemo<TransactionV3[]>(() => {
     const transactions: TransactionV3[] = [];
 
-    // Filtrar shows relevantes y convertir a transacciones
+    // 1. Add transactions from shows
     snapshot.shows.forEach((show) => {
       // Incluir solo shows confirmados, pendientes, postponed
       // Excluir: offers, cancelados, archivados
@@ -56,11 +97,27 @@ export function useRawTransactions(): TransactionV3[] {
       }
     });
 
+    // 2. Add manual transactions from Firestore
+    manualTransactions.forEach((manualTx) => {
+      const txV3: TransactionV3 = {
+        id: manualTx.id,
+        showId: manualTx.showId || `manual-${manualTx.id}`,
+        tripTitle: manualTx.description,
+        type: manualTx.type,
+        category: manualTx.category,
+        amount: manualTx.amount,
+        status: 'paid',
+        date: manualTx.date,
+        description: manualTx.description,
+      };
+      transactions.push(txV3);
+    });
+
     // Ordenar por fecha descendente (más reciente primero)
     return transactions.sort((a, b) =>
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
-  }, [snapshot.shows]);
+  }, [snapshot.shows, manualTransactions]);
 
   return transactionsV3;
 }

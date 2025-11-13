@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { t } from '../../lib/i18n';
+import { signOut } from '../../services/authService';
 import {
   Cog6ToothIcon,
   UserCircleIcon,
@@ -38,10 +39,17 @@ export const MoreMenu: React.FC<MoreMenuProps> = ({ onClose }) => {
     onClose?.();
   };
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    console.log('Logout clicked');
-    onClose?.();
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/auth/login');
+      onClose?.();
+    } catch (error) {
+      console.error('Failed to logout:', error);
+      // Even if logout fails, navigate to login page
+      navigate('/auth/login');
+      onClose?.();
+    }
   };
 
   const menuItems: MenuItem[] = [

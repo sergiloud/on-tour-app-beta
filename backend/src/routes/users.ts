@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getAuth } from '../config/firebase.js';
 import { 
   firebaseAuthMiddleware,
   requireAdmin,
@@ -129,19 +130,24 @@ router.delete('/profile',
   asyncErrorHandler(async (req: FirebaseAuthRequest, res) => {
     const firebaseUser = req.firebaseUser!;
 
-    // Eliminar perfil de Firestore
-    await deleteUserProfile(firebaseUser.uid);
+    try {
+      // Eliminar perfil de Firestore
+      await deleteUserProfile(firebaseUser.uid);
 
-    // TODO: Eliminar usuario de Firebase Auth
-    // Esto normalmente se hace desde el frontend con reauthentication
-    
-    res.json({
-      success: true,
-      message: 'Profile data deleted. Please delete Firebase Auth account from client.',
-      hint: 'Use user.delete() after reauthentication on the client side'
-    });
+      // Eliminar usuario de Firebase Auth
+      const auth = getAuth();
+      await auth.deleteUser(firebaseUser.uid);
 
-    logger.info({ uid: firebaseUser.uid }, 'User profile deleted');
+      res.json({
+        success: true,
+        message: 'User account completely deleted from Firebase Auth and Firestore'
+      });
+
+      logger.info({ uid: firebaseUser.uid }, 'User account fully deleted');
+    } catch (error: any) {
+      logger.error({ uid: firebaseUser.uid, error }, 'Failed to delete user account');
+      throw CommonErrors.DatabaseError();
+    }
   })
 );
 
@@ -231,9 +237,16 @@ router.put('/:uid/role',
       throw CommonErrors.NotFoundError('User profile');
     }
 
-    // TODO: Actualizar custom claims en Firebase Auth
-    // const auth = getFirebaseAuth();
-    // await auth.setCustomUserClaims(uid, { [role]: true });
+    // Actualizar custom claims en Firebase Auth
+    try {
+      const auth = getAuth();
+      await auth.setCustomUserClaims(uid, { role });
+      logger.info({ uid, role }, 'Custom claims updated in Firebase Auth');
+    } catch (error: any) {
+      logger.error({ uid, role, error }, 'Failed to update custom claims');
+      // No lanzamos error aquí porque el rol ya se actualizó en Firestore
+      // El claim se actualizará en el próximo login del usuario
+    }
 
     res.json({
       success: true,

@@ -272,9 +272,18 @@ router.get('/me',
       throw CommonErrors.NotFoundError('User not found in Firebase');
     }
 
-    // TODO: Obtener datos adicionales desde Firestore
-    // const userDoc = await firestore.collection('users').doc(firebaseUser.uid).get();
-    // const userData = userDoc.exists ? userDoc.data() : {};
+    // Obtener datos adicionales desde Firestore
+    let firestoreData = {};
+    try {
+      const firestore = getFirestore();
+      const userDoc = await firestore.collection('users').doc(firebaseUser.uid).get();
+      if (userDoc.exists) {
+        firestoreData = userDoc.data() || {};
+      }
+    } catch (error: any) {
+      logger.warn({ uid: firebaseUser.uid, error }, 'Failed to fetch Firestore user data');
+      // No lanzamos error, continuamos con datos de Firebase Auth solamente
+    }
     
     res.json({
       success: true,
@@ -289,7 +298,8 @@ router.get('/me',
           // Información adicional de Firebase
           creationTime: userRecord.metadata.creationTime,
           lastSignInTime: userRecord.metadata.lastSignInTime,
-          // ...userData // Datos adicionales de Firestore
+          // Datos adicionales de Firestore
+          ...firestoreData
         }
       }
     });

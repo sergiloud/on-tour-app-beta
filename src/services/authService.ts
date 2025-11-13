@@ -9,6 +9,7 @@ import {
   sendPasswordResetEmail,
   setPersistence,
   updatePassword,
+  updateProfile,
   EmailAuthProvider,
   reauthenticateWithCredential,
   deleteUser,
@@ -101,10 +102,13 @@ export const signUp = async (email: string, password: string, displayName?: stri
     await setAuthPersistence(rememberMe);
     
     const result = await createUserWithEmailAndPassword(auth, email, password);
-    const authUser = toAuthUser(result.user);
 
-    // TODO: Update profile with displayName if provided
-    // await updateProfile(result.user, { displayName });
+    // Update profile with displayName if provided
+    if (displayName) {
+      await updateProfile(result.user, { displayName });
+    }
+
+    const authUser = toAuthUser(result.user);
 
     // Sync with local storage
     secureStorage.setItem('auth:userId', authUser.uid);

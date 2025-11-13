@@ -75,11 +75,48 @@ class Logger {
      * Enviar logs a servicio externo (implementar según necesidad)
      */
     private sendToLoggingService(level: LogLevel, message: string, context?: any) {
-        // TODO: Implementar integración con Sentry, LogRocket, o servicio custom
-        // Ejemplo:
-        // Sentry.captureMessage(message, { level, extra: context });
+        // Sentry integration for production error tracking
+        if (this.isProduction && typeof window !== 'undefined') {
+            try {
+                // Check if Sentry is available (loaded via CDN or npm)
+                const Sentry = (window as any).Sentry;
+                
+                if (Sentry) {
+                    // Send to Sentry based on log level
+                    if (level === 'error') {
+                        Sentry.captureException(new Error(message), {
+                            level: 'error',
+                            extra: context,
+                            tags: {
+                                component: context?.component || 'unknown',
+                                userId: context?.userId || 'anonymous'
+                            }
+                        });
+                    } else if (level === 'warn') {
+                        Sentry.captureMessage(message, {
+                            level: 'warning',
+                            extra: context,
+                            tags: {
+                                component: context?.component || 'unknown'
+                            }
+                        });
+                    } else if (level === 'info') {
+                        // Only send critical info events to Sentry (avoid noise)
+                        if (context?.critical) {
+                            Sentry.captureMessage(message, {
+                                level: 'info',
+                                extra: context
+                            });
+                        }
+                    }
+                }
+            } catch (sentryError) {
+                // Silently fail if Sentry is not available or fails
+                console.warn('[Logger] Sentry integration failed:', sentryError);
+            }
+        }
 
-        // Por ahora, solo almacenar en memoria o localStorage para debugging
+        // Store logs in localStorage for debugging (dev + production)
         if (typeof window !== 'undefined') {
             try {
                 const logs = JSON.parse(localStorage.getItem('app_logs') || '[]');

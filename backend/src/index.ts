@@ -13,6 +13,7 @@ import { createAmadeusRouter } from './routes/amadeus.js';
 import { createStripeRouter } from './routes/stripe.js';
 import { createEmailRouter } from './routes/email.js';
 import { createRealtimeRouter } from './routes/realtime.js';
+import { calendarSyncRouter } from './routes/calendarSync.js';
 import auditRouter from './routes/audit.js';
 import organizationsRouter from './routes/organizations.js';
 import { authRouter } from './routes/auth.js';
@@ -23,6 +24,7 @@ import { generalRateLimit } from './middleware/rateLimiting.js';
 import { logger } from './utils/logger.js';
 import { webSocketService } from './services/WebSocketService.js';
 import { initializeFirebaseAdmin } from './config/firebase.js';
+import { startCalendarSyncWorker } from './workers/calendarSyncWorker.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -103,6 +105,7 @@ app.use('/api/amadeus', createAmadeusRouter(logger));
 app.use('/api/stripe', createStripeRouter(logger));
 app.use('/api/email', createEmailRouter(logger));
 app.use('/api/realtime', createRealtimeRouter());
+app.use('/api/calendar-sync', authMiddleware, calendarSyncRouter);
 
 // Security: Handle 404 errors (antes del error handler)
 app.use(notFoundHandler);
@@ -115,6 +118,9 @@ async function start() {
   // Initialize services
   await initializeDatabase();
   initializeFirebase();
+  
+  // Start background workers
+  startCalendarSyncWorker();
 
   server.listen(PORT, () => {
     logger.info(`🚀 Server running on port ${PORT}`);

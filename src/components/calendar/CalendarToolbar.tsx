@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 import DraggableEventButtons, { EventButton } from './DraggableEventButtons';
 import QuickSearch from './QuickSearch';
+import { CalendarSyncModal } from './CalendarSyncModal';
+import * as eventButtonsService from '../../services/eventButtonsService';
 
 type Props = {
   title: string;
@@ -34,39 +36,39 @@ const CalendarToolbar: React.FC<Props> = ({ title, onPrev, onNext, onToday, onGo
   if (filters.kinds.shows) activeKinds.push(t('calendar.show.shows')||'Shows');
   if (filters.kinds.travel) activeKinds.push(t('calendar.show.travel')||'Travel');
   const fileRef = React.useRef<HTMLInputElement|null>(null);
+  const [showSyncModal, setShowSyncModal] = React.useState(false);
+  const [eventButtons, setEventButtons] = React.useState<EventButton[]>([]);
+  const [buttonsLoading, setButtonsLoading] = React.useState(true);
 
-  // Event buttons state
-  const [eventButtons, setEventButtons] = React.useState<EventButton[]>(() => {
+  // Load event buttons from Firestore on mount
+  React.useEffect(() => {
+    loadEventButtons();
+  }, []);
+
+  const loadEventButtons = async () => {
     try {
-      const saved = localStorage.getItem('calendar:eventButtons');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Clean up old format (remove icon field if present)
-        return parsed.map((btn: any) => ({
-          id: btn.id,
-          label: btn.label,
-          category: btn.category,
-          color: btn.color || 'emerald',
-          type: btn.type || 'show'
-        }));
-      }
-      return [
-        { id: '1', label: 'Show', color: 'emerald', type: 'show' },
-        { id: '2', label: 'Travel', color: 'sky', type: 'travel' },
-      ];
-    } catch {
-      return [
-        { id: '1', label: 'Show', color: 'emerald', type: 'show' },
-        { id: '2', label: 'Travel', color: 'sky', type: 'travel' },
-      ];
+      setButtonsLoading(true);
+      const userId = 'current-user-id'; // TODO: Get from auth context
+      const buttons = await eventButtonsService.getEventButtons(userId);
+      setEventButtons(buttons);
+      
+      // Migrate from localStorage if needed
+      await eventButtonsService.migrateLocalStorageToFirestore(userId);
+    } catch (error) {
+      console.error('Failed to load event buttons:', error);
+    } finally {
+      setButtonsLoading(false);
     }
-  });
+  };
 
-  const saveEventButtons = (buttons: EventButton[]) => {
+  const saveEventButtons = async (buttons: EventButton[]) => {
     setEventButtons(buttons);
     try {
-      localStorage.setItem('calendar:eventButtons', JSON.stringify(buttons));
-    } catch {}
+      const userId = 'current-user-id'; // TODO: Get from auth context
+      await eventButtonsService.saveEventButtons(buttons, userId);
+    } catch (error) {
+      console.error('Failed to save event buttons:', error);
+    }
   };
 
   const handleAddButton = () => {
@@ -190,6 +192,20 @@ const CalendarToolbar: React.FC<Props> = ({ title, onPrev, onNext, onToday, onGo
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                     {t('calendar.import')||'Import'}
+                  </motion.button>
+
+                  {/* Sync Calendar Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-accent-500/20 to-accent-600/10 border border-accent-500/30 hover:border-accent-400/50 hover:from-accent-500/30 hover:to-accent-600/20 text-accent-300 text-xs font-semibold transition-all flex items-center gap-1.5"
+                    onClick={() => setShowSyncModal(true)}
+                    aria-label="Sync Calendar"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Sync
                   </motion.button>
                 </>
               )}
@@ -383,6 +399,12 @@ const CalendarToolbar: React.FC<Props> = ({ title, onPrev, onNext, onToday, onGo
           </motion.span>
         )}
       </motion.div>
+
+      {/* Calendar Sync Modal */}
+      <CalendarSyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+      />
     </motion.div>
   );
 };

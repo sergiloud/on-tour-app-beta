@@ -105,32 +105,71 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove }) => {
     info: Info,
   };
 
-  const colors = {
-    success: 'from-green-500/90 to-green-600/90 border-green-400/50',
-    error: 'from-red-500/90 to-red-600/90 border-red-400/50',
-    warning: 'from-amber-500/90 to-amber-600/90 border-amber-400/50',
-    info: 'from-blue-500/90 to-blue-600/90 border-blue-400/50',
+  // Design system integrado - colores y estilos consistentes con la app
+  const styles = {
+    success: {
+      bg: 'from-accent-500/95 to-accent-600/95',
+      border: 'border-accent-400/40',
+      shadow: 'shadow-xl shadow-accent-500/25',
+      iconColor: 'text-ink-950',
+      textColor: 'text-ink-950',
+      closeColor: 'text-ink-950/70 hover:text-ink-950',
+    },
+    error: {
+      bg: 'from-red-500/95 to-red-600/95',
+      border: 'border-red-400/40',
+      shadow: 'shadow-xl shadow-red-500/25',
+      iconColor: 'text-white',
+      textColor: 'text-white',
+      closeColor: 'text-white/70 hover:text-white',
+    },
+    warning: {
+      bg: 'from-amber-500/95 to-amber-600/95',
+      border: 'border-amber-400/40',
+      shadow: 'shadow-xl shadow-amber-500/25',
+      iconColor: 'text-ink-950',
+      textColor: 'text-ink-950',
+      closeColor: 'text-ink-950/70 hover:text-ink-950',
+    },
+    info: {
+      bg: 'from-slate-800/95 to-slate-900/95',
+      border: 'border-white/20',
+      shadow: 'shadow-xl shadow-black/40',
+      iconColor: 'text-accent-500',
+      textColor: 'text-white',
+      closeColor: 'text-white/70 hover:text-white',
+    },
   };
 
   const Icon = icons[type];
+  const style = styles[type];
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 100, scale: 0.8 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 100, scale: 0.8 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className={`pointer-events-auto min-w-[300px] max-w-md bg-gradient-to-r ${colors[type]} backdrop-blur-xl border rounded-xl shadow-2xl`}
+      initial={{ opacity: 0, x: 100, scale: 0.9, y: -20 }}
+      animate={{ opacity: 1, x: 0, scale: 1, y: 0 }}
+      exit={{ opacity: 0, x: 100, scale: 0.9, y: -20 }}
+      transition={{ 
+        type: 'spring', 
+        stiffness: 400, 
+        damping: 30,
+        mass: 0.8
+      }}
+      className={`pointer-events-auto min-w-[320px] max-w-md bg-gradient-to-r ${style.bg} backdrop-blur-xl border ${style.border} rounded-xl ${style.shadow}`}
     >
       <div className="flex items-start gap-3 p-4">
-        <Icon className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-        <p className="text-white text-sm font-medium flex-1 leading-relaxed">{message}</p>
+        <div className={`flex-shrink-0 ${style.iconColor}`}>
+          <Icon className="w-5 h-5 mt-0.5" strokeWidth={2.5} />
+        </div>
+        <p className={`${style.textColor} text-sm font-semibold flex-1 leading-relaxed`}>
+          {message}
+        </p>
         <button
           onClick={() => onRemove(id)}
-          className="text-white/80 hover:text-white transition-colors flex-shrink-0"
+          className={`${style.closeColor} transition-all flex-shrink-0 hover:scale-110 active:scale-95`}
           aria-label="Cerrar notificación"
         >
-          <X className="w-4 h-4" />
+          <X className="w-4 h-4" strokeWidth={2.5} />
         </button>
       </div>
     </motion.div>

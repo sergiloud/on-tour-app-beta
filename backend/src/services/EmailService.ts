@@ -607,4 +607,100 @@ export class EmailService {
       return false;
     }
   }
+
+  /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(email: string, resetLink: string): Promise<boolean> {
+    try {
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #f9fafb; }
+              .container { max-width: 600px; margin: 40px auto; }
+              .header { background: linear-gradient(135deg, #c4ff1a 0%, #bfff00 100%); padding: 40px 30px; text-align: center; border-radius: 10px 10px 0 0; }
+              .header h1 { margin: 0; color: #0b0f14; font-size: 24px; font-weight: 700; }
+              .content { background: #ffffff; padding: 40px 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; }
+              .button { display: inline-block; padding: 14px 32px; background: #c4ff1a; color: #0b0f14; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; transition: all 0.2s; }
+              .button:hover { background: #bfff00; transform: translateY(-1px); }
+              .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 13px; }
+              .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 24px 0; border-radius: 4px; font-size: 14px; }
+              .link-box { background: #f9fafb; padding: 12px; border-radius: 6px; word-break: break-all; font-size: 12px; color: #6b7280; margin: 16px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🎵 On Tour App - Password Reset</h1>
+              </div>
+              <div class="content">
+                <h2 style="margin-top: 0;">Reset Your Password</h2>
+                <p>Hi there,</p>
+                <p>We received a request to reset the password for your On Tour App account. Click the button below to create a new password:</p>
+                <div style="text-align: center;">
+                  <a href="${resetLink}" class="button">Reset Password</a>
+                </div>
+                <p style="margin-top: 24px;">Or copy and paste this link into your browser:</p>
+                <div class="link-box">${resetLink}</div>
+                <div class="warning">
+                  <strong>⚠️ Security Notice:</strong><br>
+                  This link will expire in 1 hour. If you didn't request this password reset, please ignore this email and your password will remain unchanged.
+                </div>
+                <p>If you continue to have issues accessing your account, please contact our support team.</p>
+                <p style="margin-top: 32px;">Best regards,<br><strong>The On Tour App Team</strong></p>
+              </div>
+              <div class="footer">
+                <p>This is an automated email. Please do not reply to this message.</p>
+                <p>&copy; 2025 On Tour App. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const text = `
+Password Reset Request
+
+Hi there,
+
+We received a request to reset your password for your On Tour App account.
+
+Click this link to reset your password:
+${resetLink}
+
+This link will expire in 1 hour.
+
+If you didn't request this password reset, please ignore this email and your password will remain unchanged.
+
+Best regards,
+The On Tour App Team
+      `.trim();
+
+      // En desarrollo, solo loguear
+      if (process.env.NODE_ENV !== 'production') {
+        this.logger.info({ email, resetLink }, 'Password reset email (DEV MODE - not sent)');
+        console.log('\n╔═══════════════════════════════════════════════════════╗');
+        console.log('║         PASSWORD RESET EMAIL (DEV MODE)              ║');
+        console.log('╠═══════════════════════════════════════════════════════╣');
+        console.log(`  To: ${email}`);
+        console.log(`  Link: ${resetLink}`);
+        console.log('╚═══════════════════════════════════════════════════════╝\n');
+        return true;
+      }
+
+      const result = await this.sendEmail({
+        to: email,
+        subject: 'Reset Your Password - On Tour App',
+        html,
+        text
+      });
+
+      return !!result; // Convert to boolean
+    } catch (error) {
+      this.logger.error({ email, error }, 'Failed to send password reset email');
+      return false;
+    }
+  }
 }

@@ -22,9 +22,12 @@ import {
   createFirebaseUser, 
   getFirebaseUser,
   isFirebaseAvailable,
-  getAuth as getFirebaseAuth
+  getAuth as getFirebaseAuth,
+  getFirestore
 } from '../config/firebase.js';
+import admin from 'firebase-admin';
 import { logger } from '../utils/logger.js';
+import { EmailService } from '../services/EmailService.js';
 
 const router = Router();
 
@@ -114,14 +117,32 @@ router.post('/register',
       throw CommonErrors.ConflictError('Failed to create user - email may already exist');
     }
 
-    // TODO: Crear documento de usuario en Firestore con datos adicionales
-    // const userDoc = await firestore.collection('users').doc(userRecord.uid).set({
-    //   email: userRecord.email,
-    //   displayName: name,
-    //   organizationName,
-    //   createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    //   emailVerified: false
-    // });
+    // Crear documento de usuario en Firestore con datos adicionales
+    try {
+      const firestore = getFirestore();
+      await firestore.collection('users').doc(userRecord.uid).set({
+        email: userRecord.email,
+        displayName: name || email.split('@')[0],
+        organizationName: organizationName || '',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        emailVerified: false,
+        role: 'user',
+        settings: {
+          language: 'en',
+          currency: 'USD',
+          theme: 'dark'
+        },
+        metadata: {
+          signupIp: req.ip,
+          userAgent: req.headers['user-agent'] || 'unknown'
+        }
+      });
+      logger.info({ uid: userRecord.uid }, 'User document created in Firestore');
+    } catch (firestoreError) {
+      logger.error({ uid: userRecord.uid, error: firestoreError }, 'Failed to create Firestore document');
+      // No fallar el registro si Firestore falla, ya que el usuario Auth está creado
+    }
 
     res.status(201).json({
       success: true,
@@ -168,10 +189,11 @@ router.post('/forgot-password',
       const auth = getFirebaseAuth();
       const resetLink = await auth.generatePasswordResetLink(email);
       
-      // TODO: Enviar email con el link personalizado
-      // await EmailService.sendPasswordResetLink(email, resetLink);
+      // Enviar email con el link personalizado
+      const emailService = new EmailService(logger as any);
+      await emailService.sendPasswordResetEmail(email, resetLink);
       
-      logger.info({ email }, 'Password reset link generated');
+      logger.info({ email }, 'Password reset email sent');
       
     } catch (error) {
       // No revelar si el usuario existe o no por seguridad

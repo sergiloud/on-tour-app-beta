@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { t } from '../../lib/i18n';
 
 export type EventType = 'show' | 'travel' | 'meeting' | 'rehearsal' | 'break' | 'other';
 
@@ -40,15 +41,6 @@ interface Props {
   initialData?: EventData;
 }
 
-const eventTypeConfig: Record<EventType, { label: string; description: string }> = {
-  show: { label: 'Show', description: 'Performance or concert' },
-  travel: { label: 'Travel', description: 'Trip or transportation' },
-  meeting: { label: 'Meeting', description: 'Meeting or appointment' },
-  rehearsal: { label: 'Rehearsal', description: 'Practice or rehearsal' },
-  break: { label: 'Break', description: 'Time off or break' },
-  other: { label: 'Other Event', description: 'Custom calendar event' }
-};
-
 const EventCreationModal: React.FC<Props> = ({
   open,
   onClose,
@@ -59,6 +51,16 @@ const EventCreationModal: React.FC<Props> = ({
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
+
+  // Build eventTypeConfig with i18n
+  const eventTypeConfig: Record<EventType, { label: string; description: string }> = {
+    show: { label: t('calendar.kind.show') || 'Show', description: t('calendar.desc.show') || 'Performance or concert' },
+    travel: { label: t('calendar.kind.travel') || 'Travel', description: t('calendar.desc.travel') || 'Trip or transportation' },
+    meeting: { label: t('calendar.kind.meeting') || 'Meeting', description: t('calendar.desc.meeting') || 'Meeting or appointment' },
+    rehearsal: { label: t('calendar.kind.rehearsal') || 'Rehearsal', description: t('calendar.desc.rehearsal') || 'Practice or rehearsal' },
+    break: { label: t('calendar.kind.break') || 'Break', description: t('calendar.desc.break') || 'Time off or break' },
+    other: { label: t('calendar.kind.other') || 'Other Event', description: t('calendar.desc.other') || 'Custom calendar event' }
+  };
 
   const [eventType, setEventType] = useState<EventType>(initialType);
   const defaultDate = new Date().toISOString().split('T')[0];

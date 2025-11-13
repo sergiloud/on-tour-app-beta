@@ -5,7 +5,7 @@
  */
 
 export interface CalendarSyncCredentials {
-  provider: 'icloud' | 'google' | 'outlook';
+  provider: 'icloud' | 'google' | 'outlook' | 'caldav';
   email: string;
   password: string;
   serverUrl?: string;

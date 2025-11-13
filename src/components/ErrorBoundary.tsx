@@ -21,6 +21,7 @@
 
 import React, { Component, ReactNode, ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { logger } from '../lib/logger';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -58,18 +59,23 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Logging del error
+    // Logging del error con servicio centralizado
     const section = this.props.section || 'Unknown';
-    console.error(`[ErrorBoundary:${section}] Caught error:`, error);
-    console.error('Component stack:', errorInfo.componentStack);
+    
+    logger.error(
+      `ErrorBoundary caught error in ${section}`,
+      error,
+      {
+        component: section,
+        componentStack: errorInfo.componentStack,
+        action: 'error_boundary_catch'
+      }
+    );
 
-    // Callback personalizado para logging externo (ej: Sentry)
+    // Callback personalizado para logging externo adicional
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-
-    // TODO: Enviar a servicio de monitoreo
-    // Sentry.captureException(error, { extra: errorInfo });
   }
 
   handleReset = () => {
@@ -131,7 +137,7 @@ function DefaultErrorFallback({ error, onReset, section }: DefaultErrorFallbackP
         {/* Detalles del error (solo en desarrollo) */}
         {import.meta.env.DEV && error && (
           <details className="w-full max-w-2xl mt-2">
-            <summary className="text-xs text-slate-400 dark:text-white/40 cursor-pointer hover:text-slate-400 dark:text-white/60 transition-colors">
+            <summary className="text-xs text-slate-400 dark:text-white/40 cursor-pointer hover:text-slate-600 dark:hover:text-white/60 transition-colors">
               Detalles técnicos (solo visible en desarrollo)
             </summary>
             <pre className="mt-3 p-4 bg-black/20 rounded-lg text-left text-xs text-red-300 overflow-x-auto border border-red-500/10">

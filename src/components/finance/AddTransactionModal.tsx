@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, DollarSign, Calendar, Tag, FileText, TrendingUp, TrendingDown } from 'lucide-react';
+import { X, DollarSign, Calendar, Tag, FileText, TrendingUp, TrendingDown, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FirestoreFinanceService, type FinanceTransaction } from '../../services/firestoreFinanceService';
+import { useAuth } from '../../context/AuthContext';
+import { logger } from '../../lib/logger';
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -20,31 +23,123 @@ const EXPENSE_CATEGORIES = [
 ];
 
 const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClose, type }) => {
-  const [formData, setFormData] = useState({
+  const { userId } = useAuth();
+  
+  interface FormData {
+    type: 'income' | 'expense';
+    date: string;
+    description: string;
+    category: string;
+    amount: string;
+    status: 'paid' | 'pending';
+  }
+
+  const [formData, setFormData] = useState<FormData>({
     type: type || 'expense',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0] as string,
     description: '',
     category: '',
     amount: '',
-    status: 'paid' as 'paid' | 'pending'
+    status: 'paid'
   });
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'La descripción es obligatoria';
+    }
+
+    if (!formData.category.trim()) {
+      newErrors.category = 'La categoría es obligatoria';
+    }
+
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      newErrors.amount = 'El importe debe ser mayor que 0';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Aquí iría la lógica para guardar la transacción
-    console.log('Nueva transacción:', formData);
-    onClose();
+
+    if (!validateForm()) {
+      logger.warn('Transaction form validation failed', {
+        component: 'AddTransactionModal',
+        errors
+      });
+      return;
+    }
+
+    if (!userId) {
+      logger.error('Cannot save transaction: no user logged in', new Error('User not authenticated'), {
+        component: 'AddTransactionModal'
+      });
+      setSaveStatus('error');
+      return;
+    }
+
+    setSaving(true);
+    setSaveStatus('idle');
+
+    try {
+      const transaction: FinanceTransaction = {
+        id: `txn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        type: formData.type as 'income' | 'expense',
+        amount: parseFloat(formData.amount),
+        currency: 'EUR',
+        category: formData.category,
+        description: formData.description,
+        date: formData.date || new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      await FirestoreFinanceService.saveTransaction(transaction, userId);
+
+      logger.info('Transaction saved successfully', {
+        component: 'AddTransactionModal',
+        transactionId: transaction.id,
+        type: transaction.type,
+        amount: transaction.amount
+      });
+
+      setSaveStatus('success');
+
+      // Reset form and close after short delay
+      setTimeout(() => {
+        handleReset();
+        onClose();
+        setSaveStatus('idle');
+      }, 1500);
+
+    } catch (error) {
+      logger.error('Failed to save transaction', error as Error, {
+        component: 'AddTransactionModal',
+        formData
+      });
+      setSaveStatus('error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleReset = () => {
     setFormData({
       type: type || 'expense',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split('T')[0] as string,
       description: '',
       category: '',
       amount: '',
       status: 'paid'
     });
+    setErrors({});
+    setSaveStatus('idle');
   };
 
   return (
@@ -162,11 +257,22 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                   <input
                     type="text"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, description: e.target.value });
+                      if (errors.description) setErrors({ ...errors, description: '' });
+                    }}
                     placeholder="Ej: Hotel Barcelona, Transporte Madrid..."
                     required
-                    className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 focus:outline-none focus:border-slate-300 dark:border-white/20 transition-colors"
+                    className={`w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border ${
+                      errors.description ? 'border-red-500/50' : 'border-slate-200 dark:border-white/10'
+                    } rounded-lg text-white text-sm placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-accent-500/50 transition-colors`}
                   />
+                  {errors.description && (
+                    <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.description}
+                    </p>
+                  )}
                 </div>
 
                 {/* Categoría */}
@@ -176,26 +282,52 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                     Categoría
                   </label>
                   {formData.type === 'income' ? (
-                    <input
-                      type="text"
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      placeholder="Ej: Ingresos por Shows, Merchandising..."
-                      required
-                      className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 focus:outline-none focus:border-slate-300 dark:border-white/20 transition-colors"
-                    />
+                    <>
+                      <input
+                        type="text"
+                        value={formData.category}
+                        onChange={(e) => {
+                          setFormData({ ...formData, category: e.target.value });
+                          if (errors.category) setErrors({ ...errors, category: '' });
+                        }}
+                        placeholder="Ej: Ingresos por Shows, Merchandising..."
+                        required
+                        className={`w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border ${
+                          errors.category ? 'border-red-500/50' : 'border-slate-200 dark:border-white/10'
+                        } rounded-lg text-white text-sm placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-accent-500/50 transition-colors`}
+                      />
+                      {errors.category && (
+                        <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.category}
+                        </p>
+                      )}
+                    </>
                   ) : (
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      required
-                      className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-slate-300 dark:border-white/20 transition-colors"
-                    >
-                      <option value="">Selecciona una categoría</option>
-                      {EXPENSE_CATEGORIES.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
+                    <>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => {
+                          setFormData({ ...formData, category: e.target.value });
+                          if (errors.category) setErrors({ ...errors, category: '' });
+                        }}
+                        required
+                        className={`w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border ${
+                          errors.category ? 'border-red-500/50' : 'border-slate-200 dark:border-white/10'
+                        } rounded-lg text-white text-sm focus:outline-none focus:border-accent-500/50 transition-colors`}
+                      >
+                        <option value="">Selecciona una categoría</option>
+                        {EXPENSE_CATEGORIES.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                      {errors.category && (
+                        <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.category}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -212,12 +344,23 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                       step="0.01"
                       min="0"
                       value={formData.amount}
-                      onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, amount: e.target.value });
+                        if (errors.amount) setErrors({ ...errors, amount: '' });
+                      }}
                       placeholder="0.00"
                       required
-                      className="w-full pl-9 pr-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 focus:outline-none focus:border-slate-300 dark:border-white/20 transition-colors"
+                      className={`w-full pl-9 pr-4 py-2.5 bg-slate-100 dark:bg-white/5 border ${
+                        errors.amount ? 'border-red-500/50' : 'border-slate-200 dark:border-white/10'
+                      } rounded-lg text-white text-sm placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-accent-500/50 transition-colors`}
                     />
                   </div>
+                  {errors.amount && (
+                    <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.amount}
+                    </p>
+                  )}
                 </div>
 
                 {/* Estado */}
@@ -252,24 +395,51 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                 </div>
 
                 {/* Botones */}
-                <div className="flex items-center gap-3 pt-4 border-t border-white/10">
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 text-white text-sm font-medium transition-all"
-                  >
-                    Limpiar
-                  </button>
-                  <button
-                    type="submit"
-                    className={`flex-1 px-4 py-2.5 rounded-lg text-white text-sm font-medium transition-all ${
-                      formData.type === 'income'
-                        ? 'bg-green-500/20 border border-green-500/30 hover:bg-green-500/30'
-                        : 'bg-red-500/20 border border-red-500/30 hover:bg-red-500/30'
-                    }`}
-                  >
-                    Guardar Transacción
-                  </button>
+                <div className="space-y-3 pt-4 border-t border-white/10">
+                  {/* Status feedback */}
+                  {saveStatus === 'success' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Transacción guardada exitosamente</span>
+                    </motion.div>
+                  )}
+                  
+                  {saveStatus === 'error' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                      <span>Error al guardar. Inténtalo de nuevo.</span>
+                    </motion.div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      disabled={saving}
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-white/10 hover:border-white/20 text-white text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Limpiar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className={`flex-1 px-4 py-2.5 rounded-lg text-white text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        formData.type === 'income'
+                          ? 'bg-green-500/20 border border-green-500/30 hover:bg-green-500/30'
+                          : 'bg-red-500/20 border border-red-500/30 hover:bg-red-500/30'
+                      }`}
+                    >
+                      {saving ? 'Guardando...' : 'Guardar Transacción'}
+                    </button>
+                  </div>
                 </div>
               </form>
             </motion.div>

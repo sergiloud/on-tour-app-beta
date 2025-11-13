@@ -1,3 +1,5 @@
+import { logger } from '../lib/logger';
+
 // Service to handle Prophecy backend integration
 export class ProphecyBackendService {
   private static baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -25,7 +27,7 @@ export class ProphecyBackendService {
         seededCount: result.seededCount || 0
       };
     } catch (error) {
-      console.error('Failed to seed Prophecy data:', error);
+      logger.error('[ProphecyBackendService] Failed to seed Prophecy data', error as Error, { organizationId });
       return { success: false, seededCount: 0 };
     }
   }
@@ -49,7 +51,7 @@ export class ProphecyBackendService {
       const result = await response.json();
       return result.isProphecySeeded;
     } catch (error) {
-      console.error('Failed to check Prophecy status:', error);
+      logger.error('[ProphecyBackendService] Failed to check Prophecy status', error as Error, { organizationId });
       return false;
     }
   }
@@ -73,7 +75,7 @@ export class ProphecyBackendService {
       const result = await response.json();
       return result.data || [];
     } catch (error) {
-      console.error('Failed to fetch shows:', error);
+      logger.error('[ProphecyBackendService] Failed to fetch shows', error as Error, { organizationId });
       return [];
     }
   }
@@ -92,13 +94,13 @@ export class ProphecyBackendService {
    */
   static async initializeProphecyUser(organizationId: string): Promise<void> {
     try {
-      console.log('🔄 Initializing Prophecy backend data...');
+      logger.info('[ProphecyBackendService] Initializing Prophecy backend data', { organizationId });
 
       // Check if already seeded
       const isSeeded = await this.checkProphecyStatus(organizationId);
       
       if (isSeeded) {
-        console.log('✅ Prophecy data already exists in backend');
+        logger.info('[ProphecyBackendService] Prophecy data already exists in backend', { organizationId });
         return;
       }
 
@@ -106,12 +108,12 @@ export class ProphecyBackendService {
       const result = await this.seedProphecyData(organizationId);
       
       if (result.success) {
-        console.log(`✅ Successfully seeded ${result.seededCount} Prophecy shows`);
+        logger.info('[ProphecyBackendService] Successfully seeded Prophecy shows', { organizationId, count: result.seededCount });
       } else {
-        console.warn('⚠️ Failed to seed Prophecy data');
+        logger.warn('[ProphecyBackendService] Failed to seed Prophecy data', { organizationId });
       }
     } catch (error) {
-      console.error('❌ Error initializing Prophecy backend:', error);
+      logger.error('[ProphecyBackendService] Error initializing Prophecy backend', error as Error, { organizationId });
     }
   }
 }

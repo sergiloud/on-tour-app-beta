@@ -13,8 +13,7 @@ export { Input } from './Input';
 export { Alert } from './Alert';
 export { Modal } from './Modal';
 export { useToast, ToastProvider } from './Toast';
-// FIXME: Skeleton components not yet created
-// export { Skeleton, SkeletonCard, SkeletonList, SkeletonTable } from './Skeleton';
+export { Skeleton, SkeletonCard, SkeletonList, SkeletonTable } from './Skeleton';
 
 // Form Components
 export { Select } from './Select';

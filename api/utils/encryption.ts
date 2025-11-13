@@ -18,15 +18,22 @@ function getEncryptionKey(): Buffer {
   const key = process.env.CALENDAR_ENCRYPTION_KEY;
   
   if (!key) {
+    console.error('[ENCRYPTION] CALENDAR_ENCRYPTION_KEY not set in environment');
     throw new Error('CALENDAR_ENCRYPTION_KEY environment variable not set');
   }
   
   // Convert hex string to buffer (expects 64 hex chars = 32 bytes)
   if (key.length !== 64) {
-    throw new Error('CALENDAR_ENCRYPTION_KEY must be 64 hex characters (32 bytes)');
+    console.error(`[ENCRYPTION] Invalid key length: ${key.length} (expected 64)`);
+    throw new Error(`CALENDAR_ENCRYPTION_KEY must be 64 hex characters (32 bytes), got ${key.length}`);
   }
   
-  return Buffer.from(key, 'hex');
+  try {
+    return Buffer.from(key, 'hex');
+  } catch (error) {
+    console.error('[ENCRYPTION] Failed to parse encryption key:', error);
+    throw new Error('CALENDAR_ENCRYPTION_KEY contains invalid hex characters');
+  }
 }
 
 /**

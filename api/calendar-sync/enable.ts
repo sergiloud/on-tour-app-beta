@@ -40,6 +40,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Database not available' });
     }
 
+    // Encrypt password
+    let encryptedPassword: string;
+    try {
+      encryptedPassword = encrypt(credentials.password);
+    } catch (encryptError) {
+      console.error('Encryption error:', encryptError);
+      return res.status(500).json({
+        error: 'Encryption failed',
+        message: encryptError instanceof Error ? encryptError.message : 'Unknown encryption error',
+      });
+    }
+
     // Save sync configuration to Firestore
     await db
       .collection('users')
@@ -52,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         direction,
         credentials: {
           ...credentials,
-          password: encrypt(credentials.password), // AES-256-GCM encryption
+          password: encryptedPassword,
         },
         lastSync: null,
         createdAt: new Date().toISOString(),

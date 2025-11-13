@@ -15,6 +15,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useShows } from './useShows';
 import { fetchItinerariesGentle, onItinerariesUpdated, Itinerary, saveItinerary, removeItinerary } from '../services/travelApi';
 import { useCalendarEvents } from './useCalendarEvents';
+import { useSyncedCalendarEvents } from './useSyncedCalendarEvents';
 import type { Show } from '../lib/shows';
 import type { CalEvent } from '../components/calendar/types';
 
@@ -68,6 +69,9 @@ export function useCalendarData({
   // Shows data (from existing hook)
   const { shows, add, update, remove } = useShows();
   
+  // Synced calendar events from CalDAV
+  const { events: syncedEvents } = useSyncedCalendarEvents();
+  
   // Travel/itinerary data
   const [travel, setTravel] = useState<Itinerary[]>([]);
   const [travelLoading, setTravelLoading] = useState(false);
@@ -109,10 +113,11 @@ export function useCalendarData({
     };
   }, [debouncedCursor]);
   
-  // Merge shows + travel into unified event structure
+  // Merge shows + travel + synced events into unified event structure
   const eventsByDay = useCalendarEvents({
     shows,
     travel,
+    syncedEvents,
     lang,
     kinds: filters.kinds,
     filters: { status: filters.status },

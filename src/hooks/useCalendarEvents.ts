@@ -2,10 +2,12 @@ import { useMemo } from 'react';
 import type { CalEvent, CalEventKind } from '../components/calendar/types';
 import { countryLabel } from '../lib/countries';
 import { detectTravelRisks } from '../lib/calendar';
+import type { SyncedCalendarEvent } from './useSyncedCalendarEvents';
 
 type Inputs = {
   shows: Array<{ id: string; date: string; city: string; country: string; status: string; notes?: string; endDate?: string }>;
   travel: Array<{ id: string; date: string; title: string; city?: string; status?: string; endDate?: string }>;
+  syncedEvents?: SyncedCalendarEvent[];
   lang: 'en' | 'es';
   kinds: { shows: boolean; travel: boolean };
   filters?: { status?: { confirmed: boolean; pending: boolean; offer: boolean } };
@@ -13,7 +15,7 @@ type Inputs = {
   tz: string;
 };
 
-export function useCalendarEvents({ shows, travel, lang, kinds, filters, toDateOnlyTz, tz }: Inputs) {
+export function useCalendarEvents({ shows, travel, syncedEvents = [], lang, kinds, filters, toDateOnlyTz, tz }: Inputs) {
   return useMemo(() => {
     const map = new Map<string, CalEvent[]>();
     const push = (d: string, ev: CalEvent) => {
@@ -184,6 +186,48 @@ export function useCalendarEvents({ shows, travel, lang, kinds, filters, toDateO
       allEvents.push(event);
     }
 
+    // Add synced calendar events from CalDAV
+    for (const syncedEvent of syncedEvents) {
+      const d = syncedEvent.date; // Already in YYYY-MM-DD format
+      
+      const event: CalEvent = {
+        id: `synced:${syncedEvent.id}`,
+        date: d,
+        kind: 'calendar' as CalEventKind, // Use 'calendar' kind for synced events
+        title: syncedEvent.title,
+        meta: syncedEvent.location || '',
+        color: 'purple' as const, // Purple color for synced events
+        endDate: syncedEvent.endDate,
+        spanLength: 1,
+        spanIndex: 0
+      };
+
+      // Handle multi-day synced events
+      if (event.endDate && event.endDate !== event.date) {
+        const start = new Date(event.date);
+        const end = new Date(event.endDate);
+        const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        
+        for (let i = 0; i < daysDiff; i++) {
+          const currentDate = new Date(start);
+          currentDate.setDate(start.getDate() + i);
+          const dateStr = currentDate.toISOString().slice(0, 10);
+          
+          push(dateStr, {
+            ...event,
+            date: dateStr,
+            spanLength: daysDiff,
+            spanIndex: i
+          });
+        }
+      } else {
+        // Single-day synced event
+        push(d, event);
+      }
+
+      allEvents.push(event);
+    }
+
     return map;
-  }, [shows, travel, lang, kinds.shows, kinds.travel, tz, filters?.status?.confirmed, filters?.status?.pending, filters?.status?.offer]);
+  }, [shows, travel, syncedEvents, lang, kinds.shows, kinds.travel, tz, filters?.status?.confirmed, filters?.status?.pending, filters?.status?.offer]);
 }

@@ -3,6 +3,8 @@
  * Reduces Firestore reads by caching query results
  */
 
+import { logger } from '../lib/logger';
+
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -113,12 +115,12 @@ export function cached<T>(
       // Try to get from cache
       const cached = cacheService.get<T>(cacheKey);
       if (cached !== null) {
-        console.log(`✅ Cache hit: ${cacheKey}`);
+        logger.info('[CacheService] Cache hit', { cacheKey });
         return cached;
       }
       
       // Cache miss, execute original method
-      console.log(`❌ Cache miss: ${cacheKey}`);
+      logger.info('[CacheService] Cache miss', { cacheKey });
       const result = await originalMethod.apply(this, args);
       
       // Store in cache

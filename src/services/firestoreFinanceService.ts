@@ -19,6 +19,7 @@ import {
   type Unsubscribe
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { logger } from '../lib/logger';
 
 export interface FinanceTransaction {
   id: string;
@@ -327,7 +328,7 @@ export class FirestoreFinanceService {
 
       return transactions.length;
     } catch (error) {
-      console.error('❌ Failed to migrate transactions:', error);
+      logger.error('[FirestoreFinanceService] Failed to migrate transactions', error as Error, { userId });
       return 0;
     }
   }

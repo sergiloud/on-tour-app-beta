@@ -3,6 +3,8 @@
  * Queues operations when offline and syncs when back online
  */
 
+import { logger } from '../lib/logger';
+
 interface QueuedOperation {
   id: string;
   type: 'create' | 'update' | 'delete';
@@ -42,7 +44,7 @@ class OfflineQueueService {
         this.queue = JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Failed to load offline queue:', error);
+      logger.error('[OfflineQueue] Failed to load offline queue', error as Error);
     }
   }
 
@@ -56,7 +58,7 @@ class OfflineQueueService {
         JSON.stringify(this.queue)
       );
     } catch (error) {
-      console.error('Failed to save offline queue:', error);
+      logger.error('[OfflineQueue] Failed to save offline queue', error as Error);
     }
   }
 
@@ -93,7 +95,7 @@ class OfflineQueueService {
     this.queue.push(operation);
     this.saveQueue();
 
-    console.log(`📥 Queued ${type} operation for ${collection}/${entityId}${options?.optimistic ? ' (optimistic)' : ''}`);
+    logger.info('[OfflineQueue] Queued operation', { type, collection, entityId, optimistic: options?.optimistic });
     
     // If online and optimistic, process immediately
     if (navigator.onLine && options?.optimistic) {
@@ -106,7 +108,7 @@ class OfflineQueueService {
    */
   private setupOnlineListener(): void {
     window.addEventListener('online', () => {
-      console.log('🌐 Back online, processing queued operations...');
+      logger.info('[OfflineQueue] Back online, processing queued operations');
       this.processQueue();
     });
   }
@@ -120,30 +122,30 @@ class OfflineQueueService {
     }
 
     if (!navigator.onLine) {
-      console.log('📴 Still offline, skipping queue processing');
+      logger.info('[OfflineQueue] Still offline, skipping queue processing');
       return;
     }
 
     this.processing = true;
-    console.log(`🔄 Processing ${this.queue.length} queued operations...`);
+    logger.info('[OfflineQueue] Processing queued operations', { count: this.queue.length });
 
     const failedOps: QueuedOperation[] = [];
 
     for (const operation of this.queue) {
       try {
         await this.executeOperation(operation);
-        console.log(`✅ Processed ${operation.type} on ${operation.collection}/${operation.entityId}`);
+        logger.info('[OfflineQueue] Processed operation', { type: operation.type, collection: operation.collection, entityId: operation.entityId });
         
         // Call success callback if provided
         if (operation.onSuccess) {
           operation.onSuccess();
         }
       } catch (error) {
-        console.error(`❌ Failed to process operation:`, error);
+        logger.error('[OfflineQueue] Failed to process operation', error as Error, { type: operation.type, collection: operation.collection, entityId: operation.entityId });
         
         // If optimistic, revert the UI change
         if (operation.optimistic && operation.onRevert) {
-          console.log(`⏪ Reverting optimistic update for ${operation.collection}/${operation.entityId}`);
+          logger.info('[OfflineQueue] Reverting optimistic update', { collection: operation.collection, entityId: operation.entityId });
           operation.onRevert();
         }
         
@@ -158,7 +160,7 @@ class OfflineQueueService {
           // Only retry non-optimistic operations
           failedOps.push(operation);
         } else {
-          console.error(`❌ Operation failed after ${this.maxRetries} retries, discarding`, operation);
+          logger.error('[OfflineQueue] Operation failed after max retries, discarding', undefined, { retries: this.maxRetries, operation });
         }
       }
     }
@@ -169,9 +171,9 @@ class OfflineQueueService {
     this.processing = false;
 
     if (failedOps.length > 0) {
-      console.warn(`⚠️ ${failedOps.length} operations failed, will retry later`);
+      logger.warn('[OfflineQueue] Operations failed, will retry later', { count: failedOps.length });
     } else {
-      console.log('✅ All queued operations processed successfully');
+      logger.info('[OfflineQueue] All queued operations processed successfully');
     }
   }
 

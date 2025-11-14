@@ -89,10 +89,35 @@ registerRoute(
 );
 
 // ========================================
-// Strategy 2: API - NetworkFirst
+// Strategy 2: API & Firebase - NetworkFirst
 // ========================================
 
-// API calls - Network primero, fallback a cache
+// Firebase Firestore - NetworkFirst con timeout corto
+registerRoute(
+    ({ url }) => {
+        return (
+            url.hostname.includes('firestore.googleapis.com') ||
+            url.hostname.includes('firebase.googleapis.com') ||
+            url.hostname.includes('firebaseio.com')
+        );
+    },
+    new NetworkFirst({
+        cacheName: CACHE_VERSIONS.api,
+        networkTimeoutSeconds: 2, // Firebase timeout corto
+        plugins: [
+            new CacheableResponsePlugin({
+                statuses: [0, 200]
+            }),
+            new ExpirationPlugin({
+                maxEntries: 500, // Más espacio para Firebase data
+                maxAgeSeconds: CACHE_DURATIONS.api,
+                purgeOnQuotaError: true
+            })
+        ]
+    })
+);
+
+// API calls generales - Network primero, fallback a cache
 registerRoute(
     ({ url }) => {
         return (
@@ -103,13 +128,13 @@ registerRoute(
     },
     new NetworkFirst({
         cacheName: CACHE_VERSIONS.api,
-        networkTimeoutSeconds: 3, // 3s timeout (reduced from 5s)
+        networkTimeoutSeconds: 3,
         plugins: [
             new CacheableResponsePlugin({
                 statuses: [0, 200]
             }),
             new ExpirationPlugin({
-                maxEntries: 300, // Increased from 200
+                maxEntries: 300,
                 maxAgeSeconds: CACHE_DURATIONS.api,
                 purgeOnQuotaError: true
             })

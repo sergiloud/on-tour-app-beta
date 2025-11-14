@@ -32,46 +32,68 @@ export default defineConfig({
       visualizer({
         filename: './dist/stats.html',
         open: false,
-        gzipSize: true, // Enable to see compressed sizes
+        gzipSize: true,
         brotliSize: true,
         template: 'treemap',
       }),
     ]),
-    // PWA TEMPORARILY DISABLED - causes MIME type errors on Vercel
-    // TODO: Re-enable after fixing Vercel configuration
-    /*
+    // PWA - Offline-first for tour managers on the road
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw-advanced.ts',
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      injectRegister: 'auto',
+      includeAssets: ['favicon.svg', 'favicon.ico', 'offline.html'],
       manifest: {
-        name: 'OnTour',
+        name: 'OnTour - Tour Management Platform',
         short_name: 'OnTour',
+        description: 'Professional tour management platform. Works offline.',
         theme_color: '#bfff00',
         background_color: '#0b0f14',
         display: 'standalone',
+        orientation: 'any',
+        scope: '/',
         start_url: '/',
+        categories: ['business', 'productivity', 'travel'],
         icons: [
           {
             src: '/favicon.svg',
             sizes: 'any',
-            type: 'image/svg+xml'
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
+          },
+          {
+            src: '/favicon.ico',
+            sizes: '48x48',
+            type: 'image/x-icon'
           }
         ]
       },
       injectManifest: {
-        globPatterns: ['**\/*.{js,css,html}'], // Reducido para build más rápido
-        globIgnores: ['**\/node_modules/**\/*', '**\/stats.html'],
-        maximumFileSizeToCacheInBytes: 3000000 // 3MB límite
+        globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],
+        globIgnores: [
+          '**/node_modules/**/*',
+          '**/stats.html',
+          '**/debug-*.html',
+          '**/diagnose.html',
+          '**/migrate-*.html',
+          '**/unregister-*.html'
+        ],
+        // Exclude heavy chunks from precache - load on demand
+        dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
+        maximumFileSizeToCacheInBytes: 5000000, // 5MB limit
       },
       devOptions: {
-        enabled: false,
-        type: 'module'
+        enabled: true, // Enable in dev for testing
+        type: 'module',
+        navigateFallback: 'index.html'
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        sourcemap: false
       }
     })
-    */
   ],
   resolve: {
     alias: {

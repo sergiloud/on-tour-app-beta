@@ -21,6 +21,8 @@ export {
 export {
   parseDate,
   parseDateToISO,
+  getTodayISO,
+  getDateISO,
   parseCurrency,
   parseJSON,
   parseQueryString,

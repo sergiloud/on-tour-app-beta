@@ -59,6 +59,31 @@ export function parseDateToISO(date: string | Date | null | undefined): string |
 }
 
 /**
+ * Get today's date in ISO format (YYYY-MM-DD)
+ * 
+ * Common pattern replacement for: new Date().toISOString().split('T')[0]
+ *
+ * @example
+ * getTodayISO() // "2024-11-14"
+ */
+export function getTodayISO(): string {
+  return new Date().toISOString().split('T')[0] as string;
+}
+
+/**
+ * Get date offset by days in ISO format (YYYY-MM-DD)
+ *
+ * @example
+ * getDateISO(5) // 5 days from now: "2024-11-19"
+ * getDateISO(-7) // 7 days ago: "2024-11-07"
+ */
+export function getDateISO(daysOffset: number = 0): string {
+  const date = new Date();
+  date.setDate(date.getDate() + daysOffset);
+  return date.toISOString().split('T')[0] as string;
+}
+
+/**
  * Parse currency string to number
  *
  * Removes currency symbols and formatting

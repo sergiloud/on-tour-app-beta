@@ -7,20 +7,23 @@ import path from 'path';
 export default defineConfig({
   base: '/', // Always use root path for Vercel deployment
   esbuild: {
-    drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [], // Keep console.log for debugging
+    drop: process.env.NODE_ENV === 'production' ? ['debugger', 'console'] : [], // Remove console.log in production
     legalComments: 'none',
     logOverride: {
       'css-syntax-error': 'silent'
     },
     treeShaking: true,
-    minifyIdentifiers: true, // Re-enable for proper minification
+    minifyIdentifiers: true,
     minifySyntax: true,
     minifyWhitespace: true,
-    keepNames: true, // Keep names to prevent __publicField errors
+    keepNames: false, // Reduce bundle size
+    charset: 'utf8',
   },
   css: {
-    // Fix CSS syntax warnings during minification
-    devSourcemap: true
+    devSourcemap: true,
+    modules: {
+      localsConvention: 'camelCase',
+    },
   },
   plugins: [
     react(),
@@ -29,8 +32,8 @@ export default defineConfig({
       visualizer({
         filename: './dist/stats.html',
         open: false,
-        gzipSize: false, // Desactivar para builds más rápidos
-        brotliSize: false,
+        gzipSize: true, // Enable to see compressed sizes
+        brotliSize: true,
         template: 'treemap',
       }),
     ]),
@@ -78,14 +81,17 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       'react',
+      'react/jsx-runtime',
       'react-dom',
       'react-router-dom',
       'react-is',
       '@tanstack/react-query',
       'lucide-react',
       'sonner',
+      'date-fns',
+      'clsx',
     ],
-    exclude: ['exceljs', 'xlsx', 'maplibre-gl'],
+    exclude: ['exceljs', 'xlsx', 'maplibre-gl', 'firebase'],
     esbuildOptions: {
       target: 'es2020',
     },
@@ -102,16 +108,29 @@ export default defineConfig({
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     cssCodeSplit: true,
     modulePreload: {
-      polyfill: false,
+      polyfill: true,
+      resolveDependencies: (filename, deps, { hostId, hostType }) => {
+        // Preload critical chunks
+        return deps.filter(dep => !dep.includes('maplibre') && !dep.includes('firebase'));
+      },
     },
     rollupOptions: {
       output: {
         format: 'es',
-        // Optimized chunking - separate heavy libraries
-        // CRITICAL: Don't over-separate to avoid circular dependency issues
+        // Optimized chunking strategy
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // MapLibre - truly independent, no React deps
+            // Core React bundle (must stay together)
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            
+            // Framer Motion (animation library - heavy but frequently used)
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            
+            // MapLibre - truly independent, load on demand
             if (id.includes('maplibre-gl')) {
               return 'vendor-maplibre';
             }
@@ -121,9 +140,37 @@ export default defineConfig({
               return 'vendor-firebase';
             }
             
-            // Everything else together (React, framer-motion, recharts, etc)
-            // To prevent initialization order issues
-            return 'vendor';
+            // Charts and data viz
+            if (id.includes('recharts') || id.includes('d3-')) {
+              return 'vendor-charts';
+            }
+            
+            // UI utilities
+            if (id.includes('lucide-react') || id.includes('sonner') || id.includes('@tanstack/react-virtual')) {
+              return 'vendor-ui';
+            }
+            
+            // TanStack Query
+            if (id.includes('@tanstack/react-query')) {
+              return 'vendor-query';
+            }
+            
+            // Date utilities
+            if (id.includes('date-fns')) {
+              return 'vendor-date';
+            }
+            
+            // DND Kit
+            if (id.includes('@dnd-kit')) {
+              return 'vendor-dnd';
+            }
+            
+            // Excel/XLSX (heavy, lazy loaded)
+            if (id.includes('exceljs') || id.includes('xlsx')) {
+              return 'vendor-excel';
+            }
+            
+            // Everything else
             return 'vendor';
           }
         },
@@ -133,19 +180,38 @@ export default defineConfig({
         exports: 'auto',
         generatedCode: {
           constBindings: true,
+          arrowFunctions: true,
+          objectShorthand: true,
         },
         compact: true,
-        // Ensure proper interop for external dependencies
         interop: 'auto',
+        hoistTransitiveImports: false, // Improve tree shaking
+        minifyInternalExports: true,
+      },
+      treeshake: {
+        moduleSideEffects: 'no-external',
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
       },
     },
-    chunkSizeWarningLimit: 1000,
-    reportCompressedSize: false,
+    chunkSizeWarningLimit: 800,
+    reportCompressedSize: true,
     cssMinify: 'esbuild',
     assetsInlineLimit: 4096,
   },
   server: {
     host: true,
-    port: 3000
-  }
+    port: 3000,
+    warmup: {
+      clientFiles: [
+        './src/main.tsx',
+        './src/App.tsx',
+        './src/routes/AppRouter.tsx',
+        './src/pages/Dashboard.tsx',
+      ],
+    },
+  },
+  preview: {
+    port: 3000,
+  },
 });

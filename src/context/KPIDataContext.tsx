@@ -1,10 +1,18 @@
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { useFinanceKpis } from '../hooks/useFinanceKpis';
 
 const KPIDataContext = createContext<ReturnType<typeof useFinanceKpis> | null>(null);
 
-export const KPIDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const value = useFinanceKpis();
+export const KPIDataProvider = ({ children }: { children: React.ReactNode }) => {
+  const kpiData = useFinanceKpis();
+  
+  // Memoize the value to prevent unnecessary re-renders
+  const value = useMemo(() => kpiData, [
+    kpiData.display,
+    kpiData.raw,
+    kpiData.targets,
+  ]);
+  
   return <KPIDataContext.Provider value={value}>{children}</KPIDataContext.Provider>;
 };
 

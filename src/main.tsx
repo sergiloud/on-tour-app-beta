@@ -1,4 +1,4 @@
-import React from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { KPIDataProvider } from './context/KPIDataContext';
@@ -34,8 +34,8 @@ initTelemetry();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
-      gcTime: 15 * 60 * 1000, // 15 minutes - cache lifetime
+      staleTime: 10 * 60 * 1000, // 10 minutes - data stays fresh longer
+      gcTime: 30 * 60 * 1000, // 30 minutes - cache lifetime extended
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
         if (error instanceof Error && 'status' in error && typeof error.status === 'number') {
@@ -45,7 +45,9 @@ const queryClient = new QueryClient({
       },
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
+      refetchOnMount: false, // Don't refetch if data is fresh
       networkMode: 'online',
+      structuralSharing: true, // Enable for better performance
     },
     mutations: {
       retry: 1,
@@ -54,7 +56,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+const AppProviders = ({ children }: { children: React.ReactNode }) => (
   <ErrorBoundary>
     <ThemeProvider>
       <HighContrastProvider>
@@ -63,7 +65,7 @@ const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             <FinanceProvider>
               <KPIDataProvider>
                 {children}
-                <ReactQueryDevtools initialIsOpen={false} />
+                {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
               </KPIDataProvider>
             </FinanceProvider>
           </QueryClientProvider>
@@ -77,11 +79,11 @@ const root = createRoot(el);
 
 if (import.meta.env.DEV) {
   root.render(
-    <React.StrictMode>
+    <StrictMode>
       <AppProviders>
         <App />
       </AppProviders>
-    </React.StrictMode>
+    </StrictMode>
   );
 } else {
   root.render(

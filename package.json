@@ -27,6 +27,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,json,css,md}\"",
     "type-check": "tsc --noEmit",
     "validate": "npm run type-check && npm run lint && npm run test:run",
+    "clean": "rm -rf dist node_modules/.vite",
+    "optimize": "npm run clean && npm run build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "migrate:prophecy": "node scripts/migrate-prophecy-to-firestore.mjs",

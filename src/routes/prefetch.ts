@@ -46,25 +46,51 @@ function predictAndPrefetch() {
   const currentPath = navigationHistory[navigationHistory.length - 1];
   
   // Common patterns: shows → calendar, finance → shows, calendar → travel
-  const patterns: Record<string, string[]> = {
-    '/dashboard/shows': ['/dashboard/calendar', '/dashboard/finance'],
-    '/dashboard/calendar': ['/dashboard/travel', '/dashboard/shows'],
-    '/dashboard/finance': ['/dashboard/shows', '/dashboard/calendar'],
-    '/dashboard/contacts': ['/dashboard/calendar', '/dashboard/shows'],
-    '/dashboard': ['/dashboard/shows', '/dashboard/calendar', '/dashboard/finance'],
+  // Priority-based prefetching (higher priority = more likely)
+  const patterns: Record<string, Array<{ path: string; priority: number }>> = {
+    '/dashboard/shows': [
+      { path: '/dashboard/calendar', priority: 90 },
+      { path: '/dashboard/finance', priority: 70 },
+      { path: '/dashboard/contacts', priority: 50 },
+    ],
+    '/dashboard/calendar': [
+      { path: '/dashboard/travel', priority: 85 },
+      { path: '/dashboard/shows', priority: 80 },
+      { path: '/dashboard/contacts', priority: 40 },
+    ],
+    '/dashboard/finance': [
+      { path: '/dashboard/shows', priority: 75 },
+      { path: '/dashboard/calendar', priority: 65 },
+    ],
+    '/dashboard/contacts': [
+      { path: '/dashboard/calendar', priority: 60 },
+      { path: '/dashboard/shows', priority: 55 },
+    ],
+    '/dashboard': [
+      { path: '/dashboard/shows', priority: 95 },
+      { path: '/dashboard/calendar', priority: 90 },
+      { path: '/dashboard/finance', priority: 85 },
+      { path: '/dashboard/org', priority: 70 },
+    ],
+    '/dashboard/org': [
+      { path: '/dashboard', priority: 60 },
+      { path: '/dashboard/shows', priority: 50 },
+    ],
   };
   
   const likelyNext = currentPath ? patterns[currentPath] : undefined;
   if (likelyNext) {
-    // Prefetch during idle time
+    // Prefetch during idle time, high priority first
+    const sortedByPriority = likelyNext.sort((a, b) => b.priority - a.priority);
+    
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => {
-        likelyNext.forEach((path: string) => prefetchByPath(path));
-      }, { timeout: 2000 });
+        sortedByPriority.forEach(({ path }) => prefetchByPath(path));
+      }, { timeout: 1500 });
     } else {
       setTimeout(() => {
-        likelyNext.forEach((path: string) => prefetchByPath(path));
-      }, 1000);
+        sortedByPriority.forEach(({ path }) => prefetchByPath(path));
+      }, 500);
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { RouteLoading, InlineRouteLoading } from '../components/common/RouteLoading';
 import {
@@ -17,43 +17,43 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import AuthLayout from '../layouts/AuthLayout';
 
 // Auth & Landing - lazy loaded
-const LandingPage = React.lazy(() => import('../pages/LandingPage'));
-const Login = React.lazy(() => import('../pages/Login'));
-const Register = React.lazy(() => import('../pages/Register'));
-const OnboardingPage = React.lazy(() => import('../pages/OnboardingSimple'));
+const LandingPage = lazy(() => import('../pages/LandingPage'));
+const Login = lazy(() => import('../pages/Login'));
+const Register = lazy(() => import('../pages/Register'));
+const OnboardingPage = lazy(() => import('../pages/OnboardingSimple'));
 
 // Dashboard routes - lazy loaded
-const DashboardOverview = React.lazy(() => import('../pages/Dashboard'));
-const Finance = React.lazy(() => import('../pages/dashboard/Finance'));
-const FinanceOverview = React.lazy(() => import('../pages/dashboard/FinanceOverview'));
-const Contacts = React.lazy(() => import('../pages/dashboard/Contacts'));
-const Shows = React.lazy(() => import('../pages/dashboard/Shows'));
-const ShowDetails = React.lazy(() => import('../pages/dashboard/ShowDetails'));
-const Travel = React.lazy(() => import('../pages/dashboard/TravelV2'));
-const TravelWorkspacePage = React.lazy(() => import('../pages/dashboard/TravelWorkspacePage'));
-const MissionControlLab = React.lazy(() => import('../pages/dashboard/MissionControlLab'));
-const Calendar = React.lazy(() => import('../pages/dashboard/Calendar'));
-const Settings = React.lazy(() => import('../pages/dashboard/Settings'));
-const ProfilePage = React.lazy(() => import('../pages/profile/ProfileSettings'));
-const Story = React.lazy(() => import('../pages/dashboard/Story'));
-const DataSecurityPage = React.lazy(() => import('../pages/DataSecurityPage'));
-const WelcomePage = React.lazy(() => import('../pages/welcome/WelcomePage'));
+const DashboardOverview = lazy(() => import('../pages/Dashboard'));
+const Finance = lazy(() => import('../pages/dashboard/Finance'));
+const FinanceOverview = lazy(() => import('../pages/dashboard/FinanceOverview'));
+const Contacts = lazy(() => import('../pages/dashboard/Contacts'));
+const Shows = lazy(() => import('../pages/dashboard/Shows'));
+const ShowDetails = lazy(() => import('../pages/dashboard/ShowDetails'));
+const Travel = lazy(() => import('../pages/dashboard/TravelV2'));
+const TravelWorkspacePage = lazy(() => import('../pages/dashboard/TravelWorkspacePage'));
+const MissionControlLab = lazy(() => import('../pages/dashboard/MissionControlLab'));
+const Calendar = lazy(() => import('../pages/dashboard/Calendar'));
+const Settings = lazy(() => import('../pages/dashboard/Settings'));
+const ProfilePage = lazy(() => import('../pages/profile/ProfileSettings'));
+const Story = lazy(() => import('../pages/dashboard/Story'));
+const DataSecurityPage = lazy(() => import('../pages/DataSecurityPage'));
+const WelcomePage = lazy(() => import('../pages/welcome/WelcomePage'));
 
 // Org routes - lazy loaded
-const OrgOverview = React.lazy(() => import('../pages/org/OrgOverviewNew'));
-const OrgMembers = React.lazy(() => import('../pages/org/OrgMembers'));
-const OrgTeams = React.lazy(() => import('../pages/org/OrgTeams'));
-const OrgBranding = React.lazy(() => import('../pages/org/OrgBranding'));
-const OrgBilling = React.lazy(() => import('../pages/org/OrgBilling'));
-const OrgIntegrations = React.lazy(() => import('../pages/org/OrgIntegrations'));
-const OrgDocuments = React.lazy(() => import('../pages/org/OrgDocuments'));
-const OrgReports = React.lazy(() => import('../pages/org/OrgReports'));
-const OrgClients = React.lazy(() => import('../pages/org/OrgClients'));
-const OrgLinks = React.lazy(() => import('../pages/org/OrgLinks'));
-const ArtistHub = React.lazy(() => import('../pages/org/ArtistHub'));
+const OrgOverview = lazy(() => import('../pages/org/OrgOverviewNew'));
+const OrgMembers = lazy(() => import('../pages/org/OrgMembers'));
+const OrgTeams = lazy(() => import('../pages/org/OrgTeams'));
+const OrgBranding = lazy(() => import('../pages/org/OrgBranding'));
+const OrgBilling = lazy(() => import('../pages/org/OrgBilling'));
+const OrgIntegrations = lazy(() => import('../pages/org/OrgIntegrations'));
+const OrgDocuments = lazy(() => import('../pages/org/OrgDocuments'));
+const OrgReports = lazy(() => import('../pages/org/OrgReports'));
+const OrgClients = lazy(() => import('../pages/org/OrgClients'));
+const OrgLinks = lazy(() => import('../pages/org/OrgLinks'));
+const ArtistHub = lazy(() => import('../pages/org/ArtistHub'));
 
 // Navigation tracker component
-const NavigationTracker: React.FC = () => {
+const NavigationTracker = () => {
   const location = useLocation();
   
   useEffect(() => {
@@ -63,7 +63,7 @@ const NavigationTracker: React.FC = () => {
   return null;
 };
 
-export const AppRouter: React.FC = () => {
+export const AppRouter = () => {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <NavigationTracker />

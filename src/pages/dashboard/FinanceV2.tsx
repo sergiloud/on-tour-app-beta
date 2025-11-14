@@ -56,11 +56,13 @@ import { useFinanceWorker } from '../../hooks/useFinanceWorker';
 // Lazy load modal pesado
 const AddTransactionModal = lazy(() => import('../../components/finance/AddTransactionModal'));
 
-// Lazy load tabs para reducir bundle inicial
-const DashboardTab = lazy(() => import('../../components/finance/DashboardTab'));
-const TransactionsTab = lazy(() => import('../../components/finance/TransactionsTab'));
-const BudgetsTab = lazy(() => import('../../components/finance/BudgetsTab'));
-const ProjectionsTab = lazy(() => import('../../components/finance/ProjectionsTab'));
+// OPTIMIZACIÓN: Importar tabs directamente (no lazy) para eliminar delay en navegación
+// Trade-off: +25KB bundle inicial pero navegación entre tabs instantánea (crítico para UX)
+// Los tabs son pequeños y usuarios navegan frecuentemente entre ellos
+import DashboardTab from '../../components/finance/DashboardTab';
+import TransactionsTab from '../../components/finance/TransactionsTab';
+import BudgetsTab from '../../components/finance/BudgetsTab';
+import ProjectionsTab from '../../components/finance/ProjectionsTab';
 
 // Skeleton loading para tabs
 const TabSkeleton = () => (
@@ -242,56 +244,48 @@ const FinanceV2Inner: React.FC = () => {
 
                 {/* Envolver en ErrorBoundary para errores de renderizado */}
                 <ErrorBoundary section="Dashboard">
-                  <Suspense fallback={<TabSkeleton />}>
-                    <DashboardTab
-                      periodKPIs={financeData.periodKPIs}
-                      comparisonKPIs={financeData.comparisonKPIs}
-                      profitabilityAnalysis={financeData.profitabilityAnalysis}
-                      incomeVsExpensesData={financeData.incomeVsExpensesData}
-                      categoryData={financeData.categoryData}
-                      recentTransactions={financeData.filteredTransactionsV3.slice(0, 5)}
-                      fmtMoney={fmtMoney}
-                      onViewAllTransactions={() => setActiveTab('transactions')}
-                      onAddTransaction={() => setShowAddTransactionModal(true)}
-                    />
-                  </Suspense>
+                  <DashboardTab
+                    periodKPIs={financeData.periodKPIs}
+                    comparisonKPIs={financeData.comparisonKPIs}
+                    profitabilityAnalysis={financeData.profitabilityAnalysis}
+                    incomeVsExpensesData={financeData.incomeVsExpensesData}
+                    categoryData={financeData.categoryData}
+                    recentTransactions={financeData.filteredTransactionsV3.slice(0, 5)}
+                    fmtMoney={fmtMoney}
+                    onViewAllTransactions={() => setActiveTab('transactions')}
+                    onAddTransaction={() => setShowAddTransactionModal(true)}
+                  />
                 </ErrorBoundary>
               </motion.div>
             )}
             {activeTab === 'transactions' && (
               <motion.div key="transactions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <ErrorBoundary section="Transacciones">
-                  <Suspense fallback={<TabSkeleton />}>
-                    <TransactionsTab
-                      transactions={syncFinanceData.filteredTransactionsV3}
-                      fmtMoney={fmtMoney}
-                      onExportCSV={financeData.exportToCSV}
-                    />
-                  </Suspense>
+                  <TransactionsTab
+                    transactions={syncFinanceData.filteredTransactionsV3}
+                    fmtMoney={fmtMoney}
+                    onExportCSV={financeData.exportToCSV}
+                  />
                 </ErrorBoundary>
               </motion.div>
             )}
             {activeTab === 'budgets' && (
               <motion.div key="budgets" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <ErrorBoundary section="Presupuestos">
-                  <Suspense fallback={<TabSkeleton />}>
-                    <BudgetsTab
-                      budgetCategories={financeData.budgetCategories}
-                      fmtMoney={fmtMoney}
-                    />
-                  </Suspense>
+                  <BudgetsTab
+                    budgetCategories={financeData.budgetCategories}
+                    fmtMoney={fmtMoney}
+                  />
                 </ErrorBoundary>
               </motion.div>
             )}
             {activeTab === 'projections' && (
               <motion.div key="projections" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <ErrorBoundary section="Proyecciones">
-                  <Suspense fallback={<TabSkeleton />}>
-                    <ProjectionsTab
-                      transactions={rawTransactions}
-                      fmtMoney={fmtMoney}
-                    />
-                  </Suspense>
+                  <ProjectionsTab
+                    transactions={rawTransactions}
+                    fmtMoney={fmtMoney}
+                  />
                 </ErrorBoundary>
               </motion.div>
             )}

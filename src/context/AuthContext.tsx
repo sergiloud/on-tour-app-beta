@@ -116,6 +116,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       window.addEventListener('tenant:changed' as any, handleOrgChange);
 
+      // Preload critical dashboard routes after authentication to eliminate lazy-load delays
+      // This dramatically improves perceived performance for tab navigation
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          // Immediate preload - most visited pages
+          import('../pages/Dashboard').catch(() => {});
+          import('../pages/dashboard/Shows').catch(() => {});
+          
+          // Delayed preload - secondary pages (after 1s)
+          setTimeout(() => {
+            import('../pages/dashboard/Calendar').catch(() => {});
+            import('../pages/dashboard/Contacts').catch(() => {});
+            import('../pages/dashboard/FinanceV2').catch(() => {});
+          }, 1000);
+        }, { timeout: 2000 });
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(() => {
+          import('../pages/Dashboard').catch(() => {});
+          import('../pages/dashboard/Shows').catch(() => {});
+          import('../pages/dashboard/Calendar').catch(() => {});
+          import('../pages/dashboard/Contacts').catch(() => {});
+          import('../pages/dashboard/FinanceV2').catch(() => {});
+        }, 500);
+      }
+
       // Initialize Firestore services for finance, travel, org, user
       // NOTE: These currently use Firestore directly. Hybrid services can be created later if needed.
       try {

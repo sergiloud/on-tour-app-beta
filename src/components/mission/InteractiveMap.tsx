@@ -506,6 +506,11 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         className="w-full h-full rounded-lg overflow-hidden"
         role="application"
         aria-label={t('dashboard.map')}
+        onMouseUp={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
       />
       
       {isLoading && (

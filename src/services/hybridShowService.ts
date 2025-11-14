@@ -23,6 +23,11 @@ export class HybridShowService {
       return;
     }
 
+    if (!orgId) {
+      logger.info('[HybridShowService] No orgId provided, skipping cloud sync', { userId });
+      return;
+    }
+
     try {
       // Check if we've already migrated for this user+org
       const migrationKey = `${this.MIGRATED_KEY}-${userId}-${orgId}`;
@@ -59,8 +64,8 @@ export class HybridShowService {
     // Always save to localStorage first (fast, works offline)
     this.saveToLocalStorage(show);
     
-    // Try to save to Firestore
-    if (isFirebaseConfigured()) {
+    // Try to save to Firestore only if orgId is available
+    if (isFirebaseConfigured() && orgId) {
       try {
         await FirestoreShowService.saveShow(show, userId, orgId);
         logger.info('[HybridShowService] Show saved to cloud', { userId, orgId, showId: show.id });
@@ -77,8 +82,8 @@ export class HybridShowService {
     const userId = getCurrentUserId();
     const orgId = getCurrentOrgId();
     
-    // Try Firestore first if available
-    if (isFirebaseConfigured()) {
+    // Try Firestore first if available and orgId exists
+    if (isFirebaseConfigured() && orgId) {
       try {
         const cloudShows = await FirestoreShowService.getUserShows(userId, orgId);
         if (cloudShows.length > 0) {
@@ -106,8 +111,8 @@ export class HybridShowService {
     const shows = this.getFromLocalStorage().filter(s => s.id !== showId);
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(shows));
     
-    // Delete from Firestore
-    if (isFirebaseConfigured()) {
+    // Delete from Firestore only if orgId exists
+    if (isFirebaseConfigured() && orgId) {
       try {
         await FirestoreShowService.deleteShow(showId, userId, orgId);
         logger.info('[HybridShowService] Show deleted from cloud', { userId, orgId, showId });

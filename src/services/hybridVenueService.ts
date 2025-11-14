@@ -24,6 +24,11 @@ export class HybridVenueService {
       return;
     }
 
+    if (!orgId) {
+      logger.info('[HybridVenueService] No orgId provided, skipping cloud sync', { userId });
+      return;
+    }
+
     try {
       // Check if already migrated
       const migrationKey = `${this.MIGRATED_KEY}-${userId}-${orgId}`;
@@ -56,7 +61,7 @@ export class HybridVenueService {
     venueStore.add(venue);
 
     // Try to save to Firestore
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && orgId) {
       try {
         await FirestoreVenueService.saveVenue(venue, userId, orgId);
       } catch (error) {
@@ -79,7 +84,7 @@ export class HybridVenueService {
     venueStore.update(venueId, updates);
 
     // Try to update Firestore
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && orgId) {
       try {
         const venue = venueStore.getById(venueId);
         if (venue) {
@@ -101,7 +106,7 @@ export class HybridVenueService {
     venueStore.delete(venueId);
 
     // Try to delete from Firestore
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && orgId) {
       try {
         await FirestoreVenueService.deleteVenue(venueId, userId, orgId);
       } catch (error) {

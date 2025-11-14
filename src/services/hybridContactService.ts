@@ -23,6 +23,11 @@ export class HybridContactService {
       return;
     }
 
+    if (!orgId) {
+      logger.info('[HybridContactService] No orgId provided, skipping cloud sync', { userId });
+      return;
+    }
+
     try {
       // Check if already migrated
       const migrationKey = `${this.MIGRATED_KEY}-${userId}-${orgId}`;
@@ -55,7 +60,7 @@ export class HybridContactService {
     contactStore.add(contact);
 
     // Try to save to Firestore
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && orgId) {
       try {
         await FirestoreContactService.saveContact(contact, userId, orgId);
       } catch (error) {
@@ -86,7 +91,7 @@ export class HybridContactService {
     contactStore.update(contactId, updates);
 
     // Try to update Firestore
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && orgId) {
       try {
         const contact = contactStore.getById(contactId);
         if (contact) {
@@ -111,7 +116,7 @@ export class HybridContactService {
     const orgId = getCurrentOrgId();
     
     // Try Firestore first if available
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && orgId) {
       try {
         const cloudContacts = await FirestoreContactService.getUserContacts(userId, orgId);
         
@@ -140,7 +145,7 @@ export class HybridContactService {
     contactStore.delete(contactId);
 
     // Delete from Firestore
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && orgId) {
       try {
         await FirestoreContactService.deleteContact(contactId, userId, orgId);
       } catch (error) {

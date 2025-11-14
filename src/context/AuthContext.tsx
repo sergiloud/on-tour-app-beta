@@ -65,38 +65,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Initialize ALL hybrid services for real users
-      try {
+      // Wait for orgId to be available before initializing
+      const initializeServicesWithOrg = () => {
         const orgId = getCurrentOrgId();
-        HybridShowService.initialize(id, orgId);
-      } catch (e) {
-        logger.warn('Could not initialize hybrid show service', {
-          component: 'AuthContext',
-          userId: id,
-          error: e instanceof Error ? e.message : String(e)
-        });
-      }
-      
-      try {
-        const orgId = getCurrentOrgId();
-        HybridContactService.initialize(id, orgId);
-      } catch (e) {
-        logger.warn('Could not initialize hybrid contact service', {
-          component: 'AuthContext',
-          userId: id,
-          error: e instanceof Error ? e.message : String(e)
-        });
-      }
+        if (!orgId) {
+          logger.info('Waiting for organization to be selected before initializing services', { userId: id });
+          return;
+        }
 
-      try {
-        const orgId = getCurrentOrgId();
-        HybridVenueService.initialize(id, orgId);
-      } catch (e) {
-        logger.warn('Could not initialize hybrid venue service', {
-          component: 'AuthContext',
-          userId: id,
-          error: e instanceof Error ? e.message : String(e)
-        });
-      }
+        try {
+          HybridShowService.initialize(id, orgId);
+        } catch (e) {
+          logger.warn('Could not initialize hybrid show service', {
+            component: 'AuthContext',
+            userId: id,
+            orgId,
+            error: e instanceof Error ? e.message : String(e)
+          });
+        }
+        
+        try {
+          HybridContactService.initialize(id, orgId);
+        } catch (e) {
+          logger.warn('Could not initialize hybrid contact service', {
+            component: 'AuthContext',
+            userId: id,
+            orgId,
+            error: e instanceof Error ? e.message : String(e)
+          });
+        }
+
+        try {
+          HybridVenueService.initialize(id, orgId);
+        } catch (e) {
+          logger.warn('Could not initialize hybrid venue service', {
+            component: 'AuthContext',
+            userId: id,
+            orgId,
+            error: e instanceof Error ? e.message : String(e)
+          });
+        }
+      };
+
+      // Try to initialize immediately if orgId exists
+      initializeServicesWithOrg();
+      
+      // Listen for org changes and initialize services
+      const handleOrgChange = () => {
+        initializeServicesWithOrg();
+      };
+      window.addEventListener('tenant:changed' as any, handleOrgChange);
 
       // Initialize Firestore services for finance, travel, org, user
       // NOTE: These currently use Firestore directly. Hybrid services can be created later if needed.
@@ -114,9 +132,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       try {
         const orgId = getCurrentOrgId();
-        import('../services/firestoreFinanceService').then(({ FirestoreFinanceService }) => {
-          FirestoreFinanceService.migrateFromLocalStorage(id, orgId);
-        });
+        if (orgId) {
+          import('../services/firestoreFinanceService').then(({ FirestoreFinanceService }) => {
+            FirestoreFinanceService.migrateFromLocalStorage(id, orgId);
+          });
+        }
       } catch (e) {
         logger.warn('Could not initialize finance service', {
           component: 'AuthContext',
@@ -127,9 +147,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       try {
         const orgId = getCurrentOrgId();
-        import('../services/firestoreTravelService').then(({ FirestoreTravelService }) => {
-          FirestoreTravelService.migrateFromLocalStorage(id, orgId);
-        });
+        if (orgId) {
+          import('../services/firestoreTravelService').then(({ FirestoreTravelService }) => {
+            FirestoreTravelService.migrateFromLocalStorage(id, orgId);
+          });
+        }
       } catch (e) {
         logger.warn('Could not initialize travel service', {
           component: 'AuthContext',

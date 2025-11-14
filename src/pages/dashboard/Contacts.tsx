@@ -7,7 +7,7 @@
  * - Tags y búsqueda avanzada
  */
 
-import React, { useState, useMemo, useRef, useEffect, useDeferredValue } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useDeferredValue, lazy, Suspense } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Plus, Search, Download, Upload, X, Building2, Users,
@@ -24,10 +24,14 @@ import { useContactFilters } from '../../hooks/useContactFilters';
 import { useShows } from '../../hooks/useShows';
 import type { Contact } from '../../types/crm';
 import { CONTACT_TYPE_LABELS } from '../../types/crm';
-import { ContactEditorModal } from '../../components/crm/ContactEditorModal';
 import { contactStore } from '../../shared/contactStore';
 import { useToast } from '../../context/ToastContext';
 import { logger } from '../../lib/logger';
+
+// Lazy load modal pesado - solo cuando el usuario lo abre
+const ContactEditorModal = lazy(() => 
+  import('../../components/crm/ContactEditorModal').then(m => ({ default: m.ContactEditorModal }))
+);
 
 type CategoryTab = 'all' | 'label_rep' | 'promoter' | 'agent' | 'manager' | 'venue_manager' | 'media' | 'other';
 
@@ -1090,8 +1094,12 @@ export const Contacts: React.FC = () => {
       </div>
 
       {showEditor && (
-        <ContactEditorModal contact={editingContact} onSave={handleSaveContact}
-          onClose={() => { setShowEditor(false); setEditingContact(undefined); }} />
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>}>
+          <ContactEditorModal contact={editingContact} onSave={handleSaveContact}
+            onClose={() => { setShowEditor(false); setEditingContact(undefined); }} />
+        </Suspense>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback, lazy, Suspense } from 'react';
 import { useEventSelection } from '../../hooks/useEventSelection';
 import type { Show } from '../../lib/shows';
 import { useSettings } from '../../context/SettingsContext';
@@ -25,14 +25,18 @@ import AgendaList from '../../components/calendar/AgendaList';
 import { TimelineView } from '../../components/calendar/TimelineView';
 import { CalEvent } from '../../components/calendar/types';
 import { parseICS } from '../../lib/calendar/ics';
-import EventCreationModal, { EventType, EventData } from '../../components/calendar/EventCreationModal';
+import type { EventType, EventData } from '../../components/calendar/EventCreationModal';
 import DayDetailsModal from '../../components/calendar/DayDetailsModal';
 import TravelFlightModal from '../../components/calendar/TravelFlightModal';
 import ShowEventModal from '../../components/calendar/ShowEventModal';
-import CalendarEventModal from '../../components/calendar/CalendarEventModal';
-import EventEditorModal from '../../components/calendar/EventEditorModal';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { usePerfMonitor } from '../../lib/perfMonitor';
+import { Loader2 } from 'lucide-react';
+
+// Lazy load modales pesados - solo cuando el usuario los abre
+const EventCreationModal = lazy(() => import('../../components/calendar/EventCreationModal'));
+const CalendarEventModal = lazy(() => import('../../components/calendar/CalendarEventModal'));
+const EventEditorModal = lazy(() => import('../../components/calendar/EventEditorModal'));
 import { generateId } from '../../lib/id';
 import { logger } from '../../lib/logger';
 
@@ -780,14 +784,20 @@ const Calendar: React.FC = () => {
       )}
 
       {/* Event Creation Modal */}
-      <EventCreationModal
-        open={modals.state.eventCreation.isOpen}
-        initialDate={modals.state.eventCreation.date}
-        initialType={modals.state.eventCreation.type ?? 'show'}
-        initialData={modals.state.eventCreation.initialData}
-        onClose={modals.closeEventCreation}
-        onSave={handleSaveEvent}
-      />
+      {modals.state.eventCreation.isOpen && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>}>
+          <EventCreationModal
+            open={modals.state.eventCreation.isOpen}
+            initialDate={modals.state.eventCreation.date}
+            initialType={modals.state.eventCreation.type ?? 'show'}
+            initialData={modals.state.eventCreation.initialData}
+            onClose={modals.closeEventCreation}
+            onSave={handleSaveEvent}
+          />
+        </Suspense>
+      )}
 
       {/* Day Details Modal */}
       <DayDetailsModal
@@ -903,18 +913,28 @@ const Calendar: React.FC = () => {
       />
 
       {/* Event Editor Modal */}
-      <EventEditorModal
-        open={modals.state.eventEditor.isOpen}
-        event={modals.state.eventEditor.event}
-        onClose={modals.closeEventEditor}
-        onSave={handleSaveEditedEvent}
-      />
+      {modals.state.eventEditor.isOpen && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>}>
+          <EventEditorModal
+            open={modals.state.eventEditor.isOpen}
+            event={modals.state.eventEditor.event}
+            onClose={modals.closeEventEditor}
+            onSave={handleSaveEditedEvent}
+          />
+        </Suspense>
+      )}
 
       {/* Calendar Event Modal */}
-      <CalendarEventModal
-        open={calendarEventModal.isOpen}
-        onClose={() => setCalendarEventModal(prev => ({ ...prev, isOpen: false }))}
-        onSave={async (eventData) => {
+      {calendarEventModal.isOpen && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>}>
+          <CalendarEventModal
+            open={calendarEventModal.isOpen}
+            onClose={() => setCalendarEventModal(prev => ({ ...prev, isOpen: false }))}
+            onSave={async (eventData) => {
           try {
             if (calendarEventModal.selectedEvent?.id) {
               // Actualizar evento existente
@@ -985,6 +1005,8 @@ const Calendar: React.FC = () => {
         initialType={calendarEventModal.initialType}
         initialData={calendarEventModal.selectedEvent}
       />
+        </Suspense>
+      )}
 
       {/* Bulk operations toolbar */}
       <BulkOperationsToolbar

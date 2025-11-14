@@ -4,7 +4,6 @@
  */
 
 import React from 'react';
-import { motion } from 'framer-motion';
 
 interface SkeletonProps {
   className?: string;
@@ -30,49 +29,27 @@ export const Skeleton: React.FC<SkeletonProps> = ({
     rectangular: 'rounded-lg'
   };
 
-  const baseClasses = `bg-slate-200 dark:bg-white/10 ${variantClasses[variant]} ${className}`;
+  const animationClasses = {
+    pulse: 'animate-pulse',
+    wave: 'animate-shimmer',
+    none: ''
+  };
+
+  const baseClasses = `bg-slate-200 dark:bg-white/10 ${variantClasses[variant]} ${animationClasses[animation]} ${className}`;
 
   const style = {
     width: typeof width === 'number' ? `${width}px` : width,
     height: typeof height === 'number' ? `${height}px` : height
   };
 
-  if (animation === 'pulse') {
-    return (
-      <motion.div
-        className={baseClasses}
-        style={style}
-        animate={{
-          opacity: [0.5, 1, 0.5]
-        }}
-        transition={{
-          duration: 1.5,
-          repeat: Infinity,
-          ease: 'easeInOut'
-        }}
-      />
-    );
-  }
-
-  if (animation === 'wave') {
-    return (
-      <div className={`relative overflow-hidden ${baseClasses}`} style={style}>
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-          animate={{
-            x: ['-100%', '100%']
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: 'linear'
-          }}
-        />
-      </div>
-    );
-  }
-
-  return <div className={baseClasses} style={style} />;
+  return (
+    <div
+      className={baseClasses}
+      style={style}
+      aria-busy="true"
+      aria-live="polite"
+    />
+  );
 };
 
 /**

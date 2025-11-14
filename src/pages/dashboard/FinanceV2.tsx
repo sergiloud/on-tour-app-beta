@@ -39,12 +39,11 @@
 
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, Plus, Download, BarChart3, Receipt, Wallet, TrendingUp } from 'lucide-react';
+import { DollarSign, Plus, Download, BarChart3, Receipt, Wallet, TrendingUp, Loader2 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { trackPageView } from '../../lib/activityTracker';
 import { useAuth } from '../../context/AuthContext';
 import { slideUp, staggerFast } from '../../lib/animations';
-import AddTransactionModal from '../../components/finance/AddTransactionModal';
 import PeriodFilter from '../../components/finance/PeriodFilter';
 import { useFinancePeriod, FinancePeriodProvider } from '../../context/FinancePeriodContext';
 import { FinanceTargetsProvider } from '../../context/FinanceTargetsContext';
@@ -53,6 +52,9 @@ import { WorkerErrorState } from '../../components/finance/ErrorStates';
 import { useRawTransactions } from '../../hooks/useRawTransactions';
 import { useFinanceData } from '../../hooks/useFinanceData';
 import { useFinanceWorker } from '../../hooks/useFinanceWorker';
+
+// Lazy load modal pesado
+const AddTransactionModal = lazy(() => import('../../components/finance/AddTransactionModal'));
 
 // Lazy load tabs para reducir bundle inicial
 const DashboardTab = lazy(() => import('../../components/finance/DashboardTab'));
@@ -144,10 +146,16 @@ const FinanceV2Inner: React.FC = () => {
 
   return (
     <>
-      <AddTransactionModal
-        isOpen={showAddTransactionModal}
-        onClose={() => setShowAddTransactionModal(false)}
-      />
+      {showAddTransactionModal && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>}>
+          <AddTransactionModal
+            isOpen={showAddTransactionModal}
+            onClose={() => setShowAddTransactionModal(false)}
+          />
+        </Suspense>
+      )}
 
       <div className="min-h-screen p-4 md:p-6 ml-2 md:ml-3">
         <motion.div

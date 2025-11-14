@@ -113,8 +113,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
+        const orgId = getCurrentOrgId();
         import('../services/firestoreFinanceService').then(({ FirestoreFinanceService }) => {
-          FirestoreFinanceService.migrateFromLocalStorage(id);
+          FirestoreFinanceService.migrateFromLocalStorage(id, orgId);
         });
       } catch (e) {
         logger.warn('Could not initialize finance service', {
@@ -125,8 +126,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
+        const orgId = getCurrentOrgId();
         import('../services/firestoreTravelService').then(({ FirestoreTravelService }) => {
-          FirestoreTravelService.migrateFromLocalStorage(id);
+          FirestoreTravelService.migrateFromLocalStorage(id, orgId);
         });
       } catch (e) {
         logger.warn('Could not initialize travel service', {

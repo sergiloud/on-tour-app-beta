@@ -70,12 +70,12 @@ export class FirestoreTravelService {
   /**
    * Save itinerary to Firestore
    */
-  static async saveItinerary(itinerary: TravelItinerary, userId: string): Promise<void> {
+  static async saveItinerary(itinerary: TravelItinerary, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const itineraryRef = doc(db, `users/${userId}/itineraries/${itinerary.id}`);
+    const itineraryRef = doc(db, `users/${userId}/organizations/${orgId}/itineraries/${itinerary.id}`);
     const itineraryData = this.removeUndefined({
       ...itinerary,
       updatedAt: Timestamp.now()
@@ -87,12 +87,12 @@ export class FirestoreTravelService {
   /**
    * Get single itinerary by ID
    */
-  static async getItinerary(itineraryId: string, userId: string): Promise<TravelItinerary | null> {
+  static async getItinerary(itineraryId: string, userId: string, orgId: string): Promise<TravelItinerary | null> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const itineraryRef = doc(db, `users/${userId}/itineraries/${itineraryId}`);
+    const itineraryRef = doc(db, `users/${userId}/organizations/${orgId}/itineraries/${itineraryId}`);
     const itinerarySnap = await getDoc(itineraryRef);
 
     if (!itinerarySnap.exists()) {
@@ -113,12 +113,12 @@ export class FirestoreTravelService {
   /**
    * Get all itineraries for a user
    */
-  static async getUserItineraries(userId: string): Promise<TravelItinerary[]> {
+  static async getUserItineraries(userId: string, orgId: string): Promise<TravelItinerary[]> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const itinerariesRef = collection(db, `users/${userId}/itineraries`);
+    const itinerariesRef = collection(db, `users/${userId}/organizations/${orgId}/itineraries`);
     const q = query(itinerariesRef, orderBy('startDate', 'desc'));
     const querySnapshot = await getDocs(q);
 
@@ -138,25 +138,25 @@ export class FirestoreTravelService {
   /**
    * Delete itinerary from Firestore
    */
-  static async deleteItinerary(itineraryId: string, userId: string): Promise<void> {
+  static async deleteItinerary(itineraryId: string, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const itineraryRef = doc(db, `users/${userId}/itineraries/${itineraryId}`);
+    const itineraryRef = doc(db, `users/${userId}/organizations/${orgId}/itineraries/${itineraryId}`);
     await deleteDoc(itineraryRef);
   }
 
   /**
    * Batch save multiple itineraries (for migration/import)
    */
-  static async saveItineraries(itineraries: TravelItinerary[], userId: string): Promise<void> {
+  static async saveItineraries(itineraries: TravelItinerary[], userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
     const promises = itineraries.map(itinerary =>
-      this.saveItinerary(itinerary, userId)
+      this.saveItinerary(itinerary, userId, orgId)
     );
 
     await Promise.all(promises);
@@ -167,13 +167,14 @@ export class FirestoreTravelService {
    */
   static subscribeToUserItineraries(
     userId: string,
+    orgId: string,
     callback: (itineraries: TravelItinerary[]) => void
   ): Unsubscribe {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const itinerariesRef = collection(db, `users/${userId}/itineraries`);
+    const itinerariesRef = collection(db, `users/${userId}/organizations/${orgId}/itineraries`);
     const q = query(itinerariesRef, orderBy('startDate', 'desc'));
 
     return onSnapshot(q, (snapshot) => {
@@ -197,14 +198,14 @@ export class FirestoreTravelService {
    * Migrate localStorage itineraries to Firestore
    * Only runs once per user (idempotent)
    */
-  static async migrateFromLocalStorage(userId: string): Promise<number> {
+  static async migrateFromLocalStorage(userId: string, orgId: string): Promise<number> {
     if (!db) {
       return 0;
     }
 
     try {
       // Check if user already has itineraries in Firestore
-      const existing = await this.getUserItineraries(userId);
+      const existing = await this.getUserItineraries(userId, orgId);
       if (existing.length > 0) {
         return 0; // Already migrated
       }
@@ -218,7 +219,7 @@ export class FirestoreTravelService {
       const itineraries: TravelItinerary[] = JSON.parse(stored);
       
       // Migrate itineraries to Firestore
-      await this.saveItineraries(itineraries, userId);
+      await this.saveItineraries(itineraries, userId, orgId);
 
       return itineraries.length;
     } catch (error) {

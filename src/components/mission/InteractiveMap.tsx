@@ -241,7 +241,10 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
             pitchWithRotate: false,
             doubleClickZoom: true,
             touchZoomRotate: true,
-            touchPitch: false
+            touchPitch: false,
+            // Disable web workers to avoid minification issues with esbuild
+            // Workers had '_ is not defined' error in production due to keepNames interaction
+            workerUrl: ''
           });
         } finally {
           console.error = originalError;

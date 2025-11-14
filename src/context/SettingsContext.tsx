@@ -147,8 +147,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setManagementAgencies(settings.managementAgencies);
           }
         }
-      } catch (e) {
-        console.error('[SettingsContext] Error loading agencies from Firestore:', e);
+      } catch (e: any) {
+        // Silent fail for demo users or permission errors (expected for unauthenticated users)
+        if (userId === 'demo-user' || e?.code === 'permission-denied') {
+          // Demo users use localStorage only, no Firestore sync
+        } else {
+          console.error('[SettingsContext] Error loading agencies from Firestore:', e);
+        }
       } finally {
         if (isMounted) {
           setIsLoadingFromFirestore(false);
@@ -199,8 +204,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           managementAgencies,
           updatedAt: new Date().toISOString()
         }, userId);
-      } catch (e) {
-        console.error('[SettingsContext] Error syncing agencies to Firestore:', e);
+      } catch (e: any) {
+        // Silent fail for permission errors (expected for unauthenticated users)
+        if (e?.code === 'permission-denied') {
+          // User not authenticated, skip Firestore sync
+        } else {
+          console.error('[SettingsContext] Error syncing agencies to Firestore:', e);
+        }
       }
     })();
     

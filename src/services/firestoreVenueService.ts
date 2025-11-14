@@ -1,10 +1,10 @@
 /**
-import { logger } from '../lib/logger';
  * Firestore Venue Service - Cloud sync for venues
  * Handles CRUD operations and real-time synchronization
  * Data isolation: users/{userId}/venues/{venueId}
  */
 
+import { logger } from '../lib/logger';
 import {
   collection,
   doc,

@@ -1,10 +1,10 @@
 /**
-import { logger } from '../lib/logger';
  * Firestore Contact Service - Cloud sync for CRM contacts
  * Handles CRUD operations and real-time synchronization
  * Data isolation: contacts/{userId}/contacts/{contactId}
  */
 
+import { logger } from '../lib/logger';
 import {
   collection,
   doc,

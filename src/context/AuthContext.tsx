@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { getCurrentUserId, getUserPrefs, getUserProfile, readAllPrefs, setCurrentUserId, upsertUserPrefs, upsertUserProfile, type UserPrefs, type UserProfile, PROPHECY_USER } from '../lib/demoAuth';
+import { getCurrentOrgId } from '../lib/tenants';
 // DISABLED FOR PRODUCTION BETA - all data comes from Firestore now
 // import { ensureDemoAuth, ensureDemoTenants } from '../lib/demoAuth';
 import { activityTracker } from '../lib/activityTracker';
@@ -65,7 +66,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Initialize ALL hybrid services for real users
       try {
-        HybridShowService.initialize(id);
+        const orgId = getCurrentOrgId();
+        HybridShowService.initialize(id, orgId);
       } catch (e) {
         logger.warn('Could not initialize hybrid show service', {
           component: 'AuthContext',

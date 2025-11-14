@@ -6,6 +6,7 @@ import { t } from '../lib/i18n';
 import { trackEvent } from '../lib/telemetry';
 import { useAuth } from '../context/AuthContext';
 import { setAuthed } from '../lib/demoAuth';
+import { getCurrentOrgId } from '../lib/tenants';
 import { secureStorage } from '../lib/secureStorage';
 import { auth, isFirebaseConfigured } from '../lib/firebase';
 import { createUserWithEmailAndPassword, updateProfile as updateFirebaseProfile } from 'firebase/auth';
@@ -206,7 +207,8 @@ const Register: React.FC = () => {
         }
         
         // Initialize hybrid show service for cloud sync
-        await HybridShowService.initialize(newUserId);
+        const orgId = getCurrentOrgId();
+        await HybridShowService.initialize(newUserId, orgId);
 
         // Initialize hybrid contact service
         try {

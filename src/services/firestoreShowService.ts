@@ -21,10 +21,10 @@ import { deduplicateFirestoreQuery } from '../lib/requestDeduplication';
 
 export class FirestoreShowService {
   /**
-   * Get collection path for user shows
+   * Get collection path for user shows (org-scoped)
    */
-  private static getUserShowsPath(userId: string): string {
-    return `users/${userId}/shows`;
+  private static getUserShowsPath(userId: string, orgId: string): string {
+    return `users/${userId}/organizations/${orgId}/shows`;
   }
 
   /**
@@ -53,7 +53,7 @@ export class FirestoreShowService {
   /**
    * Save show to Firestore
    */
-  static async saveShow(show: Show, userId: string): Promise<void> {
+  static async saveShow(show: Show, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
@@ -65,20 +65,20 @@ export class FirestoreShowService {
       createdAt: Timestamp.now() // Always use current time for creation
     });
 
-    await setDoc(doc(db, this.getUserShowsPath(userId), show.id), showData, { merge: true });
+    await setDoc(doc(db, this.getUserShowsPath(userId, orgId), show.id), showData, { merge: true });
   }
 
   /**
    * Get all shows for a user - con deduplication
    */
-  static async getUserShows(userId: string): Promise<Show[]> {
+  static async getUserShows(userId: string, orgId: string): Promise<Show[]> {
     // ✅ Deduplica requests cuando múltiples componentes piden shows simultáneamente
     return deduplicateFirestoreQuery('shows', userId, async () => {
       if (!db) {
         throw new Error('Firestore not initialized');
       }
 
-      const showsRef = collection(db, this.getUserShowsPath(userId));
+      const showsRef = collection(db, this.getUserShowsPath(userId, orgId));
       const q = query(showsRef, orderBy('date', 'desc'));
 
       const snapshot = await getDocs(q);
@@ -107,12 +107,12 @@ export class FirestoreShowService {
   /**
    * Get a specific show
    */
-  static async getShow(showId: string, userId: string): Promise<Show | null> {
+  static async getShow(showId: string, userId: string, orgId: string): Promise<Show | null> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const docRef = doc(db, this.getUserShowsPath(userId), showId);
+    const docRef = doc(db, this.getUserShowsPath(userId, orgId), showId);
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
@@ -146,12 +146,12 @@ export class FirestoreShowService {
   /**
    * Update a show
    */
-  static async updateShow(showId: string, updates: Partial<Show>, userId: string): Promise<void> {
+  static async updateShow(showId: string, updates: Partial<Show>, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const docRef = doc(db, this.getUserShowsPath(userId), showId);
+    const docRef = doc(db, this.getUserShowsPath(userId, orgId), showId);
     
     // Security: Check ownership first
     const existingDoc = await getDoc(docRef);
@@ -170,12 +170,12 @@ export class FirestoreShowService {
   /**
    * Delete a show
    */
-  static async deleteShow(showId: string, userId: string): Promise<void> {
+  static async deleteShow(showId: string, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const docRef = doc(db, this.getUserShowsPath(userId), showId);
+    const docRef = doc(db, this.getUserShowsPath(userId, orgId), showId);
     
     // Security rules handle ownership - no need to check first
     await deleteDoc(docRef);
@@ -184,7 +184,7 @@ export class FirestoreShowService {
   /**
    * Bulk save shows (for migration/seeding) - Optimized with batch writes
    */
-  static async bulkSaveShows(shows: Show[], userId: string): Promise<void> {
+  static async bulkSaveShows(shows: Show[], userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
@@ -201,7 +201,7 @@ export class FirestoreShowService {
       const batch = writeBatch(db);
       
       for (const show of chunk) {
-        const showRef = doc(db, this.getUserShowsPath(userId), show.id);
+        const showRef = doc(db, this.getUserShowsPath(userId, orgId), show.id);
         const showData = this.removeUndefined({
           ...show,
           userId,
@@ -221,12 +221,12 @@ export class FirestoreShowService {
   /**
    * Subscribe to real-time updates for user shows
    */
-  static subscribeToUserShows(userId: string, callback: (shows: Show[]) => void): () => void {
+  static subscribeToUserShows(userId: string, orgId: string, callback: (shows: Show[]) => void): () => void {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const showsRef = collection(db, this.getUserShowsPath(userId));
+    const showsRef = collection(db, this.getUserShowsPath(userId, orgId));
     const q = query(showsRef, orderBy('date', 'desc'));
 
     return onSnapshot(q, (snapshot) => {
@@ -255,7 +255,7 @@ export class FirestoreShowService {
   /**
    * Migrate localStorage shows to Firestore
    */
-  static async migrateFromLocalStorage(userId: string): Promise<number> {
+  static async migrateFromLocalStorage(userId: string, orgId: string): Promise<number> {
     try {
       // Get existing shows from localStorage
       const localShows = localStorage.getItem('shows-store-v3');
@@ -269,14 +269,14 @@ export class FirestoreShowService {
       }
 
       // Check if user already has shows in Firestore
-      const existingShows = await this.getUserShows(userId);
+      const existingShows = await this.getUserShows(userId, orgId);
       if (existingShows.length > 0) {
         console.log('User already has shows in Firestore, skipping migration');
         return 0;
       }
 
       // Migrate shows to Firestore
-      await this.bulkSaveShows(shows, userId);
+      await this.bulkSaveShows(shows, userId, orgId);
       
       console.log(`✅ Migrated ${shows.length} shows to Firestore`);
       return shows.length;

@@ -4,6 +4,7 @@
  */
 
 import { logger } from '../lib/logger';
+import { getCurrentOrgId } from '../lib/tenants';
 
 interface QueuedOperation {
   id: string;
@@ -189,13 +190,15 @@ class OfflineQueueService {
       throw new Error('No user ID found');
     }
 
+    const orgId = getCurrentOrgId();
+
     switch (collection) {
       case 'shows':
         const { FirestoreShowService } = await import('./firestoreShowService');
         if (type === 'create' || type === 'update') {
-          await FirestoreShowService.saveShow(data, userId);
+          await FirestoreShowService.saveShow(data, userId, orgId);
         } else if (type === 'delete') {
-          await FirestoreShowService.deleteShow(entityId, userId);
+          await FirestoreShowService.deleteShow(entityId, userId, orgId);
         }
         break;
 

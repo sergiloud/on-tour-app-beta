@@ -102,70 +102,47 @@ export default defineConfig({
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     cssCodeSplit: true,
     modulePreload: {
-      polyfill: true,
+      polyfill: false, // Disable to prevent TDZ errors in production
     },
     rollupOptions: {
       output: {
         format: 'es',
         // Optimized chunking - separate heavy libraries
+        // CRITICAL: Don't over-separate to avoid circular dependency issues
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // React ecosystem
+            // React ecosystem - keep together with react-based libs
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'vendor-react';
             }
             
-            // Framer Motion - isolated
-            if (id.includes('framer-motion')) {
-              return 'vendor-framer';
-            }
-            
-            // Recharts - isolated
-            if (id.includes('recharts')) {
-              return 'vendor-charts';
-            }
-            
-            // Zod - ISOLATE (potential TDZ source)
-            if (id.includes('zod')) {
-              return 'vendor-zod';
-            }
-            
-            // i18next family - ISOLATE
-            if (id.includes('i18next')) {
-              return 'vendor-i18n';
-            }
-            
-            // Sonner - ISOLATE
-            if (id.includes('sonner')) {
-              return 'vendor-sonner';
-            }
-            
-            // Immer - ISOLATE
-            if (id.includes('immer')) {
-              return 'vendor-immer';
-            }
-            
-            // MapLibre - heavy map library
+            // MapLibre - truly independent, no React deps
             if (id.includes('maplibre-gl')) {
               return 'vendor-maplibre';
             }
             
-            // Firebase
+            // Firebase - independent from React
             if (id.includes('firebase') || id.includes('@firebase')) {
               return 'vendor-firebase';
             }
             
-            // TanStack libraries
+            // TanStack - independent query library
             if (id.includes('@tanstack')) {
               return 'vendor-tanstack';
             }
             
-            // Date libraries
+            // Date libraries - independent
             if (id.includes('date-fns') || id.includes('dayjs')) {
               return 'vendor-dates';
             }
             
-            // Everything else
+            // Framer Motion - keep separate but loaded after react
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            
+            // Everything else in one vendor to prevent dependency issues
+            // This includes: recharts, zod, i18next, sonner, immer, clsx, etc.
             return 'vendor';
           }
         },

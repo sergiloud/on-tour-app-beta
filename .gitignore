@@ -58,3 +58,4 @@ firebase-admin-key.json
 *.temp
 *storybook.log
 storybook-static
+.vercel

@@ -186,18 +186,20 @@ class ShowStore {
   }
 
   async removeShow(id: string) {
-    // Optimistically remove from UI first
-    const next = this.shows.filter(s => s.id !== id);
-    this.setAll(next);
+    // Optimistically remove from UI first (fast local update)
+    const index = this.shows.findIndex(s => s.id === id);
+    if (index === -1) return; // Already deleted
     
-    // Sync deletion to Firebase
+    // Remove without full broadcast (faster)
+    this.shows = this.shows.filter(s => s.id !== id);
+    this.notifyListeners(); // Only notify local listeners, skip broadcast
+    
+    // Sync deletion to Firebase in background (don't await)
     if (HybridShowService) {
-      try {
-        await HybridShowService.deleteShow(id);
-      } catch (err) {
+      HybridShowService.deleteShow(id).catch(err => {
         logger.warn('Failed to sync show deletion to Firebase', { showId: id, error: err });
-        // Optionally: rollback the optimistic update here if needed
-      }
+        // Don't rollback - user expects it deleted
+      });
     }
   }
 

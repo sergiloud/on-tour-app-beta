@@ -177,12 +177,7 @@ export class FirestoreShowService {
 
     const docRef = doc(db, this.getUserShowsPath(userId), showId);
     
-    // Security: Check ownership first
-    const existingDoc = await getDoc(docRef);
-    if (!existingDoc.exists()) {
-      throw new Error('Show not found');
-    }
-
+    // Security rules handle ownership - no need to check first
     await deleteDoc(docRef);
   }
 

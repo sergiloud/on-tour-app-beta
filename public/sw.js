@@ -1,9 +1,9 @@
 // Service Worker for OnTour PWA
 // Provides offline support and aggressive caching for performance
 
-const CACHE_VERSION = 'ontour-v2';
-const RUNTIME_CACHE = 'ontour-runtime-v2';
-const STATIC_CACHE = 'ontour-static-v2';
+const CACHE_VERSION = 'ontour-v3';
+const RUNTIME_CACHE = 'ontour-runtime-v3';
+const STATIC_CACHE = 'ontour-static-v3';
 
 // Critical assets to cache on install
 const PRECACHE_URLS = [

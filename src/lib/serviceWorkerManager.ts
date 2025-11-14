@@ -4,8 +4,6 @@
  * Maneja el registro, actualización y comunicación con el SW
  */
 
-import { Workbox } from 'workbox-window';
-
 // ========================================
 // Types
 // ========================================
@@ -26,7 +24,6 @@ interface CacheStats {
 // ========================================
 
 export class ServiceWorkerManager {
-    private wb: Workbox | null = null;
     private registration: ServiceWorkerRegistration | null = null;
     private updateCallbacks: Array<(reg: ServiceWorkerRegistration) => void> = [];
 
@@ -44,17 +41,25 @@ export class ServiceWorkerManager {
         }
 
         try {
-            // Crear instancia de Workbox
-            this.wb = new Workbox('/sw.js', {
+            // Registrar directamente sin Workbox (nuestro SW es manual)
+            const reg = await navigator.serviceWorker.register('/sw.js', {
                 scope: '/'
             });
 
-            // Escuchar eventos
-            this.setupEventListeners();
+            this.registration = reg;
 
-            // Registrar
-            const reg = await this.wb.register();
-            this.registration = reg || null;
+            // Escuchar actualizaciones
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Notificar callbacks de actualización
+                            this.updateCallbacks.forEach(cb => cb(reg));
+                        }
+                    });
+                }
+            });
 
             // console.log('[SW] Service Worker registered successfully');
             return reg;
@@ -62,51 +67,6 @@ export class ServiceWorkerManager {
             console.error('[SW] Registration failed:', error);
             return undefined;
         }
-    }
-
-    /**
-     * Setup event listeners
-     */
-    private setupEventListeners() {
-        if (!this.wb) return;
-
-        // SW waiting (nueva versión disponible)
-        this.wb.addEventListener('waiting', (event) => {
-            // console.log('[SW] New Service Worker waiting to activate');
-
-            // Notificar callbacks
-            this.updateCallbacks.forEach((callback) => {
-                if (this.registration) {
-                    callback(this.registration);
-                }
-            });
-        });
-
-        // SW activated
-        this.wb.addEventListener('activated', (event) => {
-            // console.log('[SW] Service Worker activated');
-
-            if (!event.isUpdate) {
-                // console.log('[SW] First time activation');
-            } else {
-                // console.log('[SW] Updated to new version');
-            }
-        });
-
-        // SW controlling
-        this.wb.addEventListener('controlling', () => {
-            // console.log('[SW] Service Worker now controlling page');
-
-            // Reload para usar nueva versión
-            window.location.reload();
-        });
-
-        // Mensajes del SW
-        this.wb.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'CACHE_UPDATED') {
-                // console.log('[SW] Cache updated:', event.data.url);
-            }
-        });
     }
 
     /**
@@ -122,9 +82,9 @@ export class ServiceWorkerManager {
      * Skip waiting and activate new SW
      */
     async skipWaiting(): Promise<void> {
-        if (this.wb && this.registration?.waiting) {
+        if (this.registration?.waiting) {
             // Enviar mensaje al SW para skip waiting
-            this.wb.messageSkipWaiting();
+            this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
     }
 

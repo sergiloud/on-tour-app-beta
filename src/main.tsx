@@ -95,7 +95,7 @@ if (import.meta.env.DEV) {
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/sw.js', { scope: '/' })
+      .register('/sw-v3.js', { scope: '/' })
       .then((registration) => {
         logger.info('Service Worker registered', { scope: registration.scope });
 

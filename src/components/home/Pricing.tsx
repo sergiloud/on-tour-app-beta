@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import type { PricingPlan } from '../../types/homeLegacy';
 
 type PricingProps = {
@@ -7,15 +6,8 @@ type PricingProps = {
 };
 
 export function Pricing({ plans, currency = '$' }: PricingProps) {
-  // Use native CSS media query instead of framer-motion hook
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }, []);
-
   return (
-    <div
-      className={`grid gap-6 lg:grid-cols-2 ${prefersReducedMotion ? 'animate-fade-in-fast' : 'animate-slide-up'}`}
+    <div className="grid gap-6 lg:grid-cols-2 animate-slide-up"
     >
       {plans.map((plan) => {
         const monthlyLabel = `${currency}${plan.monthly}`;

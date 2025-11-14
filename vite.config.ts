@@ -169,8 +169,6 @@ export default defineConfig({
         compact: true,
         // Ensure proper interop for external dependencies
         interop: 'auto',
-        // Prevent hoisting issues
-        hoistTransitiveImports: false,
       },
     },
     chunkSizeWarningLimit: 1000,

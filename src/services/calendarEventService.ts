@@ -5,7 +5,7 @@
  * Diferencia entre shows y eventos regulares de calendario
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   collection, 
   doc, 

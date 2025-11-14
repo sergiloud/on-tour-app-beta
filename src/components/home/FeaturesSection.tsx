@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { t } from '../../lib/i18n';
 import { OptimizedImage, getBlurDataURL } from '../common/OptimizedImage';
@@ -97,32 +96,22 @@ export const FeaturesSection: React.FC = () => {
             <div className="max-w-7xl mx-auto">
 
                 {/* Header */}
-                <motion.div
-                    className="text-center mb-16"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                >
+                <div className="text-center mb-16 animate-fade-in">
                     <h2 className="section-title mb-6 text-glow">
                         {t('features.title')}
                     </h2>
                     <p className="text-lg text-slate-500 dark:text-white/70 max-w-3xl mx-auto">
                         {t('features.subtitle')}
                     </p>
-                </motion.div>
+                </div>
 
                 {/* Features Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {features.map((feature, index) => (
-                        <motion.div
+                        <div
                             key={feature.id}
-                            className="glass rounded-2xl overflow-hidden hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all duration-300 group cursor-pointer"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: index * 0.1 }}
-                            whileHover={{ scale: 1.02 }}
+                            className="glass rounded-2xl overflow-hidden hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-all duration-300 group cursor-pointer animate-slide-up hover-lift"
+                            style={{ animationDelay: `${index * 100}ms` }}
                         >
                             {/* Visual Image */}
                             {feature.visual && (
@@ -164,18 +153,12 @@ export const FeaturesSection: React.FC = () => {
                                     </span>
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
 
                 {/* CTA */}
-                <motion.div
-                    className="text-center mt-16"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                >
+                <div className="text-center mt-16 animate-fade-in" style={{ animationDelay: '600ms' }}>
                     <Link
                         to="/register"
                         className="btn-primary inline-flex items-center gap-2"
@@ -185,7 +168,7 @@ export const FeaturesSection: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
                     </Link>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

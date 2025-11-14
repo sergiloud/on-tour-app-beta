@@ -108,6 +108,7 @@ export default defineConfig({
       output: {
         format: 'es',
         // Optimized chunking - separate heavy libraries
+        // CRITICAL: Order matters for preventing circular dependencies
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
             // React ecosystem MUST be first - everything depends on it
@@ -115,8 +116,8 @@ export default defineConfig({
               return 'vendor-react';
             }
             
-            // Framer Motion - MUST come after React to prevent circular dependency
-            // Keep separate to isolate potential initialization issues
+            // Framer Motion - isolate completely to prevent TDZ errors
+            // Must load after React but before app code
             if (id.includes('framer-motion')) {
               return 'vendor-framer';
             }
@@ -160,6 +161,8 @@ export default defineConfig({
         compact: true,
         // Ensure proper interop for external dependencies
         interop: 'auto',
+        // Prevent hoisting issues
+        hoistTransitiveImports: false,
       },
     },
     chunkSizeWarningLimit: 1000,

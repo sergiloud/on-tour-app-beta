@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
 interface TrustSectionProps {
   className?: string;
@@ -36,61 +35,27 @@ const testimonials = [
 ];
 
 export const TrustSection: React.FC<TrustSectionProps> = ({ className = '' }) => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6 }
-    }
-  };
-
   return (
     <section className={`w-full bg-gradient-to-b from-ink-900/10 to-ink-900/30 py-16 md:py-24 ${className}`}>
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={containerVariants}
-        >
-          <motion.h2
-            variants={itemVariants}
-            className="text-2xl md:text-3xl font-bold text-center mb-4"
-          >
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-4 animate-fade-in">
             Trusted by Industry Leaders
-          </motion.h2>
+          </h2>
 
-          <motion.p
-            variants={itemVariants}
-            className="text-center text-lg opacity-80 mb-12 max-w-2xl mx-auto"
-            style={{ color: 'var(--text-secondary)' }}
+          <p
+            className="text-center text-lg opacity-80 mb-12 max-w-2xl mx-auto animate-fade-in"
+            style={{ color: 'var(--text-secondary)', animationDelay: '100ms' }}
           >
             Trusted by the world's leading artists, managers, and festivals to deliver exceptional touring experiences.
-          </motion.p>
+          </p>
 
           {/* Client Logos Carousel */}
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-wrap justify-center items-center gap-8 md:gap-12 mb-16"
-          >
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 mb-16 animate-fade-in" style={{ animationDelay: '200ms' }}>
             {clientLogos.map((client, index) => (
-              <motion.div
+              <div
                 key={client.name}
-                className="flex flex-col items-center gap-2 group cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
+                className="flex flex-col items-center gap-2 group cursor-pointer hover-scale"
               >
                 <div className="text-4xl md:text-5xl opacity-60 group-hover:opacity-100 transition-all duration-300 group-hover:brightness-110">
                   {client.logo}
@@ -98,21 +63,17 @@ export const TrustSection: React.FC<TrustSectionProps> = ({ className = '' }) =>
                 <span className="text-xs font-medium opacity-70 group-hover:opacity-100 transition-opacity duration-300" style={{ color: 'var(--text-secondary)' }}>
                   {client.name}
                 </span>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
           {/* Testimonials */}
-          <motion.div
-            variants={containerVariants}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <motion.div
+              <div
                 key={testimonial.name}
-                variants={itemVariants}
-                className="glass p-6 flex flex-col items-center text-center group hover:shadow-[var(--elev-2)] transition-all duration-300"
-                whileHover={{ y: -5 }}
+                className="glass p-6 flex flex-col items-center text-center group hover:shadow-[var(--elev-2)] transition-all duration-300 animate-slide-up hover-lift"
+                style={{ animationDelay: `${300 + index * 100}ms` }}
               >
                 <div className="text-4xl mb-4 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
                   {testimonial.avatar}
@@ -128,10 +89,10 @@ export const TrustSection: React.FC<TrustSectionProps> = ({ className = '' }) =>
                     {testimonial.role}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );

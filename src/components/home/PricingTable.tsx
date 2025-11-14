@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Check, Sparkles } from 'lucide-react';
 import { homeES } from '../../content/home';
 import { t } from '../../lib/i18n';
@@ -28,44 +27,28 @@ export const PricingTable: React.FC = () => {
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                        className="text-4xl md:text-5xl font-bold mb-4"
-                    >
+                    <h2 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in">
                         {t('pricing.title')}{' '}
                         <span className="text-accent-500">{t('pricing.titleHighlight')}</span>
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-lg text-slate-400 dark:text-white/60 max-w-2xl mx-auto"
-                    >
+                    </h2>
+                    <p className="text-lg text-slate-400 dark:text-white/60 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '100ms' }}>
                         {t('pricing.subtitle')}
-                    </motion.p>
+                    </p>
                 </div>
 
                 {/* Pricing Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {pricing.map((plan, index) => (
-                        <motion.div
+                        <div
                             key={plan.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                            whileHover={{ y: -8, transition: { duration: 0.2 } }}
                             className={`
-                relative p-8 rounded-2xl backdrop-blur-xl
+                relative p-8 rounded-2xl backdrop-blur-xl animate-slide-up hover-lift
                 ${plan.popular
                                     ? 'border-2 border-accent-500 bg-accent-500/10'
                                     : 'border border-slate-200 dark:border-white/10 glass'
                                 }
               `}
+                            style={{ animationDelay: `${index * 100}ms` }}
                         >
                             {/* Most Popular Badge */}
                             {plan.popular && (
@@ -117,23 +100,17 @@ export const PricingTable: React.FC = () => {
                             >
                                 {plan.ctaLabel}
                             </a>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
 
                 {/* Bottom Note */}
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                    className="text-center text-slate-400 dark:text-white/40 text-sm mt-12"
-                >
+                <p className="text-center text-slate-400 dark:text-white/40 text-sm mt-12 animate-fade-in" style={{ animationDelay: '400ms' }}>
                     {t('pricing.allPlansInclude')}{' '}
                     <a href="/contact" className="text-accent-500 hover:underline">
                         {t('pricing.needCustom')}
                     </a>
-                </motion.p>
+                </p>
             </div>
         </section>
     );

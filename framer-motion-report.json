@@ -1,11 +1,11 @@
 {
   "summary": {
-    "totalFiles": 197,
-    "totalMotionElements": 1275,
-    "simpleFiles": 64,
-    "simpleElements": 187,
-    "complexFiles": 133,
-    "complexElements": 1088
+    "totalFiles": 182,
+    "totalMotionElements": 1230,
+    "simpleFiles": 55,
+    "simpleElements": 163,
+    "complexFiles": 127,
+    "complexElements": 1067
   },
   "simple": [
     {
@@ -153,15 +153,6 @@
       }
     },
     {
-      "file": "src/components/dashboard/DashboardFilters.tsx",
-      "count": 3,
-      "patterns": {
-        "initial": true,
-        "animate": true,
-        "hover": false
-      }
-    },
-    {
       "file": "src/components/dashboard/EventDetailDrawer.tsx",
       "count": 2,
       "patterns": {
@@ -172,24 +163,6 @@
     },
     {
       "file": "src/components/dashboard/FinancialHealthKPI.tsx",
-      "count": 2,
-      "patterns": {
-        "initial": true,
-        "animate": true,
-        "hover": false
-      }
-    },
-    {
-      "file": "src/components/dashboard/HeroSection.tsx",
-      "count": 4,
-      "patterns": {
-        "initial": true,
-        "animate": true,
-        "hover": false
-      }
-    },
-    {
-      "file": "src/components/dashboard/KeyPerformanceKPI.tsx",
       "count": 2,
       "patterns": {
         "initial": true,
@@ -261,24 +234,6 @@
       }
     },
     {
-      "file": "src/components/finance/ErrorStates.tsx",
-      "count": 4,
-      "patterns": {
-        "initial": true,
-        "animate": true,
-        "hover": false
-      }
-    },
-    {
-      "file": "src/components/finance/KpiCards.tsx",
-      "count": 2,
-      "patterns": {
-        "initial": true,
-        "animate": true,
-        "hover": true
-      }
-    },
-    {
       "file": "src/components/finance/Summary.tsx",
       "count": 3,
       "patterns": {
@@ -297,44 +252,8 @@
       }
     },
     {
-      "file": "src/components/home/FeaturesSection.tsx",
-      "count": 3,
-      "patterns": {
-        "initial": true,
-        "animate": false,
-        "hover": true
-      }
-    },
-    {
-      "file": "src/components/home/FinalCta.tsx",
-      "count": 1,
-      "patterns": {
-        "initial": true,
-        "animate": false,
-        "hover": false
-      }
-    },
-    {
       "file": "src/components/home/MetamorphosisZenith.tsx",
       "count": 1,
-      "patterns": {
-        "initial": true,
-        "animate": false,
-        "hover": false
-      }
-    },
-    {
-      "file": "src/components/home/Pricing.tsx",
-      "count": 1,
-      "patterns": {
-        "initial": true,
-        "animate": true,
-        "hover": false
-      }
-    },
-    {
-      "file": "src/components/home/PricingTable.tsx",
-      "count": 4,
       "patterns": {
         "initial": true,
         "animate": false,
@@ -1047,62 +966,12 @@
       }
     },
     {
-      "file": "src/components/dashboard/FinanceSummaryCard.tsx",
-      "count": 2,
-      "reasons": {
-        "gestures": true,
-        "variants": false,
-        "custom": false,
-        "layout": false
-      }
-    },
-    {
-      "file": "src/components/dashboard/MissionControlSummaryCard.tsx",
-      "count": 4,
-      "reasons": {
-        "gestures": true,
-        "variants": false,
-        "custom": false,
-        "layout": false
-      }
-    },
-    {
-      "file": "src/components/dashboard/NextCriticalEventKPI.tsx",
-      "count": 2,
-      "reasons": {
-        "gestures": true,
-        "variants": false,
-        "custom": false,
-        "layout": false
-      }
-    },
-    {
       "file": "src/components/dashboard/ParallaxCard.tsx",
       "count": 2,
       "reasons": {
         "gestures": false,
         "variants": false,
         "custom": true,
-        "layout": false
-      }
-    },
-    {
-      "file": "src/components/dashboard/QuickActions.tsx",
-      "count": 3,
-      "reasons": {
-        "gestures": true,
-        "variants": false,
-        "custom": true,
-        "layout": false
-      }
-    },
-    {
-      "file": "src/components/dashboard/ShowsSummaryCard.tsx",
-      "count": 3,
-      "reasons": {
-        "gestures": true,
-        "variants": false,
-        "custom": false,
         "layout": false
       }
     },
@@ -1233,16 +1102,6 @@
         "gestures": false,
         "variants": true,
         "custom": true,
-        "layout": false
-      }
-    },
-    {
-      "file": "src/components/home/TrustSection.tsx",
-      "count": 7,
-      "reasons": {
-        "gestures": false,
-        "variants": true,
-        "custom": false,
         "layout": false
       }
     },

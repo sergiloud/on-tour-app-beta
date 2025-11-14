@@ -1,4 +1,4 @@
-import { useReducedMotion } from 'framer-motion';
+import { useMemo } from 'react';
 import type { PricingPlan } from '../../types/homeLegacy';
 
 type PricingProps = {
@@ -7,8 +7,11 @@ type PricingProps = {
 };
 
 export function Pricing({ plans, currency = '$' }: PricingProps) {
-  const reduceMotion = useReducedMotion();
-  const prefersReducedMotion = Boolean(reduceMotion);
+  // Use native CSS media query instead of framer-motion hook
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
 
   return (
     <div

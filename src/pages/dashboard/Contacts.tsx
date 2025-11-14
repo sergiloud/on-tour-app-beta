@@ -7,7 +7,7 @@
  * - Tags y búsqueda avanzada
  */
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useDeferredValue } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Plus, Search, Download, Upload, X, Building2, Users,
@@ -69,13 +69,16 @@ export const Contacts: React.FC = () => {
     filters, setFilters, sortBy, setSortBy, sortedContacts, resetFilters
   } = useContactFilters(contacts);
 
+  // Use deferred value for non-blocking UI updates during heavy filtering
+  const deferredSortedContacts = useDeferredValue(sortedContacts);
+
   // ❌ REMOVED: Auto-sync agresivo que creaba contactos automáticamente
   // Esto causaba lag al navegar porque ejecutaba mutations masivas en background
   // Si se necesita, hacer manualmente con un botón "Sync from Shows"
 
   // Filtrar por categoría + ubicación
   const categoryFilteredContacts = useMemo(() => {
-    let filtered = sortedContacts;
+    let filtered = deferredSortedContacts;
 
     // Filtro por categoría
     if (activeCategory !== 'all') {
@@ -93,7 +96,7 @@ export const Contacts: React.FC = () => {
     }
 
     return filtered;
-  }, [sortedContacts, activeCategory, selectedCountry, selectedCity]);
+  }, [deferredSortedContacts, activeCategory, selectedCountry, selectedCity]);
 
   // Contadores por categoría
   const categoryCounts = useMemo(() => {

@@ -189,10 +189,11 @@ export function isValidISODate(date: unknown): date is string {
 
 /**
  * Email validator
+ * @deprecated Use isValidEmail from utils/validation instead
+ * Re-exports centralized validator
  */
 export function isValidEmail(email: unknown): email is string {
   if (typeof email !== 'string') return false;
-
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }

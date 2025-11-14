@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useI18n } from '../../lib/i18n';
 
 interface FinalCtaProps {
@@ -14,12 +13,8 @@ export function FinalCta({ title, subtitle, cta, href = '/register' }: FinalCtaP
   const learnMoreLabel = isSpanish ? 'Conocer más' : 'Learn more';
 
   return (
-    <motion.section
-      className="glass relative overflow-hidden rounded-3xl border border-slate-100 dark:border-white/5 bg-gradient-to-br from-ink-900/80 to-ink-800/60 px-8 py-12 text-center shadow-[var(--elev-2)]"
-      initial={{ opacity: 0, scale: 0.97 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, amount: 0.5 }}
-      transition={{ duration: 0.45, ease: 'easeOut' as const }}
+    <section
+      className="glass relative overflow-hidden rounded-3xl border border-slate-100 dark:border-white/5 bg-gradient-to-br from-ink-900/80 to-ink-800/60 px-8 py-12 text-center shadow-[var(--elev-2)] animate-scale-in"
       aria-labelledby="home-final-cta-heading"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.2),_transparent_60%)]" aria-hidden="true" />
@@ -45,6 +40,6 @@ export function FinalCta({ title, subtitle, cta, href = '/register' }: FinalCtaP
           </a>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

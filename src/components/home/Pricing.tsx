@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 import type { PricingPlan } from '../../types/homeLegacy';
 
 type PricingProps = {
@@ -11,11 +11,8 @@ export function Pricing({ plans, currency = '$' }: PricingProps) {
   const prefersReducedMotion = Boolean(reduceMotion);
 
   return (
-    <motion.div
-      className="grid gap-6 lg:grid-cols-2"
-      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: prefersReducedMotion ? 0.1 : 0.45, ease: 'easeOut' as const }}
+    <div
+      className={`grid gap-6 lg:grid-cols-2 ${prefersReducedMotion ? 'animate-fade-in-fast' : 'animate-slide-up'}`}
     >
       {plans.map((plan) => {
         const monthlyLabel = `${currency}${plan.monthly}`;
@@ -59,6 +56,6 @@ export function Pricing({ plans, currency = '$' }: PricingProps) {
           </article>
         );
       })}
-    </motion.div>
+    </div>
   );
 }

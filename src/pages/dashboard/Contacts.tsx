@@ -7,7 +7,7 @@
  * - Tags y búsqueda avanzada
  */
 
-import React, { useState, useMemo, useRef, useEffect, useDeferredValue, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useDeferredValue, useCallback, lazy, Suspense } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Plus, Search, Download, Upload, X, Building2, Users,
@@ -161,17 +161,9 @@ export const Contacts: React.FC = () => {
   // Esto causaba lag al navegar porque ejecutaba mutations masivas en background
   // Si se necesita, hacer manualmente con un botón "Sync from Shows"
 
-  // Filtrar por categoría + ubicación
+  // Filtrar por categoría + ubicación - ✅ Memoizado correctamente
   const categoryFilteredContacts = useMemo(() => {
     let filtered = deferredSortedContacts;
-
-    console.log('[Contacts] Filtering:', {
-      total: contacts.length,
-      deferred: deferredSortedContacts.length,
-      activeCategory,
-      selectedCountry,
-      selectedCity
-    });
 
     // Filtro por categoría
     if (activeCategory !== 'all') {
@@ -188,9 +180,8 @@ export const Contacts: React.FC = () => {
       filtered = filtered.filter(c => c.city === selectedCity);
     }
 
-    console.log('[Contacts] Filtered result:', filtered.length);
     return filtered;
-  }, [deferredSortedContacts, activeCategory, selectedCountry, selectedCity, contacts.length]);
+  }, [deferredSortedContacts, activeCategory, selectedCountry, selectedCity]);
 
   // Contadores por categoría
   const categoryCounts = useMemo(() => {
@@ -199,10 +190,15 @@ export const Contacts: React.FC = () => {
     return counts;
   }, [contacts]);
 
-  // Obtener países únicos con contadores
+  // Obtener países únicos con contadores - ✅ Solo depende de contactos filtrados por categoría
   const countriesWithCounts = useMemo(() => {
+    // Base: todos los contactos si "all", o solo la categoría activa
+    const baseContacts = activeCategory === 'all' 
+      ? deferredSortedContacts 
+      : deferredSortedContacts.filter(c => c.type === activeCategory);
+    
     const countryMap = new Map<string, number>();
-    categoryFilteredContacts.forEach(c => {
+    baseContacts.forEach(c => {
       if (c.country) {
         countryMap.set(c.country, (countryMap.get(c.country) || 0) + 1);
       }
@@ -210,12 +206,12 @@ export const Contacts: React.FC = () => {
     return Array.from(countryMap.entries())
       .sort((a, b) => b[1] - a[1]) // Ordenar por cantidad
       .map(([country, count]) => ({ country, count }));
-  }, [categoryFilteredContacts]);
+  }, [deferredSortedContacts, activeCategory]);
 
-  // Obtener ciudades únicas del país seleccionado
+  // Obtener ciudades únicas del país seleccionado - ✅ Solo recalcula cuando cambia país o categoría
   const citiesWithCounts = useMemo(() => {
     const cityMap = new Map<string, number>();
-    let baseContacts = sortedContacts;
+    let baseContacts = deferredSortedContacts;
 
     if (activeCategory !== 'all') {
       baseContacts = baseContacts.filter(c => c.type === activeCategory);
@@ -233,7 +229,7 @@ export const Contacts: React.FC = () => {
     return Array.from(cityMap.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([city, count]) => ({ city, count }));
-  }, [sortedContacts, activeCategory, selectedCountry]);
+  }, [deferredSortedContacts, activeCategory, selectedCountry]);
 
   // Obtener empresas únicas
   const companiesWithCounts = useMemo(() => {
@@ -265,24 +261,26 @@ export const Contacts: React.FC = () => {
     count: categoryFilteredContacts.length,
     getScrollElement: () => tableContainerRef.current,
     estimateSize: () => 73, // altura estimada de cada fila en px
-    overscan: 10, // renderizar 10 items extra arriba/abajo para scroll ultra suave
+    overscan: 5, // reducido de 10 a 5 para mejor rendimiento
   });
 
-  // Debug: log virtual items
-  console.log('[Contacts] Virtualizer:', {
-    count: categoryFilteredContacts.length,
-    virtualItems: rowVirtualizer.getVirtualItems().length,
-    totalSize: rowVirtualizer.getTotalSize(),
-    scrollElement: !!tableContainerRef.current
-  });
-
-  const handleCreateContact = () => { setEditingContact(undefined); setShowEditor(true); };
-  const handleEditContact = (contact: Contact) => { setEditingContact(contact); setShowEditor(true); setSelectedContact(null); };
-  const handleViewContact = (contact: Contact) => {
-    setSelectedContact(selectedContact?.id === contact.id ? null : contact);
+  // ✅ Callbacks memoizados para evitar re-renders de ContactRow
+  const handleCreateContact = useCallback(() => { 
+    setEditingContact(undefined); 
+    setShowEditor(true); 
+  }, []);
+  
+  const handleEditContact = useCallback((contact: Contact) => { 
+    setEditingContact(contact); 
+    setShowEditor(true); 
+    setSelectedContact(null); 
+  }, []);
+  
+  const handleViewContact = useCallback((contact: Contact) => {
+    setSelectedContact(prev => prev?.id === contact.id ? null : contact);
     setActiveTab('info'); // Reset to info tab when opening
     setNewNote(''); // Clear note input
-  };
+  }, []);
 
   const handleSaveContact = async (contactData: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -300,18 +298,18 @@ export const Contacts: React.FC = () => {
     }
   };
 
-  const handleDeleteContact = async (id: string) => {
+  const handleDeleteContact = useCallback(async (id: string) => {
     if (confirm('¿Eliminar contacto?')) {
       try {
         await deleteContactMutation.mutateAsync(id);
-        if (selectedContact?.id === id) setSelectedContact(null);
+        setSelectedContact(prev => prev?.id === id ? null : prev);
         toast.success('Contacto eliminado');
       } catch (error) { 
         logger.error('Error deleting contact', error as Error, { contactId: id });
         toast.error('Error al eliminar'); 
       }
     }
-  };
+  }, [deleteContactMutation, toast]);
 
   // Exportar contactos filtrados (solo los visibles)
   const handleExport = () => {

@@ -165,6 +165,14 @@ export const Contacts: React.FC = () => {
   const categoryFilteredContacts = useMemo(() => {
     let filtered = deferredSortedContacts;
 
+    console.log('[Contacts] Filtering:', {
+      total: contacts.length,
+      deferred: deferredSortedContacts.length,
+      activeCategory,
+      selectedCountry,
+      selectedCity
+    });
+
     // Filtro por categoría
     if (activeCategory !== 'all') {
       filtered = filtered.filter(c => c.type === activeCategory);
@@ -180,8 +188,9 @@ export const Contacts: React.FC = () => {
       filtered = filtered.filter(c => c.city === selectedCity);
     }
 
+    console.log('[Contacts] Filtered result:', filtered.length);
     return filtered;
-  }, [deferredSortedContacts, activeCategory, selectedCountry, selectedCity]);
+  }, [deferredSortedContacts, activeCategory, selectedCountry, selectedCity, contacts.length]);
 
   // Contadores por categoría
   const categoryCounts = useMemo(() => {

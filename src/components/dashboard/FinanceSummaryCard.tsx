@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 
 interface FinanceSummaryCardProps {
@@ -51,11 +50,8 @@ export const FinanceSummaryCard: React.FC<FinanceSummaryCardProps> = ({
   const isPositive = netProfit >= 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className={`p-6 rounded-xl border backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-pointer ${getStatusColor()}`}
+    <div
+      className={`p-6 rounded-xl border backdrop-blur-sm hover-scale transition-transform duration-200 cursor-pointer animate-slide-up ${getStatusColor()}`}
       onClick={() => navigate('/dashboard/finance')}
     >
       <div className="flex items-center justify-between mb-4">
@@ -111,15 +107,13 @@ export const FinanceSummaryCard: React.FC<FinanceSummaryCardProps> = ({
           <span className="text-xs text-slate-400">
             {t('dashboard.card.finance.trend') || '7-day trend'}
           </span>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-3 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+          <button
+            className="px-3 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-full transition-colors hover-lift active-scale"
           >
             {t('dashboard.card.viewAll') || 'View All'}
-          </motion.button>
+          </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 
 interface Mission {
@@ -54,11 +53,9 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
   const highPriorityCount = pendingMissions.filter(m => m.priority === 'high').length;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="p-6 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-pointer"
+    <div
+      className="p-6 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm hover-scale transition-transform duration-200 cursor-pointer animate-slide-up"
+      style={{ animationDelay: '200ms' }}
       onClick={() => navigate('/dashboard/mission/lab')}
     >
       <div className="flex items-center justify-between mb-4">
@@ -86,10 +83,8 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
       <div className="space-y-4">
         {/* High priority alert */}
         {highPriorityCount > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="p-3 rounded-lg bg-red-500/10 border border-red-500/20"
+          <div
+            className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 animate-scale-in"
           >
             <div className="flex items-center gap-2">
               <span className="text-red-400">🚨</span>
@@ -97,7 +92,7 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
                 {highPriorityCount} {t('dashboard.card.mission.highPriority') || 'high priority tasks'}
               </span>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Recent missions */}
@@ -105,13 +100,10 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
           <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
             {t('dashboard.card.mission.recent') || 'Recent Missions'}
           </h4>
-          <div className="space-y-2">
-            {pendingMissions.slice(0, 3).map((mission, index) => (
-              <motion.div
+          <div className="space-y-2 animate-stagger">
+            {pendingMissions.slice(0, 3).map((mission) => (
+              <div
                 key={mission.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
                 className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
               >
                 <div className="flex-1 min-w-0">
@@ -132,7 +124,7 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
                     {getStatusIcon(mission.status)}
                   </span>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -154,15 +146,13 @@ export const MissionControlSummaryCard: React.FC<MissionControlSummaryCardProps>
         </div>
 
         <div className="flex items-center justify-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+          <button
+            className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/20 rounded-full transition-colors hover-lift active-scale"
           >
             {t('dashboard.card.viewAll') || 'View All Missions'}
-          </motion.button>
+          </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

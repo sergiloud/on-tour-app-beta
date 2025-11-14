@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 import { AnimatedCounter, AnimatedSparkline } from './AnimatedCounter';
 
@@ -63,11 +62,9 @@ export const KeyPerformanceKPI: React.FC<KeyPerformanceKPIProps> = ({
   const progressPercentage = Math.min((value / target) * 100, 100);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3, delay: 0.1 }}
-      className={`p-6 rounded-xl border backdrop-blur-sm ${getStatusBg()}`}
+    <div
+      className={`p-6 rounded-xl border backdrop-blur-sm animate-scale-in ${getStatusBg()}`}
+      style={{ animationDelay: '100ms' }}
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
@@ -106,12 +103,14 @@ export const KeyPerformanceKPI: React.FC<KeyPerformanceKPIProps> = ({
             </span>
           </div>
 
-          <div className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full h-2">
-            <motion.div
-              className={`h-2 rounded-full ${getStatusColor().replace('text-', 'bg-')}`}
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercentage}%` }}
-              transition={{ duration: 1, delay: 0.4 }}
+          <div className="w-full bg-slate-200 dark:bg-slate-200 dark:bg-white/10 rounded-full h-2 overflow-hidden">
+            <div
+              className={`h-2 rounded-full animate-slide-in-right ${getStatusColor().replace('text-', 'bg-')}`}
+              style={{ 
+                width: `${progressPercentage}%`,
+                animationDelay: '400ms',
+                animationDuration: '1s'
+              }}
             />
           </div>
         </div>
@@ -123,6 +122,6 @@ export const KeyPerformanceKPI: React.FC<KeyPerformanceKPIProps> = ({
           }
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

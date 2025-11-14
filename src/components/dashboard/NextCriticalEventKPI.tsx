@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 
 interface NextCriticalEventKPIProps {
@@ -53,11 +52,9 @@ export const NextCriticalEventKPI: React.FC<NextCriticalEventKPIProps> = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-      className={`p-6 rounded-xl border backdrop-blur-sm cursor-pointer hover:scale-105 transition-transform duration-200 ${getUrgencyColor()}`}
+    <div
+      className={`p-6 rounded-xl border backdrop-blur-sm cursor-pointer hover-scale transition-transform duration-200 animate-scale-in ${getUrgencyColor()}`}
+      style={{ animationDelay: '100ms' }}
       onClick={() => navigate('/dashboard/calendar')}
     >
       <div className="flex items-center justify-between mb-4">
@@ -83,15 +80,13 @@ export const NextCriticalEventKPI: React.FC<NextCriticalEventKPIProps> = ({
           <div className="text-sm text-slate-400">
             {getTimeText()}
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-3 py-1 text-xs font-medium bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+          <button
+            className="px-3 py-1 text-xs font-medium bg-white/10 hover:bg-white/20 rounded-full transition-colors hover-lift active-scale"
           >
             {t('dashboard.kpi.event.view') || 'View Details'}
-          </motion.button>
+          </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

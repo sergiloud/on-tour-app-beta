@@ -98,11 +98,24 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
-    minify: 'esbuild',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false,
+        passes: 1, // Reduce optimization passes to prevent circular issues
+        ecma: 2020,
+      },
+      mangle: {
+        safari10: true,
+      },
+      format: {
+        comments: false,
+      },
+    },
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     cssCodeSplit: true,
     modulePreload: {
-      polyfill: false, // Disable to prevent TDZ errors in production
+      polyfill: false,
     },
     rollupOptions: {
       output: {

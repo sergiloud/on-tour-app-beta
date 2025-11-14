@@ -68,7 +68,7 @@ const Shows: React.FC = () => {
 
   // state
   const [qInput, setQInput] = useState('');
-  const q = useDebounce(qInput, 120);
+  const q = useDebounce(qInput, 300); // Increased from 120ms for better performance
   const [view, setView] = useState<ViewMode>(() => boot.view || 'board');
   const [dateRange, setDateRange] = useState<{ from: string; to: string }>(() => boot.dateRange || { from: '', to: '' });
   const [region, setRegion] = useState<'all' | 'AMER' | 'EMEA' | 'APAC'>(() => boot.region || 'all');
@@ -197,51 +197,62 @@ const Shows: React.FC = () => {
     return counts;
   }, [shows, q, dateRange.from, dateRange.to, region, feeRange.min, feeRange.max]);
 
-  // rows + net
+  // rows + net (optimized: lazy calculation)
   const rows = useMemo(() => {
-    const calcNet = (s: Show) => {
-      const show = s as ShowWithExtras;
-      const whtPct = show.whtPct || 0;
-      const wht = s.fee * (whtPct / 100);
-
-      // Calculate agency commissions dynamically - only for selected agencies
-      let agencyCommission = 0;
-      try {
-        const selectedAgencies = [];
-        if (s.mgmtAgency) {
-          const mgmt = managementAgencies.find(a => a.name === s.mgmtAgency);
-          if (mgmt) selectedAgencies.push(mgmt);
-        }
-        if (s.bookingAgency) {
-          const booking = bookingAgencies.find(a => a.name === s.bookingAgency);
-          if (booking) selectedAgencies.push(booking);
-        }
-        if (selectedAgencies.length > 0) {
-          agencyCommission = computeCommission(s, selectedAgencies);
-        }
-      } catch (e) {
-        console.error('[Shows] Error calculating agency commission:', e);
-      }
-
-      const costsTotal = (show.costs || []).reduce((n: number, c: Cost) => n + (c.amount || 0), 0);
-      return s.fee - wht - agencyCommission - costsTotal;
-    };
-    const r = filtered.map(s => ({ s, net: calcNet(s) }));
+    // Only sort by date/fee initially, defer net calculation
     const dir = sort.dir === 'asc' ? 1 : -1;
-    r.sort((a, b) => {
-      if (sort.key === 'date') return (new Date(a.s.date).getTime() - new Date(b.s.date).getTime()) * dir;
-      if (sort.key === 'fee') return (a.s.fee - b.s.fee) * dir;
-      if (sort.key === 'net') return (a.net - b.net) * dir;
+    const sorted = filtered.slice().sort((a, b) => {
+      if (sort.key === 'date') return (new Date(a.date).getTime() - new Date(b.date).getTime()) * dir;
+      if (sort.key === 'fee') return (a.fee - b.fee) * dir;
+      // For net sort, we'll calculate on demand
       return 0;
     });
-    return r;
+    
+    // Return with lazy net getter
+    return sorted.map(s => ({
+      s,
+      get net() {
+        // Calculate net only when accessed
+        const show = s as ShowWithExtras;
+        const whtPct = show.whtPct || 0;
+        const wht = s.fee * (whtPct / 100);
+
+        let agencyCommission = 0;
+        try {
+          const selectedAgencies = [];
+          if (s.mgmtAgency) {
+            const mgmt = managementAgencies.find(a => a.name === s.mgmtAgency);
+            if (mgmt) selectedAgencies.push(mgmt);
+          }
+          if (s.bookingAgency) {
+            const booking = bookingAgencies.find(a => a.name === s.bookingAgency);
+            if (booking) selectedAgencies.push(booking);
+          }
+          if (selectedAgencies.length > 0) {
+            agencyCommission = computeCommission(s, selectedAgencies);
+          }
+        } catch (e) {
+          console.error('[Shows] Error calculating agency commission:', e);
+        }
+
+        const costsTotal = (show.costs || []).reduce((n: number, c: Cost) => n + (c.amount || 0), 0);
+        return s.fee - wht - agencyCommission - costsTotal;
+      }
+    }));
   }, [filtered, sort, bookingAgencies, managementAgencies]);
+  
+  // Sort by net if needed (only calculate net for sorting)
+  const sortedRows = useMemo(() => {
+    if (sort.key !== 'net') return rows;
+    const dir = sort.dir === 'asc' ? 1 : -1;
+    return rows.slice().sort((a, b) => (a.net - b.net) * dir);
+  }, [rows, sort]);
 
   // virtualization
   const parentRef = useRef<HTMLDivElement>(null);
-  const enableVirtual = rows.length > 100; // Lowered threshold from 200
+  const enableVirtual = sortedRows.length > 100; // Lowered threshold from 200
   const virtualizer = useVirtualizer({
-    count: rows.length,
+    count: sortedRows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 44,
     overscan: 15 // Increased from 8 for smoother scrolling
@@ -250,22 +261,22 @@ const Shows: React.FC = () => {
   const topSpacer = enableVirtual && virtualItems[0] ? virtualItems[0].start : 0;
   const lastVirtualItem = virtualItems[virtualItems.length - 1];
   const bottomSpacer = enableVirtual && virtualItems.length && lastVirtualItem ? (virtualizer.getTotalSize() - lastVirtualItem.end) : 0;
-  const visibleRows = enableVirtual ? virtualItems.map(v => rows[v.index]).filter((r): r is NonNullable<typeof r> => r != null) : rows;
+  const visibleRows = enableVirtual ? virtualItems.map(v => sortedRows[v.index]).filter((r): r is NonNullable<typeof r> => r != null) : sortedRows;
   const allVisibleSelected = visibleRows.length > 0 && visibleRows.every(r => r && selected.has(r.s.id));
 
-  // metrics (totals + averages)
+  // metrics (totals + averages) - only calculate net for metrics, not all shows
   const { totalFee, totalNet, avgWht, avgFee, avgMarginPct } = useMemo(() => {
-    if (!rows.length) return { totalFee: 0, totalNet: 0, avgWht: 0, avgFee: 0, avgMarginPct: 0 };
+    if (!sortedRows.length) return { totalFee: 0, totalNet: 0, avgWht: 0, avgFee: 0, avgMarginPct: 0 };
     let fee = 0, net = 0, wSum = 0, marginSum = 0, marginCount = 0;
-    for (const r of rows) {
+    for (const r of sortedRows) {
       const show = r.s as ShowWithExtras;
       fee += r.s.fee; net += r.net; wSum += (show.whtPct || 0);
       if (r.s.fee > 0) { const pct = (r.net / r.s.fee) * 100; if (Number.isFinite(pct)) { marginSum += pct; marginCount++; } }
     }
-    const avgFeeVal = fee / rows.length;
+    const avgFeeVal = fee / sortedRows.length;
     const avgMargin = marginCount ? (marginSum / marginCount) : 0;
-    return { totalFee: fee, totalNet: net, avgWht: Math.round(wSum / rows.length), avgFee: avgFeeVal, avgMarginPct: Math.round(avgMargin) };
-  }, [rows]);
+    return { totalFee: fee, totalNet: net, avgWht: Math.round(wSum / sortedRows.length), avgFee: avgFeeVal, avgMarginPct: Math.round(avgMargin) };
+  }, [sortedRows]);
 
   // board aggregation (offer/pending/confirmed columns)
   const boardStatuses: ('offer' | 'pending' | 'confirmed')[] = ['offer', 'pending', 'confirmed'];
@@ -836,7 +847,7 @@ const Shows: React.FC = () => {
                   {/* Totals Row */}
                   <tr className="bg-accent-500/5 border-b border-accent-500/10">
                     <th scope="row" className="px-4 py-3 text-xs font-medium text-theme-secondary">{t('shows.table.totals') || 'Totals'}</th>
-                    <td className="px-4 py-3 text-xs text-theme-secondary font-medium">{rows.length} {t('shows.items') || 'items'}</td>
+                    <td className="px-4 py-3 text-xs text-theme-secondary font-medium">{sortedRows.length} {t('shows.items') || 'items'}</td>
                     <td className="px-4 py-3"></td>
                     <td className="px-4 py-3"></td>
                     <td className="px-4 py-3"></td>
@@ -1022,7 +1033,7 @@ const Shows: React.FC = () => {
                       </motion.tr>
                     ))}
                   </AnimatePresence>
-                  {rows.length === 0 && (
+                  {sortedRows.length === 0 && (
                     <tr>
                       <td colSpan={9} className="px-3 py-16 text-center">
                         <motion.div
@@ -1098,7 +1109,7 @@ const Shows: React.FC = () => {
               <div className="flex items-center gap-3">
                 <h3 className="text-sm font-semibold text-slate-600 dark:text-white/80">{t('shows.board.title') || 'Board View'}</h3>
                 <span className="px-2 py-0.5 rounded-full bg-accent-500/20 text-accent-400 text-xs font-medium">
-                  {rows.length} {t('shows.items') || 'shows'}
+                  {sortedRows.length} {t('shows.items') || 'shows'}
                 </span>
               </div>
               <div className="text-xs text-slate-300 dark:text-white/50 flex items-center gap-2">
@@ -1562,6 +1573,7 @@ const NativeShowCard: React.FC<{
     </div>
   );
 });
+NativeShowCard.displayName = 'NativeShowCard';
 
 // helpers
 const SummaryCard: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (

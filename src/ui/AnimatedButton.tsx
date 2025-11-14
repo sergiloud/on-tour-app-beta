@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from '../framer-entry';
 import { useHighContrast } from '../context/HighContrastContext';
 
 export interface AnimatedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

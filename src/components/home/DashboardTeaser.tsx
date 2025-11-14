@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '../../framer-entry';
 import { SimpleButton } from '../../ui/SimpleButton';
 import { useAnimatedNumber } from '../../hooks/useAnimatedNumber';
 import { MapPreview } from '../map/MapPreview';

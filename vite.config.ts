@@ -111,15 +111,15 @@ export default defineConfig({
         // CRITICAL: Order matters for preventing circular dependencies
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // React ecosystem MUST be first - everything depends on it
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            
-            // Framer Motion - isolate completely to prevent TDZ errors
-            // Must load after React but before app code
+            // Framer Motion - FIRST, completely isolated to prevent any TDZ issues
+            // Must be loaded before anything that imports it
             if (id.includes('framer-motion')) {
               return 'vendor-framer';
+            }
+            
+            // React ecosystem - second layer
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
             }
             
             // MapLibre - heavy and truly independent (no React dependency)

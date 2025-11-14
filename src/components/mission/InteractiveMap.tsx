@@ -242,10 +242,9 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
             doubleClickZoom: true,
             touchZoomRotate: true,
             touchPitch: false,
-            // Disable web workers completely - run everything on main thread
-            // This avoids '_ is not defined' minification errors in worker bundles
-            maxParallelImageRequests: 0,
-            refreshExpiredTiles: false
+            // Use stub worker to prevent minification errors
+            // The real worker has '_ is not defined' errors in production
+            workerUrl: '/maplibre-worker-stub.js'
           });
         } finally {
           console.error = originalError;
@@ -807,20 +806,13 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         // MapLibre GL UMD sets global maplibregl
         const mapLibre = (window as any).maplibregl || mlModule.default || mlModule;
 
-        // CRITICAL: Disable web workers BEFORE creating any maps
-        // This prevents '_ is not defined' minification errors in worker bundles
-        if (mapLibre && 'workerCount' in mapLibre) {
-          (mapLibre as any).workerCount = 0;
-        }
-
         console.log('[InteractiveMap] MapLibre loaded:', {
           hasMap: !!mapLibre?.Map,
           mapType: typeof mapLibre?.Map,
           constructorName: mapLibre?.Map?.name,
           hasWindow: !!(window as any).maplibregl,
           hasModule: !!mlModule,
-          hasDefault: !!mlModule.default,
-          workerCount: (mapLibre as any)?.workerCount
+          hasDefault: !!mlModule.default
         });
 
         // Ensure the library loaded correctly

@@ -120,9 +120,29 @@ export default defineConfig({
               return 'vendor-framer';
             }
             
-            // Recharts - ISOLATE (potential TDZ source)
+            // Recharts - isolated
             if (id.includes('recharts')) {
               return 'vendor-charts';
+            }
+            
+            // Zod - ISOLATE (potential TDZ source)
+            if (id.includes('zod')) {
+              return 'vendor-zod';
+            }
+            
+            // i18next family - ISOLATE
+            if (id.includes('i18next')) {
+              return 'vendor-i18n';
+            }
+            
+            // Sonner - ISOLATE
+            if (id.includes('sonner')) {
+              return 'vendor-sonner';
+            }
+            
+            // Immer - ISOLATE
+            if (id.includes('immer')) {
+              return 'vendor-immer';
             }
             
             // MapLibre - heavy map library
@@ -145,7 +165,7 @@ export default defineConfig({
               return 'vendor-dates';
             }
             
-            // Everything else together
+            // Everything else
             return 'vendor';
           }
         },

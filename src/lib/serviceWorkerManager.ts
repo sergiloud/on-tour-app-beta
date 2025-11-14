@@ -41,8 +41,17 @@ export class ServiceWorkerManager {
         }
 
         try {
+            // Unregister old SW (sw.js) if exists
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+                if (reg.active?.scriptURL.includes('/sw.js')) {
+                    console.log('[SW] Unregistering old SW:', reg.active.scriptURL);
+                    await reg.unregister();
+                }
+            }
+
             // Registrar directamente sin Workbox (nuestro SW es manual)
-            const reg = await navigator.serviceWorker.register('/sw.js', {
+            const reg = await navigator.serviceWorker.register('/sw-v3.js', {
                 scope: '/'
             });
 

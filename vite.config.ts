@@ -13,10 +13,10 @@ export default defineConfig({
       'css-syntax-error': 'silent'
     },
     treeShaking: true,
-    minifyIdentifiers: false, // Disable to prevent variable reference errors
+    minifyIdentifiers: true, // Re-enable for proper minification
     minifySyntax: true,
     minifyWhitespace: true,
-    keepNames: false, // Disable keepNames - causing __name errors
+    keepNames: true, // Keep names to prevent __publicField errors
   },
   css: {
     // Fix CSS syntax warnings during minification

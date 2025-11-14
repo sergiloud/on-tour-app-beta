@@ -120,24 +120,21 @@ export default defineConfig({
         // Optimized chunking strategy
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // CRITICAL: Keep React, React-DOM, React-Router and Scheduler TOGETHER
-            // They must be in same chunk to avoid initialization order issues
-            // Error: "Cannot set properties of undefined (setting 'Children')"
+            // CRITICAL: Keep React ecosystem TOGETHER to prevent initialization errors
+            // React, React-DOM, React-Router, Scheduler AND TanStack Query must load together
+            // TanStack Query uses React.createElement internally and fails if React not ready
             if (id.includes('react') || 
                 id.includes('react-dom') || 
                 id.includes('react-router') ||
-                id.includes('scheduler')) {
+                id.includes('scheduler') ||
+                id.includes('@tanstack/react-query') ||
+                id.includes('@tanstack/query-core')) {
               return 'vendor-react';
             }
             
             // Firebase - large but independent
             if (id.includes('firebase') || id.includes('@firebase')) {
               return 'vendor-firebase';
-            }
-            
-            // TanStack Query - depends on React but can be separate
-            if (id.includes('@tanstack/react-query')) {
-              return 'vendor-query';
             }
             
             // Charts and data viz - lazy loaded
@@ -177,8 +174,9 @@ export default defineConfig({
               return 'vendor-date';
             }
             
-            // Everything else goes to vendor
-            return 'vendor';
+            // IMPORTANT: Don't create a catch-all vendor chunk
+            // Let Rollup handle remaining dependencies to avoid initialization issues
+            // Only explicitly defined chunks above will be created
           }
         },
         chunkFileNames: 'assets/[name]-[hash].js',

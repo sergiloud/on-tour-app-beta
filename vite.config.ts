@@ -110,6 +110,17 @@ export default defineConfig({
         // Optimized chunking - separate heavy libraries
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
+            // React ecosystem MUST be first - everything depends on it
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            
+            // Framer Motion - MUST come after React to prevent circular dependency
+            // Keep separate to isolate potential initialization issues
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            
             // MapLibre - heavy and truly independent (no React dependency)
             if (id.includes('maplibre-gl')) {
               return 'vendor-maplibre';
@@ -118,16 +129,6 @@ export default defineConfig({
             // Firebase - independent from React core
             if (id.includes('firebase') || id.includes('@firebase')) {
               return 'vendor-firebase';
-            }
-            
-            // Framer Motion - large animation library (360KB)
-            if (id.includes('framer-motion')) {
-              return 'vendor-framer';
-            }
-            
-            // React ecosystem (core + router)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
             }
             
             // Lucide icons - large icon library

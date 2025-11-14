@@ -58,7 +58,6 @@ const ExpenseManager: React.FC = () => {
       // No expenses found, load demo data
       const result = loadDemoExpenses();
       if (result.added > 0) {
-        // console.log(`Loaded ${result.added} demo expenses for Danny Avila`);
         setExpenses(loadExpenses());
       }
     } else {

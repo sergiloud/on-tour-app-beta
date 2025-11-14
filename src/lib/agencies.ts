@@ -62,7 +62,6 @@ export function generateInitialAgencies(): { booking: AgencyConfig[]; management
 export function loadAgencies(): { booking: AgencyConfig[]; management: AgencyConfig[] } {
   try {
     const settings = loadSettings() as any;
-    // console.log('[agencies] loadAgencies - settings from localStorage:', settings);
     return {
       booking: settings.bookingAgencies || [],
       management: settings.managementAgencies || []
@@ -82,9 +81,6 @@ export function loadAgencies(): { booking: AgencyConfig[]; management: AgencyCon
 export function saveAgencies(booking: AgencyConfig[], management: AgencyConfig[]) {
   try {
     const settings = loadSettings() as any;
-    // console.log('[agencies] saveAgencies - current settings:', settings);
-    // console.log('[agencies] saveAgencies - booking to save:', booking);
-    // console.log('[agencies] saveAgencies - management to save:', management);
 
     const updated = {
       ...settings,
@@ -93,12 +89,10 @@ export function saveAgencies(booking: AgencyConfig[], management: AgencyConfig[]
     };
 
     saveSettings(updated as any);
-    // console.log('[agencies] saveAgencies - saved to localStorage:', updated);
 
     // Dispatch event to trigger context reload
     try {
       window.dispatchEvent(new CustomEvent('storage', { detail: { key: 'settings-v1' } }));
-      // console.log('[agencies] Dispatched storage event');
     } catch (e) {
       logger.error('Failed to dispatch event', e instanceof Error ? e : new Error(String(e)), {
         component: 'agencies',
@@ -135,7 +129,6 @@ export function loadUserAgencies() {
     const mergedManagement = [...initial.management, ...filteredExistingManagement];
 
     saveAgencies(mergedBooking, mergedManagement);
-    // console.log('[agencies] Agencies saved to localStorage');
 
     return {
       loaded: true,

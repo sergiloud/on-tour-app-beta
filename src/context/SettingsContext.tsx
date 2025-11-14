@@ -228,14 +228,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const handleStorageChange = () => {
       try {
-        // console.log('[SettingsContext] Storage changed, reloading agencies...');
         const settings = loadSettings() as any;
         if (settings.bookingAgencies) {
-          // console.log('[SettingsContext] Found booking agencies:', settings.bookingAgencies);
           setBookingAgencies(settings.bookingAgencies);
         }
         if (settings.managementAgencies) {
-          // console.log('[SettingsContext] Found management agencies:', settings.managementAgencies);
           setManagementAgencies(settings.managementAgencies);
         }
       } catch (e) {

@@ -200,7 +200,6 @@ const bgSyncPlugin = new BackgroundSyncPlugin('offline-mutations', {
         while ((entry = await queue.shiftRequest())) {
             try {
                 await fetch(entry.request);
-                // console.log('[SW] Synced offline mutation:', entry.request.url);
             } catch (error) {
                 console.error('[SW] Failed to sync:', error);
                 await queue.unshiftRequest(entry);
@@ -258,7 +257,6 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (!currentCaches.includes(cacheName)) {
-                        // console.log('[SW] Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                     return Promise.resolve();
@@ -339,7 +337,6 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
 // ========================================
 
 self.addEventListener('install', (event: ExtendableEvent) => {
-    // console.log('[SW] Service Worker installing...');
 
     // Precache assets críticos
     event.waitUntil(
@@ -367,7 +364,6 @@ interface SyncEvent extends ExtendableEvent {
 
 self.addEventListener('sync', (event: SyncEvent) => {
     if (event.tag === 'offline-mutations') {
-        // console.log('[SW] Background sync triggered');
     }
 });
 
@@ -398,4 +394,3 @@ self.addEventListener('notificationclick', (event: NotificationEvent) => {
     );
 });
 
-// console.log('[SW] Advanced Service Worker loaded! 🚀');

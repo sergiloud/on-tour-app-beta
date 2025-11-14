@@ -32,7 +32,6 @@ export function ServiceWorkerUpdater() {
                 cancel: {
                     label: 'Después',
                     onClick: () => {
-                        // console.log('[SW] User postponed update');
                     }
                 }
             });
@@ -66,7 +65,6 @@ export function ServiceWorkerUpdater() {
             cacheStats &&
             (cacheStats.hits + cacheStats.misses) > 0
         ) {
-            // console.log('[SW] Cache Stats:', cacheStats);
         }
     }, [cacheStats]);
 

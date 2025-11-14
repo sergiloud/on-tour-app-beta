@@ -43,7 +43,6 @@ export class FinanceWorkerPool {
      * Initialize worker pool
      */
     private initialize() {
-        // console.log(`[WorkerPool] Initializing ${this.poolSize} workers...`);
 
         for (let i = 0; i < this.poolSize; i++) {
             try {
@@ -73,7 +72,6 @@ export class FinanceWorkerPool {
             this.cleanupStaleWorkers();
         }, 60000); // Every minute
 
-        // console.log(`[WorkerPool] ${this.workers.length} workers ready`);
     }
 
     /**
@@ -165,7 +163,6 @@ export class FinanceWorkerPool {
 
         // Log performance
         if (duration !== undefined) {
-            // console.log(`[WorkerPool] Task completed in ${duration.toFixed(2)}ms`);
         }
 
         // Mark worker as available
@@ -226,7 +223,6 @@ export class FinanceWorkerPool {
             newWorker.onmessage = (event) => this.handleWorkerMessage(instance, event);
             newWorker.onerror = (error) => this.handleWorkerError(instance, error);
 
-            // console.log('[WorkerPool] Worker recovered');
         } catch (error) {
             console.error('[WorkerPool] Failed to recover worker:', error);
         }
@@ -241,7 +237,6 @@ export class FinanceWorkerPool {
 
         for (const instance of this.workers) {
             if (!instance.busy && now - instance.lastUsed > staleThreshold) {
-                // console.log('[WorkerPool] Cleaning up stale worker');
                 // Could implement worker recycling here
             }
         }
@@ -263,7 +258,6 @@ export class FinanceWorkerPool {
      * Terminate all workers
      */
     terminate() {
-        // console.log('[WorkerPool] Terminating all workers...');
 
         if (this.cleanupInterval !== null) {
             clearInterval(this.cleanupInterval);
@@ -277,7 +271,6 @@ export class FinanceWorkerPool {
         this.workers = [];
         this.queue = [];
 
-        // console.log('[WorkerPool] All workers terminated');
     }
 }
 

@@ -36,7 +36,6 @@ export class ServiceWorkerManager {
             process.env.NODE_ENV !== 'production' ||
             !('serviceWorker' in navigator)
         ) {
-            // console.log('[SW] Service Worker not supported or not in production');
             return undefined;
         }
 
@@ -70,7 +69,6 @@ export class ServiceWorkerManager {
                 }
             });
 
-            // console.log('[SW] Service Worker registered successfully');
             return reg;
         } catch (error) {
             console.error('[SW] Registration failed:', error);
@@ -143,7 +141,6 @@ export class ServiceWorkerManager {
             cacheNames.map(cacheName => caches.delete(cacheName))
         );
 
-        // console.log('[SW] All caches cleared');
     }
 
     /**
@@ -152,7 +149,6 @@ export class ServiceWorkerManager {
     async unregister(): Promise<boolean> {
         if (this.registration) {
             const success = await this.registration.unregister();
-            // console.log('[SW] Service Worker unregistered:', success);
             return success;
         }
         return false;
@@ -295,7 +291,6 @@ export async function precacheUrls(urls: string[]): Promise<void> {
     const cache = await caches.open('manual-precache-v1');
     await cache.addAll(urls);
 
-    // console.log('[SW] Manually precached:', urls);
 }
 
 /**

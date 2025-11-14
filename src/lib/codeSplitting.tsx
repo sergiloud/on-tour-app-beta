@@ -292,7 +292,6 @@ export class CodeSplitMonitor {
     this.chunks.set(chunkName, { loaded: true, time: loadTime });
 
     if (import.meta.env.DEV) {
-      // console.log(`[Code Split] ${chunkName} loaded in ${loadTime}ms`);
     }
   }
 

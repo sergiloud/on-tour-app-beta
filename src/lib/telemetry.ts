@@ -16,7 +16,6 @@ function emit(name: string, value: number, detail?: any) {
   listeners.forEach(l => l(metric));
   if (import.meta.env.DEV && !(globalThis as any).__TEST__) {
     // eslint-disable-next-line no-console
-    // console.log('[telemetry]', name, value, detail || '');
   }
 }
 
@@ -113,7 +112,6 @@ export function trackEvent(name: string, props?: Record<string, any>) {
   } catch {}
   if (import.meta.env.DEV && !(globalThis as any).__TEST__) {
     // eslint-disable-next-line no-console
-    // console.log('[event]', name, ev.props || {});
   }
 }
 
@@ -127,7 +125,6 @@ export function startViewVitals(viewId: string, thresholds: Partial<VitalsThresh
     const report = (name: 'LCP'|'CLS'|'FID', value: number) => {
       const ok = name === 'CLS' ? value <= thr.CLS : value <= (thr as any)[name];
       // eslint-disable-next-line no-console
-      // console.log(`[vitals][${viewId}] ${name}=${value.toFixed(name==='CLS'?3:0)} ${ok? 'OK' : 'SLOW'}`);
       trackEvent('vitals', { view: viewId, metric: name, value, ok });
     };
     onMetric(m => {

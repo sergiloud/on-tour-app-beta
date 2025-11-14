@@ -130,7 +130,6 @@ export const performanceMonitor = {
                 const measure = performance.measure(name, startMark, endMark);
 
                 if (import.meta.env.DEV) {
-                    // console.log(`⏱️ [Performance] ${name}: ${measure.duration.toFixed(2)}ms`);
                 }
 
                 return measure.duration;
@@ -255,7 +254,6 @@ export function trackLongTasks() {
         observer.observe({ entryTypes: ['longtask'] });
     } catch (error) {
         // longtask not supported in all browsers
-        // console.log('Long task monitoring not supported');
     }
 }
 

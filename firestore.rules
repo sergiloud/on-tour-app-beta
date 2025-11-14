@@ -38,44 +38,63 @@ service cloud.firestore {
           allow read, write: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped shows (NEW)
+        // ========================================
+        // SCALABLE SUB-COLLECTIONS (NEW)
+        // ========================================
+        
+        // Finance snapshots with transactions sub-collection
+        match /finance_snapshots/{snapshotId} {
+          allow read, write: if userOwnsOrg(userId, orgId);
+          
+          // Transactions sub-collection (SCALABLE)
+          match /transactions/{transactionId} {
+            allow read, write: if userOwnsOrg(userId, orgId);
+            
+            // Allow queries on transactions
+            allow list: if userOwnsOrg(userId, orgId);
+          }
+        }
+        
+        // Organization-scoped shows (SCALABLE)
         match /shows/{showId} {
           allow read, write: if userOwnsOrg(userId, orgId);
+          allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped contacts (NEW)
+        // Organization-scoped contacts (SCALABLE)
         match /contacts/{contactId} {
           allow read, write: if userOwnsOrg(userId, orgId);
+          allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped venues (NEW)
+        // Organization-scoped venues (SCALABLE)
         match /venues/{venueId} {
           allow read, write: if userOwnsOrg(userId, orgId);
+          allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped transactions/finance (NEW)
-        match /transactions/{transactionId} {
-          allow read, write: if userOwnsOrg(userId, orgId);
-        }
-        
-        // Organization-scoped budgets (NEW)
-        match /budgets/{budgetId} {
-          allow read, write: if userOwnsOrg(userId, orgId);
-        }
-        
-        // Organization-scoped calendar events (NEW)
+        // Organization-scoped calendar events (SCALABLE)
         match /calendar_events/{eventId} {
           allow read, write: if userOwnsOrg(userId, orgId);
+          allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped actions (NEW)
+        // Organization-scoped budgets (SCALABLE)
+        match /budgets/{budgetId} {
+          allow read, write: if userOwnsOrg(userId, orgId);
+          allow list: if userOwnsOrg(userId, orgId);
+        }
+        
+        // Organization-scoped actions (SCALABLE)
         match /actions/{actionId} {
           allow read, write: if userOwnsOrg(userId, orgId);
+          allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped itineraries (NEW)
+        // Organization-scoped itineraries (SCALABLE)
         match /itineraries/{itineraryId} {
           allow read, write: if userOwnsOrg(userId, orgId);
+          allow list: if userOwnsOrg(userId, orgId);
         }
       }
       

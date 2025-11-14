@@ -42,6 +42,87 @@ const CATEGORY_TABS: { id: CategoryTab; label: string; icon: React.ReactNode }[]
   { id: 'other', label: 'Otros', icon: <TagIcon className="w-4 h-4" /> },
 ];
 
+// Memoized Contact Row component for optimal virtual scrolling performance
+const ContactRow = React.memo<{
+  contact: Contact;
+  isSelected: boolean;
+  onView: (contact: Contact) => void;
+  onEdit: (contact: Contact) => void;
+  onDelete: (id: string) => void;
+  style: React.CSSProperties;
+}>(({ contact, isSelected, onView, onEdit, onDelete, style }) => {
+  return (
+    <div
+      onClick={() => onView(contact)}
+      className={`absolute top-0 left-0 w-full grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4 border-b border-slate-200 dark:border-white/5 hover:bg-interactive-hover cursor-pointer transition-all duration-150 ${
+        isSelected ? 'bg-accent-500/10 border-l-2 border-accent-500' : ''
+      }`}
+      style={style}
+    >
+      {/* Contacto */}
+      <div className="flex items-center gap-3 min-w-0 pr-4">
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-sm font-semibold shadow-lg shadow-accent-500/20 flex-shrink-0">
+          {contact.firstName[0]}{contact.lastName[0]}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{contact.firstName} {contact.lastName}</p>
+            {contact.priority === 'high' && <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse shadow-lg shadow-red-400/50 flex-shrink-0" />}
+          </div>
+        </div>
+      </div>
+
+      {/* Empresa / Cargo */}
+      <div className="min-w-0 pr-4">
+        <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || '—'}</p>
+        <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || 'Sin cargo'}</p>
+      </div>
+
+      {/* Info */}
+      <div className="min-w-0 pr-4 text-sm text-theme-secondary">
+        {contact.email && <div className="flex items-center gap-2 mb-1 min-w-0"><Mail className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.email}</span></div>}
+        {contact.phone && <div className="flex items-center gap-2 min-w-0"><Phone className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.phone}</span></div>}
+      </div>
+
+      {/* Ubicación */}
+      <div className="min-w-0 pr-4">
+        {contact.city || contact.country ? (
+          <div className="flex items-center gap-2 text-sm text-theme-secondary min-w-0">
+            <MapPin className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" />
+            <span className="truncate">{contact.city ? `${contact.city}, ` : ''}{contact.country}</span>
+          </div>
+        ) : <span className="text-slate-400 dark:text-white/40 text-xs">—</span>}
+      </div>
+
+      {/* Prioridad */}
+      <div className="pr-4">
+        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold inline-block ${
+          contact.priority === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
+          contact.priority === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
+          'bg-green-500/15 text-green-400 border border-green-500/30'
+        }`}>{contact.priority === 'high' ? 'Alta' : contact.priority === 'medium' ? 'Media' : 'Baja'}</span>
+      </div>
+
+      {/* Acciones */}
+      <div className="flex items-center justify-end gap-1">
+        <button onClick={(e) => { e.stopPropagation(); onView(contact); }}
+          className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400 transition-all duration-150" title="Ver">
+          <Eye className="w-4 h-4" />
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); onEdit(contact); }}
+          className="p-2 rounded-lg hover:bg-blue-500/20 text-theme-secondary hover:text-blue-400 transition-all duration-150" title="Editar">
+          <Edit2 className="w-4 h-4" />
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(contact.id); }}
+          className="p-2 rounded-lg hover:bg-red-500/20 text-theme-secondary hover:text-red-400 transition-all duration-150" title="Eliminar">
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+});
+ContactRow.displayName = 'ContactRow';
+
 export const Contacts: React.FC = () => {
   const toast = useToast();
   const { data: contacts = [], isLoading, isError, error } = useContactsQuery();
@@ -171,7 +252,7 @@ export const Contacts: React.FC = () => {
     count: categoryFilteredContacts.length,
     getScrollElement: () => tableContainerRef.current,
     estimateSize: () => 73, // altura estimada de cada fila en px
-    overscan: 5, // renderizar 5 items extra arriba/abajo para scroll suave
+    overscan: 10, // renderizar 10 items extra arriba/abajo para scroll ultra suave
   });
 
   const handleCreateContact = () => { setEditingContact(undefined); setShowEditor(true); };
@@ -491,7 +572,7 @@ export const Contacts: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div ref={tableContainerRef} className="flex-1 overflow-auto">
+            <div ref={tableContainerRef} className="flex-1 overflow-auto scroll-smooth" style={{ contain: 'strict' }}>
               {/* Header Grid */}
               <div className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 z-10 grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4">
                 <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Contacto</div>
@@ -507,81 +588,25 @@ export const Contacts: React.FC = () => {
                 className="relative"
                 style={{
                   height: `${rowVirtualizer.getTotalSize()}px`,
+                  willChange: 'transform', // Optimize scroll performance
                 }}
               >
                 {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                   const contact = categoryFilteredContacts[virtualRow.index];
                   if (!contact) return null;
                   return (
-                    <div
-                      key={contact.id} 
-                      onClick={() => handleViewContact(contact)}
-                      className={`absolute top-0 left-0 w-full grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4 border-b border-slate-200 dark:border-white/5 hover:bg-interactive-hover cursor-pointer transition-all duration-150 ${selectedContact?.id === contact.id ? 'bg-accent-500/10 border-l-2 border-accent-500' : ''}`}
+                    <ContactRow
+                      key={contact.id}
+                      contact={contact}
+                      isSelected={selectedContact?.id === contact.id}
+                      onView={handleViewContact}
+                      onEdit={handleEditContact}
+                      onDelete={handleDeleteContact}
                       style={{
                         height: `${virtualRow.size}px`,
                         transform: `translateY(${virtualRow.start}px)`,
                       }}
-                    >
-                      {/* Contacto */}
-                      <div className="flex items-center gap-3 min-w-0 pr-4">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-sm font-semibold shadow-lg shadow-accent-500/20 flex-shrink-0">
-                          {contact.firstName[0]}{contact.lastName[0]}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{contact.firstName} {contact.lastName}</p>
-                            {contact.priority === 'high' && <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse shadow-lg shadow-red-400/50 flex-shrink-0" />}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Empresa / Cargo */}
-                      <div className="min-w-0 pr-4">
-                        <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || '—'}</p>
-                        <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || 'Sin cargo'}</p>
-                      </div>
-
-                      {/* Info */}
-                      <div className="min-w-0 pr-4 text-sm text-theme-secondary">
-                        {contact.email && <div className="flex items-center gap-2 mb-1 min-w-0"><Mail className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.email}</span></div>}
-                        {contact.phone && <div className="flex items-center gap-2 min-w-0"><Phone className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.phone}</span></div>}
-                      </div>
-
-                      {/* Ubicación */}
-                      <div className="min-w-0 pr-4">
-                        {contact.city || contact.country ? (
-                          <div className="flex items-center gap-2 text-sm text-theme-secondary min-w-0">
-                            <MapPin className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" />
-                            <span className="truncate">{contact.city ? `${contact.city}, ` : ''}{contact.country}</span>
-                          </div>
-                        ) : <span className="text-slate-400 dark:text-white/40 text-xs">—</span>}
-                      </div>
-
-                      {/* Prioridad */}
-                      <div className="pr-4">
-                        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold inline-block ${
-                          contact.priority === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
-                          contact.priority === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
-                          'bg-green-500/15 text-green-400 border border-green-500/30'
-                        }`}>{contact.priority === 'high' ? 'Alta' : contact.priority === 'medium' ? 'Media' : 'Baja'}</span>
-                      </div>
-
-                      {/* Acciones */}
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={(e) => { e.stopPropagation(); handleViewContact(contact!); }}
-                          className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400 transition-all duration-150" title="Ver">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleEditContact(contact!); }}
-                          className="p-2 rounded-lg hover:bg-blue-500/20 text-theme-secondary hover:text-blue-400 transition-all duration-150" title="Editar">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleDeleteContact(contact!.id); }}
-                          className="p-2 rounded-lg hover:bg-red-500/20 text-theme-secondary hover:text-red-400 transition-all duration-150" title="Eliminar">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+                    />
                   );
                 })}
               </div>

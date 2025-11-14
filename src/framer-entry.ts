@@ -1,21 +1,15 @@
 /**
- * Framer Motion Entry Point
+ * Framer Motion Entry Point - Pass-through wrapper
  * 
- * This file explicitly imports framer-motion FIRST to ensure it loads
- * before any other app code that depends on it.
+ * This file acts as a single import point for framer-motion to:
+ * 1. Consolidate all framer-motion imports through one module
+ * 2. Make it easier to track framer-motion usage
+ * 3. Potentially swap implementation in the future
  * 
- * This prevents "Cannot access 'je' before initialization" TDZ errors
- * in the vendor bundle.
+ * Just re-exports everything from framer-motion without modification.
  */
 
-// Force framer-motion to be evaluated first
-import * as FramerMotion from 'framer-motion';
-
-// Re-export everything for use in app code
 export * from 'framer-motion';
+export { motion, AnimatePresence, useAnimation, useMotionValue, useSpring, useTransform, useScroll, useReducedMotion } from 'framer-motion';
+import * as FramerMotion from 'framer-motion';
 export default FramerMotion;
-
-// Ensure global initialization
-if (typeof window !== 'undefined') {
-  (window as any).__FRAMER_MOTION__ = FramerMotion;
-}

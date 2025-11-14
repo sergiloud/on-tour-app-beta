@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { RouteLoading, InlineRouteLoading } from '../components/common/RouteLoading';
 import {
   DashboardSkeleton,
@@ -12,6 +12,7 @@ import {
 import { ShowsPageSkeleton } from '../components/loading/ShowsPageSkeleton';
 import { ContactsPageSkeleton } from '../components/loading/ContactsPageSkeleton';
 import { CalendarPageSkeleton } from '../components/loading/CalendarPageSkeleton';
+import { trackNavigation } from '../routes/prefetch';
 import DashboardLayout from '../layouts/DashboardLayout';
 import AuthLayout from '../layouts/AuthLayout';
 
@@ -51,9 +52,21 @@ const OrgClients = React.lazy(() => import('../pages/org/OrgClients'));
 const OrgLinks = React.lazy(() => import('../pages/org/OrgLinks'));
 const ArtistHub = React.lazy(() => import('../pages/org/ArtistHub'));
 
+// Navigation tracker component
+const NavigationTracker: React.FC = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    trackNavigation(location.pathname);
+  }, [location.pathname]);
+  
+  return null;
+};
+
 export const AppRouter: React.FC = () => {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <NavigationTracker />
       <Routes>
         <Route
           path="/"

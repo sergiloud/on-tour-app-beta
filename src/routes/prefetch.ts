@@ -1,5 +1,5 @@
-// Lightweight route prefetch helpers to warm lazy-loaded chunks on intent
-// Safe to call in event handlers (hover/focus/visible). Failures are ignored.
+// Intelligent route prefetch with user behavior tracking
+// Prefetches routes based on navigation patterns and idle time
 
 type Loader = () => Promise<unknown>;
 
@@ -9,7 +9,7 @@ const loaders: Record<string, Loader> = {
   '/dashboard/financeV2': () => import('../pages/dashboard/FinanceV2'),
   '/dashboard/contacts': () => import('../pages/dashboard/Contacts'),
   '/dashboard/shows': () => import('../pages/dashboard/Shows'),
-  '/dashboard/show': () => import('../pages/dashboard/ShowDetails'), // prefix match for details
+  '/dashboard/show': () => import('../pages/dashboard/ShowDetails'),
   '/dashboard/travel': () => import('../pages/dashboard/TravelV2'),
   '/dashboard/travel/workspace': () => import('../pages/dashboard/TravelWorkspacePage'),
   '/dashboard/mission/lab': () => import('../pages/dashboard/MissionControlLab'),
@@ -17,13 +17,57 @@ const loaders: Record<string, Loader> = {
   '/dashboard/settings': () => import('../pages/dashboard/Settings'),
   '/dashboard/profile': () => import('../pages/profile/ProfileSettings'),
   '/dashboard/org': () => import('../pages/org/OrgOverviewNew'),
-  // '/login' is statically imported in AppRouter, no need to prefetch
   '/register': () => import('../pages/Register'),
   '/onboarding': () => import('../pages/OnboardingSimple'),
 };
 
-// Prefetch cache para evitar cargar la misma ruta múltiples veces
+// Prefetch cache
 const prefetchedPaths = new Set<string>();
+
+// User behavior tracking
+const navigationHistory: string[] = [];
+const MAX_HISTORY = 10;
+
+// Track navigation patterns
+export function trackNavigation(path: string) {
+  navigationHistory.push(path);
+  if (navigationHistory.length > MAX_HISTORY) {
+    navigationHistory.shift();
+  }
+  
+  // Predict next route based on patterns
+  predictAndPrefetch();
+}
+
+// Predict next likely route
+function predictAndPrefetch() {
+  if (navigationHistory.length < 2) return;
+  
+  const currentPath = navigationHistory[navigationHistory.length - 1];
+  
+  // Common patterns: shows → calendar, finance → shows, calendar → travel
+  const patterns: Record<string, string[]> = {
+    '/dashboard/shows': ['/dashboard/calendar', '/dashboard/finance'],
+    '/dashboard/calendar': ['/dashboard/travel', '/dashboard/shows'],
+    '/dashboard/finance': ['/dashboard/shows', '/dashboard/calendar'],
+    '/dashboard/contacts': ['/dashboard/calendar', '/dashboard/shows'],
+    '/dashboard': ['/dashboard/shows', '/dashboard/calendar', '/dashboard/finance'],
+  };
+  
+  const likelyNext = currentPath ? patterns[currentPath] : undefined;
+  if (likelyNext) {
+    // Prefetch during idle time
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        likelyNext.forEach((path: string) => prefetchByPath(path));
+      }, { timeout: 2000 });
+    } else {
+      setTimeout(() => {
+        likelyNext.forEach((path: string) => prefetchByPath(path));
+      }, 1000);
+    }
+  }
+}
 
 export function prefetchByPath(path: string) {
   try {

@@ -111,11 +111,6 @@ export default defineConfig({
         // CRITICAL: Don't over-separate to avoid circular dependency issues
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // React ecosystem - keep together with react-based libs
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            
             // MapLibre - truly independent, no React deps
             if (id.includes('maplibre-gl')) {
               return 'vendor-maplibre';
@@ -126,23 +121,9 @@ export default defineConfig({
               return 'vendor-firebase';
             }
             
-            // TanStack - independent query library
-            if (id.includes('@tanstack')) {
-              return 'vendor-tanstack';
-            }
-            
-            // Date libraries - independent
-            if (id.includes('date-fns') || id.includes('dayjs')) {
-              return 'vendor-dates';
-            }
-            
-            // Framer Motion - keep separate but loaded after react
-            if (id.includes('framer-motion')) {
-              return 'vendor-framer';
-            }
-            
-            // Everything else in one vendor to prevent dependency issues
-            // This includes: recharts, zod, i18next, sonner, immer, clsx, etc.
+            // Everything else together (React, framer-motion, recharts, etc)
+            // To prevent initialization order issues
+            return 'vendor';
             return 'vendor';
           }
         },

@@ -3,6 +3,7 @@
 
 /* CSS-only animations (GPU-accelerated) */
 @import './animations.css';
+@import './animations-simple.css';
 
 /* Mobile performance optimizations */
 @import './mobile-performance.css';

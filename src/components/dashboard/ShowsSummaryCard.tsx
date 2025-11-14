@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { t } from '../../lib/i18n';
 import { sanitizeName } from '../../lib/sanitize';
 
@@ -42,11 +41,9 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-      className="p-6 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-pointer"
+    <div
+      className="p-6 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 backdrop-blur-sm hover-lift cursor-pointer animate-slide-up"
+      style={{ animationDelay: '100ms' }}
       onClick={() => navigate('/dashboard/shows')}
     >
       <div className="flex items-center justify-between mb-4">
@@ -76,13 +73,10 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
           <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
             {t('dashboard.card.shows.upcoming') || 'Upcoming Shows'}
           </h4>
-          <div className="space-y-2">
-            {upcomingShows.slice(0, 3).map((show, index) => (
-              <motion.div
+          <div className="space-y-2 animate-stagger">
+            {upcomingShows.slice(0, 3).map((show) => (
+              <div
                 key={show.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
                 className="flex items-center justify-between p-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
               >
                 <div className="flex-1 min-w-0">
@@ -96,7 +90,7 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
                 <span className="text-sm ml-2">
                   {getStatusIcon(show.status)}
                 </span>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -105,15 +99,13 @@ export const ShowsSummaryCard: React.FC<ShowsSummaryCardProps> = ({
           <div className="text-xs text-slate-400">
             {upcomingShows.length > 3 && `+${upcomingShows.length - 3} ${t('dashboard.card.shows.more') || 'more'}`}
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-3 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+          <button
+            className="px-3 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-full transition-colors hover-scale active-scale"
           >
             {t('dashboard.card.viewAll') || 'View All'}
-          </motion.button>
+          </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

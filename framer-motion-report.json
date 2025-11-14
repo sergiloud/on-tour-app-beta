@@ -1,0 +1,1920 @@
+{
+  "summary": {
+    "totalFiles": 197,
+    "totalMotionElements": 1275,
+    "simpleFiles": 64,
+    "simpleElements": 187,
+    "complexFiles": 133,
+    "complexElements": 1088
+  },
+  "simple": [
+    {
+      "file": "src/components/calendar/AdvancedHeatmap.tsx",
+      "count": 5,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/AgendaList.tsx",
+      "count": 5,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": true
+      }
+    },
+    {
+      "file": "src/components/calendar/CalendarEventModal.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CalendarSyncModal.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CellSuccessPulse.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/ConflictAlert.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/DayGrid.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": true
+      }
+    },
+    {
+      "file": "src/components/calendar/DragPreview.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/EventConnectionLines.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/PatternAnalyzer.tsx",
+      "count": 6,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": true
+      }
+    },
+    {
+      "file": "src/components/calendar/ResizeFeedback.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/ShowEventModal.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/calendar/TravelEventModal.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/common/ActionHubPreview.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/common/LazyVisible.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/AnalyticsPanel.tsx",
+      "count": 5,
+      "patterns": {
+        "initial": false,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/DashboardFilters.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/EventDetailDrawer.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/FinancialHealthKPI.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/HeroSection.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/KeyPerformanceKPI.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/ProactiveDashboard.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/TourOverviewCard.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/TourOverviewModern.old2.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/TourOverviewModern.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/TourOverviewPro.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/TourSummaryIntelligent.tsx",
+      "count": 6,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/finance/AddTransactionModal.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/finance/ErrorStates.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/finance/KpiCards.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": true
+      }
+    },
+    {
+      "file": "src/components/finance/Summary.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/finance/v2/PLTable.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/home/FeaturesSection.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": false,
+        "hover": true
+      }
+    },
+    {
+      "file": "src/components/home/FinalCta.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": false,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/home/MetamorphosisZenith.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": false,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/home/Pricing.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/home/PricingTable.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": false,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/home/StorytellingSection.tsx",
+      "count": 6,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/MoreMenu.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/AppLoader.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/Dock.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": true
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/IOSTextField.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/OptimizedImage.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/ArtistsApp.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/FilesApp.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/LinksApp.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/NotesApp.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/ReportsApp.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/VenuesApp.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/shared/AppLayout.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/FinanceStatsWidget.tsx",
+      "count": 4,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": true
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/QuickStats.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": true
+      }
+    },
+    {
+      "file": "src/components/pwa/PWAComponents.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/settings/CalendarSyncSettings.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/shows/CalendarView.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/shows/CreateShowModal.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/shows/FiltersBar.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/components/shows/ShowDetailModal.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/context/ToastContext.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/layouts/DashboardLayout.tsx",
+      "count": 1,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/pages/Dashboard.tsx",
+      "count": 2,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/pages/OnboardingSimple.tsx",
+      "count": 7,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/pages/profile/ProfilePage.tsx",
+      "count": 3,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    },
+    {
+      "file": "src/pages/profile/ProfileSettings.tsx",
+      "count": 7,
+      "patterns": {
+        "initial": true,
+        "animate": true,
+        "hover": false
+      }
+    }
+  ],
+  "complex": [
+    {
+      "file": "src/components/calendar/AdvancedCalendarSearch.tsx",
+      "count": 14,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/AdvancedEventCard.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/BulkOperationsToolbar.tsx",
+      "count": 7,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CalendarIntegration.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CalendarThemes.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CalendarToolbar.tsx",
+      "count": 20,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CalendarUIEnhancements.tsx",
+      "count": 15,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CalendarVisualEnhancements.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/ConflictDetector.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/ContextMenu.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CustomFieldManager.tsx",
+      "count": 9,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/CustomFieldsModal.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/DayDetailsModal.tsx",
+      "count": 7,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/DragHintTooltip.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/DragToMoveHandler.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/DraggableEventButtons.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/EnhancedCalendarUI.tsx",
+      "count": 18,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/EventChip.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/calendar/EventCreationModal.tsx",
+      "count": 14,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/EventCreationSuccess.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/EventDependencyManager.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/EventEditorModal.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/EventLinkingModal.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/EventResizeHandle.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/calendar/EventTypeManager.tsx",
+      "count": 10,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/ExpandedEventBar.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/calendar/ExportImportPanel.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/KeyboardShortcutsHelp.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/MonthGrid.tsx",
+      "count": 7,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/MorePopover.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/MultiDayEventBar.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/calendar/MultiDayEventDurationEditor.tsx",
+      "count": 7,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/MultiDayEventEditor.tsx",
+      "count": 14,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/MultiDayEventStripe.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/calendar/MultiSelectManager.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/QuickAdd.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/QuickEventCreator.tsx",
+      "count": 12,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/QuickSearch.tsx",
+      "count": 7,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/ResizeGhostPreview.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/calendar/SmartCalendarSync.tsx",
+      "count": 10,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/TimelineView.tsx",
+      "count": 7,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/TravelFlightModal.tsx",
+      "count": 11,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/calendar/WeekGrid.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/common/animations.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/ActionHub.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/AnimatedCounter.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/FinanceSummaryCard.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/MissionControlSummaryCard.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/NextCriticalEventKPI.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/ParallaxCard.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/QuickActions.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/ShowsSummaryCard.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/Skeletons.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/dashboard/WelcomeCard.tsx",
+      "count": 10,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/finance/BudgetsTab.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/finance/EditBudgetModal.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/finance/EditTransactionModal.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/finance/KPICard.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/finance/PeriodFilter.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/finance/ProjectionsTab.tsx",
+      "count": 9,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/finance/TransactionsTab.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/home/ChaosSection.tsx",
+      "count": 13,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": true,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/home/DashboardTeaser.tsx",
+      "count": 19,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/home/FeatureGallery.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/home/TestimonialsSection.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/home/TrustSection.tsx",
+      "count": 7,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/home/prologue/ChaosHero.tsx",
+      "count": 14,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/home/prologue/ControlPanel.tsx",
+      "count": 18,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/home/prologue/InteractiveCanvas.tsx",
+      "count": 62,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/home/prologue/TrustBar.tsx",
+      "count": 25,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/map/HeatmapControl.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/MobileLayout.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/AppFolder.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/AppIcon.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/AppModal.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/AppSwitcher.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/DeviceIndicator.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/HomeScreen.tsx",
+      "count": 12,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/IOSBottomSheet.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/IOSButton.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/IOSCard.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/MobileOS.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/NotificationCenter.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/QuickActionsMenu.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/SkeletonScreen.tsx",
+      "count": 13,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/Snackbar.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/SpotlightSearch.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/TabBar.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/ThemeSelector.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/CalendarApp.tsx",
+      "count": 9,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/FinanceApp.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/SettingsApp.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/ShowsApp.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/TeamApp.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/apps/TravelApp.tsx",
+      "count": 11,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/modals/AddShowModal.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/NearbyShowsWidget.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/QuickActionsWidget.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/TasksWidget.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/TeamActivityWidget.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/UserProfileWidget.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/WeatherWidget.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/mobile/ios/widgets/WhatsNext.tsx",
+      "count": 11,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/org/OrgButton.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/org/OrgCard.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/org/OrgContainer.tsx",
+      "count": 1,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/components/org/OrgModernCards.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/shows/BoardView.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/components/shows/ViewSelector.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/features/shows/editor/StatusSelector.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/pages/LandingPage.tsx",
+      "count": 81,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/Login.tsx",
+      "count": 28,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/Register.tsx",
+      "count": 29,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/dashboard/FinanceV2.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/dashboard/Shows.tsx",
+      "count": 31,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/dashboard/Summary.tsx",
+      "count": 9,
+      "reasons": {
+        "gestures": false,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/dashboard/TravelV2.tsx",
+      "count": 18,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/org/ArtistHub.tsx",
+      "count": 15,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/org/OrgBilling.tsx",
+      "count": 7,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/org/OrgBranding.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/pages/org/OrgClients.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/org/OrgDocuments.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/org/OrgIntegrations.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/pages/org/OrgLinks.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/org/OrgMembers.tsx",
+      "count": 8,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/pages/org/OrgOverview.tsx",
+      "count": 38,
+      "reasons": {
+        "gestures": false,
+        "variants": true,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/pages/org/OrgOverviewNew.tsx",
+      "count": 46,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/pages/org/OrgReports.tsx",
+      "count": 4,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": true,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/pages/org/OrgTeams.tsx",
+      "count": 6,
+      "reasons": {
+        "gestures": true,
+        "variants": true,
+        "custom": false,
+        "layout": true
+      }
+    },
+    {
+      "file": "src/ui/Alert.tsx",
+      "count": 2,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/ui/AnimatedButton.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/ui/Modal.tsx",
+      "count": 3,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    },
+    {
+      "file": "src/ui/Select.tsx",
+      "count": 5,
+      "reasons": {
+        "gestures": true,
+        "variants": false,
+        "custom": false,
+        "layout": false
+      }
+    }
+  ]
+}

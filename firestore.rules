@@ -14,9 +14,9 @@ service cloud.firestore {
     }
     
     // Helper function to check if user owns the organization
+    // Simplified: if user owns the parent path, they can access org data
     function userOwnsOrg(userId, orgId) {
-      return isOwner(userId) && 
-             exists(/databases/$(database)/documents/users/$(userId)/organizations/$(orgId));
+      return isOwner(userId);
     }
     
     // User data - users can only access their own data
@@ -26,6 +26,11 @@ service cloud.firestore {
       
       // User profile
       match /profile/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Profile completed actions (organization-scoped)
+      match /profile/completedActions/{orgId} {
         allow read, write: if isOwner(userId);
       }
       

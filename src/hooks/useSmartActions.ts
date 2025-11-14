@@ -3,6 +3,7 @@ import { useFilteredShows } from '../features/shows/selectors';
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
 import { FirestoreActionsService } from '../services/firestoreActionsService';
+import { getCurrentOrgId } from '../lib/tenants';
 
 type ActionPriority = 'critical' | 'high' | 'medium' | 'low';
 type ActionCategory = 'urgent' | 'financial' | 'logistics' | 'opportunity';
@@ -46,14 +47,17 @@ export const useSmartActions = () => {
     useEffect(() => {
         if (!userId) return;
 
+        const orgId = getCurrentOrgId();
+
         // Migrar datos de localStorage a Firestore si es necesario
-        FirestoreActionsService.migrateFromLocalStorage(userId).catch(error => {
+        FirestoreActionsService.migrateFromLocalStorage(userId, orgId).catch(error => {
             console.error('[useSmartActions] Migration error:', error);
         });
 
         // Suscribirse a cambios en tiempo real
         const unsubscribe = FirestoreActionsService.subscribeToCompletedActions(
             userId,
+            orgId,
             (actionIds) => {
                 setCompletedActions(new Set(actionIds));
                 // Sincronizar con localStorage como backup
@@ -166,6 +170,8 @@ export const useSmartActions = () => {
     const markCompleted = async (actionId: string) => {
         if (!userId) return;
 
+        const orgId = getCurrentOrgId();
+
         // Actualización optimista
         const newSet = new Set(completedActions);
         newSet.add(actionId);
@@ -174,7 +180,7 @@ export const useSmartActions = () => {
 
         // Sincronizar con Firebase
         try {
-            await FirestoreActionsService.markActionCompleted(userId, actionId);
+            await FirestoreActionsService.markActionCompleted(userId, orgId, actionId);
         } catch (error) {
             console.error('[useSmartActions] Error marking completed:', error);
             // Revertir en caso de error
@@ -185,6 +191,8 @@ export const useSmartActions = () => {
     const unmarkCompleted = async (actionId: string) => {
         if (!userId) return;
 
+        const orgId = getCurrentOrgId();
+
         // Actualización optimista
         const newSet = new Set(completedActions);
         newSet.delete(actionId);
@@ -193,7 +201,7 @@ export const useSmartActions = () => {
 
         // Sincronizar con Firebase
         try {
-            await FirestoreActionsService.unmarkActionCompleted(userId, actionId);
+            await FirestoreActionsService.unmarkActionCompleted(userId, orgId, actionId);
         } catch (error) {
             console.error('[useSmartActions] Error unmarking:', error);
             // Revertir en caso de error
@@ -204,13 +212,15 @@ export const useSmartActions = () => {
     const clearCompleted = async () => {
         if (!userId) return;
 
+        const orgId = getCurrentOrgId();
+
         // Actualización optimista
         setCompletedActions(new Set());
         localStorage.removeItem('on-tour-completed-actions');
 
         // Sincronizar con Firebase
         try {
-            await FirestoreActionsService.clearCompletedActions(userId);
+            await FirestoreActionsService.clearCompletedActions(userId, orgId);
         } catch (error) {
             console.error('[useSmartActions] Error clearing:', error);
         }

@@ -6,6 +6,7 @@
 
 import { db } from '../lib/firebase';
 import { collection, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { logger } from '../lib/logger';
 
 export interface EventButton {
   id: string;
@@ -49,7 +50,7 @@ export async function getEventButtons(userId: string, organizationId?: string): 
     await setDoc(docRef, { buttons: DEFAULT_BUTTONS });
     return DEFAULT_BUTTONS;
   } catch (error) {
-    console.error('Failed to get event buttons from Firestore, using localStorage:', error);
+    logger.error('Failed to get event buttons from Firestore', error as Error);
     return getEventButtonsFromLocalStorage();
   }
 }
@@ -78,7 +79,7 @@ export async function saveEventButtons(
     // Also update localStorage as cache
     saveEventButtonsToLocalStorage(buttons);
   } catch (error) {
-    console.error('Failed to save event buttons to Firestore, using localStorage:', error);
+    logger.error('Failed to save event buttons to Firestore', error as Error);
     saveEventButtonsToLocalStorage(buttons);
   }
 }
@@ -110,7 +111,7 @@ export async function addEventButton(
     const buttons = getEventButtonsFromLocalStorage();
     saveEventButtonsToLocalStorage([...buttons, button]);
   } catch (error) {
-    console.error('Failed to add event button:', error);
+    logger.error('Failed to add event button', error as Error);
     throw error;
   }
 }
@@ -147,7 +148,7 @@ export async function removeEventButton(
     const buttons = getEventButtonsFromLocalStorage();
     saveEventButtonsToLocalStorage(buttons.filter((b) => b.id !== buttonId));
   } catch (error) {
-    console.error('Failed to remove event button:', error);
+    logger.error('Failed to remove event button', error as Error);
     throw error;
   }
 }
@@ -173,10 +174,10 @@ export async function migrateLocalStorageToFirestore(
       localButtons.length > DEFAULT_BUTTONS.length
     ) {
       await saveEventButtons(localButtons, userId, organizationId);
-      console.log('✅ Migrated event buttons from localStorage to Firestore');
+      logger.info('Migrated event buttons from localStorage to Firestore');
     }
   } catch (error) {
-    console.error('Failed to migrate event buttons:', error);
+    logger.error('Failed to migrate event buttons', error as Error);
   }
 }
 
@@ -205,6 +206,6 @@ function saveEventButtonsToLocalStorage(buttons: EventButton[]): void {
   try {
     localStorage.setItem('calendar:eventButtons', JSON.stringify(buttons));
   } catch (error) {
-    console.error('Failed to save to localStorage:', error);
+    logger.error('Failed to save event buttons to localStorage', error as Error);
   }
 }

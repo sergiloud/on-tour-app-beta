@@ -12,6 +12,7 @@ import { auth, isFirebaseConfigured } from '../lib/firebase';
 import { createUserWithEmailAndPassword, updateProfile as updateFirebaseProfile } from 'firebase/auth';
 import { HybridShowService } from '../services/hybridShowService';
 import { HybridContactService } from '../services/hybridContactService';
+import { logger } from '../lib/logger';
 
 // Estados para el registro
 type RegisterState = 'idle' | 'loading' | 'error' | 'success';
@@ -203,7 +204,7 @@ const Register: React.FC = () => {
             updatedAt: new Date().toISOString()
           }, newUserId);
         } catch (e) {
-          console.warn('Could not create user document in Firestore:', e);
+          logger.warn('Could not create user document in Firestore', { error: e });
         }
         
         // Initialize hybrid show service for cloud sync
@@ -215,7 +216,7 @@ const Register: React.FC = () => {
           const orgId = getCurrentOrgId();
           await HybridContactService.initialize(newUserId, orgId);
         } catch (e) {
-          console.warn('Could not initialize contacts:', e);
+          logger.warn('Could not initialize contacts', { error: e });
         }
       } else {
         // Demo mode fallback for development
@@ -245,7 +246,7 @@ const Register: React.FC = () => {
         navigate('/onboarding');
       }, 2000);
     } catch (error: any) {
-      console.error('Registration error:', error);
+      logger.error('Registration error', error as Error);
       
       // Handle Firebase-specific errors
       let errorMessage = 'Registration failed. Please try again.';

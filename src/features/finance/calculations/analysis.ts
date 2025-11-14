@@ -6,6 +6,7 @@
  */
 
 import { roundCurrency } from './income';
+import { formatCurrency as fmtCurrency } from '../../../utils/formatting';
 
 /**
  * Settlement distribution: split net income among parties
@@ -83,18 +84,11 @@ export function resolveConflict<T extends { __modifiedAt: number }>(
 
 /**
  * Format currency for display
- *
- * @example
- * const formatted = formatCurrency(1234.56, 'EUR');
- * // returns "€1,234.56"
+ * @deprecated Use formatCurrency from utils/formatting instead
+ * Re-exports centralized formatter to avoid duplication
  */
 export function formatCurrency(amount: number, currency: string = 'EUR'): string {
-  const rounded = roundCurrency(amount);
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency
-  });
-  return formatter.format(rounded);
+  return fmtCurrency(roundCurrency(amount), currency);
 }
 
 /**

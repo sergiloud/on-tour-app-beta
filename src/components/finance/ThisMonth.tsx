@@ -6,8 +6,6 @@ import { useSettings } from '../../context/SettingsContext';
 import { t } from '../../lib/i18n';
 import { useFinance } from '../../context/FinanceContext';
 
-const money = (n: number) => '€' + Math.round(n).toLocaleString();
-
 export const ThisMonth: React.FC = () => {
   const { fmtMoney, currency, region, dateRange } = useSettings();
   const { targets, loading, thisMonth, monthlySeries } = useFinance();

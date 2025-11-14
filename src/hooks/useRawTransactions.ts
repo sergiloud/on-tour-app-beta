@@ -1,4 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
+import { logger } from '../lib/logger';
 import { buildFinanceSnapshot } from '../features/finance/snapshot';
 import { showToTransactionV3 } from '../lib/profitabilityHelpers';
 import type { TransactionV3 } from '../types/financeV3';
@@ -72,7 +73,7 @@ export function useRawTransactions(): TransactionV3[] {
         const transactions = await FirestoreFinanceService.getUserTransactions(userId, orgId);
         setManualTransactions(transactions);
       } catch (error) {
-        console.error('Failed to load manual transactions:', error);
+        logger.error('Failed to load manual transactions', error as Error, { userId, orgId });
         setManualTransactions([]);
       }
     };

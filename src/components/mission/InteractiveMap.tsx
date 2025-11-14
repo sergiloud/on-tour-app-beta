@@ -8,6 +8,7 @@ import { useGeocodedShows } from '../../hooks/useGeocodedShows';
 import { useSettings } from '../../context/SettingsContext';
 import { t } from '../../lib/i18n';
 import { escapeHtml } from '../../lib/escape';
+import { logger } from '../../lib/logger';
 import { useAuth } from '../../context/AuthContext';
 import { geocodeLocation } from '../../services/geocodingService';
 
@@ -160,7 +161,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           setHomeLocation({ lng: result.lng, lat: result.lat });
         }
       } catch (error) {
-        console.error('[InteractiveMap] Failed to geocode home location:', error);
+        logger.error('Failed to geocode home location', error as Error, { component: 'InteractiveMap' });
         setHomeLocation(null);
       }
     };
@@ -231,7 +232,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       setReady(true);
       setIsLoading(false);
     } catch (error) {
-      console.error('[InteractiveMap] Failed to initialize map:', error);
+      logger.error('Failed to initialize map', error as Error, { component: 'InteractiveMap' });
       setIsLoading(false);
     }
 

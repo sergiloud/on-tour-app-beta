@@ -1,3 +1,4 @@
+import { logger } from "../../lib/logger";
 /**
  * Finance V2 - Módulo de Finanzas Refactorizado
  *
@@ -139,10 +140,10 @@ const FinanceV2Inner: React.FC = () => {
   // Logging de performance y errores en desarrollo
   React.useEffect(() => {
     if (computationTime && import.meta.env.DEV) {
-      console.log(`[FinanceV2] Worker computation: ${computationTime.toFixed(2)}ms`);
+      logger.debug(`Worker computation: ${computationTime.toFixed(2)}ms`, { component: 'FinanceV2' });
     }
     if (workerError && import.meta.env.DEV) {
-      console.error('[FinanceV2] Worker error:', workerError);
+      logger.error('Worker error', new Error(workerError), { component: 'FinanceV2' });
     }
   }, [computationTime, workerError]);
 

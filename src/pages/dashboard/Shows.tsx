@@ -232,7 +232,7 @@ const Shows: React.FC = () => {
             agencyCommission = computeCommission(s, selectedAgencies);
           }
         } catch (e) {
-          console.error('[Shows] Error calculating agency commission:', e);
+          logger.error('Error calculating agency commission', e as Error, { component: 'Shows' });
         }
 
         const costsTotal = (show.costs || []).reduce((n: number, c: Cost) => n + (c.amount || 0), 0);

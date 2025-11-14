@@ -268,6 +268,14 @@ export const Contacts: React.FC = () => {
     overscan: 10, // renderizar 10 items extra arriba/abajo para scroll ultra suave
   });
 
+  // Debug: log virtual items
+  console.log('[Contacts] Virtualizer:', {
+    count: categoryFilteredContacts.length,
+    virtualItems: rowVirtualizer.getVirtualItems().length,
+    totalSize: rowVirtualizer.getTotalSize(),
+    scrollElement: !!tableContainerRef.current
+  });
+
   const handleCreateContact = () => { setEditingContact(undefined); setShowEditor(true); };
   const handleEditContact = (contact: Contact) => { setEditingContact(contact); setShowEditor(true); setSelectedContact(null); };
   const handleViewContact = (contact: Contact) => {

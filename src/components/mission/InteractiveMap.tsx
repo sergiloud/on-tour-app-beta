@@ -28,7 +28,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const polylineLayerRef = useRef<L.LayerGroup | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const isDraggingRef = useRef<boolean>(false);
-  const { focus } = useMissionControl() as any;
+  const focusRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { profile } = useAuth();
@@ -36,6 +36,14 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   
   const { shows: allShows } = useShows();
   const { shows: geocodedShows } = useGeocodedShows(allShows);
+  
+  // Get focus from context but don't re-render on changes
+  const missionControl = useMissionControl();
+  
+  // Store focus in ref to avoid re-renders
+  useEffect(() => {
+    focusRef.current = missionControl.focus;
+  }, [missionControl.focus]);
   
   const shows = useMemo(() => {
     const now = Date.now();
@@ -486,9 +494,10 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     };
   }, [shows, ready, homeLocation, fmtMoney, homeIcon, tourLegs, markerIcons, getStatusColor]);
 
-  // Handle focus changes
+  // Handle focus changes using ref to avoid re-renders
   useEffect(() => {
     const map = mapRef.current;
+    const focus = focusRef.current;
     if (!map || !ready || !focus) return;
 
     if (focus.type === 'show' && focus.showId) {
@@ -506,7 +515,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         }
       }
     }
-  }, [focus, shows, ready]);
+  }, [shows, ready]); // Note: focus NOT in dependencies to prevent re-renders
 
   return (
     <Card className={`relative overflow-hidden ${className}`}>
@@ -545,5 +554,13 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   );
 };
 
-export const InteractiveMap = React.memo(InteractiveMapComponent);
+// Memoize with custom comparison to prevent unnecessary re-renders
+export const InteractiveMap = React.memo(
+  InteractiveMapComponent,
+  (prevProps, nextProps) => {
+    // Only re-render if className changes
+    return prevProps.className === nextProps.className;
+  }
+);
+
 export default InteractiveMap;

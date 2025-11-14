@@ -84,6 +84,112 @@ function segmentToFlight(segment: Segment, tripTitle: string): Flight | null {
   };
 }
 
+// Helper function to render status badges
+const getStatusBadge = (status: Flight['status']) => {
+  const badges = {
+    upcoming: 'px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20',
+    departed: 'px-2 py-0.5 rounded text-[10px] font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20',
+    landed: 'px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-400 border border-green-500/20',
+    cancelled: 'px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20',
+  };
+  const labels = {
+    upcoming: 'Próximo',
+    departed: 'En Vuelo',
+    landed: 'Aterrizado',
+    cancelled: 'Cancelado',
+  };
+  return <span className={badges[status]}>{labels[status]}</span>;
+};
+
+// Memoized Flight Card component to avoid re-renders
+const FlightCard = React.memo<{ flight: Flight; onShare: (flight: Flight) => void }>(({ flight, onShare }) => {
+  return (
+    <motion.div
+      variants={fadeIn}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      layout
+      className="glass rounded-lg border border-theme p-5 hover:border-white/15 transition-all group"
+    >
+      <div className="flex items-start justify-between gap-4 mb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center border border-white/5">
+            <Plane className="w-4.5 h-4.5 text-slate-500 dark:text-white/70" />
+          </div>
+          <div>
+            <p className="text-slate-900 dark:text-white font-semibold tracking-tight">{flight.carrier} {flight.flightNumber}</p>
+            {flight.tripTitle && (
+              <p className="text-slate-400 dark:text-white/40 text-xs mt-0.5">{flight.tripTitle}</p>
+            )}
+          </div>
+        </div>
+        {getStatusBadge(flight.status)}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-slate-400 dark:text-white/40 text-[10px] uppercase tracking-wider font-medium">
+            <MapPin className="w-3 h-3" />
+            <span>Salida</span>
+          </div>
+          <p className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">{flight.origin}</p>
+          <p className="text-slate-400 dark:text-white/60 text-sm">{flight.originName}</p>
+          <div className="flex items-center gap-2 text-slate-400 dark:text-white/40 text-xs">
+            <Clock className="w-3 h-3" />
+            <span>{flight.depDate} {flight.depTime}</span>
+          </div>
+        </div>
+
+        <div className="hidden md:flex items-center justify-center">
+          <div className="w-full h-[1px] bg-gradient-to-r from-slate-100 dark:from-white/5 via-slate-300 dark:via-white/20 to-slate-50 dark:to-white/5 relative">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white/40 rounded-full" />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-slate-400 dark:text-white/40 text-[10px] uppercase tracking-wider font-medium">
+            <MapPin className="w-3 h-3" />
+            <span>Llegada</span>
+          </div>
+          <p className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">{flight.dest}</p>
+          <p className="text-slate-400 dark:text-white/60 text-sm">{flight.destName}</p>
+          <div className="flex items-center gap-2 text-slate-400 dark:text-white/40 text-xs">
+            <Clock className="w-3 h-3" />
+            <span>{flight.arrDate} {flight.arrTime}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-theme flex items-center gap-6 text-xs text-slate-300 dark:text-white/40">
+        <div className="flex items-center gap-2">
+          <Clock className="w-3.5 h-3.5" />
+          <span>{flight.duration}</span>
+        </div>
+        {flight.price && (
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>{flight.price} {flight.currency || 'EUR'}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => onShare(flight)}
+          className="px-3 py-1.5 rounded-lg bg-interactive text-slate-400 dark:text-white/60 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:text-slate-600 dark:text-white/80 text-xs transition-all flex items-center gap-2 border border-theme"
+        >
+          <Share2 className="w-3 h-3" />
+          Compartir
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+});
+FlightCard.displayName = 'FlightCard';
+
 const TravelV2: React.FC = () => {
   const { userId } = useAuth();
   const [activeTab, setActiveTab] = useState<'flights' | 'search' | 'timeline'>('flights');
@@ -154,22 +260,6 @@ const TravelV2: React.FC = () => {
     } else {
       navigator.clipboard.writeText(text);
     }
-  };
-
-  const getStatusBadge = (status: Flight['status']) => {
-    const badges = {
-      upcoming: 'px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20',
-      departed: 'px-2 py-0.5 rounded text-[10px] font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20',
-      landed: 'px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-400 border border-green-500/20',
-      cancelled: 'px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20',
-    };
-    const labels = {
-      upcoming: 'Próximo',
-      departed: 'En Vuelo',
-      landed: 'Aterrizado',
-      cancelled: 'Cancelado',
-    };
-    return <span className={badges[status]}>{labels[status]}</span>;
   };
 
   const renderFlights = () => (
@@ -284,89 +374,7 @@ const TravelV2: React.FC = () => {
           </motion.div>
         ) : (
           filteredFlights.map((flight) => (
-            <motion.div
-              key={flight.id}
-              variants={fadeIn}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              layout
-              className="glass rounded-lg border border-theme p-5 hover:border-white/15 transition-all group"
-            >
-              <div className="flex items-start justify-between gap-4 mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center border border-white/5">
-                    <Plane className="w-4.5 h-4.5 text-slate-500 dark:text-white/70" />
-                  </div>
-                  <div>
-                    <p className="text-slate-900 dark:text-white font-semibold tracking-tight">{flight.carrier} {flight.flightNumber}</p>
-                    {flight.tripTitle && (
-                      <p className="text-slate-400 dark:text-white/40 text-xs mt-0.5">{flight.tripTitle}</p>
-                    )}
-                  </div>
-                </div>
-                {getStatusBadge(flight.status)}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-slate-400 dark:text-white/40 text-[10px] uppercase tracking-wider font-medium">
-                    <MapPin className="w-3 h-3" />
-                    <span>Salida</span>
-                  </div>
-                  <p className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">{flight.origin}</p>
-                  <p className="text-slate-400 dark:text-white/60 text-sm">{flight.originName}</p>
-                  <div className="flex items-center gap-2 text-slate-400 dark:text-white/40 text-xs">
-                    <Clock className="w-3 h-3" />
-                    <span>{flight.depDate} {flight.depTime}</span>
-                  </div>
-                </div>
-
-                <div className="hidden md:flex items-center justify-center">
-                  <div className="w-full h-[1px] bg-gradient-to-r from-slate-100 dark:from-white/5 via-slate-300 dark:via-white/20 to-slate-50 dark:to-white/5 relative">
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white/40 rounded-full" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-slate-400 dark:text-white/40 text-[10px] uppercase tracking-wider font-medium">
-                    <MapPin className="w-3 h-3" />
-                    <span>Llegada</span>
-                  </div>
-                  <p className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">{flight.dest}</p>
-                  <p className="text-slate-400 dark:text-white/60 text-sm">{flight.destName}</p>
-                  <div className="flex items-center gap-2 text-slate-400 dark:text-white/40 text-xs">
-                    <Clock className="w-3 h-3" />
-                    <span>{flight.arrDate} {flight.arrTime}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-4 border-t border-theme flex items-center gap-6 text-xs text-slate-300 dark:text-white/40">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{flight.duration}</span>
-                </div>
-                {flight.price && (
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span>{flight.price} {flight.currency || 'EUR'}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleShareFlight(flight)}
-                  className="px-3 py-1.5 rounded-lg bg-interactive text-slate-400 dark:text-white/60 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:text-slate-600 dark:text-white/80 text-xs transition-all flex items-center gap-2 border border-theme"
-                >
-                  <Share2 className="w-3 h-3" />
-                  Compartir
-                </motion.button>
-              </div>
-            </motion.div>
+            <FlightCard key={flight.id} flight={flight} onShare={handleShareFlight} />
           ))
         )}
       </AnimatePresence>

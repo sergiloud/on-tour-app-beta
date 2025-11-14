@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertCircle, CheckCircle2, Trash2 } from 'lucide-react';
 import { FirestoreFinanceService } from '../../services/firestoreFinanceService';
 import { useAuth } from '../../context/AuthContext';
+import { getCurrentOrgId } from '../../lib/tenants';
 import { useToast } from '../../ui/Toast';
 import type { TransactionV3 } from '../../types/financeV3';
 
@@ -98,6 +99,7 @@ export function EditTransactionModal({
     setIsSubmitting(true);
 
     try {
+      const orgId = getCurrentOrgId();
       const updatedTransaction = {
         id: transaction.id,
         type: formData.type,
@@ -110,7 +112,7 @@ export function EditTransactionModal({
         updatedAt: new Date().toISOString()
       };
 
-      await FirestoreFinanceService.saveTransaction(updatedTransaction, userId);
+      await FirestoreFinanceService.saveTransaction(updatedTransaction, userId, orgId);
 
       setShowSuccess(true);
       toast.success('Transacción actualizada correctamente');
@@ -144,7 +146,8 @@ export function EditTransactionModal({
     setIsDeleting(true);
 
     try {
-      await FirestoreFinanceService.deleteTransaction(transaction.id, userId);
+      const orgId = getCurrentOrgId();
+      await FirestoreFinanceService.deleteTransaction(transaction.id, userId, orgId);
 
       toast.success('Transacción eliminada correctamente');
 

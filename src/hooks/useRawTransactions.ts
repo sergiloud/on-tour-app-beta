@@ -69,7 +69,7 @@ export function useRawTransactions(): TransactionV3[] {
     
     const loadManualTransactions = async () => {
       try {
-        const transactions = await FirestoreFinanceService.getUserTransactions(userId);
+        const transactions = await FirestoreFinanceService.getUserTransactions(userId, orgId);
         setManualTransactions(transactions);
       } catch (error) {
         console.error('Failed to load manual transactions:', error);
@@ -78,7 +78,7 @@ export function useRawTransactions(): TransactionV3[] {
     };
     
     loadManualTransactions();
-  }, [userId, refreshTrigger]);
+  }, [userId, orgId, refreshTrigger]);
   
   // Obtener snapshot de datos - recalculate when orgId changes
   const snapshot = useMemo(() => buildFinanceSnapshot(), [orgId]);

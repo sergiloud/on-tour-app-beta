@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, DollarSign, Calendar, Tag, FileText, TrendingUp, TrendingDown, CheckCircle2, AlertCircle } from 'lucide-react';
 import { FirestoreFinanceService, type FinanceTransaction } from '../../services/firestoreFinanceService';
 import { useAuth } from '../../context/AuthContext';
+import { getCurrentOrgId } from '../../lib/tenants';
 import { logger } from '../../lib/logger';
 
 interface AddTransactionModalProps {
@@ -88,6 +89,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
     setSaveStatus('idle');
 
     try {
+      const orgId = getCurrentOrgId();
       const transaction: FinanceTransaction = {
         id: `txn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
         type: formData.type as 'income' | 'expense',
@@ -100,7 +102,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
         updatedAt: new Date().toISOString()
       };
 
-      await FirestoreFinanceService.saveTransaction(transaction, userId);
+      await FirestoreFinanceService.saveTransaction(transaction, userId, orgId);
 
       logger.info('Transaction saved successfully', {
         component: 'AddTransactionModal',

@@ -109,9 +109,9 @@ export default defineConfig({
     cssCodeSplit: true,
     modulePreload: {
       polyfill: true,
-      resolveDependencies: (filename, deps, { hostId, hostType }) => {
-        // Preload critical chunks
-        return deps.filter(dep => !dep.includes('maplibre') && !dep.includes('firebase'));
+      resolveDependencies: (filename, deps) => {
+        // Preload critical chunks, exclude heavy ones
+        return deps.filter(dep => !dep.includes('maplibre') && !dep.includes('excel'));
       },
     },
     rollupOptions: {
@@ -120,12 +120,32 @@ export default defineConfig({
         // Optimized chunking strategy
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Core React bundle (must stay together)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            // CRITICAL: Keep React, React-DOM, React-Router and Scheduler TOGETHER
+            // They must be in same chunk to avoid initialization order issues
+            // Error: "Cannot set properties of undefined (setting 'Children')"
+            if (id.includes('react') || 
+                id.includes('react-dom') || 
+                id.includes('react-router') ||
+                id.includes('scheduler')) {
               return 'vendor-react';
             }
             
-            // Framer Motion (animation library - heavy but frequently used)
+            // Firebase - large but independent
+            if (id.includes('firebase') || id.includes('@firebase')) {
+              return 'vendor-firebase';
+            }
+            
+            // TanStack Query - depends on React but can be separate
+            if (id.includes('@tanstack/react-query')) {
+              return 'vendor-query';
+            }
+            
+            // Charts and data viz - lazy loaded
+            if (id.includes('recharts') || id.includes('d3-')) {
+              return 'vendor-charts';
+            }
+            
+            // Framer Motion - animation library
             if (id.includes('framer-motion')) {
               return 'vendor-motion';
             }
@@ -135,29 +155,9 @@ export default defineConfig({
               return 'vendor-maplibre';
             }
             
-            // Firebase - independent from React
-            if (id.includes('firebase') || id.includes('@firebase')) {
-              return 'vendor-firebase';
-            }
-            
-            // Charts and data viz
-            if (id.includes('recharts') || id.includes('d3-')) {
-              return 'vendor-charts';
-            }
-            
-            // UI utilities
-            if (id.includes('lucide-react') || id.includes('sonner') || id.includes('@tanstack/react-virtual')) {
-              return 'vendor-ui';
-            }
-            
-            // TanStack Query
-            if (id.includes('@tanstack/react-query')) {
-              return 'vendor-query';
-            }
-            
-            // Date utilities
-            if (id.includes('date-fns')) {
-              return 'vendor-date';
+            // Excel/XLSX - heavy, lazy loaded
+            if (id.includes('exceljs') || id.includes('xlsx')) {
+              return 'vendor-excel';
             }
             
             // DND Kit
@@ -165,12 +165,19 @@ export default defineConfig({
               return 'vendor-dnd';
             }
             
-            // Excel/XLSX (heavy, lazy loaded)
-            if (id.includes('exceljs') || id.includes('xlsx')) {
-              return 'vendor-excel';
+            // UI utilities - small, can be grouped
+            if (id.includes('lucide-react') || 
+                id.includes('sonner') || 
+                id.includes('@tanstack/react-virtual')) {
+              return 'vendor-ui';
             }
             
-            // Everything else
+            // Date utilities
+            if (id.includes('date-fns')) {
+              return 'vendor-date';
+            }
+            
+            // Everything else goes to vendor
             return 'vendor';
           }
         },

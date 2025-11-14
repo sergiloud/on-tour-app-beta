@@ -27,6 +27,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
   const polylineLayerRef = useRef<L.LayerGroup | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const isDraggingRef = useRef<boolean>(false);
   const { focus } = useMissionControl() as any;
   const [ready, setReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -184,34 +185,44 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         zoomControl: false,
         attributionControl: true,
         preferCanvas: true,
+        renderer: L.canvas({ tolerance: 5 }), // Canvas renderer with tolerance
         zoomAnimation: true,
         fadeAnimation: true,
         markerZoomAnimation: false,
         worldCopyJump: true,
         zoomAnimationThreshold: 4,
-        wheelPxPerZoomLevel: 100, // Smoother zoom with scroll
-        zoomSnap: 0.5, // Smoother zoom increments
-        zoomDelta: 0.5,
+        wheelPxPerZoomLevel: 120, // Faster scroll zoom
+        zoomSnap: 0.25, // More granular zoom
+        zoomDelta: 0.25,
         trackResize: true,
         boxZoom: true,
         doubleClickZoom: true,
         keyboard: true,
         tapTolerance: 15,
+        inertia: true, // Enable inertia
+        inertiaDeceleration: 3000, // Smooth deceleration
+        inertiaMaxSpeed: 1500, // Max inertia speed
+        maxBoundsViscosity: 0.0, // Smooth bounds
       });
 
-      // High-performance tile layer with caching
+      // High-performance tile layer with aggressive caching
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap, © CARTO',
         subdomains: 'abcd',
         maxZoom: 19,
         minZoom: 2,
-        updateWhenIdle: false, // Update during panning for smoothness
+        updateWhenIdle: true, // CRITICAL: Only update when idle to prevent lag
         updateWhenZooming: false,
-        keepBuffer: 4, // Increased buffer for smoother panning
+        updateInterval: 150, // Throttle tile updates
+        keepBuffer: 6, // Large buffer for smooth panning (was 4)
         maxNativeZoom: 19,
         tileSize: 256,
         crossOrigin: true,
         className: 'map-tiles',
+        // Performance optimizations
+        noWrap: false,
+        bounds: undefined,
+        detectRetina: false, // Disable retina for performance
       }).addTo(map);
 
       L.control.zoom({ position: 'topright' }).addTo(map);
@@ -220,14 +231,59 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       markerLayerRef.current = L.layerGroup().addTo(map);
       polylineLayerRef.current = L.layerGroup().addTo(map);
       
-      // Add smooth panning on drag
-      map.on('drag', () => {
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
+      // Optimize rendering during drag
+      let dragTimeout: NodeJS.Timeout;
+      
+      map.on('dragstart', () => {
+        isDraggingRef.current = true;
+        // Hide complex elements during drag for smoothness
+        if (markerLayerRef.current) {
+          const layer = markerLayerRef.current as any;
+          if (layer.getElement) {
+            const element = layer.getElement();
+            if (element) element.style.opacity = '0.7';
+          }
         }
-        animationFrameRef.current = requestAnimationFrame(() => {
-          // Smooth rendering during drag
-        });
+      });
+      
+      map.on('drag', () => {
+        // Debounce during drag
+        clearTimeout(dragTimeout);
+      });
+      
+      map.on('dragend', () => {
+        isDraggingRef.current = false;
+        // Restore full opacity
+        dragTimeout = setTimeout(() => {
+          if (markerLayerRef.current) {
+            const layer = markerLayerRef.current as any;
+            if (layer.getElement) {
+              const element = layer.getElement();
+              if (element) element.style.opacity = '1';
+            }
+          }
+        }, 50);
+      });
+      
+      // Optimize zoom rendering
+      map.on('zoomstart', () => {
+        if (markerLayerRef.current) {
+          const layer = markerLayerRef.current as any;
+          if (layer.getElement) {
+            const element = layer.getElement();
+            if (element) element.style.willChange = 'transform';
+          }
+        }
+      });
+      
+      map.on('zoomend', () => {
+        if (markerLayerRef.current) {
+          const layer = markerLayerRef.current as any;
+          if (layer.getElement) {
+            const element = layer.getElement();
+            if (element) element.style.willChange = 'auto';
+          }
+        }
       });
 
       mapRef.current = map;

@@ -273,12 +273,18 @@
   background: #0a0f14 !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
   will-change: transform;
+  /* Critical for smooth panning */
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 .leaflet-tile-container {
   background: #0a0f14 !important;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  /* Force GPU layer */
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 .leaflet-tile {
@@ -287,6 +293,9 @@
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   will-change: opacity;
+  /* Prevent tile flickering during pan */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .leaflet-tile-loaded {
@@ -295,20 +304,46 @@
 
 .leaflet-zoom-animated {
   will-change: transform;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 .leaflet-map-pane {
   will-change: transform;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  /* Critical for smooth dragging */
+  pointer-events: none;
+}
+
+.leaflet-map-pane > * {
+  pointer-events: auto;
 }
 
 .leaflet-pane {
   will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 .leaflet-marker-pane {
   will-change: transform;
+  /* Reduce marker complexity during drag */
+  transition: opacity 0.1s ease;
+}
+
+/* Smooth dragging - CRITICAL */
+.leaflet-dragging .leaflet-marker-pane {
+  pointer-events: none !important;
+}
+
+.leaflet-dragging .leaflet-tile {
+  /* Disable transitions during drag for performance */
+  transition: none !important;
+}
+
+.leaflet-dragging .leaflet-zoom-animated {
+  /* Use faster transforms during drag */
+  transition: none !important;
 }
 
 .leaflet-container {
@@ -317,16 +352,31 @@
   -ms-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* Improve touch performance */
+  touch-action: none;
 }
 
 .leaflet-grab {
   cursor: grab !important;
   cursor: -webkit-grab !important;
+  /* Faster cursor change */
+  transition: none !important;
 }
 
 .leaflet-dragging .leaflet-grab {
   cursor: grabbing !important;
   cursor: -webkit-grabbing !important;
+}
+
+.leaflet-dragging {
+  /* Optimize entire container during drag */
+  cursor: grabbing !important;
+}
+
+.leaflet-dragging * {
+  /* Disable animations during drag */
+  animation: none !important;
+  transition: none !important;
 }
 
 /* Smooth zoom animations */

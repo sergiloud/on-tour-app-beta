@@ -107,7 +107,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         format: 'es',
-        // Simplified chunking - avoid circular dependencies
+        // Optimized chunking - separate heavy libraries
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
             // MapLibre - heavy and truly independent (no React dependency)
@@ -120,8 +120,17 @@ export default defineConfig({
               return 'vendor-firebase';
             }
             
+            // Framer Motion - large animation library (360KB)
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            
+            // React ecosystem (core + router)
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            
             // Everything else in one vendor chunk to prevent dependency issues
-            // This includes React, React-DOM, Framer Motion, and all other libs
             return 'vendor';
           }
         },

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Updating Service Worker...</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: system-ui;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #0b0f14;
+      color: white;
+    }
+    .container {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Updating...</h1>
+    <p>Cleaning up old service worker...</p>
+    <p id="status">Please wait...</p>
+  </div>
+  
+  <script>
+    (async () => {
+      const status = document.getElementById('status');
+      
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          
+          for (const reg of registrations) {
+            status.textContent = `Unregistering ${reg.active?.scriptURL || 'SW'}...`;
+            await reg.unregister();
+            console.log('Unregistered:', reg);
+          }
+          
+          // Clear all caches
+          const cacheNames = await caches.keys();
+          for (const name of cacheNames) {
+            status.textContent = `Clearing cache ${name}...`;
+            await caches.delete(name);
+            console.log('Deleted cache:', name);
+          }
+          
+          status.textContent = 'Done! Redirecting...';
+          
+          // Redirect to home
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } else {
+          status.textContent = 'Service Workers not supported. Redirecting...';
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        status.textContent = 'Error! Redirecting anyway...';
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      }
+    })();
+  </script>
+</body>
+</html>

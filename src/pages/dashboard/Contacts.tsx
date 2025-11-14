@@ -578,7 +578,7 @@ export const Contacts: React.FC = () => {
 
       {/* Table */}
       <div className="flex-1 overflow-hidden flex relative">
-        <div className={`flex-1 overflow-auto transition-all duration-300 ${selectedContact ? 'mr-96' : 'pr-6'}`}>
+        <div className={`flex-1 overflow-auto transition-all duration-300 ${selectedContact ? 'mr-96' : 'pr-6'}`} style={{ height: '100%' }}>
           {categoryFilteredContacts.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -593,7 +593,7 @@ export const Contacts: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div ref={tableContainerRef} className="flex-1 overflow-auto scroll-smooth" style={{ contain: 'strict' }}>
+            <div ref={tableContainerRef} className="flex-1 overflow-auto scroll-smooth" style={{ height: '100%', width: '100%' }}>
               {/* Header Grid */}
               <div className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 z-10 grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4">
                 <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Contacto</div>

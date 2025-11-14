@@ -122,7 +122,7 @@ const MissionControlDashboard: React.FC = () => {
                         </h2>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                         <span className="text-xs text-slate-400 dark:text-white/60 font-medium">Live</span>
                       </div>
                     </div>
@@ -150,13 +150,10 @@ const MissionControlDashboard: React.FC = () => {
                   </ErrorBoundary>
 
                   {/* Map Legend - Refined floating overlay */}
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      width: showLegend ? 'auto' : '40px',
-                      height: showLegend ? 'auto' : '40px'
-                    }}
-                    className="absolute bottom-4 left-4 backdrop-blur-md bg-slate-900/90 border border-slate-300 dark:border-white/20 rounded-xl shadow-xl overflow-hidden"
+                  <div
+                    className={`absolute bottom-4 left-4 backdrop-blur-md bg-slate-900/90 border border-slate-300 dark:border-white/20 rounded-xl shadow-xl overflow-hidden transition-all duration-300 ${
+                      showLegend ? 'w-auto h-auto' : 'w-10 h-10'
+                    }`}
                   >
                     {showLegend ? (
                       <div className="px-4 py-3">
@@ -201,7 +198,7 @@ const MissionControlDashboard: React.FC = () => {
                         </svg>
                       </button>
                     )}
-                  </motion.div>
+                  </div>
                 </div>
               </div>
               ) : (

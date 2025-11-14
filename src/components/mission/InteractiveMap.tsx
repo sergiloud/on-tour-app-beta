@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useMissionControl } from '../../context/MissionControlContext';
 import { Card } from '../../ui/Card';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -28,7 +27,6 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const polylineLayerRef = useRef<L.LayerGroup | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const isDraggingRef = useRef<boolean>(false);
-  const focusRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { profile } = useAuth();
@@ -36,14 +34,6 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   
   const { shows: allShows } = useShows();
   const { shows: geocodedShows } = useGeocodedShows(allShows);
-  
-  // Get focus from context but don't re-render on changes
-  const missionControl = useMissionControl();
-  
-  // Store focus in ref to avoid re-renders
-  useEffect(() => {
-    focusRef.current = missionControl.focus;
-  }, [missionControl.focus]);
   
   const shows = useMemo(() => {
     const now = Date.now();
@@ -509,49 +499,6 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     };
   }, [shows, ready, homeLocation, fmtMoney, homeIcon, tourLegs, markerIcons, getStatusColor]);
 
-  // Handle focus changes using ref to avoid re-renders
-  // Enhanced with smooth animation and zoom
-  useEffect(() => {
-    const map = mapRef.current;
-    const focus = focusRef.current;
-    if (!map || !ready || !focus) return;
-
-    if (focus.type === 'show' && focus.showId) {
-      const show = shows.find(s => s.id === focus.showId);
-      if (show && show.lat && show.lng) {
-        // Smooth fly animation to show location
-        map.flyTo([show.lat, show.lng], 9, {
-          animate: true,
-          duration: 1.2, // Smooth 1.2s animation
-          easeLinearity: 0.25,
-        });
-        
-        // Find and open marker popup after animation
-        setTimeout(() => {
-          const marker = markersRef.current.find(m => {
-            const pos = m.getLatLng();
-            return Math.abs(pos.lat - show.lat) < 0.001 && Math.abs(pos.lng - show.lng) < 0.001;
-          });
-          
-          if (marker) {
-            // Close other popups first for cleaner UX
-            markersRef.current.forEach(m => m.closePopup());
-            marker.openPopup();
-            
-            // Subtle bounce effect on marker
-            const element = marker.getElement();
-            if (element) {
-              element.style.animation = 'none';
-              setTimeout(() => {
-                element.style.animation = 'marker-bounce 600ms cubic-bezier(0.4, 0, 0.2, 1)';
-              }, 50);
-            }
-          }
-        }, 800); // Open popup mid-flight for smooth UX
-      }
-    }
-  }, [shows, ready]); // Note: focus NOT in dependencies to prevent re-renders
-
   return (
     <Card className={`relative overflow-hidden h-full ${className}`}>
       <div
@@ -589,15 +536,8 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   );
 };
 
-// Memoize to prevent parent re-renders from affecting the map
-// The map updates internally via useEffect when data changes
-export const InteractiveMap = React.memo(
-  InteractiveMapComponent,
-  () => {
-    // Always return true to prevent re-renders from props
-    // Map updates are handled internally via useEffect hooks
-    return true;
-  }
-);
+// Memoize to prevent unnecessary re-renders
+// Only re-render when className prop changes
+export const InteractiveMap = React.memo(InteractiveMapComponent);
 
 export default InteractiveMap;

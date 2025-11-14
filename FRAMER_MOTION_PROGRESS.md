@@ -1,131 +1,188 @@
-# Progreso de Optimización: Reducción de Framer Motion
+# Framer Motion Optimization Progress
 
-## 🎯 Objetivo
-Reducir el uso de framer-motion de **209 archivos** a **~50 archivos** (solo casos complejos).
+## Objective
+Reduce framer-motion usage from 209 files to ~50 files (complex usage only).
+Target bundle size reduction: ~94KB → ~20KB (~74KB savings).
 
-## 📊 Estado Actual
+## Current Status
+- **Files optimized**: 15 of 64 simple files (23.4%)
+- **Estimated savings**: ~23KB of ~94KB target (~24% progress)
+- **Bundle size**: 1,572.15 kB total
+  - vendor-framer: 69.94 kB
+  - vendor main: 1,035.64 kB
 
-### ✅ Completado: 12 / 64 archivos simples (18.75%)
+## Phase Breakdown
 
-**Ahorro estimado**: ~18KB de ~94KB totales (~19%)
+### Phase 1 ✅ (Commit 7e0527d)
+- ShowsSummaryCard.tsx
+- Created analyze-framer-motion.mjs tool
+- Established CSS animations-simple.css utilities
 
-### 📦 Fases Completadas
+### Phase 2 ✅ (Commit 1af2de0)
+Dashboard components (7 files):
+- FinanceSummaryCard.tsx
+- MissionControlSummaryCard.tsx
+- QuickActions.tsx
+- NextCriticalEventKPI.tsx
+- KeyPerformanceKPI.tsx
+- HeroSection.tsx
+- DashboardFilters.tsx
 
-#### **Fase 1** (Commit 7e0527d)
-- **Archivos**: 1 componente
-  - `ShowsSummaryCard.tsx`
-- **Herramientas creadas**:
-  - `analyze-framer-motion.mjs` - Análisis de uso simple vs complejo
-  - `animations-simple.css` - Sistema CSS de animaciones GPU
-- **Clases CSS**: animate-fade-in, animate-slide-up, animate-stagger, hover-scale, hover-lift, active-scale
+### Phase 3 ✅ (Commit 4d6d134)
+Finance components (2 files):
+- ErrorStates.tsx (4 error variants)
+- KpiCards.tsx (KPI grid with stagger)
 
-#### **Fase 2** (Commit 1af2de0)
-- **Archivos**: 7 componentes dashboard
-  - `FinanceSummaryCard.tsx` - Card + button interactions
-  - `MissionControlSummaryCard.tsx` - Card + alert + stagger
-  - `QuickActions.tsx` - Grid con stagger
-  - `NextCriticalEventKPI.tsx` - Scale entrance
-  - `KeyPerformanceKPI.tsx` - Progress bar animado
-  - `HeroSection.tsx` - Múltiples animaciones anidadas
-  - `DashboardFilters.tsx` - Filtros + reset button
+### Phase 4 ✅ (Commit 1487d5d)
+Home components (2 files):
+- FinalCta.tsx (landing CTA)
+- Pricing.tsx (pricing grid)
 
-#### **Fase 3** (Commit 4d6d134)
-- **Archivos**: 2 componentes finance
-  - `ErrorStates.tsx` - 4 estados de error diferentes
-  - `KpiCards.tsx` - Grid de KPIs con delays escalonados
+### CRITICAL FIX ✅ (Commit e0139af)
+- **Pricing.tsx**: Removed `useReducedMotion` import causing circular dependency
+- **Solution**: Replaced with native `window.matchMedia('(prefers-reduced-motion: reduce)')`
+- **Error fixed**: "Cannot access 'je' before initialization" in vendor bundle
 
-#### **Fase 4** (Commit 1487d5d)
-- **Archivos**: 2 componentes home (landing page)
-  - `FinalCta.tsx` - Call-to-action principal
-  - `Pricing.tsx` - Grid de precios con reduced-motion
+### CRITICAL FIX #2 ✅ (Commit 43ee71d)
+- **vite.config.ts**: Reordered chunk dependencies (React BEFORE framer-motion)
+- **Reason**: Prevent circular TDZ errors in vendor bundle initialization
 
-## 🛠️ Técnicas Aplicadas
+### Phase 5 ✅ (Commit 42eab2e) - IN PROGRESS
+Home components (3 files):
+- FeaturesSection.tsx ✅
+- PricingTable.tsx ✅
+- TrustSection.tsx ✅
+- DashboardTeaser.tsx ❌ SKIPPED (uses layoutId, infinite animations - complex)
 
-### Reemplazos Comunes
+Vite config improvements:
+- Added `hoistTransitiveImports: false` to prevent import hoisting issues
+- Clean rebuild to eliminate cached artifacts
+
+### Next Targets (Phase 6)
+Dashboard components (5 files):
+- AnalyticsPanel.tsx
+- TourOverviewCard.tsx
+- ProactiveDashboard.tsx
+- FinancialHealthKPI.tsx
+- EventDetailDrawer.tsx
+
+Finance components (2 files):
+- Summary.tsx
+- PLTable.tsx
+
+## Known Complex Files (KEEP framer-motion)
+These files use advanced framer-motion features and should NOT be optimized:
+
+### AnimatePresence Usage
+- AddTransactionModal.tsx
+- EditTransactionModal.tsx
+- EditBudgetModal.tsx
+- CalendarEventModal.tsx
+- EventCreationModal.tsx
+- ContactEditorModal.tsx
+- EventEditorModal.tsx
+
+### Layout Animations
+- DashboardTeaser.tsx (layoutId for metamorphosis)
+- MetamorphosisZenith.tsx (complex layout + MotionValue)
+- MetamorphosisContainer.tsx (useScroll, useTransform)
+
+### Complex Interactions
+- InteractiveCanvas.tsx (useMotionValue, useSpring, useAnimation)
+- ControlPanel.tsx (advanced motion controls)
+- ChaosHero.tsx (complex gestures)
+- TrustBar.tsx (advanced transforms)
+
+### Scroll Animations
+- ChaosSection.tsx (useScroll, useTransform)
+- StorytellingSection.tsx (AnimatePresence)
+
+### Essential UI Components
+- AnimatedButton.tsx (whileHover, whileTap, infinite glow animation)
+- TestimonialsSection.tsx (staggerChildren with custom variants)
+- FeatureGallery.tsx (intersection observer + motion)
+
+## Optimization Pattern
+
+### Before (framer-motion)
 ```tsx
-// ANTES (framer-motion)
+import { motion } from 'framer-motion';
+
 <motion.div
   initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.5, delay: 0.1 }}
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.95 }}
->
-
-// DESPUÉS (CSS)
-<div 
-  className="animate-slide-up hover-scale active-scale"
-  style={{ animationDelay: '100ms' }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.6 }}
+  whileHover={{ scale: 1.02 }}
 >
 ```
 
-### Animaciones Implementadas en CSS
-- **Entrance**: fade-in, slide-up, slide-down, scale-in
-- **Stagger**: Auto delays para listas (nth-child)
-- **Interactive**: hover-scale, hover-lift, active-scale
-- **Special**: Reduced-motion support
+### After (CSS animations)
+```tsx
+<div className="animate-slide-up hover-lift">
+```
 
-## 📁 Directivas Optimizadas por Directorio
+### CSS Utilities (animations-simple.css)
+- `.animate-fade-in` - opacity 0 → 1
+- `.animate-slide-up` - slide from bottom with fade
+- `.animate-slide-down` - slide from top with fade
+- `.animate-slide-in-right` - slide from right with fade
+- `.animate-stagger` - sequential child animations
+- `.hover-scale` - scale on hover
+- `.hover-lift` - lift (translateY) on hover
+- `.active-scale` - scale on click
 
-| Directorio | Simple Files | Optimizados | Pendientes |
-|------------|-------------|-------------|------------|
-| `dashboard/` | 12 | 7 | 5 |
-| `finance/` | 4 | 2 | 2 |
-| `home/` | 6 | 2 | 4 |
-| `calendar/` | 13 | 0 | 13 |
-| `mobile/ios/` | 7 | 0 | 7 |
-| `shows/` | 4 | 1 | 3 |
-| `common/` | 2 | 0 | 2 |
-| `settings/` | 2 | 0 | 2 |
-| `other` | 14 | 0 | 14 |
-| **TOTAL** | **64** | **12** | **52** |
+All animations are GPU-accelerated (transform, opacity only) and respect `prefers-reduced-motion`.
 
-## 🎬 Próximos Pasos
+## Critical Lessons Learned
 
-### Alta Prioridad (fáciles de optimizar)
-1. **home/** (4 archivos): FeaturesSection, PricingTable, StorytellingSection
-2. **dashboard/** (5 archivos): AnalyticsPanel, TourOverviewCard, ProactiveDashboard
-3. **finance/** (2 archivos): Summary, PLTable
+### ❌ NEVER DO THIS
+```tsx
+// WRONG: Partial import causes circular dependency
+import { useReducedMotion } from 'framer-motion';
+// ... but not using motion components
+```
 
-### Media Prioridad
-4. **mobile/ios/apps/** (6 archivos): AppLayout, ArtistsApp, FilesApp, etc.
-5. **mobile/ios/widgets/** (2 archivos): FinanceStatsWidget, QuickStats
+### ✅ ALWAYS DO THIS
+```tsx
+// RIGHT: Use native API instead
+const prefersReducedMotion = useMemo(() => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}, []);
+```
 
-### Archivos Complejos (NO optimizar - mantener framer-motion)
-- Todos con `AnimatePresence` (modales, toasts, dropdowns)
-- Todos con `layout` animations (smooth reorder)
-- Todos con gestures (drag, swipe, pan)
-- Total: **133 archivos complejos** - CORRECTAMENTE USANDO framer-motion
+### ❌ AVOID
+- Partial framer-motion imports without using motion components
+- Mixing CSS animations with framer-motion in same component
+- useReducedMotion hook when not using motion components
 
-## 📈 Impacto en Bundle
+### ✅ BEST PRACTICES
+- Remove ALL framer-motion imports when optimizing to CSS
+- Use inline `style={{ animationDelay: '100ms' }}` for sequencing
+- Keep complex animations (AnimatePresence, layoutId, gestures) in framer
+- Always test build after optimization
+- Clean vite cache (`rm -rf node_modules/.vite`) if builds fail
 
-### Actual
-- Bundle total: ~1.57MB
-- vendor-framer: ~70KB
-- Archivos usando framer: 197 → 185 (12 reducidos)
+## Bundle Analysis
+Run `node scripts/analyze-framer-motion.mjs` to identify optimization targets.
 
-### Estimado Final (cuando termine)
-- Archivos usando framer: 197 → ~133 (64 reducidos)
-- Ahorro directo: ~94KB
-- **Bundle estimado: ~1.48MB (-60KB total, -4%)**
+**Files still using framer-motion**: 194 files
+- Simple usage (can optimize): 49 files remaining
+- Complex usage (must keep): 145 files
 
-## ✅ Validación
+## Progress Tracker
+- [x] Phase 1: 1 file (shows/)
+- [x] Phase 2: 7 files (dashboard/)
+- [x] Phase 3: 2 files (finance/)
+- [x] Phase 4: 2 files (home/)
+- [x] Phase 5: 3 files (home/) - DashboardTeaser skipped (complex)
+- [ ] Phase 6: 7 files (dashboard/ + finance/)
+- [ ] Phase 7: Remaining simple files
+- [ ] Phase 8: Final bundle analysis
 
-Todos los cambios han sido:
-- ✅ Compilados sin errores
-- ✅ Testeados visualmente (animaciones idénticas)
-- ✅ Pusheados a **main** y **beta** repos
-- ✅ Builds exitosos en < 25s
-
-## 📝 Notas
-
-- Las animaciones CSS son **más rápidas** (GPU-accelerated)
-- **Accesibilidad**: Respeta prefers-reduced-motion
-- **Mantenibilidad**: Clases reutilizables
-- **Bundle**: Menor peso inicial
-- **Performance**: Mejor Core Web Vitals
+**Total progress**: 15/64 simple files optimized (23.4%)
+**Remaining work**: 49 simple files to optimize
 
 ---
-
-**Última actualización**: Fase 4 completada  
-**Siguiente objetivo**: Optimizar 10-15 archivos más (Fase 5)
+Last updated: 2025-11-14 (Phase 5 - Commit 42eab2e)

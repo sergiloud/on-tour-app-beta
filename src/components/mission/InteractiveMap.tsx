@@ -199,9 +199,10 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         markerZoomAnimation: false,
         worldCopyJump: true,
         zoomAnimationThreshold: 4,
-        wheelPxPerZoomLevel: 120, // Faster scroll zoom
-        zoomSnap: 0.25, // More granular zoom
-        zoomDelta: 0.25,
+        wheelPxPerZoomLevel: 60, // MUCH faster scroll zoom (was 120)
+        wheelDebounceTime: 40, // Faster response
+        zoomSnap: 0.5, // Smoother zoom steps
+        zoomDelta: 1, // Bigger zoom jumps for speed
         trackResize: true,
         boxZoom: true,
         doubleClickZoom: true,
@@ -374,7 +375,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         
         const marker = L.marker([show.lat, show.lng], { 
           icon: statusIcon,
-          riseOnHover: false,
+          riseOnHover: true, // Rise on hover for better UX
           bubblingMouseEvents: false, // Better click performance
         });
 
@@ -424,6 +425,20 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
           keepInView: true,
           autoClose: false, // Keep popup open when clicking elsewhere
           closeOnClick: false,
+        });
+        
+        // Add quick-view tooltip on hover (lightweight info)
+        const tooltipContent = `
+          <div style="font-size: 11px; font-weight: 600;">${escapeHtml(show.venue || show.name || t('dashboard.untitled'))}</div>
+          <div style="font-size: 10px; opacity: 0.7; margin-top: 2px;">${dateStr}</div>
+        `;
+        
+        marker.bindTooltip(tooltipContent, {
+          className: 'custom-map-tooltip',
+          direction: 'top',
+          offset: [0, -8],
+          opacity: 0.95,
+          permanent: false,
         });
 
         markersToAdd.push(marker);
@@ -495,6 +510,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   }, [shows, ready, homeLocation, fmtMoney, homeIcon, tourLegs, markerIcons, getStatusColor]);
 
   // Handle focus changes using ref to avoid re-renders
+  // Enhanced with smooth animation and zoom
   useEffect(() => {
     const map = mapRef.current;
     const focus = focusRef.current;
@@ -503,25 +519,44 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     if (focus.type === 'show' && focus.showId) {
       const show = shows.find(s => s.id === focus.showId);
       if (show && show.lat && show.lng) {
-        map.setView([show.lat, show.lng], 7, { animate: true });
-        
-        const marker = markersRef.current.find(m => {
-          const pos = m.getLatLng();
-          return pos.lat === show.lat && pos.lng === show.lng;
+        // Smooth fly animation to show location
+        map.flyTo([show.lat, show.lng], 9, {
+          animate: true,
+          duration: 1.2, // Smooth 1.2s animation
+          easeLinearity: 0.25,
         });
         
-        if (marker) {
-          marker.openPopup();
-        }
+        // Find and open marker popup after animation
+        setTimeout(() => {
+          const marker = markersRef.current.find(m => {
+            const pos = m.getLatLng();
+            return Math.abs(pos.lat - show.lat) < 0.001 && Math.abs(pos.lng - show.lng) < 0.001;
+          });
+          
+          if (marker) {
+            // Close other popups first for cleaner UX
+            markersRef.current.forEach(m => m.closePopup());
+            marker.openPopup();
+            
+            // Subtle bounce effect on marker
+            const element = marker.getElement();
+            if (element) {
+              element.style.animation = 'none';
+              setTimeout(() => {
+                element.style.animation = 'marker-bounce 600ms cubic-bezier(0.4, 0, 0.2, 1)';
+              }, 50);
+            }
+          }
+        }, 800); // Open popup mid-flight for smooth UX
       }
     }
   }, [shows, ready]); // Note: focus NOT in dependencies to prevent re-renders
 
   return (
-    <Card className={`relative overflow-hidden ${className}`}>
+    <Card className={`relative overflow-hidden h-full ${className}`}>
       <div
         ref={containerRef}
-        className="w-full h-full min-h-[500px] rounded-lg overflow-hidden"
+        className="w-full h-full rounded-lg overflow-hidden"
         role="application"
         aria-label={t('dashboard.map')}
       />
@@ -554,12 +589,14 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   );
 };
 
-// Memoize with custom comparison to prevent unnecessary re-renders
+// Memoize to prevent parent re-renders from affecting the map
+// The map updates internally via useEffect when data changes
 export const InteractiveMap = React.memo(
   InteractiveMapComponent,
-  (prevProps, nextProps) => {
-    // Only re-render if className changes
-    return prevProps.className === nextProps.className;
+  () => {
+    // Always return true to prevent re-renders from props
+    // Map updates are handled internally via useEffect hooks
+    return true;
   }
 );
 

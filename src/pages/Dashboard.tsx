@@ -129,10 +129,10 @@ const MissionControlDashboard: React.FC = () => {
                   </div>
 
                   {/* Map Container */}
-                  <div className="relative">
+                  <div className="relative h-[600px]">
                   <ErrorBoundary
                     fallback={
-                      <div className="h-80 md:h-96 bg-gradient-to-br from-slate-800/50 to-slate-900/50 flex flex-col items-center justify-center gap-3">
+                      <div className="h-full bg-gradient-to-br from-slate-800/50 to-slate-900/50 flex flex-col items-center justify-center gap-3">
                         <MapPin className="w-16 h-16 text-slate-200 dark:text-white/30" />
                         <div className="text-sm text-slate-500 dark:text-white/70">{t('hud.mapLoadError') || 'Map failed to load'}</div>
                         <button
@@ -144,8 +144,8 @@ const MissionControlDashboard: React.FC = () => {
                       </div>
                     }
                   >
-                    <React.Suspense fallback={<LoadingCard height="h-[500px]" />}>
-                      <InteractiveMap key={mapKey} className="h-[500px] w-full" />
+                    <React.Suspense fallback={<LoadingCard height="h-full" />}>
+                      <InteractiveMap key={mapKey} className="h-full w-full" />
                     </React.Suspense>
                   </ErrorBoundary>
 

@@ -1,6 +1,17 @@
 /* Professional Map Styling - Minimal & Clean Design */
 
 /* ============================================
+   MAP CONTAINER - Event Isolation
+   ============================================ */
+
+.leaflet-container {
+  /* Isolate map from parent event bubbling */
+  isolation: isolate;
+  /* Prevent layout shifts */
+  contain: layout style paint;
+}
+
+/* ============================================
    POPUP STYLES - Minimal & Professional
    ============================================ */
 
@@ -96,8 +107,118 @@
 }
 
 /* ============================================
-   MARKERS - Minimal & Clean (No Animations)
+   MARKERS - Enhanced Professional Design
    Status-based colors set dynamically in component
+   ============================================ */
+
+/* Marker wrapper for enhanced effects */
+.map-marker-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Main marker dot - solid with shadow */
+.map-marker-dot {
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Outer ring for confirmed shows */
+.map-marker-ring {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid;
+  opacity: 0;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* Hover effects */
+.custom-marker:hover .map-marker-dot {
+  transform: scale(1.25);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 0 2px rgba(255, 255, 255, 0.15);
+  z-index: 1000;
+}
+
+.custom-marker:hover .map-marker-ring {
+  opacity: 0.4;
+  transform: scale(1.3);
+}
+
+/* Subtle pulse for confirmed shows */
+@keyframes marker-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.5);
+  }
+}
+
+.marker-pulse .map-marker-ring {
+  animation: marker-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Bounce effect for focused markers */
+@keyframes marker-bounce {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   TOOLTIPS - Quick Info on Hover
+   ============================================ */
+
+.custom-map-tooltip {
+  background: rgba(11, 15, 20, 0.98) !important;
+  backdrop-filter: blur(12px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 6px !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  padding: 6px 10px !important;
+  color: white !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+
+.custom-map-tooltip::before {
+  border-top-color: rgba(11, 15, 20, 0.98) !important;
+}
+
+/* ============================================
+   MARKER STATUS CLASSES
    ============================================ */
 
 .map-marker-pin {

@@ -266,23 +266,27 @@
 }
 
 /* ============================================
-   MAP CONTAINER
+   MAP CONTAINER - Performance Optimizations
    ============================================ */
 
 .leaflet-container {
   background: #0a0f14 !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  will-change: transform;
 }
 
 .leaflet-tile-container {
   background: #0a0f14 !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .leaflet-tile {
   opacity: 0;
-  transition: opacity 250ms ease-in;
+  transition: opacity 200ms ease-in;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
+  will-change: opacity;
 }
 
 .leaflet-tile-loaded {
@@ -291,6 +295,20 @@
 
 .leaflet-zoom-animated {
   will-change: transform;
+  transform: translateZ(0);
+}
+
+.leaflet-map-pane {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.leaflet-pane {
+  will-change: transform;
+}
+
+.leaflet-marker-pane {
+  will-change: transform;
 }
 
 .leaflet-container {
@@ -298,14 +316,32 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .leaflet-grab {
   cursor: grab !important;
+  cursor: -webkit-grab !important;
 }
 
 .leaflet-dragging .leaflet-grab {
   cursor: grabbing !important;
+  cursor: -webkit-grabbing !important;
+}
+
+/* Smooth zoom animations */
+.leaflet-zoom-anim .leaflet-zoom-animated {
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.leaflet-fade-anim .leaflet-tile,
+.leaflet-fade-anim .leaflet-popup {
+  will-change: opacity;
+}
+
+/* Hide marker shadows for performance */
+.leaflet-marker-shadow {
+  display: none;
 }
 
 /* Professional design - no animations needed */

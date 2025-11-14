@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMissionControl } from '../../context/MissionControlContext';
 import { Card } from '../../ui/Card';
 import L from 'leaflet';
@@ -24,6 +24,9 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const polylinesRef = useRef<L.Polyline[]>([]);
+  const markerLayerRef = useRef<L.LayerGroup | null>(null);
+  const polylineLayerRef = useRef<L.LayerGroup | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
   const { focus } = useMissionControl() as any;
   const [ready, setReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +52,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const { fmtMoney } = useSettings();
   
   // Color mapping for show status (professional, minimal palette)
-  const getStatusColor = (status: string): string => {
+  const getStatusColor = useCallback((status: string): string => {
     switch (status) {
       case 'confirmed': return '#10b981'; // Emerald - solid green
       case 'pending': return '#f59e0b';   // Amber - waiting
@@ -59,7 +62,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       case 'archived': return '#6b7280';  // Gray - archived
       default: return '#10b981';
     }
-  };
+  }, []);
   
   // Create memoized marker icons per status for performance
   const markerIcons = useMemo(() => {
@@ -82,7 +85,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     });
     
     return icons;
-  }, []);
+  }, [getStatusColor]);
 
   // Smart grouping: Group consecutive shows into tour legs
   const tourLegs = useMemo((): TourLeg[] => {
@@ -167,7 +170,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     parseLocation();
   }, [profile?.location]);
 
-  // Initialize map
+  // Initialize map with performance optimizations
   useEffect(() => {
     const container = containerRef.current;
     if (!container || mapRef.current) return;
@@ -183,20 +186,49 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         preferCanvas: true,
         zoomAnimation: true,
         fadeAnimation: true,
-        markerZoomAnimation: false, // Disable marker animation for professional look
+        markerZoomAnimation: false,
         worldCopyJump: true,
+        zoomAnimationThreshold: 4,
+        wheelPxPerZoomLevel: 100, // Smoother zoom with scroll
+        zoomSnap: 0.5, // Smoother zoom increments
+        zoomDelta: 0.5,
+        trackResize: true,
+        boxZoom: true,
+        doubleClickZoom: true,
+        keyboard: true,
+        tapTolerance: 15,
       });
 
+      // High-performance tile layer with caching
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap, © CARTO',
         subdomains: 'abcd',
         maxZoom: 19,
-        updateWhenIdle: true,
+        minZoom: 2,
+        updateWhenIdle: false, // Update during panning for smoothness
         updateWhenZooming: false,
-        keepBuffer: 2,
+        keepBuffer: 4, // Increased buffer for smoother panning
+        maxNativeZoom: 19,
+        tileSize: 256,
+        crossOrigin: true,
+        className: 'map-tiles',
       }).addTo(map);
 
       L.control.zoom({ position: 'topright' }).addTo(map);
+      
+      // Create layer groups for better performance
+      markerLayerRef.current = L.layerGroup().addTo(map);
+      polylineLayerRef.current = L.layerGroup().addTo(map);
+      
+      // Add smooth panning on drag
+      map.on('drag', () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+        animationFrameRef.current = requestAnimationFrame(() => {
+          // Smooth rendering during drag
+        });
+      });
 
       mapRef.current = map;
       setReady(true);
@@ -207,162 +239,196 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     }
 
     return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
+      markerLayerRef.current = null;
+      polylineLayerRef.current = null;
     };
   }, []);
 
-  // Update markers and tour paths
+  // Update markers and tour paths with optimized rendering
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !ready) return;
+    const markerLayer = markerLayerRef.current;
+    const polylineLayer = polylineLayerRef.current;
+    
+    if (!map || !ready || !markerLayer || !polylineLayer) return;
 
-    markersRef.current.forEach(marker => marker.remove());
+    // Clear existing layers efficiently
+    markerLayer.clearLayers();
+    polylineLayer.clearLayers();
     markersRef.current = [];
-    polylinesRef.current.forEach(line => line.remove());
     polylinesRef.current = [];
 
     if (shows.length === 0) return;
 
-    // Draw tour legs with performance optimization (batch rendering)
-    const polylinesToAdd: L.Polyline[] = [];
-    
-    tourLegs.forEach((leg) => {
-      if (leg.shows.length > 1) {
-        const coordinates: [number, number][] = leg.shows.map(s => [s.lat, s.lng]);
+    // Use requestAnimationFrame for smooth rendering
+    const renderMap = () => {
+      // Draw tour legs with performance optimization (batch rendering)
+      const polylinesToAdd: L.Polyline[] = [];
+      
+      tourLegs.forEach((leg) => {
+        if (leg.shows.length > 1) {
+          const coordinates: [number, number][] = leg.shows.map(s => [s.lat, s.lng]);
+          
+          // Determine leg color based on status distribution
+          const confirmedCount = leg.shows.filter(s => s.status === 'confirmed').length;
+          const legColor = confirmedCount > leg.shows.length / 2 
+            ? '#10b981' // Mostly confirmed = emerald
+            : '#64748b'; // Mixed/pending = slate
+          
+          const polyline = L.polyline(coordinates, {
+            color: legColor,
+            weight: 1.5,
+            opacity: 0.35,
+            smoothFactor: 1.5, // Increased smoothing
+            dashArray: confirmedCount === leg.shows.length ? undefined : '4, 8',
+            interactive: false, // Non-interactive for better performance
+          });
+          
+          polylinesToAdd.push(polyline);
+        }
+      });
+      
+      // Batch add polylines for better performance
+      polylinesToAdd.forEach(p => {
+        polylineLayer.addLayer(p);
+        polylinesRef.current.push(p);
+      });
+
+      // Batch create markers for better performance
+      const markersToAdd: L.Marker[] = [];
+      
+      shows.forEach((show, index) => {
+        const showStatus = show.status || 'confirmed';
+        const statusIcon = markerIcons[showStatus] || markerIcons['confirmed'];
         
-        // Determine leg color based on status distribution
-        const confirmedCount = leg.shows.filter(s => s.status === 'confirmed').length;
-        const legColor = confirmedCount > leg.shows.length / 2 
-          ? '#10b981' // Mostly confirmed = emerald
-          : '#64748b'; // Mixed/pending = slate
+        const marker = L.marker([show.lat, show.lng], { 
+          icon: statusIcon,
+          riseOnHover: false,
+          bubblingMouseEvents: false, // Better click performance
+        });
+
+        const date = new Date(show.date);
+        const dateStr = date.toLocaleDateString(undefined, { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        });
+
+        const daysTillShow = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
         
-        const polyline = L.polyline(coordinates, {
-          color: legColor,
-          weight: 1.5,
-          opacity: 0.35,
-          smoothFactor: 1.2,
-          dashArray: confirmedCount === leg.shows.length ? undefined : '4, 8',
+        // Status label mapping
+        const statusLabels: Record<string, string> = {
+          confirmed: 'Confirmed',
+          pending: 'Pending',
+          offer: 'Offer',
+          canceled: 'Canceled',
+          postponed: 'Postponed',
+          archived: 'Archived',
+        };
+        
+        const statusColor = getStatusColor(showStatus);
+        const statusLabel = statusLabels[showStatus] || showStatus;
+
+        // Compact, professional popup content
+        const popupHTML = `
+          <div class="map-popup-content">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; flex-shrink: 0;"></div>
+              <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.5);">${statusLabel}</div>
+            </div>
+            <div class="map-popup-venue">${escapeHtml(show.venue || show.name || t('dashboard.untitled'))}</div>
+            <div class="map-popup-location">${escapeHtml(show.city)}, ${escapeHtml(show.country)}</div>
+            <div class="map-popup-date">${dateStr} · ${daysTillShow}d</div>
+            ${show.fee ? `<div class="map-popup-fee">${escapeHtml(fmtMoney(show.fee))}</div>` : ''}
+          </div>
+        `;
+
+        marker.bindPopup(popupHTML, {
+          className: 'custom-map-popup',
+          closeButton: true,
+          maxWidth: 260,
+          minWidth: 180,
+          autoPan: true,
+          autoPanPadding: [40, 40],
+          keepInView: true,
+          autoClose: false, // Keep popup open when clicking elsewhere
+          closeOnClick: false,
+        });
+
+        markersToAdd.push(marker);
+      });
+      
+      // Batch add all markers using layer group for performance
+      markersToAdd.forEach(m => {
+        markerLayer.addLayer(m);
+        markersRef.current.push(m);
+      });
+      
+      // Auto-open first show and fit bounds (after all markers added)
+      if (markersToAdd.length > 0 && shows.length > 0) {
+        // Use setTimeout to avoid blocking
+        setTimeout(() => {
+          markersToAdd[0]!.openPopup();
+          
+          if (shows.length > 1) {
+            const bounds = L.latLngBounds(shows.map(s => [s.lat, s.lng]));
+            map.fitBounds(bounds, { 
+              padding: [50, 50],
+              maxZoom: 5,
+              animate: true,
+              duration: 0.5, // Faster animation
+              easeLinearity: 0.2, // Smoother easing
+            });
+          } else {
+            map.setView([shows[0]!.lat, shows[0]!.lng], 4, { 
+              animate: true,
+              duration: 0.5,
+            });
+          }
+        }, 300); // Reduced delay
+      }
+
+      // Add home marker
+      if (homeLocation) {
+        const homeMarker = L.marker([homeLocation.lat, homeLocation.lng], { 
+          icon: homeIcon,
+          zIndexOffset: -100,
+          bubblingMouseEvents: false,
         });
         
-        polylinesToAdd.push(polyline);
-      }
-    });
-    
-    // Batch add polylines for better performance
-    polylinesToAdd.forEach(p => {
-      p.addTo(map);
-      polylinesRef.current.push(p);
-    });
-
-    // Batch create markers for better performance
-    const markersToAdd: L.Marker[] = [];
-    
-    shows.forEach((show, index) => {
-      const showStatus = show.status || 'confirmed';
-      const statusIcon = markerIcons[showStatus] || markerIcons['confirmed'];
-      
-      const marker = L.marker([show.lat, show.lng], { 
-        icon: statusIcon,
-        riseOnHover: false,
-      });
-
-      const date = new Date(show.date);
-      const dateStr = date.toLocaleDateString(undefined, { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
-      });
-
-      const daysTillShow = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      
-      // Status label mapping
-      const statusLabels: Record<string, string> = {
-        confirmed: 'Confirmed',
-        pending: 'Pending',
-        offer: 'Offer',
-        canceled: 'Canceled',
-        postponed: 'Postponed',
-        archived: 'Archived',
-      };
-      
-      const statusColor = getStatusColor(showStatus);
-      const statusLabel = statusLabels[showStatus] || showStatus;
-
-      // Compact, professional popup content
-      const popupHTML = `
-        <div class="map-popup-content">
-          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; flex-shrink: 0;"></div>
-            <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.5);">${statusLabel}</div>
+        homeMarker.bindPopup(`
+          <div class="map-popup-content map-popup-home">
+            <div class="map-popup-venue">${t('dashboard.home')}</div>
           </div>
-          <div class="map-popup-venue">${escapeHtml(show.venue || show.name || t('dashboard.untitled'))}</div>
-          <div class="map-popup-location">${escapeHtml(show.city)}, ${escapeHtml(show.country)}</div>
-          <div class="map-popup-date">${dateStr} · ${daysTillShow}d</div>
-          ${show.fee ? `<div class="map-popup-fee">${escapeHtml(fmtMoney(show.fee))}</div>` : ''}
-        </div>
-      `;
-
-      marker.bindPopup(popupHTML, {
-        className: 'custom-map-popup',
-        closeButton: true,
-        maxWidth: 260,
-        minWidth: 180,
-        autoPan: true,
-        autoPanPadding: [40, 40],
-      });
-
-      markersToAdd.push(marker);
-    });
-    
-    // Batch add all markers
-    markersToAdd.forEach(m => {
-      m.addTo(map);
-      markersRef.current.push(m);
-    });
-    
-    // Auto-open first show and fit bounds (after all markers added)
-    if (markersToAdd.length > 0 && shows.length > 0) {
-      setTimeout(() => {
-        markersToAdd[0]!.openPopup();
+        `, {
+          className: 'custom-map-popup',
+          closeButton: true,
+          maxWidth: 160,
+          autoClose: false,
+          closeOnClick: false,
+        });
         
-        if (shows.length > 1) {
-          const bounds = L.latLngBounds(shows.map(s => [s.lat, s.lng]));
-          map.fitBounds(bounds, { 
-            padding: [50, 50],
-            maxZoom: 5,
-            animate: true,
-            duration: 0.6,
-          });
-        } else {
-          map.setView([shows[0]!.lat, shows[0]!.lng], 4, { animate: true });
-        }
-      }, 400);
-    }
+        markerLayer.addLayer(homeMarker);
+        markersRef.current.push(homeMarker);
+      }
+    };
 
-    // Add home marker
-    if (homeLocation) {
-      const homeMarker = L.marker([homeLocation.lat, homeLocation.lng], { 
-        icon: homeIcon,
-        zIndexOffset: -100,
-      });
-      
-      homeMarker.bindPopup(`
-        <div class="map-popup-content map-popup-home">
-          <div class="map-popup-venue">${t('dashboard.home')}</div>
-        </div>
-      `, {
-        className: 'custom-map-popup',
-        closeButton: true,
-        maxWidth: 160,
-      });
-      
-      homeMarker.addTo(map);
-      markersRef.current.push(homeMarker);
-    }
-  }, [shows, ready, homeLocation, fmtMoney, homeIcon, tourLegs, markerIcons]);
+    // Use requestAnimationFrame for smooth rendering
+    animationFrameRef.current = requestAnimationFrame(renderMap);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [shows, ready, homeLocation, fmtMoney, homeIcon, tourLegs, markerIcons, getStatusColor]);
 
   // Handle focus changes
   useEffect(() => {

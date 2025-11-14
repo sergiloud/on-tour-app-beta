@@ -29,14 +29,14 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
       
-      // Profile completed actions (organization-scoped)
-      match /profile/completedActions/{orgId} {
-        allow read, write: if isOwner(userId);
-      }
-      
       // User organizations
       match /organizations/{orgId} {
         allow read, write: if isOwner(userId);
+        
+        // Organization profile (including completedActions)
+        match /profile/{document=**} {
+          allow read, write: if userOwnsOrg(userId, orgId);
+        }
         
         // Organization-scoped shows (NEW)
         match /shows/{showId} {

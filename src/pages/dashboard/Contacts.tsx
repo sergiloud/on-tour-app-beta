@@ -59,7 +59,7 @@ const ContactRow = React.memo<{
   return (
     <div
       onClick={() => onView(contact)}
-      className={`absolute top-0 left-0 w-full grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4 border-b border-slate-200 dark:border-white/5 hover:bg-interactive-hover cursor-pointer transition-all duration-150 ${
+      className={`absolute top-0 left-0 w-full grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4 border-b border-slate-200 dark:border-white/5 hover:bg-interactive-hover cursor-pointer ${
         isSelected ? 'bg-accent-500/10 border-l-2 border-accent-500' : ''
       }`}
       style={{
@@ -115,15 +115,15 @@ const ContactRow = React.memo<{
       {/* Acciones */}
       <div className="flex items-center justify-end gap-1">
         <button onClick={(e) => { e.stopPropagation(); onView(contact); }}
-          className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400 transition-all duration-150" title="Ver">
+          className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400" title="Ver">
           <Eye className="w-4 h-4" />
         </button>
         <button onClick={(e) => { e.stopPropagation(); onEdit(contact); }}
-          className="p-2 rounded-lg hover:bg-blue-500/20 text-theme-secondary hover:text-blue-400 transition-all duration-150" title="Editar">
+          className="p-2 rounded-lg hover:bg-blue-500/20 text-theme-secondary hover:text-blue-400" title="Editar">
           <Edit2 className="w-4 h-4" />
         </button>
         <button onClick={(e) => { e.stopPropagation(); onDelete(contact.id); }}
-          className="p-2 rounded-lg hover:bg-red-500/20 text-theme-secondary hover:text-red-400 transition-all duration-150" title="Eliminar">
+          className="p-2 rounded-lg hover:bg-red-500/20 text-theme-secondary hover:text-red-400" title="Eliminar">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>

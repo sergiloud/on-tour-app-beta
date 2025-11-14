@@ -121,14 +121,16 @@ export default defineConfig({
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
             // CRITICAL: Keep React ecosystem TOGETHER to prevent initialization errors
-            // React, React-DOM, React-Router, Scheduler AND TanStack Query must load together
-            // TanStack Query uses React.createElement internally and fails if React not ready
+            // React, React-DOM, React-Router, Scheduler, TanStack Query AND Recharts
+            // ALL of these use React APIs (createElement, forwardRef, etc.) and MUST load together
             if (id.includes('react') || 
                 id.includes('react-dom') || 
                 id.includes('react-router') ||
                 id.includes('scheduler') ||
                 id.includes('@tanstack/react-query') ||
-                id.includes('@tanstack/query-core')) {
+                id.includes('@tanstack/query-core') ||
+                id.includes('recharts') ||
+                id.includes('d3-')) {
               return 'vendor-react';
             }
             
@@ -137,12 +139,7 @@ export default defineConfig({
               return 'vendor-firebase';
             }
             
-            // Charts and data viz - lazy loaded
-            if (id.includes('recharts') || id.includes('d3-')) {
-              return 'vendor-charts';
-            }
-            
-            // Framer Motion - animation library
+            // Framer Motion - uses React but safer to keep separate (loaded after React)
             if (id.includes('framer-motion')) {
               return 'vendor-motion';
             }

@@ -7,6 +7,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ShowModalProvider } from './context/ShowModalContext';
 import { GlobalShowModal } from './components/common/GlobalShowModal';
 import { PWAComponents } from './components/pwa/PWAComponents';
+import { PerformanceMonitor } from './components/dev/PerformanceMonitor';
 import { prefetch } from './routes/prefetch';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 import { useShowsSync } from './hooks/useShowsSync';
@@ -73,6 +74,9 @@ export const App: React.FC = () => {
     <>
       {/* Service Worker update notifications */}
       <ServiceWorkerUpdater />
+
+      {/* Performance monitoring in dev mode */}
+      {import.meta.env.DEV && <PerformanceMonitor />}
 
       {/* Sonner toast notifications */}
       <Toaster

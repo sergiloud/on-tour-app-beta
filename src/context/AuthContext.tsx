@@ -88,7 +88,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
-        HybridVenueService.initialize(id);
+        const orgId = getCurrentOrgId();
+        HybridVenueService.initialize(id, orgId);
       } catch (e) {
         logger.warn('Could not initialize hybrid venue service', {
           component: 'AuthContext',

@@ -7,6 +7,7 @@
 import { FirestoreVenueService } from './firestoreVenueService';
 import { venueStore } from '../shared/venueStore';
 import { isFirebaseConfigured } from '../lib/firebase';
+import { getCurrentOrgId } from '../lib/tenants';
 import { logger } from '../lib/logger';
 import type { Venue } from '../types/venue';
 
@@ -18,27 +19,28 @@ export class HybridVenueService {
    * Initialize hybrid service for a user
    * Migrates localStorage data to Firestore if needed
    */
-  static async initialize(userId: string): Promise<void> {
+  static async initialize(userId: string, orgId: string): Promise<void> {
     if (!isFirebaseConfigured()) {
       return;
     }
 
     try {
       // Check if already migrated
-      const migrated = localStorage.getItem(this.MIGRATED_KEY);
+      const migrationKey = `${this.MIGRATED_KEY}-${userId}-${orgId}`;
+      const migrated = localStorage.getItem(migrationKey);
       if (!migrated) {
         // Migrate existing localStorage data to Firestore
-        const migratedCount = await FirestoreVenueService.migrateFromLocalStorage(userId);
+        const migratedCount = await FirestoreVenueService.migrateFromLocalStorage(userId, orgId);
         if (migratedCount > 0) {
-          localStorage.setItem(this.MIGRATED_KEY, 'true');
+          localStorage.setItem(migrationKey, 'true');
         }
       }
 
       // Sync from Firestore to localStorage
-      await this.syncFromCloud(userId);
+      await this.syncFromCloud(userId, orgId);
 
       // Setup real-time sync
-      this.setupRealtimeSync(userId);
+      this.setupRealtimeSync(userId, orgId);
     } catch (error) {
       logger.error('[HybridVenueService] Failed to initialize hybrid venue service', error as Error, { userId });
     }
@@ -48,13 +50,15 @@ export class HybridVenueService {
    * Save a venue (both localStorage and Firestore)
    */
   static async saveVenue(venue: Venue, userId: string): Promise<void> {
+    const orgId = getCurrentOrgId();
+    
     // Save to localStorage first (immediate)
     venueStore.add(venue);
 
     // Try to save to Firestore
     if (isFirebaseConfigured()) {
       try {
-        await FirestoreVenueService.saveVenue(venue, userId);
+        await FirestoreVenueService.saveVenue(venue, userId, orgId);
       } catch (error) {
         logger.warn('[HybridVenueService] Failed to save venue to cloud, saved locally', { userId, venueId: venue.id, error: String(error) });
       }
@@ -69,6 +73,8 @@ export class HybridVenueService {
     updates: Partial<Venue>,
     userId: string
   ): Promise<void> {
+    const orgId = getCurrentOrgId();
+    
     // Update localStorage first
     venueStore.update(venueId, updates);
 
@@ -77,7 +83,7 @@ export class HybridVenueService {
       try {
         const venue = venueStore.getById(venueId);
         if (venue) {
-          await FirestoreVenueService.saveVenue(venue, userId);
+          await FirestoreVenueService.saveVenue(venue, userId, orgId);
         }
       } catch (error) {
         logger.warn('[HybridVenueService] Failed to update venue in cloud, updated locally', { userId, venueId, error: String(error) });
@@ -89,13 +95,15 @@ export class HybridVenueService {
    * Delete a venue
    */
   static async deleteVenue(venueId: string, userId: string): Promise<void> {
+    const orgId = getCurrentOrgId();
+    
     // Delete from localStorage first
     venueStore.delete(venueId);
 
     // Try to delete from Firestore
     if (isFirebaseConfigured()) {
       try {
-        await FirestoreVenueService.deleteVenue(venueId, userId);
+        await FirestoreVenueService.deleteVenue(venueId, userId, orgId);
       } catch (error) {
         logger.warn('[HybridVenueService] Failed to delete venue from cloud, deleted locally', { userId, venueId, error: String(error) });
       }
@@ -119,9 +127,9 @@ export class HybridVenueService {
   /**
    * Sync venues from Firestore to localStorage
    */
-  private static async syncFromCloud(userId: string): Promise<void> {
+  private static async syncFromCloud(userId: string, orgId: string): Promise<void> {
     try {
-      const cloudVenues = await FirestoreVenueService.getUserVenues(userId);
+      const cloudVenues = await FirestoreVenueService.getUserVenues(userId, orgId);
       if (cloudVenues.length > 0) {
         venueStore.setAll(cloudVenues);
         logger.info('[HybridVenueService] Synced venues from cloud', { userId, count: cloudVenues.length });
@@ -134,14 +142,14 @@ export class HybridVenueService {
   /**
    * Setup real-time sync listener
    */
-  private static setupRealtimeSync(userId: string): void {
+  private static setupRealtimeSync(userId: string, orgId: string): void {
     // Clean up previous listener
     if (this.unsubscribe) {
       this.unsubscribe();
     }
 
     try {
-      this.unsubscribe = FirestoreVenueService.listenToUserVenues(userId, (venues) => {
+      this.unsubscribe = FirestoreVenueService.listenToUserVenues(userId, orgId, (venues: Venue[]) => {
         venueStore.setAll(venues);
         logger.info('[HybridVenueService] Real-time sync updated', { userId, count: venues.length });
       });

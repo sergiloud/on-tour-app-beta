@@ -48,12 +48,12 @@ export class FirestoreVenueService {
   /**
    * Save venue to Firestore
    */
-  static async saveVenue(venue: Venue, userId: string): Promise<void> {
+  static async saveVenue(venue: Venue, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const venueRef = doc(db, `users/${userId}/venues/${venue.id}`);
+    const venueRef = doc(db, `users/${userId}/organizations/${orgId}/venues/${venue.id}`);
     const venueData = this.removeUndefined({
       ...venue,
       updatedAt: Timestamp.now()
@@ -65,12 +65,12 @@ export class FirestoreVenueService {
   /**
    * Get single venue by ID
    */
-  static async getVenue(venueId: string, userId: string): Promise<Venue | null> {
+  static async getVenue(venueId: string, userId: string, orgId: string): Promise<Venue | null> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const venueRef = doc(db, `users/${userId}/venues/${venueId}`);
+    const venueRef = doc(db, `users/${userId}/organizations/${orgId}/venues/${venueId}`);
     const venueSnap = await getDoc(venueRef);
 
     if (!venueSnap.exists()) {
@@ -94,12 +94,12 @@ export class FirestoreVenueService {
   /**
    * Get all venues for a user
    */
-  static async getUserVenues(userId: string): Promise<Venue[]> {
+  static async getUserVenues(userId: string, orgId: string): Promise<Venue[]> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const venuesRef = collection(db, `users/${userId}/venues`);
+    const venuesRef = collection(db, `users/${userId}/organizations/${orgId}/venues`);
     const q = query(venuesRef, orderBy('name', 'asc'));
     const querySnapshot = await getDocs(q);
 
@@ -122,12 +122,12 @@ export class FirestoreVenueService {
   /**
    * Delete venue from Firestore
    */
-  static async deleteVenue(venueId: string, userId: string): Promise<void> {
+  static async deleteVenue(venueId: string, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const venueRef = doc(db, `users/${userId}/venues/${venueId}`);
+    const venueRef = doc(db, `users/${userId}/organizations/${orgId}/venues/${venueId}`);
     await deleteDoc(venueRef);
   }
 
@@ -136,13 +136,14 @@ export class FirestoreVenueService {
    */
   static listenToUserVenues(
     userId: string,
+    orgId: string,
     callback: (venues: Venue[]) => void
   ): Unsubscribe {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const venuesRef = collection(db, `users/${userId}/venues`);
+    const venuesRef = collection(db, `users/${userId}/organizations/${orgId}/venues`);
     const q = query(venuesRef, orderBy('name', 'asc'));
 
     return onSnapshot(q, (snapshot) => {
@@ -168,7 +169,7 @@ export class FirestoreVenueService {
   /**
    * Batch save venues - Optimized with batch writes
    */
-  static async saveVenues(venues: Venue[], userId: string): Promise<void> {
+  static async saveVenues(venues: Venue[], userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
@@ -185,7 +186,7 @@ export class FirestoreVenueService {
       const batch = writeBatch(db);
       
       for (const venue of chunk) {
-        const venueRef = doc(db, `users/${userId}/venues/${venue.id}`);
+        const venueRef = doc(db, `users/${userId}/organizations/${orgId}/venues/${venue.id}`);
         const venueData = this.removeUndefined({
           ...venue,
           updatedAt: Timestamp.now()
@@ -203,7 +204,7 @@ export class FirestoreVenueService {
   /**
    * Migrate venues from localStorage to Firestore
    */
-  static async migrateFromLocalStorage(userId: string): Promise<number> {
+  static async migrateFromLocalStorage(userId: string, orgId: string): Promise<number> {
     try {
       const stored = localStorage.getItem('on-tour-venues');
       if (!stored) return 0;
@@ -211,14 +212,14 @@ export class FirestoreVenueService {
       const venues = JSON.parse(stored) as Venue[];
       
       // Check if already migrated
-      const existing = await this.getUserVenues(userId);
+      const existing = await this.getUserVenues(userId, orgId);
       if (existing.length > 0) {
         console.log('Venues already migrated');
         return 0;
       }
 
       // Use batch save for better performance
-      await this.saveVenues(venues, userId);
+      await this.saveVenues(venues, userId, orgId);
 
       console.log(`✅ Migrated ${venues.length} venues to Firestore`);
       return venues.length;

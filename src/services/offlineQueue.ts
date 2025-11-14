@@ -214,9 +214,9 @@ class OfflineQueueService {
       case 'venues':
         const { FirestoreVenueService } = await import('./firestoreVenueService');
         if (type === 'create' || type === 'update') {
-          await FirestoreVenueService.saveVenue(data, userId);
+          await FirestoreVenueService.saveVenue(data, userId, orgId);
         } else if (type === 'delete') {
-          await FirestoreVenueService.deleteVenue(entityId, userId);
+          await FirestoreVenueService.deleteVenue(entityId, userId, orgId);
         }
         break;
 

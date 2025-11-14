@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTransactionsPaginated } from '../../hooks/useFirestoreScalable';
 import { t } from '../../lib/i18n';
-import { useSettings } from '../../context/SettingsContext';
+import { useSettingsStore } from '../../stores/settingsStore';
 
 interface TransactionListProps {
   snapshotId: string;
@@ -12,7 +12,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   snapshotId,
   pageSize = 50 
 }) => {
-  const { fmtMoney } = useSettings();
+  // Zustand: only re-renders when fmtMoney changes
+  const fmtMoney = useSettingsStore(state => state.fmtMoney);
   const { 
     transactions, 
     loadMore, 

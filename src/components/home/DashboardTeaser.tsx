@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from '../../framer-entry';
-import { SimpleButton } from '../../ui/SimpleButton';
+import { motion } from 'framer-motion';
+import { AnimatedButton } from '../../ui/AnimatedButton';
 import { useAnimatedNumber } from '../../hooks/useAnimatedNumber';
 import { MapPreview } from '../map/MapPreview';
 
@@ -206,9 +206,9 @@ export const DashboardTeaser: React.FC<DashboardTeaserProps> = ({ className = ''
             <span className="badge-soft">Offer</span>
           </div>
         </div>
-        <SimpleButton tone="ghost" className="mt-2 text-xs px-3 py-2">
+        <AnimatedButton tone="ghost" className="mt-2 text-xs px-3 py-2">
           View all
-        </SimpleButton>
+        </AnimatedButton>
       </motion.div>
 
       <motion.div
@@ -242,9 +242,9 @@ export const DashboardTeaser: React.FC<DashboardTeaserProps> = ({ className = ''
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8 }}
           >
-            <SimpleButton className="text-sm px-4 py-2">
+            <AnimatedButton className="text-sm px-4 py-2">
               Plan Route
-            </SimpleButton>
+            </AnimatedButton>
           </motion.div>
         </div>
       </motion.div>

@@ -108,36 +108,29 @@ export default defineConfig({
       output: {
         format: 'es',
         // Optimized chunking - separate heavy libraries
-        // CRITICAL: Order matters for preventing circular dependencies
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Framer Motion - FIRST, completely isolated to prevent any TDZ issues
-            // Must be loaded before anything that imports it
-            if (id.includes('framer-motion')) {
-              return 'vendor-framer';
-            }
-            
-            // React ecosystem - second layer
+            // React ecosystem
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'vendor-react';
             }
             
-            // MapLibre - heavy and truly independent (no React dependency)
+            // Framer Motion - isolated
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            
+            // MapLibre - heavy map library
             if (id.includes('maplibre-gl')) {
               return 'vendor-maplibre';
             }
             
-            // Firebase - independent from React core
+            // Firebase
             if (id.includes('firebase') || id.includes('@firebase')) {
               return 'vendor-firebase';
             }
             
-            // Lucide icons - large icon library
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            
-            // TanStack libraries (react-query, virtual, etc)
+            // TanStack libraries
             if (id.includes('@tanstack')) {
               return 'vendor-tanstack';
             }
@@ -147,7 +140,7 @@ export default defineConfig({
               return 'vendor-dates';
             }
             
-            // Everything else in one vendor chunk to prevent dependency issues
+            // Everything else together to prevent dependency issues
             return 'vendor';
           }
         },

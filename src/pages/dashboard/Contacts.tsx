@@ -9,6 +9,7 @@
 
 import React, { useState, useMemo, useRef, useEffect, useDeferredValue, useCallback, lazy, Suspense } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useDebounce } from '../../hooks/useDebounce';
 import {
   Plus, Search, Download, Upload, X, Building2, Users,
   Mail, Phone, MapPin, Tag as TagIcon, Loader2, SlidersHorizontal,
@@ -61,7 +62,11 @@ const ContactRow = React.memo<{
       className={`absolute top-0 left-0 w-full grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4 border-b border-slate-200 dark:border-white/5 hover:bg-interactive-hover cursor-pointer transition-all duration-150 ${
         isSelected ? 'bg-accent-500/10 border-l-2 border-accent-500' : ''
       }`}
-      style={style}
+      style={{
+        ...style,
+        contain: 'layout style paint', // CSS containment for layout isolation
+        contentVisibility: 'auto', // Rendering optimization for off-screen elements
+      }}
     >
       {/* Contacto */}
       <div className="flex items-center gap-3 min-w-0 pr-4">
@@ -154,6 +159,10 @@ export const Contacts: React.FC = () => {
     filters, setFilters, sortBy, setSortBy, sortedContacts, resetFilters
   } = useContactFilters(contacts);
 
+  // Debounce geographic filters to reduce recalculations during selection changes
+  const debouncedCountry = useDebounce(selectedCountry, 100);
+  const debouncedCity = useDebounce(selectedCity, 100);
+
   // Use deferred value for non-blocking UI updates during heavy filtering
   const deferredSortedContacts = useDeferredValue(sortedContacts);
 
@@ -161,7 +170,7 @@ export const Contacts: React.FC = () => {
   // Esto causaba lag al navegar porque ejecutaba mutations masivas en background
   // Si se necesita, hacer manualmente con un botón "Sync from Shows"
 
-  // Filtrar por categoría + ubicación - ✅ Memoizado correctamente
+  // Filtrar por categoría + ubicación - ✅ Memoizado correctamente con debounced values
   const categoryFilteredContacts = useMemo(() => {
     let filtered = deferredSortedContacts;
 
@@ -170,18 +179,18 @@ export const Contacts: React.FC = () => {
       filtered = filtered.filter(c => c.type === activeCategory);
     }
 
-    // Filtro por país
-    if (selectedCountry !== 'all') {
-      filtered = filtered.filter(c => c.country === selectedCountry);
+    // Filtro por país (debounced)
+    if (debouncedCountry !== 'all') {
+      filtered = filtered.filter(c => c.country === debouncedCountry);
     }
 
-    // Filtro por ciudad
-    if (selectedCity !== 'all') {
-      filtered = filtered.filter(c => c.city === selectedCity);
+    // Filtro por ciudad (debounced)
+    if (debouncedCity !== 'all') {
+      filtered = filtered.filter(c => c.city === debouncedCity);
     }
 
     return filtered;
-  }, [deferredSortedContacts, activeCategory, selectedCountry, selectedCity]);
+  }, [deferredSortedContacts, activeCategory, debouncedCountry, debouncedCity]);
 
   // Contadores por categoría
   const categoryCounts = useMemo(() => {
@@ -261,8 +270,15 @@ export const Contacts: React.FC = () => {
     count: categoryFilteredContacts.length,
     getScrollElement: () => tableContainerRef.current,
     estimateSize: () => 73, // altura estimada de cada fila en px
-    overscan: 5, // reducido de 10 a 5 para mejor rendimiento
+    overscan: 3, // reducido a 3 para máximo rendimiento (menos elementos en DOM)
+    lanes: 1, // single lane for better performance
   });
+
+  // Memoize virtual items to avoid recalculation on every render
+  const virtualItems = useMemo(() => rowVirtualizer.getVirtualItems(), [
+    rowVirtualizer.range?.startIndex,
+    rowVirtualizer.range?.endIndex,
+  ]);
 
   // ✅ Callbacks memoizados para evitar re-renders de ContactRow
   const handleCreateContact = useCallback(() => { 
@@ -608,9 +624,10 @@ export const Contacts: React.FC = () => {
                 style={{
                   height: `${rowVirtualizer.getTotalSize()}px`,
                   willChange: 'transform', // Optimize scroll performance
+                  transform: 'translateZ(0)', // Force GPU acceleration
                 }}
               >
-                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                {virtualItems.map((virtualRow) => {
                   const contact = categoryFilteredContacts[virtualRow.index];
                   if (!contact) return null;
                   return (
@@ -623,7 +640,7 @@ export const Contacts: React.FC = () => {
                       onDelete={handleDeleteContact}
                       style={{
                         height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start}px)`,
+                        transform: `translate3d(0, ${virtualRow.start}px, 0)`, // GPU-accelerated transform
                       }}
                     />
                   );
@@ -633,9 +650,16 @@ export const Contacts: React.FC = () => {
           )}
         </div>
 
-        {/* Side Panel - Contact Preview Completo - FIXED POSITION */}
+        {/* Side Panel - Contact Preview Completo - OPTIMIZED POSITIONING */}
         {selectedContact && (
-          <div className="fixed right-0 top-0 bottom-0 w-96 border-l border-slate-200 dark:border-white/10 bg-dark-800/95 backdrop-blur-md overflow-auto flex-shrink-0 animate-slideInRight shadow-2xl z-40">
+          <div 
+            className="fixed right-0 top-0 bottom-0 w-96 border-l border-slate-200 dark:border-white/10 bg-dark-800/95 backdrop-blur-md overflow-auto flex-shrink-0 shadow-2xl z-40"
+            style={{
+              transform: 'translateZ(0)', // Force GPU layer
+              willChange: 'transform', // Hint browser for optimization
+              contain: 'layout style paint', // Isolate repaints
+            }}
+          >
             <div className="flex flex-col h-full">
               {/* Header con Avatar Grande */}
               <div className="p-6 border-b border-slate-200 dark:border-white/10 bg-gradient-to-br from-accent-500/10 to-accent-600/5">

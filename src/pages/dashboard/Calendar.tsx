@@ -277,8 +277,7 @@ const Calendar: React.FC = () => {
       // For other events (meeting, rehearsal, break, other, etc), open CalendarEventModal
       const id = ev.id.split(':')[1];
       
-      // Try to find in calendar events first (future: when Firebase is integrated)
-      // For now, check in travel array as it may be stored there temporarily
+      // Try to find in calendar events first
       const otherEvent = travel.find(t => t.id === id);
       
       if (otherEvent) {
@@ -938,7 +937,6 @@ const Calendar: React.FC = () => {
           try {
             if (calendarEventModal.selectedEvent?.id) {
               // Actualizar evento existente
-              // Por ahora, actualizamos en el array de travel (temporal hasta integrar Firebase)
               const eventId = calendarEventModal.selectedEvent.id;
               
               // Construir el objeto itinerary actualizado
@@ -962,7 +960,7 @@ const Calendar: React.FC = () => {
               await travelOperations.save(updatedEvent);
               announce('Calendar event updated successfully');
             } else {
-              // Crear nuevo evento usando travel operations (temporal)
+              // Crear nuevo evento
               const newId = generateId();
               const newEvent = {
                 id: newId,

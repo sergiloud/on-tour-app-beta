@@ -1,4 +1,5 @@
 import { 
+import { logger } from '../lib/logger';
   collection, 
   doc, 
   getDocs, 
@@ -215,7 +216,7 @@ export class FirestoreShowService {
       await batch.commit();
     }
     
-    console.log(`✅ Bulk saved ${shows.length} shows using batch writes`);
+    logger.info(`Bulk saved ${shows.length} shows`, { count: shows.length, component: 'FirestoreShowService' });
   }
 
   /**
@@ -271,17 +272,17 @@ export class FirestoreShowService {
       // Check if user already has shows in Firestore
       const existingShows = await this.getUserShows(userId, orgId);
       if (existingShows.length > 0) {
-        console.log('User already has shows in Firestore, skipping migration');
+        logger.info('User already has shows in Firestore, skipping migration', { component: 'FirestoreShowService' });
         return 0;
       }
 
       // Migrate shows to Firestore
       await this.bulkSaveShows(shows, userId, orgId);
       
-      console.log(`✅ Migrated ${shows.length} shows to Firestore`);
+      logger.info(`Migrated ${shows.length} shows to Firestore`, { count: shows.length });
       return shows.length;
     } catch (error) {
-      console.error('❌ Failed to migrate shows:', error);
+      logger.error('Failed to migrate shows', error as Error);
       return 0;
     }
   }

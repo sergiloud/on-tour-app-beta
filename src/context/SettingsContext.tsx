@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { logger } from '../lib/logger';
 import { trackEvent } from '../lib/telemetry';
 import { loadSettings, saveSettings, SETTINGS_KEY } from '../lib/persist';
 import type { PeriodPreset } from '../features/finance/period';

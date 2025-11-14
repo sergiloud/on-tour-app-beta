@@ -1,4 +1,5 @@
 /**
+import { logger } from '../lib/logger';
  * Service Worker Registration & Control
  *
  * Maneja el registro, actualización y comunicación con el SW

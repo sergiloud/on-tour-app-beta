@@ -1,4 +1,5 @@
 /**
+import { logger } from '../lib/logger';
  * Firestore Contact Service - Cloud sync for CRM contacts
  * Handles CRUD operations and real-time synchronization
  * Data isolation: contacts/{userId}/contacts/{contactId}
@@ -195,7 +196,7 @@ export class FirestoreContactService {
       await batch.commit();
     }
     
-    console.log(`✅ Batch saved ${contacts.length} contacts`);
+    logger.info(`Batch saved ${contacts.length} contacts`, { count: contacts.length });
   }
 
   /**
@@ -258,7 +259,7 @@ export class FirestoreContactService {
 
       return contacts.length;
     } catch (error) {
-      console.error('❌ Failed to migrate contacts:', error);
+      logger.error('Failed to migrate contacts', error as Error);
       return 0;
     }
   }

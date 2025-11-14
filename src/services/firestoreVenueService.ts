@@ -1,4 +1,5 @@
 /**
+import { logger } from '../lib/logger';
  * Firestore Venue Service - Cloud sync for venues
  * Handles CRUD operations and real-time synchronization
  * Data isolation: users/{userId}/venues/{venueId}
@@ -198,7 +199,7 @@ export class FirestoreVenueService {
       await batch.commit();
     }
     
-    console.log(`✅ Batch saved ${venues.length} venues`);
+    logger.info(`Batch saved ${venues.length} venues`, { count: venues.length });
   }
 
   /**
@@ -214,17 +215,17 @@ export class FirestoreVenueService {
       // Check if already migrated
       const existing = await this.getUserVenues(userId, orgId);
       if (existing.length > 0) {
-        console.log('Venues already migrated');
+        logger.info('Venues already migrated');
         return 0;
       }
 
       // Use batch save for better performance
       await this.saveVenues(venues, userId, orgId);
 
-      console.log(`✅ Migrated ${venues.length} venues to Firestore`);
+      logger.info(`Migrated ${venues.length} venues`, { count: venues.length });
       return venues.length;
     } catch (error) {
-      console.error('Migration failed:', error);
+      logger.error('Migration failed', error as Error);
       return 0;
     }
   }

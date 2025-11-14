@@ -120,6 +120,11 @@ export default defineConfig({
               return 'vendor-framer';
             }
             
+            // Recharts - ISOLATE (potential TDZ source)
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            
             // MapLibre - heavy map library
             if (id.includes('maplibre-gl')) {
               return 'vendor-maplibre';
@@ -140,7 +145,7 @@ export default defineConfig({
               return 'vendor-dates';
             }
             
-            // Everything else together to prevent dependency issues
+            // Everything else together
             return 'vendor';
           }
         },

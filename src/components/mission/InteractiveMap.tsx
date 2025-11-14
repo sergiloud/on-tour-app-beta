@@ -26,7 +26,6 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
   const polylineLayerRef = useRef<L.LayerGroup | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const isDraggingRef = useRef<boolean>(false);
   const [ready, setReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { profile } = useAuth();
@@ -198,10 +197,8 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
         doubleClickZoom: true,
         keyboard: true,
         tapTolerance: 15,
-        inertia: true, // Enable inertia
-        inertiaDeceleration: 3000, // Smooth deceleration
-        inertiaMaxSpeed: 1500, // Max inertia speed
-        maxBoundsViscosity: 0.0, // Smooth bounds
+        inertia: false, // Disable inertia to prevent re-renders after mouseup
+        maxBoundsViscosity: 0.0,
       });
 
       // High-performance tile layer with aggressive caching
@@ -229,61 +226,6 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       // Create layer groups for better performance
       markerLayerRef.current = L.layerGroup().addTo(map);
       polylineLayerRef.current = L.layerGroup().addTo(map);
-      
-      // Optimize rendering during drag
-      let dragTimeout: NodeJS.Timeout;
-      
-      map.on('dragstart', () => {
-        isDraggingRef.current = true;
-        // Hide complex elements during drag for smoothness
-        if (markerLayerRef.current) {
-          const layer = markerLayerRef.current as any;
-          if (layer.getElement) {
-            const element = layer.getElement();
-            if (element) element.style.opacity = '0.7';
-          }
-        }
-      });
-      
-      map.on('drag', () => {
-        // Debounce during drag
-        clearTimeout(dragTimeout);
-      });
-      
-      map.on('dragend', () => {
-        isDraggingRef.current = false;
-        // Restore full opacity
-        dragTimeout = setTimeout(() => {
-          if (markerLayerRef.current) {
-            const layer = markerLayerRef.current as any;
-            if (layer.getElement) {
-              const element = layer.getElement();
-              if (element) element.style.opacity = '1';
-            }
-          }
-        }, 50);
-      });
-      
-      // Optimize zoom rendering
-      map.on('zoomstart', () => {
-        if (markerLayerRef.current) {
-          const layer = markerLayerRef.current as any;
-          if (layer.getElement) {
-            const element = layer.getElement();
-            if (element) element.style.willChange = 'transform';
-          }
-        }
-      });
-      
-      map.on('zoomend', () => {
-        if (markerLayerRef.current) {
-          const layer = markerLayerRef.current as any;
-          if (layer.getElement) {
-            const element = layer.getElement();
-            if (element) element.style.willChange = 'auto';
-          }
-        }
-      });
 
       mapRef.current = map;
       setReady(true);

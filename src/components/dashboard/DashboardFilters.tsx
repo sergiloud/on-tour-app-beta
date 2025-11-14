@@ -18,7 +18,7 @@ export const DashboardFilters: React.FC = () => {
 
     return (
         <div
-            className="mb-5 p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm animate-slide-down"
+            className="mb-5 p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm"
         >
             <div className="flex flex-col md:flex-row gap-3">
                 {/* Search Input */}
@@ -79,7 +79,7 @@ export const DashboardFilters: React.FC = () => {
                 {hasActiveFilters && (
                     <button
                         onClick={resetFilters}
-                        className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 text-xs font-medium transition-all flex items-center gap-2 animate-scale-in"
+                        className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 text-xs font-medium transition-all flex items-center gap-2"
                         aria-label="Reset filters"
                     >
                         <X className="w-3.5 h-3.5" />
@@ -91,8 +91,7 @@ export const DashboardFilters: React.FC = () => {
             {/* Active Filters Summary */}
             {hasActiveFilters && (
                 <div
-                    className="mt-3 flex flex-wrap gap-2 text-xs animate-fade-in"
-                    style={{ animationDelay: '100ms' }}
+                    className="mt-3 flex flex-wrap gap-2 text-xs"
                 >
                     <span className="opacity-60">Active filters:</span>
                     {filters.dateRange !== '30' && (

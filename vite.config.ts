@@ -130,6 +130,21 @@ export default defineConfig({
               return 'vendor-react';
             }
             
+            // Lucide icons - large icon library
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            
+            // TanStack libraries (react-query, virtual, etc)
+            if (id.includes('@tanstack')) {
+              return 'vendor-tanstack';
+            }
+            
+            // Date libraries
+            if (id.includes('date-fns') || id.includes('dayjs')) {
+              return 'vendor-dates';
+            }
+            
             // Everything else in one vendor chunk to prevent dependency issues
             return 'vendor';
           }

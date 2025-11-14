@@ -9,6 +9,9 @@ import {
   MissionSkeleton,
   SettingsSkeleton
 } from '../components/skeletons/PageSkeletons';
+import { ShowsPageSkeleton } from '../components/loading/ShowsPageSkeleton';
+import { ContactsPageSkeleton } from '../components/loading/ContactsPageSkeleton';
+import { CalendarPageSkeleton } from '../components/loading/CalendarPageSkeleton';
 import DashboardLayout from '../layouts/DashboardLayout';
 import AuthLayout from '../layouts/AuthLayout';
 
@@ -82,14 +85,14 @@ export const AppRouter: React.FC = () => {
           <Route path="org/artist-hub" element={<Suspense fallback={<DashboardSkeleton />}><ArtistHub /></Suspense>} />
           <Route path="finance" element={<Suspense fallback={<FinanceSkeleton />}><Finance /></Suspense>} />
           <Route path="finance/overview" element={<Suspense fallback={<FinanceSkeleton />}><FinanceOverview /></Suspense>} />
-          <Route path="contacts" element={<Suspense fallback={<DashboardSkeleton />}><Contacts /></Suspense>} />
+          <Route path="contacts" element={<Suspense fallback={<ContactsPageSkeleton />}><Contacts /></Suspense>} />
           <Route path="story" element={<Suspense fallback={<DashboardSkeleton />}><Story /></Suspense>} />
-          <Route path="shows" element={<Suspense fallback={<ShowsSkeleton />}><Shows /></Suspense>} />
-          <Route path="shows/:id" element={<Suspense fallback={<ShowsSkeleton />}><ShowDetails /></Suspense>} />
+          <Route path="shows" element={<Suspense fallback={<ShowsPageSkeleton />}><Shows /></Suspense>} />
+          <Route path="shows/:id" element={<Suspense fallback={<ShowsPageSkeleton />}><ShowDetails /></Suspense>} />
           <Route path="travel" element={<Suspense fallback={<TravelSkeleton />}><Travel /></Suspense>} />
           <Route path="travel/workspace" element={<Suspense fallback={<TravelSkeleton />}><TravelWorkspacePage /></Suspense>} />
           <Route path="mission/lab" element={<Suspense fallback={<MissionSkeleton />}><MissionControlLab /></Suspense>} />
-          <Route path="calendar" element={<Suspense fallback={<DashboardSkeleton />}><Calendar /></Suspense>} />
+          <Route path="calendar" element={<Suspense fallback={<CalendarPageSkeleton />}><Calendar /></Suspense>} />
           <Route path="settings" element={<Suspense fallback={<SettingsSkeleton />}><Settings /></Suspense>} />
           <Route path="profile" element={<Suspense fallback={<SettingsSkeleton />}><ProfilePage /></Suspense>} />
           <Route path="data-security" element={<Suspense fallback={<SettingsSkeleton />}><DataSecurityPage /></Suspense>} />

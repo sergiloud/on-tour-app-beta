@@ -11,7 +11,6 @@
 
 import React from 'react';
 import { AlertTriangle, RefreshCw, Database, BarChart3 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface ErrorStateProps {
   /** Mensaje de error opcional */
@@ -27,10 +26,9 @@ interface ErrorStateProps {
  */
 export function WorkerErrorState({ message, onRetry, errorDetails }: ErrorStateProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-xl border border-amber-500/30 p-6"
+    <div
+      className="glass rounded-xl border border-amber-500/30 p-6 animate-slide-up"
+      style={{ animationDelay: '100ms' }}
     >
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
@@ -67,7 +65,7 @@ export function WorkerErrorState({ message, onRetry, errorDetails }: ErrorStateP
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -76,10 +74,8 @@ export function WorkerErrorState({ message, onRetry, errorDetails }: ErrorStateP
  */
 export function DataErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="glass rounded-xl border border-red-500/30 p-8 text-center"
+    <div
+      className="glass rounded-xl border border-red-500/30 p-8 text-center animate-scale-in"
     >
       <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
         <Database className="w-8 h-8 text-red-400" />
@@ -95,13 +91,13 @@ export function DataErrorState({ message, onRetry }: ErrorStateProps) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 hover:border-red-500/50 text-white font-medium inline-flex items-center gap-2 transition-all hover:scale-105"
+          className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 hover:border-red-500/50 text-white font-medium inline-flex items-center gap-2 transition-all hover-scale active-scale"
         >
           <RefreshCw className="w-4 h-4" />
           Reintentar
         </button>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -111,10 +107,8 @@ export function DataErrorState({ message, onRetry }: ErrorStateProps) {
  */
 export function ChartErrorState({ message }: ErrorStateProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="w-full h-full min-h-[200px] flex items-center justify-center bg-white/[0.02] rounded-lg border border-white/5"
+    <div
+      className="w-full h-full min-h-[200px] flex items-center justify-center bg-white/[0.02] rounded-lg border border-white/5 animate-fade-in"
     >
       <div className="text-center p-6">
         <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-3">
@@ -124,7 +118,7 @@ export function ChartErrorState({ message }: ErrorStateProps) {
           {message || 'Gráfico no disponible'}
         </p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -133,10 +127,8 @@ export function ChartErrorState({ message }: ErrorStateProps) {
  */
 export function EmptyDataState({ message }: { message?: string }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="glass rounded-xl border border-slate-200 dark:border-white/10 p-12 text-center"
+    <div
+      className="glass rounded-xl border border-slate-200 dark:border-white/10 p-12 text-center animate-fade-in"
     >
       <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
         <Database className="w-8 h-8 text-slate-200 dark:text-white/30" />
@@ -148,6 +140,6 @@ export function EmptyDataState({ message }: { message?: string }) {
       <p className="text-sm text-slate-300 dark:text-white/50 max-w-md mx-auto">
         {message || 'Selecciona un período diferente o añade transacciones para ver análisis.'}
       </p>
-    </motion.div>
+    </div>
   );
 }

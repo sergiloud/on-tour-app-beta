@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { useFinance } from '../../context/FinanceContext';
 import { useSettings } from '../../context/SettingsContext';
 import { t } from '../../lib/i18n';
@@ -21,11 +20,9 @@ const KpiItem: React.FC<{
   delta?: { value: number; isPositive: boolean };
   delay?: number;
 }> = ({ label, value, aria, tone = 'neutral', title, icon, delta, delay = 0 }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay }}
-    whileHover={{ scale: 1.01 }}
+  <div
+    className="animate-slide-up hover-scale"
+    style={{ animationDelay: `${delay}ms` }}
   >
     <Card
       className={`p-5 border border-slate-200 dark:border-white/10 rounded-lg bg-gradient-to-br from-slate-900/40 to-slate-800/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-white/20 hover:shadow-md transition-all duration-300 flex flex-col gap-2 ${
@@ -42,13 +39,11 @@ const KpiItem: React.FC<{
       </div>
       <div className="text-xl font-bold tabular-nums text-slate-900 dark:text-white">{value}</div>
       {delta && (
-        <motion.div
-          className={`flex items-center gap-1 text-xs font-medium ${
+        <div
+          className={`flex items-center gap-1 text-xs font-medium animate-fade-in ${
             delta.isPositive ? 'text-emerald-400' : 'text-rose-400'
           }`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: delay + 0.2 }}
+          style={{ animationDelay: `${delay + 200}ms` }}
         >
           {delta.isPositive ? (
             <TrendingUp className="w-3 h-3 flex-shrink-0" />
@@ -59,10 +54,10 @@ const KpiItem: React.FC<{
             {delta.isPositive ? '+' : ''}
             {delta.value}%
           </span>
-        </motion.div>
+        </div>
       )}
     </Card>
-  </motion.div>
+  </div>
 );
 
 export const KpiCards: React.FC = React.memo(() => {

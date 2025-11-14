@@ -205,9 +205,9 @@ class OfflineQueueService {
       case 'contacts':
         const { FirestoreContactService } = await import('./firestoreContactService');
         if (type === 'create' || type === 'update') {
-          await FirestoreContactService.saveContact(data, userId);
+          await FirestoreContactService.saveContact(data, userId, orgId);
         } else if (type === 'delete') {
-          await FirestoreContactService.deleteContact(entityId, userId);
+          await FirestoreContactService.deleteContact(entityId, userId, orgId);
         }
         break;
 

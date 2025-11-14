@@ -212,7 +212,8 @@ const Register: React.FC = () => {
 
         // Initialize hybrid contact service
         try {
-          await HybridContactService.initialize(newUserId);
+          const orgId = getCurrentOrgId();
+          await HybridContactService.initialize(newUserId, orgId);
         } catch (e) {
           console.warn('Could not initialize contacts:', e);
         }

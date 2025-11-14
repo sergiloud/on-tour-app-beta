@@ -50,12 +50,12 @@ export class FirestoreContactService {
   /**
    * Save contact to Firestore
    */
-  static async saveContact(contact: Contact, userId: string): Promise<void> {
+  static async saveContact(contact: Contact, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const contactRef = doc(db, `users/${userId}/contacts/${contact.id}`);
+    const contactRef = doc(db, `users/${userId}/organizations/${orgId}/contacts/${contact.id}`);
     const contactData = this.removeUndefined({
       ...contact,
       updatedAt: Timestamp.now()
@@ -67,12 +67,12 @@ export class FirestoreContactService {
   /**
    * Get single contact by ID
    */
-  static async getContact(contactId: string, userId: string): Promise<Contact | null> {
+  static async getContact(contactId: string, userId: string, orgId: string): Promise<Contact | null> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const contactRef = doc(db, `users/${userId}/contacts/${contactId}`);
+    const contactRef = doc(db, `users/${userId}/organizations/${orgId}/contacts/${contactId}`);
     const contactSnap = await getDoc(contactRef);
 
     if (!contactSnap.exists()) {
@@ -92,14 +92,14 @@ export class FirestoreContactService {
   /**
    * Get all contacts for a user - con deduplication
    */
-  static async getUserContacts(userId: string): Promise<Contact[]> {
+  static async getUserContacts(userId: string, orgId: string): Promise<Contact[]> {
     // ✅ Deduplica requests cuando múltiples componentes piden contactos simultáneamente
     return deduplicateFirestoreQuery('contacts', userId, async () => {
       if (!db) {
         throw new Error('Firestore not initialized');
       }
 
-      const contactsRef = collection(db, `users/${userId}/contacts`);
+      const contactsRef = collection(db, `users/${userId}/organizations/${orgId}/contacts`);
       const q = query(contactsRef, orderBy('updatedAt', 'desc'));
       const querySnapshot = await getDocs(q);
 
@@ -121,13 +121,14 @@ export class FirestoreContactService {
    */
   static async getContactsByType(
     type: Contact['type'],
-    userId: string
+    userId: string,
+    orgId: string
   ): Promise<Contact[]> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const contactsRef = collection(db, `users/${userId}/contacts`);
+    const contactsRef = collection(db, `users/${userId}/organizations/${orgId}/contacts`);
     const q = query(
       contactsRef,
       where('type', '==', type),
@@ -150,12 +151,12 @@ export class FirestoreContactService {
   /**
    * Delete contact from Firestore
    */
-  static async deleteContact(contactId: string, userId: string): Promise<void> {
+  static async deleteContact(contactId: string, userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const contactRef = doc(db, `users/${userId}/contacts/${contactId}`);
+    const contactRef = doc(db, `users/${userId}/organizations/${orgId}/contacts/${contactId}`);
     await deleteDoc(contactRef);
   }
 
@@ -165,7 +166,7 @@ export class FirestoreContactService {
   /**
    * Batch save contacts - Optimized with batch writes
    */
-  static async saveContacts(contacts: Contact[], userId: string): Promise<void> {
+  static async saveContacts(contacts: Contact[], userId: string, orgId: string): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
@@ -182,7 +183,7 @@ export class FirestoreContactService {
       const batch = writeBatch(db);
       
       for (const contact of chunk) {
-        const contactRef = doc(db, `users/${userId}/contacts/${contact.id}`);
+        const contactRef = doc(db, `users/${userId}/organizations/${orgId}/contacts/${contact.id}`);
         const contactData = this.removeUndefined({
           ...contact,
           updatedAt: Timestamp.now()
@@ -202,13 +203,14 @@ export class FirestoreContactService {
    */
   static subscribeToUserContacts(
     userId: string,
+    orgId: string,
     callback: (contacts: Contact[]) => void
   ): Unsubscribe {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const contactsRef = collection(db, `users/${userId}/contacts`);
+    const contactsRef = collection(db, `users/${userId}/organizations/${orgId}/contacts`);
     const q = query(contactsRef, orderBy('updatedAt', 'desc'));
 
     return onSnapshot(q, (snapshot) => {
@@ -231,14 +233,14 @@ export class FirestoreContactService {
    * Migrate localStorage contacts to Firestore
    * Only runs once per user (idempotent)
    */
-  static async migrateFromLocalStorage(userId: string): Promise<number> {
+  static async migrateFromLocalStorage(userId: string, orgId: string): Promise<number> {
     if (!db) {
       return 0;
     }
 
     try {
       // Check if user already has contacts in Firestore
-      const existing = await this.getUserContacts(userId);
+      const existing = await this.getUserContacts(userId, orgId);
       if (existing.length > 0) {
         return 0; // Already migrated
       }
@@ -252,7 +254,7 @@ export class FirestoreContactService {
       const contacts: Contact[] = JSON.parse(stored);
       
       // Migrate contacts to Firestore
-      await this.saveContacts(contacts, userId);
+      await this.saveContacts(contacts, userId, orgId);
 
       return contacts.length;
     } catch (error) {

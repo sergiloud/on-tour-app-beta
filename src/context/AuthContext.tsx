@@ -77,7 +77,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       try {
-        HybridContactService.initialize(id);
+        const orgId = getCurrentOrgId();
+        HybridContactService.initialize(id, orgId);
       } catch (e) {
         logger.warn('Could not initialize hybrid contact service', {
           component: 'AuthContext',

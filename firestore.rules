@@ -3,20 +3,56 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check if user is authenticated
+    // ========================================
+    // MULTI-TENANCY HELPER FUNCTIONS
+    // ========================================
+    
+    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Helper function to check if user owns the data
-    function isOwner(userId) {
+    // Get current user ID
+    function getUserId() {
+      return request.auth.uid;
+    }
+    
+    // Check if user is a member of the organization
+    function isMember(orgId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(getUserId()));
+    }
+    
+    // Get user's role in organization
+    function getMemberRole(orgId) {
+      return get(/databases/$(database)/documents/organizations/$(orgId)/members/$(getUserId())).data.role;
+    }
+    
+    // Role hierarchy checks
+    function isOwner(orgId) {
+      return isMember(orgId) && getMemberRole(orgId) == 'owner';
+    }
+    
+    function isAdmin(orgId) {
+      return isMember(orgId) && getMemberRole(orgId) in ['owner', 'admin'];
+    }
+    
+    function canWrite(orgId) {
+      return isMember(orgId) && getMemberRole(orgId) in ['owner', 'admin', 'member'];
+    }
+    
+    function canRead(orgId) {
+      return isMember(orgId); // All members can read (including viewers)
+    }
+    
+    // LEGACY: Check if user owns the data (backward compatibility)
+    function isOwnerLegacy(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
     
-    // Helper function to check if user owns the organization
-    // Simplified: if user owns the parent path, they can access org data
+    // LEGACY: Helper function to check if user owns the organization
     function userOwnsOrg(userId, orgId) {
-      return isOwner(userId);
+      return isOwnerLegacy(userId);
     }
     
     // User data - users can only access their own data
@@ -147,17 +183,115 @@ service cloud.firestore {
       
       // User settings (NOT migrated - stays at user level)
       match /settings/{document=**} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
       // User preferences (NOT migrated - stays at user level)
       match /preferences/{document=**} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
       // Calendar sync configuration (NOT migrated - stays at user level)
       match /calendarSync/{document=**} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
+      }
+    }
+    
+    // ========================================
+    // MULTI-TENANCY: ORGANIZATIONS (NEW)
+    // ========================================
+    
+    match /organizations/{orgId} {
+      // Anyone can create an organization (becomes owner)
+      allow create: if isAuthenticated();
+      
+      // Only members can read organization data
+      allow read: if canRead(orgId);
+      
+      // Only owner/admin can update organization settings
+      allow update: if isAdmin(orgId);
+      
+      // Only owner can delete organization
+      allow delete: if isOwner(orgId);
+      
+      // Members Sub-collection
+      match /members/{memberId} {
+        allow read: if canRead(orgId);
+        allow create: if isAdmin(orgId);
+        allow update: if isAdmin(orgId) &&
+          (request.resource.data.role != 'owner' || isOwner(orgId)) &&
+          (resource.data.role != 'owner' || isOwner(orgId));
+        allow delete: if isAdmin(orgId) && resource.data.role != 'owner';
+      }
+      
+      // Shows Sub-collection
+      match /shows/{showId} {
+        allow read: if canRead(orgId);
+        allow create, update: if canWrite(orgId);
+        allow delete: if canWrite(orgId);
+      }
+      
+      // Finance Snapshots Sub-collection
+      match /finance_snapshots/{snapshotId} {
+        allow read: if canRead(orgId);
+        allow create, update: if isAdmin(orgId);
+        allow delete: if isOwner(orgId);
+        
+        match /transactions/{txId} {
+          allow read: if canRead(orgId);
+          allow create: if canWrite(orgId) &&
+            request.resource.data.createdBy == getUserId();
+          allow update: if isAdmin(orgId) ||
+            (canWrite(orgId) && resource.data.createdBy == getUserId());
+          allow delete: if isAdmin(orgId);
+        }
+      }
+      
+      // Calendar Events Sub-collection
+      match /calendar_events/{eventId} {
+        allow read: if canRead(orgId);
+        allow create, update: if canWrite(orgId);
+        allow delete: if canWrite(orgId);
+      }
+      
+      // Contacts Sub-collection
+      match /contacts/{contactId} {
+        allow read: if canRead(orgId);
+        allow create, update: if canWrite(orgId);
+        allow delete: if isAdmin(orgId);
+      }
+      
+      // Venues Sub-collection
+      match /venues/{venueId} {
+        allow read: if canRead(orgId);
+        allow create, update: if canWrite(orgId);
+        allow delete: if isAdmin(orgId);
+      }
+      
+      // Itineraries Sub-collection
+      match /itineraries/{itineraryId} {
+        allow read: if canRead(orgId);
+        allow create, update: if canWrite(orgId);
+        allow delete: if isAdmin(orgId);
+      }
+      
+      // Actions Sub-collection
+      match /actions/{actionId} {
+        allow read: if canRead(orgId);
+        allow create, update: if canWrite(orgId);
+        allow delete: if isAdmin(orgId);
+      }
+      
+      // Invitations Sub-collection
+      match /invitations/{inviteId} {
+        allow read: if isAdmin(orgId);
+        allow create: if isAdmin(orgId) &&
+          request.resource.data.invitedBy == getUserId() &&
+          request.resource.data.status == 'pending';
+        allow update: if isAuthenticated() &&
+          request.auth.token.email == resource.data.email &&
+          request.resource.data.status in ['accepted', 'rejected'];
+        allow delete: if isAdmin(orgId);
       }
     }
     

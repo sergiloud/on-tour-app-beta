@@ -24,6 +24,7 @@ import PageHeader from '../common/PageHeader';
 import { OrgListItem, OrgSectionHeader, OrgEmptyState } from '../org/OrgModernCards';
 import { useToast } from '../../context/ToastContext';
 import { logger } from '../../lib/logger';
+import { InviteMemberDialog } from './InviteMemberDialog';
 
 interface MembersPanelProps {
   organizationId: string;
@@ -526,16 +527,16 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({
       </div>
 
       {/* Invite Dialog */}
-      <AnimatePresence>
-        {showInviteDialog && (
-          <InviteMemberDialog
-            organizationId={organizationId}
-            organizationName={organizationName}
-            onClose={() => setShowInviteDialog(false)}
-            onInvite={inviteMember}
-          />
-        )}
-      </AnimatePresence>
+      {showInviteDialog && (
+        <InviteMemberDialog
+          isOpen={showInviteDialog}
+          onClose={() => setShowInviteDialog(false)}
+          onInvite={async (email, role) => {
+            await inviteMember(email, role, organizationName);
+          }}
+          organizationName={organizationName}
+        />
+      )}
 
       {/* Remove Confirmation */}
       <AnimatePresence>
@@ -828,141 +829,6 @@ const InvitationRow: React.FC<InvitationRowProps> = ({ invitation, index, onCanc
         interactive
       />
     </motion.div>
-  );
-};
-
-// ========================================
-// Invite Dialog
-// ========================================
-
-interface InviteMemberDialogProps {
-  organizationId: string;
-  organizationName: string;
-  onClose: () => void;
-  onInvite: (email: string, role: MemberRole, orgName: string) => Promise<void>;
-}
-
-const InviteMemberDialog: React.FC<InviteMemberDialogProps> = ({
-  organizationId,
-  organizationName,
-  onClose,
-  onInvite
-}) => {
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState<MemberRole>('member');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await onInvite(email, role, organizationName);
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send invitation');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <>
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-        onClick={onClose}
-      />
-      
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          className="relative rounded-xl w-full max-w-md glass border border-slate-200 dark:border-white/10 shadow-2xl"
-          onClick={(e: React.MouseEvent) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-              {t('members.inviteTitle') || 'Invite Team Member'}
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors"
-            >
-              <X className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-            </button>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="px-6 py-6 space-y-4">
-            {error && (
-              <div className="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                {t('members.email') || 'Email Address'}
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="colleague@example.com"
-                className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500 dark:focus:border-accent-400 focus:ring-2 focus:ring-accent-500/20 text-slate-900 dark:text-white placeholder-slate-400 transition-all"
-                required
-                autoFocus
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                {t('members.role') || 'Role'}
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as MemberRole)}
-                className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:border-accent-500 dark:focus:border-accent-400 focus:ring-2 focus:ring-accent-500/20 text-slate-900 dark:text-white transition-all"
-              >
-                <option value="admin">Admin - Full access except org deletion</option>
-                <option value="finance">Finance Manager - Full finance, read-only other modules</option>
-                <option value="member">Member - Can edit shows, calendar, travel</option>
-                <option value="viewer">Viewer - Read-only access</option>
-              </select>
-            </div>
-
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {t('members.inviteHint') || 'An invitation email will be sent to this address.'}
-            </p>
-
-            {/* Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-semibold transition-all"
-              >
-                {t('common.cancel') || 'Cancel'}
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-accent-500/90 to-accent-600/90 hover:from-accent-500 hover:to-accent-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold shadow-lg shadow-accent-500/30 transition-all"
-              >
-                {isSubmitting ? (t('common.sending') || 'Sending...') : (t('members.sendInvite') || 'Send Invitation')}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </>
   );
 };
 

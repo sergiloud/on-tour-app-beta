@@ -14,7 +14,7 @@
 
 export type ShowRow = { s: any; net: number };
 
-const HEADERS = ['Date', 'City', 'Country', 'Venue', 'WHT %', 'Fee', 'Net', 'Status', 'Notes'] as const;
+const HEADERS = ['Date', 'City', 'Country', 'Venue', 'Fee', 'VAT %', 'VAT', 'Invoice Total', 'WHT %', 'WHT', 'Net', 'Status', 'Notes'] as const;
 export type Header = typeof HEADERS[number];
 
 function pickHeaders(exportCols: Record<string, boolean>) {
@@ -25,17 +25,29 @@ function pickHeaders(exportCols: Record<string, boolean>) {
 
 function buildSource(rows: ShowRow[], selectedIds?: Set<string>) {
   const src = selectedIds && selectedIds.size > 0 ? rows.filter(r => selectedIds.has(r.s.id)) : rows;
-  return src.map(({ s, net }) => ({
-    'Date': String(s.date || '').slice(0, 10),
-    'City': s.city,
-    'Country': s.country,
-    'Venue': (s as any).venue || '',
-    'WHT %': (s as any).whtPct || 0,
-    'Fee': s.fee,
-    'Net': Math.round(net),
-    'Status': s.status,
-    'Notes': (s as any).notes || ''
-  } satisfies Record<Header, any>));
+  return src.map(({ s, net }) => {
+    const vatPct = (s as any).vatPct || 0;
+    const vatAmount = vatPct > 0 ? s.fee * (vatPct / 100) : 0;
+    const invoiceTotal = s.fee + vatAmount;
+    const whtPct = (s as any).whtPct || 0;
+    const whtAmount = whtPct > 0 ? s.fee * (whtPct / 100) : 0;
+
+    return {
+      'Date': String(s.date || '').slice(0, 10),
+      'City': s.city,
+      'Country': s.country,
+      'Venue': (s as any).venue || '',
+      'Fee': s.fee,
+      'VAT %': vatPct > 0 ? vatPct : '',
+      'VAT': vatAmount > 0 ? Math.round(vatAmount) : '',
+      'Invoice Total': invoiceTotal > s.fee ? Math.round(invoiceTotal) : '',
+      'WHT %': whtPct > 0 ? whtPct : '',
+      'WHT': whtAmount > 0 ? Math.round(whtAmount) : '',
+      'Net': Math.round(net),
+      'Status': s.status,
+      'Notes': (s as any).notes || ''
+    } satisfies Record<Header, any>;
+  });
 }
 
 export function exportShowsCsv(rows: ShowRow[], exportCols: Record<string, boolean>, selectedIds?: Set<string>, filenamePrefix = 'shows') {

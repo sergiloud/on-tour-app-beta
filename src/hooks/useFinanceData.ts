@@ -360,8 +360,12 @@ export function useFinanceData(
       Tipo: t.type === 'income' ? 'Ingreso' : 'Gasto',
       Importe: t.amount,
       'Fee Bruto': t.incomeDetail?.grossFee || '',
+      'VAT %': t.incomeDetail?.vat?.percentage || '',
+      'VAT Importe': t.incomeDetail?.vat?.amount || '',
+      'Total Factura': t.incomeDetail?.invoiceTotal || '',
       Comisiones: t.incomeDetail?.commissions.reduce((sum, c) => sum + c.amount, 0) || '',
-      WHT: t.incomeDetail?.withholdingTax?.amount || '',
+      'WHT %': t.incomeDetail?.withholdingTax?.percentage || '',
+      'WHT Importe': t.incomeDetail?.withholdingTax?.amount || '',
       Estado: t.status === 'paid' ? 'Pagado' : 'Pendiente',
       Show: t.tripTitle || ''
     }));

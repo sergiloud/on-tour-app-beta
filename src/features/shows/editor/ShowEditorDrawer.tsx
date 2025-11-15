@@ -1731,26 +1731,9 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                       placeholder="0"
                       onChange={e => setDraft((d: ShowDraft) => ({ ...d, vatPct: e.target.value === '' ? undefined : Math.max(0, Math.min(30, Number(e.target.value) || 0)) }))}
                     />
-                    {(() => {
-                      if (!draft.country) return null;
-                      const defaults: Record<string, number> = { ES: 21, FR: 20, DE: 19, IT: 22, GB: 20, PT: 23, NL: 21, BE: 21, US: 0, MX: 16, BR: 0 };
-                      const sug = defaults[draft.country];
-                      if (sug == null) return null;
-                      const isApplied = draft.vatPct === sug;
-                      const show = draft.vatPct == null || (!isApplied && draft.vatPct !== sug);
-                      if (!show) return null;
-                      return (
-                        <button
-                          type="button"
-                          onClick={() => { setDraft((d: ShowDraft) => ({ ...d, vatPct: sug })); announce((t('shows.editor.vat.suggest.applied') || 'VAT suggestion applied') + ': ' + sug + '%'); track(TE.VAT_SUGGEST_APPLY, { country: draft.country, pct: sug }); }}
-                          className={`px-2 py-1 rounded text-[10px] border whitespace-nowrap ${isApplied ? 'border-green-500/40 text-green-300 bg-green-500/10' : 'border-accent-500/40 text-accent-200 bg-accent-500/10 hover:bg-accent-500/20'}`}
-                          aria-pressed={isApplied}
-                        >{sug}%</button>
-                      );
-                    })()}
                   </div>
                   {validation.vatPct && <p id="err-vatPct" className="text-[10px] text-red-400">{t(validation.vatPct) || 'Out of range'}</p>}
-                  <p id="vat-help" className="text-[10px] text-slate-400 dark:text-white/50">{t('shows.editor.vat.hint') || 'Value Added Tax percentage (0-30%)'}</p>
+                  <p id="vat-help" className="text-[10px] text-slate-400 dark:text-white/50">{t('shows.editor.vat.hint') || 'Value Added Tax percentage (0-30%) - Enter manually'}</p>
                 </label>
 
                 {/* Travel CTA */}

@@ -7,6 +7,7 @@ import { activityTracker } from '../lib/activityTracker';
 import { HybridShowService } from '../services/hybridShowService';
 import { HybridContactService } from '../services/hybridContactService';
 import { HybridVenueService } from '../services/hybridVenueService';
+import { HybridContractService } from '../services/hybridContractService';
 import { logger } from '../lib/logger';
 
 interface AuthCtx {
@@ -99,6 +100,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           HybridVenueService.initialize(id, orgId);
         } catch (e) {
           logger.warn('Could not initialize hybrid venue service', {
+            component: 'AuthContext',
+            userId: id,
+            orgId,
+            error: e instanceof Error ? e.message : String(e)
+          });
+        }
+
+        try {
+          HybridContractService.initialize(id, orgId);
+        } catch (e) {
+          logger.warn('Could not initialize hybrid contract service', {
             component: 'AuthContext',
             userId: id,
             orgId,

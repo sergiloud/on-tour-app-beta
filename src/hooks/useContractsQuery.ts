@@ -1,11 +1,12 @@
 /**
  * useContractsQuery - React Query hooks para gestión de contratos
- * Patrón similar a useVenuesQuery
+ * Usa HybridContractService para sincronización con Firestore
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Contract } from '../types/contract';
 import { contractStore } from '../shared/contractStore';
+import { HybridContractService } from '../services/hybridContractService';
 
 // Query keys
 export const contractKeys = {
@@ -85,6 +86,8 @@ export const useCreateContractMutation = () => {
 
   return useMutation({
     mutationFn: async (contract: Contract) => {
+      // Save to both localStorage and Firestore
+      await HybridContractService.saveContract(contract);
       contractStore.add(contract);
       return contract;
     },
@@ -104,7 +107,11 @@ export const useUpdateContractMutation = () => {
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Contract> }) => {
       contractStore.update(id, updates);
-      return contractStore.getById(id);
+      const updated = contractStore.getById(id);
+      if (updated) {
+        await HybridContractService.saveContract(updated);
+      }
+      return updated;
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: contractKeys.lists() });
@@ -122,6 +129,7 @@ export const useDeleteContractMutation = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      await HybridContractService.deleteContract(id);
       contractStore.delete(id);
     },
     onSuccess: () => {

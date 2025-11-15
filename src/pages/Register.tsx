@@ -12,6 +12,7 @@ import { auth, isFirebaseConfigured } from '../lib/firebase';
 import { createUserWithEmailAndPassword, updateProfile as updateFirebaseProfile } from 'firebase/auth';
 import { HybridShowService } from '../services/hybridShowService';
 import { HybridContactService } from '../services/hybridContactService';
+import { HybridContractService } from '../services/hybridContractService';
 import { logger } from '../lib/logger';
 
 // Estados para el registro
@@ -217,6 +218,14 @@ const Register: React.FC = () => {
           await HybridContactService.initialize(newUserId, orgId);
         } catch (e) {
           logger.warn('Could not initialize contacts', { error: e });
+        }
+
+        // Initialize hybrid contract service
+        try {
+          const orgId = getCurrentOrgId();
+          await HybridContractService.initialize(newUserId, orgId);
+        } catch (e) {
+          logger.warn('Could not initialize contracts', { error: e });
         }
       } else {
         // Demo mode fallback for development

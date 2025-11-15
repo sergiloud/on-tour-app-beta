@@ -326,22 +326,40 @@ export class FirestoreActivityService {
    * Helper: Log contract activity
    */
   static async logContractActivity(
-    contractId: string,
-    contractTitle: string,
     userId: string,
-    userName: string,
-    organizationId: string
+    organizationId: string,
+    contractId: string,
+    action: 'created' | 'updated' | 'signed' | 'deleted',
+    metadata?: {
+      contractTitle?: string;
+      contractStatus?: string;
+      showId?: string;
+      userName?: string;
+    }
   ): Promise<string> {
+    const userName = metadata?.userName || 'User';
+    const contractTitle = metadata?.contractTitle || 'Contract';
+    
+    const typeMap = {
+      created: { type: 'contract_created', title: 'Contract Created', description: `${userName} created contract: ${contractTitle}` },
+      updated: { type: 'contract_updated', title: 'Contract Updated', description: `${userName} updated contract: ${contractTitle}` },
+      signed: { type: 'contract_signed', title: 'Contract Signed', description: `${userName} signed contract: ${contractTitle}` },
+      deleted: { type: 'contract_deleted', title: 'Contract Deleted', description: `${userName} deleted contract: ${contractTitle}` },
+    };
+    
+    const { type, title, description } = typeMap[action];
+    
     return this.logActivity(
       {
-        type: 'contract_signed',
-        title: 'Contract Signed',
-        description: `${userName} signed contract: ${contractTitle}`,
+        type: type as any,
+        title,
+        description,
         userId,
         userName,
         organizationId,
-        priority: 'high',
-        relatedId: contractId
+        priority: action === 'signed' ? 'high' : 'medium',
+        relatedId: contractId,
+        metadata: metadata || {}
       },
       userId,
       organizationId

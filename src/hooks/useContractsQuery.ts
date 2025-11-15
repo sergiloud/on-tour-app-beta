@@ -7,6 +7,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Contract } from '../types/contract';
 import { contractStore } from '../shared/contractStore';
 import { HybridContractService } from '../services/hybridContractService';
+import { FirestoreActivityService } from '../services/firestoreActivityService';
+import { getCurrentUserId } from '../lib/demoAuth';
+import { getCurrentOrgId } from '../lib/tenants';
 
 // Query keys
 export const contractKeys = {
@@ -86,9 +89,32 @@ export const useCreateContractMutation = () => {
 
   return useMutation({
     mutationFn: async (contract: Contract) => {
+      const userId = getCurrentUserId();
+      const orgId = getCurrentOrgId();
+      
       // Save to both localStorage and Firestore
       await HybridContractService.saveContract(contract);
       contractStore.add(contract);
+      
+      // Log activity to Activity Feed
+      if (userId && orgId) {
+        try {
+          await FirestoreActivityService.logContractActivity(
+            userId,
+            orgId,
+            contract.id,
+            'created',
+            {
+              contractTitle: contract.title,
+              contractStatus: contract.status,
+              showId: contract.showId,
+            }
+          );
+        } catch (error) {
+          console.warn('[useContractsQuery] Failed to log contract activity:', error);
+        }
+      }
+      
       return contract;
     },
     onSuccess: () => {
@@ -106,10 +132,32 @@ export const useUpdateContractMutation = () => {
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Contract> }) => {
+      const userId = getCurrentUserId();
+      const orgId = getCurrentOrgId();
+      
       contractStore.update(id, updates);
       const updated = contractStore.getById(id);
       if (updated) {
         await HybridContractService.saveContract(updated);
+        
+        // Log activity if status changed to 'signed'
+        if (userId && orgId && updates.status === 'signed') {
+          try {
+            await FirestoreActivityService.logContractActivity(
+              userId,
+              orgId,
+              id,
+              'signed',
+              {
+                contractTitle: updated.title,
+                contractStatus: updated.status,
+                showId: updated.showId,
+              }
+            );
+          } catch (error) {
+            console.warn('[useContractsQuery] Failed to log contract signed activity:', error);
+          }
+        }
       }
       return updated;
     },

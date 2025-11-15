@@ -208,13 +208,35 @@ const Register: React.FC = () => {
           logger.warn('Could not create user document in Firestore', { error: e });
         }
         
+        // Create default organization for the user
+        let orgId = getCurrentOrgId();
+        if (!orgId) {
+          try {
+            const { createOrganization } = await import('../hooks/useOrganizations');
+            orgId = await createOrganization(
+              `${name}'s Organization`,
+              'band', // Use 'band' instead of 'artist' (valid OrganizationType)
+              {
+                currency: 'EUR',
+                timezone: 'Europe/Madrid',
+                locale: 'es',
+              }
+            );
+            // Set as current organization
+            const { setCurrentOrgId } = await import('../lib/tenants');
+            setCurrentOrgId(orgId);
+            logger.info('Created default organization for new user', { userId: newUserId, orgId });
+          } catch (e) {
+            logger.error('Failed to create default organization', e as Error);
+            // Continue without org - user can create one later
+          }
+        }
+        
         // Initialize hybrid show service for cloud sync
-        const orgId = getCurrentOrgId();
         await HybridShowService.initialize(newUserId, orgId);
 
         // Initialize hybrid contact service
         try {
-          const orgId = getCurrentOrgId();
           await HybridContactService.initialize(newUserId, orgId);
         } catch (e) {
           logger.warn('Could not initialize contacts', { error: e });
@@ -222,7 +244,6 @@ const Register: React.FC = () => {
 
         // Initialize hybrid contract service
         try {
-          const orgId = getCurrentOrgId();
           await HybridContractService.initialize(newUserId, orgId);
         } catch (e) {
           logger.warn('Could not initialize contracts', { error: e });

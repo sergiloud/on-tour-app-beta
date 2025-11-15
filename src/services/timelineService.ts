@@ -135,10 +135,14 @@ export class TimelineService {
 
     try {
       const constraints: QueryConstraint[] = [
-        where('organizationId', '==', organizationId),
+        // TEMPORARY: Show ALL events without organizationId filter
+        // TODO: Re-enable organizationId filter once we confirm events have this field
+        // where('organizationId', '==', organizationId),
         orderBy('timestamp', 'desc'),
         limit(this.PAGE_SIZE)
       ];
+
+      console.log('[TimelineService] ⚠️ WARNING: Showing ALL events (no org filter for debugging)');
 
       // Apply module filter
       if (filters.module && filters.module !== 'all') {

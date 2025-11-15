@@ -34,20 +34,48 @@ import {
   type DocumentData,
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
+import { createAuditLog } from './useAuditLogs';
 
 // ========================================
 // Types
 // ========================================
 
 export type OrganizationType = 'tour' | 'band' | 'venue' | 'agency';
-export type MemberRole = 'owner' | 'admin' | 'member' | 'viewer';
+export type MemberRole = 'owner' | 'admin' | 'finance' | 'member' | 'viewer';
 export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'expired';
+
+// Granular permissions by module
 export type Permission =
-  | 'finance.read' | 'finance.write' | 'finance.delete'
+  // Finance module
+  | 'finance.read' | 'finance.write' | 'finance.delete' | 'finance.export'
+  // Shows module
   | 'shows.read' | 'shows.write' | 'shows.delete'
+  // Calendar module
   | 'calendar.read' | 'calendar.write' | 'calendar.delete'
+  // Travel module
+  | 'travel.read' | 'travel.write' | 'travel.delete'
+  // CRM/Contacts module
+  | 'contacts.read' | 'contacts.write' | 'contacts.delete'
+  // Contracts module
+  | 'contracts.read' | 'contracts.write' | 'contracts.delete'
+  // Members module
   | 'members.read' | 'members.invite' | 'members.remove' | 'members.manage_roles'
-  | 'settings.read' | 'settings.write';
+  // Settings module
+  | 'settings.read' | 'settings.write'
+  // Organization management
+  | 'org.delete';
+
+// Module access shortcuts for UI
+export type ModuleAccess = {
+  finance: 'none' | 'read' | 'write' | 'full';
+  shows: 'none' | 'read' | 'write' | 'full';
+  calendar: 'none' | 'read' | 'write' | 'full';
+  travel: 'none' | 'read' | 'write' | 'full';
+  contacts: 'none' | 'read' | 'write' | 'full';
+  contracts: 'none' | 'read' | 'write' | 'full';
+  members: 'none' | 'read' | 'manage';
+  settings: 'none' | 'read' | 'write';
+};
 
 export interface Organization {
   id: string;
@@ -123,32 +151,121 @@ export interface OrganizationMembership {
 
 export const ROLE_PERMISSIONS: Record<MemberRole, Permission[]> = {
   owner: [
-    'finance.read', 'finance.write', 'finance.delete',
+    'finance.read', 'finance.write', 'finance.delete', 'finance.export',
     'shows.read', 'shows.write', 'shows.delete',
     'calendar.read', 'calendar.write', 'calendar.delete',
+    'travel.read', 'travel.write', 'travel.delete',
+    'contacts.read', 'contacts.write', 'contacts.delete',
+    'contracts.read', 'contracts.write', 'contracts.delete',
     'members.read', 'members.invite', 'members.remove', 'members.manage_roles',
     'settings.read', 'settings.write',
+    'org.delete',
   ],
   admin: [
-    'finance.read', 'finance.write', 'finance.delete',
+    'finance.read', 'finance.write', 'finance.delete', 'finance.export',
     'shows.read', 'shows.write', 'shows.delete',
     'calendar.read', 'calendar.write', 'calendar.delete',
+    'travel.read', 'travel.write', 'travel.delete',
+    'contacts.read', 'contacts.write', 'contacts.delete',
+    'contracts.read', 'contracts.write', 'contracts.delete',
     'members.read', 'members.invite', 'members.remove', 'members.manage_roles',
     'settings.read',
   ],
+  finance: [
+    // Finance manager: full finance access, read-only for other modules
+    'finance.read', 'finance.write', 'finance.delete', 'finance.export',
+    'shows.read',
+    'calendar.read',
+    'travel.read',
+    'contacts.read',
+    'contracts.read',
+    'members.read',
+    'settings.read',
+  ],
   member: [
-    'finance.read', 'finance.write',
+    // Regular member: can edit shows/calendar/travel, limited finance
+    'finance.read',
     'shows.read', 'shows.write', 'shows.delete',
     'calendar.read', 'calendar.write', 'calendar.delete',
+    'travel.read', 'travel.write', 'travel.delete',
+    'contacts.read', 'contacts.write',
+    'contracts.read', 'contracts.write',
     'members.read',
   ],
   viewer: [
+    // Viewer: read-only access to all modules
     'finance.read',
     'shows.read',
     'calendar.read',
+    'travel.read',
+    'contacts.read',
+    'contracts.read',
     'members.read',
   ],
 };
+
+// Role descriptions for UI
+export const ROLE_DESCRIPTIONS: Record<MemberRole, { label: string; description: string; modules: string }> = {
+  owner: {
+    label: 'Owner',
+    description: 'Full control, cannot be removed. Can delete organization.',
+    modules: 'All modules (full access)',
+  },
+  admin: {
+    label: 'Admin',
+    description: 'Manage members, all data access. Cannot delete organization.',
+    modules: 'All modules (full access)',
+  },
+  finance: {
+    label: 'Finance Manager',
+    description: 'Full finance access, read-only for other modules.',
+    modules: 'Finance (full), Shows/Calendar/Travel (read)',
+  },
+  member: {
+    label: 'Member',
+    description: 'Can edit shows, calendar, travel. Read-only finance.',
+    modules: 'Shows/Calendar/Travel (edit), Finance (read)',
+  },
+  viewer: {
+    label: 'Viewer',
+    description: 'Read-only access to all data.',
+    modules: 'All modules (read-only)',
+  },
+};
+
+// Helper function to check permissions
+export function hasPermission(role: MemberRole, permission: Permission): boolean {
+  return ROLE_PERMISSIONS[role].includes(permission);
+}
+
+// Helper function to get module access level
+export function getModuleAccess(role: MemberRole): ModuleAccess {
+  const permissions = ROLE_PERMISSIONS[role];
+  
+  const checkAccess = (module: string): 'none' | 'read' | 'write' | 'full' => {
+    const hasRead = permissions.some(p => p.startsWith(`${module}.read`));
+    const hasWrite = permissions.some(p => p.startsWith(`${module}.write`));
+    const hasDelete = permissions.some(p => p.startsWith(`${module}.delete`));
+    
+    if (hasDelete && hasWrite && hasRead) return 'full';
+    if (hasWrite && hasRead) return 'write';
+    if (hasRead) return 'read';
+    return 'none';
+  };
+  
+  return {
+    finance: checkAccess('finance'),
+    shows: checkAccess('shows'),
+    calendar: checkAccess('calendar'),
+    travel: checkAccess('travel'),
+    contacts: checkAccess('contacts'),
+    contracts: checkAccess('contracts'),
+    members: permissions.includes('members.manage_roles') ? 'manage' : 
+             permissions.includes('members.read') ? 'read' : 'none',
+    settings: permissions.includes('settings.write') ? 'write' :
+              permissions.includes('settings.read') ? 'read' : 'none',
+  };
+}
 
 // ========================================
 // Helper Functions
@@ -352,10 +469,21 @@ export function useOrganizationMembers(orgId: string | null) {
 
       try {
         const memberRef = doc(db, `organizations/${orgId}/members/${memberId}`);
+        const memberSnap = await getDoc(memberRef);
+        const oldRole = memberSnap.data()?.role;
+        
         await updateDoc(memberRef, {
           role: newRole,
           permissions: ROLE_PERMISSIONS[newRole],
           updatedAt: serverTimestamp(),
+        });
+
+        // Create audit log
+        await createAuditLog(orgId, 'member.role_changed', {
+          memberId,
+          memberEmail: memberSnap.data()?.email,
+          oldRole,
+          newRole,
         });
 
         // Update local state
@@ -380,7 +508,17 @@ export function useOrganizationMembers(orgId: string | null) {
 
       try {
         const memberRef = doc(db, `organizations/${orgId}/members/${memberId}`);
+        const memberSnap = await getDoc(memberRef);
+        const memberData = memberSnap.data();
+        
         await deleteDoc(memberRef);
+
+        // Create audit log
+        await createAuditLog(orgId, 'member.removed', {
+          memberId,
+          memberEmail: memberData?.email,
+          memberRole: memberData?.role,
+        });
 
         // Update local state
         setMembers((prev) => prev.filter((m) => m.id !== memberId));
@@ -474,6 +612,13 @@ export function useInvitations(orgId: string | null) {
           invitedByName: auth.currentUser.displayName || auth.currentUser.email,
           createdAt: serverTimestamp(),
           expiresAt: Timestamp.fromDate(expiresAt),
+        });
+
+        // Create audit log
+        await createAuditLog(orgId, 'member.invited', {
+          inviteId: inviteRef.id,
+          email,
+          role,
         });
 
         // TODO: Send invitation email via Cloud Function

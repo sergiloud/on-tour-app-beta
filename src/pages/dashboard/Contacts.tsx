@@ -23,6 +23,8 @@ import {
 } from '../../hooks/useContactsQuery';
 import { useContactFilters } from '../../hooks/useContactFilters';
 import { useShows } from '../../hooks/useShows';
+import { useVenuesQuery } from '../../hooks/useVenuesQuery';
+import { venueStore } from '../../shared/venueStore';
 import type { Contact } from '../../types/crm';
 import { CONTACT_TYPE_LABELS } from '../../types/crm';
 import { contactStore } from '../../shared/contactStore';
@@ -34,18 +36,77 @@ const ContactEditorModal = lazy(() =>
   import('../../components/crm/ContactEditorModal').then(m => ({ default: m.ContactEditorModal }))
 );
 
-type CategoryTab = 'all' | 'label_rep' | 'promoter' | 'agent' | 'manager' | 'venue_manager' | 'media' | 'other';
+type CategoryTab = 'all' | 'label_rep' | 'promoter' | 'booking_agent' | 'press_agent' | 'venue_manager' | 'media' | 'festival_org' | 'tech' | 'other';
 
 const CATEGORY_TABS: { id: CategoryTab; label: string; icon: React.ReactNode }[] = [
   { id: 'all', label: 'Todos', icon: <Users className="w-4 h-4" /> },
   { id: 'label_rep', label: 'Labels & A&R', icon: <Music className="w-4 h-4" /> },
   { id: 'promoter', label: 'Promoters', icon: <Calendar className="w-4 h-4" /> },
-  { id: 'agent', label: 'Agentes', icon: <TrendingUp className="w-4 h-4" /> },
-  { id: 'manager', label: 'Managers', icon: <Star className="w-4 h-4" /> },
+  { id: 'booking_agent', label: 'Booking Agents', icon: <TrendingUp className="w-4 h-4" /> },
+  { id: 'press_agent', label: 'Press & Media', icon: <MessageSquare className="w-4 h-4" /> },
   { id: 'venue_manager', label: 'Venues', icon: <Building2 className="w-4 h-4" /> },
-  { id: 'media', label: 'Media', icon: <Globe className="w-4 h-4" /> },
+  { id: 'festival_org', label: 'Festivales', icon: <Star className="w-4 h-4" /> },
+  { id: 'tech', label: 'Técnicos', icon: <Globe className="w-4 h-4" /> },
   { id: 'other', label: 'Otros', icon: <TagIcon className="w-4 h-4" /> },
 ];
+
+// Helper para obtener icono y color según tipo de contacto
+const getContactTypeStyle = (type: Contact['type']): { icon: React.ReactNode; gradient: string; shadow: string } => {
+  switch (type) {
+    case 'venue_manager':
+      return { 
+        icon: <Building2 className="w-5 h-5" />, 
+        gradient: 'from-purple-500 to-purple-600',
+        shadow: 'shadow-purple-500/20'
+      };
+    case 'promoter':
+      return { 
+        icon: <Calendar className="w-5 h-5" />, 
+        gradient: 'from-blue-500 to-blue-600',
+        shadow: 'shadow-blue-500/20'
+      };
+    case 'booking_agent':
+      return { 
+        icon: <TrendingUp className="w-5 h-5" />, 
+        gradient: 'from-orange-500 to-orange-600',
+        shadow: 'shadow-orange-500/20'
+      };
+    case 'label_rep':
+      return { 
+        icon: <Music className="w-5 h-5" />, 
+        gradient: 'from-pink-500 to-pink-600',
+        shadow: 'shadow-pink-500/20'
+      };
+    case 'festival_org':
+      return { 
+        icon: <Star className="w-5 h-5" />, 
+        gradient: 'from-yellow-500 to-yellow-600',
+        shadow: 'shadow-yellow-500/20'
+      };
+    case 'press_agent':
+    case 'journalist':
+    case 'radio_dj':
+      return { 
+        icon: <MessageSquare className="w-5 h-5" />, 
+        gradient: 'from-cyan-500 to-cyan-600',
+        shadow: 'shadow-cyan-500/20'
+      };
+    case 'sound_tech':
+    case 'photographer':
+    case 'videographer':
+      return { 
+        icon: <Globe className="w-5 h-5" />, 
+        gradient: 'from-green-500 to-green-600',
+        shadow: 'shadow-green-500/20'
+      };
+    default:
+      return { 
+        icon: null, 
+        gradient: 'from-accent-500 to-accent-600',
+        shadow: 'shadow-accent-500/20'
+      };
+  }
+};
 
 // Memoized Contact Row component for optimal virtual scrolling performance
 const ContactRow = React.memo<{
@@ -55,7 +116,17 @@ const ContactRow = React.memo<{
   onEdit: (contact: Contact) => void;
   onDelete: (id: string) => void;
   style: React.CSSProperties;
-}>(({ contact, isSelected, onView, onEdit, onDelete, style }) => {
+  venuesMap?: Map<string, { name: string; capacity?: number; city?: string; country?: string }>;
+  showsCount?: number;
+}>(({ contact, isSelected, onView, onEdit, onDelete, style, venuesMap, showsCount }) => {
+  // Get venue info if contact is venue_manager
+  const venueInfo = contact.type === 'venue_manager' && contact.venues && contact.venues.length > 0 && venuesMap && contact.venues[0]
+    ? venuesMap.get(contact.venues[0])
+    : null;
+
+  // Get contact type styling
+  const typeStyle = getContactTypeStyle(contact.type);
+
   return (
     <div
       onClick={() => onView(contact)}
@@ -70,21 +141,69 @@ const ContactRow = React.memo<{
     >
       {/* Contacto */}
       <div className="flex items-center gap-3 min-w-0 pr-4">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-sm font-semibold shadow-lg shadow-accent-500/20 flex-shrink-0">
-          {contact.firstName[0]}{contact.lastName[0]}
+        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${typeStyle.gradient} flex items-center justify-center text-white text-sm font-semibold shadow-lg ${typeStyle.shadow} flex-shrink-0`}>
+          {typeStyle.icon || `${contact.firstName[0]}${contact.lastName[0]}`}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{contact.firstName} {contact.lastName}</p>
             {contact.priority === 'high' && <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse shadow-lg shadow-red-400/50 flex-shrink-0" />}
           </div>
+          {contact.type === 'venue_manager' && venueInfo && (
+            <p className="text-xs text-purple-400 dark:text-purple-300 font-medium mt-0.5 truncate">
+              {venueInfo.name}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Empresa / Cargo */}
+      {/* Empresa / Cargo - Mostrar info específica según tipo */}
       <div className="min-w-0 pr-4">
-        <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || '—'}</p>
-        <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || 'Sin cargo'}</p>
+        {contact.type === 'venue_manager' && venueInfo ? (
+          <>
+            <div className="flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-purple-400" />
+              <p className="text-slate-900 dark:text-white text-sm font-medium">
+                {venueInfo.capacity ? `${venueInfo.capacity.toLocaleString()} cap` : 'N/A'}
+              </p>
+            </div>
+            {showsCount !== undefined && showsCount > 0 && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <Calendar className="w-3 h-3 text-purple-400/70" />
+                <p className="text-xs text-purple-400 dark:text-purple-300">{showsCount} shows</p>
+              </div>
+            )}
+          </>
+        ) : contact.type === 'promoter' && contact.shows && contact.shows.length > 0 ? (
+          <>
+            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || 'Promoter'}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <Calendar className="w-3 h-3 text-blue-400" />
+              <p className="text-xs text-blue-400">{contact.shows.length} shows promovidos</p>
+            </div>
+          </>
+        ) : contact.type === 'booking_agent' ? (
+          <>
+            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || 'Booking Agency'}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <TrendingUp className="w-3 h-3 text-orange-400" />
+              <p className="text-xs text-orange-400">10-15% comisión</p>
+            </div>
+          </>
+        ) : contact.type === 'label_rep' ? (
+          <>
+            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || 'Label'}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <Music className="w-3 h-3 text-pink-400" />
+              <p className="text-xs text-pink-400">A&R / Label Rep</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || '—'}</p>
+            <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || 'Sin cargo'}</p>
+          </>
+        )}
       </div>
 
       {/* Info */}
@@ -93,9 +212,14 @@ const ContactRow = React.memo<{
         {contact.phone && <div className="flex items-center gap-2 min-w-0"><Phone className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" /><span className="text-theme-secondary truncate">{contact.phone}</span></div>}
       </div>
 
-      {/* Ubicación */}
+      {/* Ubicación - Para venue_manager mostrar ubicación del venue */}
       <div className="min-w-0 pr-4">
-        {contact.city || contact.country ? (
+        {contact.type === 'venue_manager' && venueInfo && (venueInfo.city || venueInfo.country) ? (
+          <div className="flex items-center gap-2 text-sm text-theme-secondary min-w-0">
+            <MapPin className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+            <span className="truncate">{venueInfo.city ? `${venueInfo.city}, ` : ''}{venueInfo.country}</span>
+          </div>
+        ) : contact.city || contact.country ? (
           <div className="flex items-center gap-2 text-sm text-theme-secondary min-w-0">
             <MapPin className="w-3.5 h-3.5 text-slate-300 dark:text-white/40 flex-shrink-0" />
             <span className="truncate">{contact.city ? `${contact.city}, ` : ''}{contact.country}</span>
@@ -137,6 +261,7 @@ export const Contacts: React.FC = () => {
   const { data: contacts = [], isLoading, isError, error } = useContactsQuery();
   const { data: stats } = useContactStatsQuery();
   const { shows } = useShows();
+  const { data: venues = [] } = useVenuesQuery();
   const deleteContactMutation = useDeleteContactMutation();
   const createContactMutation = useCreateContactMutation();
   const updateContactMutation = useUpdateContactMutation();
@@ -166,6 +291,31 @@ export const Contacts: React.FC = () => {
   // Use deferred value for non-blocking UI updates during heavy filtering
   const deferredSortedContacts = useDeferredValue(sortedContacts);
 
+  // ✅ Venues Map for venue_manager contacts - maps venue ID to venue info
+  const venuesMap = useMemo(() => {
+    const map = new Map<string, { name: string; capacity?: number; city?: string; country?: string }>();
+    venues.forEach(venue => {
+      map.set(venue.id, {
+        name: venue.name,
+        capacity: venue.capacity,
+        city: venue.city,
+        country: venue.country,
+      });
+    });
+    return map;
+  }, [venues]);
+
+  // ✅ Shows count per venue for venue_manager contacts
+  const showsCountByVenue = useMemo(() => {
+    const countMap = new Map<string, number>();
+    shows.forEach(show => {
+      if (show.venue) {
+        countMap.set(show.venue, (countMap.get(show.venue) || 0) + 1);
+      }
+    });
+    return countMap;
+  }, [shows]);
+
   // ❌ REMOVED: Auto-sync agresivo que creaba contactos automáticamente
   // Esto causaba lag al navegar porque ejecutaba mutations masivas en background
   // Si se necesita, hacer manualmente con un botón "Sync from Shows"
@@ -174,9 +324,18 @@ export const Contacts: React.FC = () => {
   const categoryFilteredContacts = useMemo(() => {
     let filtered = deferredSortedContacts;
 
-    // Filtro por categoría
+    // Filtro por categoría con agrupaciones
     if (activeCategory !== 'all') {
-      filtered = filtered.filter(c => c.type === activeCategory);
+      if (activeCategory === 'press_agent') {
+        // Agrupar todos los tipos de media
+        filtered = filtered.filter(c => c.type === 'press_agent' || c.type === 'journalist' || c.type === 'radio_dj');
+      } else if (activeCategory === 'tech') {
+        // Agrupar todos los técnicos
+        filtered = filtered.filter(c => c.type === 'sound_tech' || c.type === 'photographer' || c.type === 'videographer');
+      } else {
+        // Filtro directo por tipo
+        filtered = filtered.filter(c => c.type === activeCategory);
+      }
     }
 
     // Filtro por país (debounced)
@@ -192,10 +351,23 @@ export const Contacts: React.FC = () => {
     return filtered;
   }, [deferredSortedContacts, activeCategory, debouncedCountry, debouncedCity]);
 
-  // Contadores por categoría
+  // Contadores por categoría con agrupaciones
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { all: contacts.length };
-    contacts.forEach(c => { counts[c.type] = (counts[c.type] || 0) + 1; });
+    
+    contacts.forEach(c => { 
+      // Contar tipos individuales
+      counts[c.type] = (counts[c.type] || 0) + 1;
+      
+      // Contar agrupaciones
+      if (c.type === 'press_agent' || c.type === 'journalist' || c.type === 'radio_dj') {
+        counts['press_agent'] = (counts['press_agent'] || 0) + 1;
+      }
+      if (c.type === 'sound_tech' || c.type === 'photographer' || c.type === 'videographer') {
+        counts['tech'] = (counts['tech'] || 0) + 1;
+      }
+    });
+    
     return counts;
   }, [contacts]);
 
@@ -630,6 +802,12 @@ export const Contacts: React.FC = () => {
                 {virtualItems.map((virtualRow) => {
                   const contact = categoryFilteredContacts[virtualRow.index];
                   if (!contact) return null;
+                  
+                  // Get shows count for venue_manager
+                  const showsCount = contact.type === 'venue_manager' && contact.venues && contact.venues.length > 0 && contact.venues[0]
+                    ? showsCountByVenue.get(contact.venues[0])
+                    : undefined;
+                  
                   return (
                     <ContactRow
                       key={contact.id}
@@ -638,6 +816,8 @@ export const Contacts: React.FC = () => {
                       onView={handleViewContact}
                       onEdit={handleEditContact}
                       onDelete={handleDeleteContact}
+                      venuesMap={venuesMap}
+                      showsCount={showsCount}
                       style={{
                         height: `${virtualRow.size}px`,
                         transform: `translate3d(0, ${virtualRow.start}px, 0)`, // GPU-accelerated transform
@@ -651,7 +831,9 @@ export const Contacts: React.FC = () => {
         </div>
 
         {/* Side Panel - Contact Preview Completo - OPTIMIZED POSITIONING */}
-        {selectedContact && (
+        {selectedContact && (() => {
+          const selectedTypeStyle = getContactTypeStyle(selectedContact.type);
+          return (
           <div 
             className="fixed right-0 top-0 bottom-0 w-96 border-l border-slate-200 dark:border-white/10 bg-dark-800/95 backdrop-blur-md overflow-auto flex-shrink-0 shadow-2xl z-40"
             style={{
@@ -662,11 +844,15 @@ export const Contacts: React.FC = () => {
           >
             <div className="flex flex-col h-full">
               {/* Header con Avatar Grande */}
-              <div className="p-6 border-b border-slate-200 dark:border-white/10 bg-gradient-to-br from-accent-500/10 to-accent-600/5">
+              <div className={`p-6 border-b border-slate-200 dark:border-white/10 bg-gradient-to-br ${selectedTypeStyle.gradient.replace('from-', 'from-').replace('to-', 'to-')}/10`}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-4 flex-1">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white text-2xl font-bold shadow-xl shadow-accent-500/30 flex-shrink-0">
-                      {selectedContact.firstName[0]}{selectedContact.lastName[0]}
+                    <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${selectedTypeStyle.gradient} flex items-center justify-center text-white text-2xl font-bold shadow-xl ${selectedTypeStyle.shadow.replace('/20', '/30')} flex-shrink-0`}>
+                      {selectedTypeStyle.icon ? (
+                        <div className="scale-150">{selectedTypeStyle.icon}</div>
+                      ) : (
+                        <>{selectedContact.firstName[0]}{selectedContact.lastName[0]}</>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
@@ -810,6 +996,251 @@ export const Contacts: React.FC = () => {
                 {/* Tab: Información */}
                 {activeTab === 'info' && (
                   <div className="space-y-6 animate-fadeIn">
+                    {/* Venue-specific Information for venue_manager */}
+                    {selectedContact.type === 'venue_manager' && selectedContact.venues && selectedContact.venues.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold mb-4">Información de Venue</h3>
+                        {selectedContact.venues.map(venueId => {
+                          const venue = venuesMap.get(venueId);
+                          const showsCount = showsCountByVenue.get(venueId) || 0;
+                          if (!venue) return null;
+                          return (
+                            <div key={venueId} className="glass rounded-xl p-4 border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-purple-600/5 hover:from-purple-500/10 hover:to-purple-600/10 transition-all duration-200">
+                              <div className="flex items-start gap-3 mb-4">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 flex-shrink-0">
+                                  <Building2 className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-base font-bold text-white mb-1">{venue.name}</h4>
+                                  {(venue.city || venue.country) && (
+                                    <div className="flex items-center gap-1.5 text-xs text-purple-300">
+                                      <MapPin className="w-3 h-3" />
+                                      <span>{venue.city ? `${venue.city}, ` : ''}{venue.country}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                                  <div className="text-xs text-slate-300 dark:text-white/50 mb-1">Capacidad</div>
+                                  <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4 text-purple-400" />
+                                    <span className="text-lg font-bold text-white">
+                                      {venue.capacity ? venue.capacity.toLocaleString() : 'N/A'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                                  <div className="text-xs text-slate-300 dark:text-white/50 mb-1">Shows</div>
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-accent-400" />
+                                    <span className="text-lg font-bold text-white">{showsCount}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Promoter-specific Information */}
+                    {selectedContact.type === 'promoter' && selectedContact.shows && selectedContact.shows.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold mb-4">Shows Promovidos</h3>
+                        <div className="glass rounded-xl p-4 border border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-600/5">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                              <div className="text-xs text-slate-300 dark:text-white/50 mb-1">Total Shows</div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-blue-400" />
+                                <span className="text-lg font-bold text-white">{selectedContact.shows.length}</span>
+                              </div>
+                            </div>
+                            <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                              <div className="text-xs text-slate-300 dark:text-white/50 mb-1">Activos</div>
+                              <div className="flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4 text-accent-400" />
+                                <span className="text-lg font-bold text-white">
+                                  {selectedContact.shows.filter(showId => {
+                                    const show = shows.find(s => s.id === showId);
+                                    return show && new Date(show.date) >= new Date();
+                                  }).length}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          {selectedContact.shows.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-white/5">
+                              <div className="text-xs text-slate-300 dark:text-white/50 mb-2">Ubicaciones</div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {[...new Set(selectedContact.shows.map(showId => {
+                                  const show = shows.find(s => s.id === showId);
+                                  return show?.city || 'N/A';
+                                }).filter(city => city !== 'N/A'))].slice(0, 5).map(city => (
+                                  <span key={city} className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-300">
+                                    {city}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Booking Agent-specific Information */}
+                    {selectedContact.type === 'booking_agent' && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold mb-4">Información de Booking Agent</h3>
+                        <div className="glass rounded-xl p-4 border border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-600/5">
+                          <div className="space-y-3">
+                            <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Star className="w-4 h-4 text-orange-400" />
+                                <div className="text-xs text-slate-300 dark:text-white/50">Comisión Estándar</div>
+                              </div>
+                              <div className="text-lg font-bold text-white">10-15%</div>
+                            </div>
+                            {selectedContact.shows && selectedContact.shows.length > 0 && (
+                              <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Calendar className="w-4 h-4 text-accent-400" />
+                                  <div className="text-xs text-slate-300 dark:text-white/50">Shows Gestionados</div>
+                                </div>
+                                <div className="text-lg font-bold text-white">{selectedContact.shows.length}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Label/A&R-specific Information */}
+                    {selectedContact.type === 'label_rep' && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold mb-4">Información de Label</h3>
+                        <div className="glass rounded-xl p-4 border border-pink-500/20 bg-gradient-to-br from-pink-500/5 to-pink-600/5">
+                          <div className="space-y-3">
+                            {selectedContact.company && (
+                              <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Music className="w-4 h-4 text-pink-400" />
+                                  <div className="text-xs text-slate-300 dark:text-white/50">Sello Discográfico</div>
+                                </div>
+                                <div className="text-base font-bold text-white">{selectedContact.company}</div>
+                              </div>
+                            )}
+                            <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                              <div className="flex items-center gap-2 mb-2">
+                                <TrendingUp className="w-4 h-4 text-accent-400" />
+                                <div className="text-xs text-slate-300 dark:text-white/50">Área de Especialización</div>
+                              </div>
+                              <div className="text-sm text-white">A&R / Desarrollo de Artistas</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Press Agent / Media-specific Information */}
+                    {(selectedContact.type === 'press_agent' || selectedContact.type === 'journalist' || selectedContact.type === 'radio_dj') && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold mb-4">Información de Media</h3>
+                        <div className="glass rounded-xl p-4 border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-cyan-600/5">
+                          <div className="space-y-3">
+                            <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                              <div className="flex items-center gap-2 mb-2">
+                                <MessageSquare className="w-4 h-4 text-cyan-400" />
+                                <div className="text-xs text-slate-300 dark:text-white/50">Tipo de Medio</div>
+                              </div>
+                              <div className="text-sm text-white">
+                                {selectedContact.type === 'press_agent' && 'Agente de Prensa'}
+                                {selectedContact.type === 'journalist' && 'Periodista / Crítico'}
+                                {selectedContact.type === 'radio_dj' && 'DJ / Radio'}
+                              </div>
+                            </div>
+                            {selectedContact.shows && selectedContact.shows.length > 0 && (
+                              <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Calendar className="w-4 h-4 text-accent-400" />
+                                  <div className="text-xs text-slate-300 dark:text-white/50">Shows Cubiertos</div>
+                                </div>
+                                <div className="text-lg font-bold text-white">{selectedContact.shows.length}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Festival Organizer-specific Information */}
+                    {selectedContact.type === 'festival_org' && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold mb-4">Información de Festival</h3>
+                        <div className="glass rounded-xl p-4 border border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 to-yellow-600/5">
+                          <div className="space-y-3">
+                            <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Star className="w-4 h-4 text-yellow-400" />
+                                <div className="text-xs text-slate-300 dark:text-white/50">Tipo de Evento</div>
+                              </div>
+                              <div className="text-sm text-white">Organizador de Festivales</div>
+                            </div>
+                            {selectedContact.company && (
+                              <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Building2 className="w-4 h-4 text-yellow-400" />
+                                  <div className="text-xs text-slate-300 dark:text-white/50">Festival / Organización</div>
+                                </div>
+                                <div className="text-sm font-bold text-white">{selectedContact.company}</div>
+                              </div>
+                            )}
+                            {selectedContact.shows && selectedContact.shows.length > 0 && (
+                              <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Calendar className="w-4 h-4 text-accent-400" />
+                                  <div className="text-xs text-slate-300 dark:text-white/50">Ediciones / Shows</div>
+                                </div>
+                                <div className="text-lg font-bold text-white">{selectedContact.shows.length}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tech Staff-specific Information */}
+                    {(selectedContact.type === 'sound_tech' || selectedContact.type === 'photographer' || selectedContact.type === 'videographer') && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold mb-4">Información Técnica</h3>
+                        <div className="glass rounded-xl p-4 border border-green-500/20 bg-gradient-to-br from-green-500/5 to-green-600/5">
+                          <div className="space-y-3">
+                            <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Globe className="w-4 h-4 text-green-400" />
+                                <div className="text-xs text-slate-300 dark:text-white/50">Especialidad</div>
+                              </div>
+                              <div className="text-sm text-white">
+                                {selectedContact.type === 'sound_tech' && 'Técnico de Sonido'}
+                                {selectedContact.type === 'photographer' && 'Fotógrafo'}
+                                {selectedContact.type === 'videographer' && 'Videógrafo'}
+                              </div>
+                            </div>
+                            {selectedContact.shows && selectedContact.shows.length > 0 && (
+                              <div className="bg-interactive rounded-lg p-3 border border-white/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Calendar className="w-4 h-4 text-accent-400" />
+                                  <div className="text-xs text-slate-300 dark:text-white/50">Shows Trabajados</div>
+                                </div>
+                                <div className="text-lg font-bold text-white">{selectedContact.shows.length}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Contact Info */}
                     <div className="space-y-4">
                       <h3 className="text-xs uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold mb-4">Información de Contacto</h3>
@@ -1129,7 +1560,8 @@ export const Contacts: React.FC = () => {
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {showEditor && (

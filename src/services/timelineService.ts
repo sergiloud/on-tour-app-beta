@@ -191,12 +191,16 @@ export class TimelineService {
         },
         (error) => {
           console.error('[TimelineService] Subscription error:', error);
+          // Call callback with empty array so UI can exit loading state
+          callback([]);
         }
       );
 
       return unsubscribe;
     } catch (error) {
       console.error('[TimelineService] Failed to subscribe:', error);
+      // Call callback with empty array so UI can exit loading state
+      callback([]);
       return () => {};
     }
   }

@@ -55,13 +55,30 @@ function set(key: string, value: any) { try { secureStorage.setItem(key, value);
 // Idempotent seed: merges by id without duplicating. Only runs client-side.
 export function ensureDemoTenants() {
   try {
-    // TEMPORARY: Keep demo data for development
-    // TODO: Remove this comment when Firestore organizations are created
-    console.log('[Tenants] Development mode - keeping demo data');
-    
-    // Seed demo data if not present
+    // Only seed demo data in development/demo mode
+    // DO NOT seed if user already has organizations
     const orgs = get<Org[]>(K_ORGS, []);
+    
+    // Check if there are any user-created orgs (not demo orgs)
+    const DEMO_ORG_IDS = [
+      ORG_ARTIST_DANNY,
+      ORG_ARTIST_DANNY_V2,
+      ORG_ARTIST_PROPHECY,
+      ORG_AGENCY_SHALIZI,
+      ORG_AGENCY_A2G,
+    ];
+    
+    const userOrgs = orgs.filter(o => !DEMO_ORG_IDS.includes(o.id));
+    
+    // If user has their own orgs, don't seed demo data
+    if (userOrgs.length > 0) {
+      console.log('[Tenants] User has organizations, skipping demo seed', { count: userOrgs.length });
+      return;
+    }
+    
+    // Only seed demo data if there are NO orgs at all
     if (orgs.length === 0) {
+      console.log('[Tenants] No organizations found - seeding demo data for development');
       // Seed demo organizations
       const demoOrgs: Org[] = [
         { id: ORG_ARTIST_PROPHECY, name: 'Prophecy', type: 'artist', seatLimit: 10, guestLimit: 5 },
@@ -69,6 +86,8 @@ export function ensureDemoTenants() {
       ];
       set(K_ORGS, demoOrgs);
       set(K_CURRENT, ORG_ARTIST_PROPHECY);
+    } else {
+      console.log('[Tenants] Demo organizations exist, keeping them', { count: orgs.length });
     }
     
     /* PRODUCTION BETA CODE - COMMENTED OUT TEMPORARILY

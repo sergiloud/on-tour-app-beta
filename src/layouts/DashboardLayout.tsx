@@ -17,6 +17,8 @@ import ShortcutsOverlay from '../components/common/ShortcutsOverlay';
 import UserMenu from '../components/common/UserMenu';
 import { useAuth } from '../context/AuthContext';
 import { useOrg } from '../context/OrgContext';
+import { OrganizationSelector } from '../components/organization/OrganizationSelector';
+import { useOrganizationContext } from '../context/OrganizationContext';
 import SubNav from '../components/common/SubNav';
 import FirestoreUserPreferencesService from '../services/firestoreUserPreferencesService';
 import { BottomNav } from '../components/mobile/BottomNav';
@@ -311,6 +313,12 @@ export const DashboardLayout: React.FC = () => {
           <header className="px-3 md:px-5 py-3 md:py-3.5 flex items-center justify-between border-b border-slate-100 dark:border-white/5 backdrop-blur-xl bg-ink-900/25">
             <h1 className="text-base md:text-lg font-semibold tracking-tight">{t('nav.dashboard')}</h1>
             <div className="flex items-center gap-3.5 text-[11px] md:text-xs opacity-85">
+              {/* Organization Selector */}
+              <OrganizationSelector onCreateOrganization={() => {
+                // TODO: Open create organization dialog
+                console.log('Create organization clicked');
+              }} />
+              
               {/* Quick Search Hint */}
               <button
                 onClick={() => {

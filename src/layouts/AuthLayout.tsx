@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 const Login = React.lazy(() => import('../pages/Login'));
 import DashboardLayout from '../layouts/DashboardLayout';
 import { OrgProvider } from '../context/OrgContext';
+import { OrganizationProvider } from '../context/OrganizationContext';
 import { isAuthed } from '../lib/demoAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -102,7 +103,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           </Suspense>
         ) : (
           <OrgProvider key="dashboard">
-            {children}
+            <OrganizationProvider>
+              {children}
+            </OrganizationProvider>
           </OrgProvider>
         )}
       </AnimatePresence>

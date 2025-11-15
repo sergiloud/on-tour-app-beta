@@ -27,6 +27,7 @@ const DashboardOverview = lazy(() => import('../pages/Dashboard'));
 const Finance = lazy(() => import('../pages/dashboard/Finance'));
 const FinanceOverview = lazy(() => import('../pages/dashboard/FinanceOverview'));
 const Contacts = lazy(() => import('../pages/dashboard/Contacts'));
+const Contracts = lazy(() => import('../pages/dashboard/Contracts'));
 const Shows = lazy(() => import('../pages/dashboard/Shows'));
 const ShowDetails = lazy(() => import('../pages/dashboard/ShowDetails'));
 const Travel = lazy(() => import('../pages/dashboard/TravelV2'));
@@ -99,6 +100,7 @@ export const AppRouter = () => {
           <Route path="finance" element={<Suspense fallback={<FinanceSkeleton />}><Finance /></Suspense>} />
           <Route path="finance/overview" element={<Suspense fallback={<FinanceSkeleton />}><FinanceOverview /></Suspense>} />
           <Route path="contacts" element={<Suspense fallback={<ContactsPageSkeleton />}><Contacts /></Suspense>} />
+          <Route path="contracts" element={<Suspense fallback={<ContactsPageSkeleton />}><Contracts /></Suspense>} />
           <Route path="story" element={<Suspense fallback={<DashboardSkeleton />}><Story /></Suspense>} />
           <Route path="shows" element={<Suspense fallback={<ShowsPageSkeleton />}><Shows /></Suspense>} />
           <Route path="shows/:id" element={<Suspense fallback={<ShowsPageSkeleton />}><ShowDetails /></Suspense>} />

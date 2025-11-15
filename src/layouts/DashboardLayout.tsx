@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { useOrg } from '../context/OrgContext';
 import { OrganizationSelector } from '../components/organization/OrganizationSelector';
 import { useOrganizationContext } from '../context/OrganizationContext';
+import { CreateOrgDialog } from '../components/organization/CreateOrgDialog';
 import SubNav from '../components/common/SubNav';
 import FirestoreUserPreferencesService from '../services/firestoreUserPreferencesService';
 import { BottomNav } from '../components/mobile/BottomNav';
@@ -51,6 +52,7 @@ function useNavItems(collapsed: boolean) {
       { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
       { to: '/dashboard/finance', labelKey: 'nav.finance' },
       { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
+      { to: '/dashboard/contracts', labelKey: 'nav.contracts' },
       { to: '', labelKey: '', separator: true, separatorLabel: collapsed ? '' : 'En desarrollo' },
       { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
       { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },
@@ -73,6 +75,7 @@ function useNavItems(collapsed: boolean) {
     { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
     { to: '/dashboard/finance', labelKey: 'nav.finance' },
     { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
+    { to: '/dashboard/contracts', labelKey: 'nav.contracts' },
     { to: '', labelKey: '', separator: true, separatorLabel: collapsed ? '' : 'En desarrollo' },
     { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
     { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },
@@ -98,6 +101,7 @@ export const DashboardLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const isMobile = useIsMobile();
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [isCreateOrgOpen, setIsCreateOrgOpen] = useState(false);
   // When arriving with ?landing=1 we clean the query and stay on /dashboard.
   // This ref avoids restoring last section immediately after that cleaning replace.
   const skipRestoreOnceRef = React.useRef(false);
@@ -314,10 +318,7 @@ export const DashboardLayout: React.FC = () => {
             <h1 className="text-base md:text-lg font-semibold tracking-tight">{t('nav.dashboard')}</h1>
             <div className="flex items-center gap-3.5 text-[11px] md:text-xs opacity-85">
               {/* Organization Selector */}
-              <OrganizationSelector onCreateOrganization={() => {
-                // TODO: Open create organization dialog
-                console.log('Create organization clicked');
-              }} />
+              <OrganizationSelector onCreateOrganization={() => setIsCreateOrgOpen(true)} />
               
               {/* Quick Search Hint */}
               <button
@@ -493,6 +494,14 @@ export const DashboardLayout: React.FC = () => {
       </div>
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
       <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <CreateOrgDialog 
+        isOpen={isCreateOrgOpen}
+        onClose={() => setIsCreateOrgOpen(false)}
+        onSuccess={(orgId) => {
+          setOrgId(orgId);
+          setIsCreateOrgOpen(false);
+        }}
+      />
     </MissionControlProvider>
   );
 };

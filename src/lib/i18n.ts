@@ -149,6 +149,8 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'nav.finance': 'Finance'
     , 'nav.settings': 'Settings'
     , 'nav.contacts': 'Contacts'
+    , 'nav.contracts': 'Contracts'
+    , 'nav.venues': 'Venues'
     , 'nav.members': 'Members'
     , 'insights.thisMonthTotal': 'This Month Total'
     , 'insights.statusBreakdown': 'Status breakdown'
@@ -3603,6 +3605,8 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'landing.minValue': '5min'
     // Missing keys - Batch 11A: Navigation & Shows Stats/UI
     , 'nav.contacts': 'Contactos'
+    , 'nav.contracts': 'Contratos'
+    , 'nav.venues': 'Recintos'
     , 'nav.members': 'Miembros'
     , 'shows.stats.overview': 'Resumen'
     , 'shows.stats.filtered': 'Filtrados'

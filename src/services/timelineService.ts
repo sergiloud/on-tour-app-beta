@@ -124,6 +124,10 @@ export class TimelineService {
       return () => {};
     }
 
+    console.log('[TimelineService] Subscribing to timeline for org:', organizationId);
+    console.log('[TimelineService] Using collection:', this.eventsCollection);
+    console.log('[TimelineService] Filters:', filters);
+
     try {
       const constraints: QueryConstraint[] = [
         where('organizationId', '==', organizationId),
@@ -167,8 +171,11 @@ export class TimelineService {
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
+          console.log('[TimelineService] Received snapshot with', snapshot.docs.length, 'documents');
+          
           const events: TimelineEvent[] = snapshot.docs.map(doc => {
             const data = doc.data() as FirestoreTimelineEvent;
+            console.log('[TimelineService] Event data:', doc.id, data);
             return {
               id: doc.id,
               ...data,
@@ -176,8 +183,11 @@ export class TimelineService {
             };
           });
 
+          console.log('[TimelineService] Parsed', events.length, 'events');
+
           // Apply smart grouping
           const groupedEvents = this.applySmartGrouping(events);
+          console.log('[TimelineService] After grouping:', groupedEvents.length, 'events');
 
           // Apply search filter (client-side)
           const filteredEvents = filters.searchQuery
@@ -187,6 +197,7 @@ export class TimelineService {
               )
             : groupedEvents;
 
+          console.log('[TimelineService] Final filtered events:', filteredEvents.length);
           callback(filteredEvents);
         },
         (error) => {

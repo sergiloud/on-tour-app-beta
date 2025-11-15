@@ -1,8 +1,10 @@
-# Firestore Scalable Architecture
+# Firestore Scalable Architecture - Reference Document
 
 **Date:** November 14, 2025  
 **Version:** 2.0.0  
-**Status:** 🚧 Migration In Progress
+**Status:** � Reference Architecture (Not Yet Implemented)
+
+**Note:** This document describes a future scalable architecture for when the app reaches scale limits. Current implementation uses simple collections which work fine for current user base.
 
 ---
 

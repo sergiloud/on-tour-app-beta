@@ -1,8 +1,23 @@
 # Multi-Tenancy Architecture for On Tour App
 
+**Status:** 📚 Plan de Referencia (NO implementado completamente)  
+**Nota:** Actualmente existe estructura básica `users/{userId}/organizations/{orgId}` pero NO el sistema completo de colaboración multi-usuario descrito aquí.
+
+---
+
 ## Overview
 
 Transform the On Tour App from a single-user tool into a collaborative platform where multiple team members can manage tours together. This implements **organization-based multi-tenancy** where tours are shared resources managed by teams.
+
+**ESTADO ACTUAL:**
+- ✅ Estructura básica: `users/{userId}/organizations/{orgId}/*`
+- ❌ Sistema de invitaciones NO implementado
+- ❌ Roles y permisos NO implementados
+- ❌ Selector de organizaciones NO implementado
+- ❌ Panel de gestión de miembros NO implementado
+- ❌ Migración a estructura colaborativa NO realizada
+
+Este documento describe la arquitectura objetivo para cuando se decida implementar colaboración real entre usuarios.
 
 ---
 
@@ -1023,5 +1038,6 @@ localStorage.setItem('currentOrgRole', 'admin');
 
 ---
 
-**Status:** Architecture Design Complete ✅  
-**Next:** Implement organization hooks and security rules
+**Status:** 📚 Referencia (NO implementado)  
+**Nota:** La app actualmente funciona en modo single-user con estructura básica de organizaciones para aislamiento de datos. Este documento es una guía para cuando se decida implementar colaboración multi-usuario real.
+

@@ -29,20 +29,14 @@ const OrgMembers: React.FC = () => {
 
   // Fallback to legacy org context (for backward compatibility during migration)
   if (org) {
-    // For demo/legacy mode, show a placeholder that encourages migration
+    // Use legacy MembersPanel with localStorage-based tenants.ts system
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-6">
-        <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-8 max-w-md">
-          <OrgEmptyState
-            icon={<Building2 className="w-6 h-6" />}
-            title="Multi-Tenancy Active"
-            description="Member management is now powered by the new organization system. Please ensure OrganizationContext is properly initialized."
-          />
-          <div className="mt-6 text-center text-sm text-slate-500 dark:text-slate-500">
-            Legacy org: {org.name} ({org.type})
-          </div>
-        </div>
-      </div>
+      <MembersPanel
+        organizationId={org.id}
+        organizationName={org.name}
+        currentUserRole={'owner'} // Legacy mode assumes owner role
+        canManageMembers={true} // Legacy mode has full permissions
+      />
     );
   }
 

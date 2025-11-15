@@ -8,6 +8,7 @@ import { HybridShowService } from '../services/hybridShowService';
 import { HybridContactService } from '../services/hybridContactService';
 import { HybridVenueService } from '../services/hybridVenueService';
 import { HybridContractService } from '../services/hybridContractService';
+import { FirestoreProfileService } from '../services/firestoreProfileService';
 import { logger } from '../lib/logger';
 
 interface AuthCtx {
@@ -243,10 +244,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = useCallback((patch: Partial<UserProfile>) => {
     setProfile(prev => {
       const next = { ...prev, ...patch } as UserProfile;
+      // ✅ Update localStorage first (optimistic)
       upsertUserProfile(next);
+      
+      // ✅ Sync to Firebase in background
+      if (userId) {
+        FirestoreProfileService.saveProfile(userId, next).catch((err: Error) => {
+          logger.warn('Failed to sync profile to Firebase', { userId, error: err });
+        });
+      }
+      
       return next;
     });
-  }, []);
+  }, [userId]);
 
   const updatePrefs = useCallback((patch: Partial<UserPrefs>) => {
     const next = upsertUserPrefs(userId, patch);

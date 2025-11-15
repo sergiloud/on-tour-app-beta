@@ -8,8 +8,20 @@ export type Org = { id: string; type: OrgType; name: string; seatLimit: number; 
 export type User = { id: string; name: string };
 export type Membership = { orgId: string; userId: string; role: 'owner' | 'manager' };
 export type Team = { id: string; orgId: string; name: string; members: string[] };
-export type LinkScopes = { shows: 'read' | 'write'; travel: 'read' | 'book'; finance: 'none' | 'read' | 'export' };
-export type Link = { id: string; agencyOrgId: string; artistOrgId: string; status: 'active' | 'inactive'; scopes: LinkScopes };
+export type LinkScopes = { shows: 'read' | 'write'; travel: 'read' | 'book'; finance: 'none' | 'read' | 'export'; calendar?: 'read' | 'write'; contacts?: 'read' | 'write'; contracts?: 'read' | 'write' };
+export type Link = { 
+  id: string; 
+  agencyOrgId: string; 
+  artistOrgId: string; 
+  agencyOrgName?: string;
+  artistOrgName?: string;
+  status: 'active' | 'inactive' | 'pending'; 
+  scopes: LinkScopes;
+  // Manager assignment (NEW)
+  assignedManagerId?: string;
+  assignedManagerEmail?: string;
+  assignedManagerName?: string;
+};
 export type OrgSettings = {
   branding?: { logoUrl?: string; color?: string; socials?: Record<string, string>; pressKitUrl?: string; shortBio?: string };
   api?: { slackWebhook?: string; calendarKey?: string; mapKey?: string };
@@ -28,7 +40,7 @@ const K_VIEW_AS = 'demo:viewAs'; // { prevOrgId, artistOrgId } when agency is vi
 export const ORG_ARTIST_DANNY = 'org_artist_danny_avila';
 export const ORG_ARTIST_DANNY_V2 = 'org_artist_danny_avila_v2';
 export const ORG_ARTIST_PROPHECY = 'org_artist_prophecy';
-export const ORG_AGENCY_SHALIZI = 'org_agency_shalizi_group';
+export const ORG_AGENCY_SHALIZI = 'org_agency_demo'; // Demo agency org
 export const ORG_AGENCY_A2G = 'org_agency_a2g_management';
 
 // DEMO DATA DISABLED FOR PRODUCTION BETA
@@ -79,10 +91,11 @@ export function ensureDemoTenants() {
     // Only seed demo data if there are NO orgs at all
     if (orgs.length === 0) {
       console.log('[Tenants] No organizations found - seeding demo data for development');
-      // Seed demo organizations
+      // Seed demo organizations - These are ONLY used when NO orgs exist
+      // Real user orgs will override these
       const demoOrgs: Org[] = [
-        { id: ORG_ARTIST_PROPHECY, name: 'Prophecy', type: 'artist', seatLimit: 10, guestLimit: 5 },
-        { id: ORG_AGENCY_SHALIZI, name: 'Shalizi', type: 'agency', seatLimit: 50, guestLimit: 20 },
+        { id: ORG_ARTIST_PROPHECY, name: 'Demo Artist Org', type: 'artist', seatLimit: 10, guestLimit: 5 },
+        { id: ORG_AGENCY_SHALIZI, name: 'Demo Agency Org', type: 'agency', seatLimit: 50, guestLimit: 20 },
       ];
       set(K_ORGS, demoOrgs);
       set(K_CURRENT, ORG_ARTIST_PROPHECY);
@@ -322,12 +335,59 @@ export function setTeamMembers(teamId: string, memberIds: string[]): boolean {
   } catch { return false; }
 }
 
+export function assignMemberToTeam(teamId: string, userId: string): boolean {
+  try {
+    const teams = get<Team[]>(K_TEAMS, []);
+    const idx = teams.findIndex(t => t.id === teamId);
+    if (idx === -1) return false;
+    const team = teams[idx];
+    if (!team) return false;
+    if (team.members.includes(userId)) return true; // Already assigned
+    const orgId = team.orgId;
+    teams[idx] = { ...team, members: [...team.members, userId] };
+    set(K_TEAMS, teams);
+    try { window.dispatchEvent(new CustomEvent('org:teamsUpdated', { detail: { orgId } } as any)); } catch { }
+    return true;
+  } catch { return false; }
+}
+
+export function removeMemberFromTeam(teamId: string, userId: string): boolean {
+  try {
+    const teams = get<Team[]>(K_TEAMS, []);
+    const idx = teams.findIndex(t => t.id === teamId);
+    if (idx === -1) return false;
+    const team = teams[idx];
+    if (!team) return false;
+    const orgId = team.orgId;
+    teams[idx] = { ...team, members: team.members.filter(id => id !== userId) };
+    set(K_TEAMS, teams);
+    try { window.dispatchEvent(new CustomEvent('org:teamsUpdated', { detail: { orgId } } as any)); } catch { }
+    return true;
+  } catch { return false; }
+}
+
+export function listUsers(): User[] {
+  try {
+    return get<User[]>(K_USERS, []);
+  } catch { return []; }
+}
+
 export function addOrGetLink(agencyOrgId: string, artistOrgId: string): Link | undefined {
   try {
     const links = get<Link[]>(K_LINKS, []);
     let link = links.find(l => l.agencyOrgId === agencyOrgId && l.artistOrgId === artistOrgId);
     if (!link) {
-      link = { id: `link_${Math.random().toString(36).slice(2, 8)}`, agencyOrgId, artistOrgId, status: 'active', scopes: { shows: 'write', travel: 'book', finance: 'read' } };
+      const agencyOrg = getOrgById(agencyOrgId);
+      const artistOrg = getOrgById(artistOrgId);
+      link = { 
+        id: `link_${Math.random().toString(36).slice(2, 8)}`, 
+        agencyOrgId, 
+        artistOrgId,
+        agencyOrgName: agencyOrg?.name,
+        artistOrgName: artistOrg?.name,
+        status: 'active', 
+        scopes: { shows: 'write', travel: 'book', finance: 'read' } 
+      };
       links.push(link);
       set(K_LINKS, links);
     }

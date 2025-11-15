@@ -152,9 +152,11 @@ class ShowStore {
     if (idx === -1) return;
     const current = this.shows[idx] as Show & Record<string, unknown>;
     // Whitelist patchable fields to prevent stray props from entering the store
-    const allowed: (keyof Show | 'venue' | 'venueId' | 'promoter' | 'promoterId' | 'whtPct' | 'mgmtAgency' | 'bookingAgency' | 'notes' | 'costs' | 'feeCurrency' | 'archivedAt' | 'createdAt' | 'contractIds')[] = [
+    // ✅ TODOS los campos del tipo Show incluyendo vatPct, paid, cost, etc.
+    const allowed: (keyof Show | 'venue' | 'venueId' | 'promoter' | 'promoterId' | 'whtPct' | 'vatPct' | 'mgmtAgency' | 'bookingAgency' | 'notes' | 'costs' | 'cost' | 'paid' | 'feeCurrency' | 'fxRateToBase' | 'fxRateDate' | 'fxRateSource' | 'tenantId' | 'userId' | 'archivedAt' | 'createdAt' | 'contractIds')[] = [
       'id','city','country','date','endDate','fee','lat','lng','status','name',
-      'venue','venueId','promoter','promoterId','whtPct','mgmtAgency','bookingAgency','notes','costs','feeCurrency','archivedAt','createdAt','contractIds'
+      'venue','venueId','promoter','promoterId','whtPct','vatPct','mgmtAgency','bookingAgency','notes','costs','cost','paid',
+      'feeCurrency','fxRateToBase','fxRateDate','fxRateSource','tenantId','userId','archivedAt','createdAt','contractIds'
     ];
     const safePatch: Record<string, unknown> = {};
     for (const k of allowed) {

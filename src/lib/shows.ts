@@ -31,6 +31,34 @@ export type Show = {
   bookingAgency?: string;  // Booking agency name
   notes?: string;
   cost?: number;           // Show production costs
+  
+  // Agency commissions (NEW)
+  assignedAgencies?: Array<{
+    agencyId: string;
+    agencyName: string;
+    agencyType: 'booking' | 'management';
+    commissionPct: number;
+    commissionAmount?: number; // Calculated amount (optional, can be computed)
+  }>;
+  
+  // Contracts (NEW)
+  contractIds?: string[];  // Array of contract IDs linked to this show
+  contracts?: Array<{
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    uploadedAt: string;
+    fileSize?: number;
+    fileType?: string;
+  }>;
+  
+  // Costs breakdown (NEW - more detailed than single 'cost' field)
+  costs?: Array<{
+    id: string;
+    type: string;
+    amount: number;
+    desc?: string;
+  }>;
 
   // Synchronization fields (CRITICAL for multi-tab, offline, backend sync)
   __version: number;       // Increments on every change (detect conflicts)

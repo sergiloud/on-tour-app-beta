@@ -105,6 +105,22 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 - **Audit Trail**: Historial completo e inmutable de cambios
 - **Auto-reminders**: Notificaciones pre-show automáticas
 - **Document Versioning**: Control de versiones de contratos
+- **Show Integration**: Contracts linked to specific shows with showId reference
+- **Firebase Storage**: Secure file uploads with metadata (fileName, fileUrl, fileSize, fileType)
+
+### 🏢 Multi-Tenancy & Collaboration
+
+- **Organization-Based**: Data scoped to `organizations/{orgId}/*` for team access
+- **Role-Based Access Control (RBAC)**: Owner, Admin, Finance, Member, Viewer roles
+- **Granular Permissions**: finance.read/write, shows.read/write, calendar.read/write per module
+- **Agency-Artist Linking**: Agencies can link with artists via invitation system
+- **Link Invitations**: Inbox/outbox for agency-artist relationship requests
+- **Manager Assignment**: Agencies assign specific managers to linked artists
+- **Real-Time Sync**: All org members see changes instantly via Firestore subscriptions
+- **Secure Rules**: 492-line Firestore security rules with field validation
+- **User-Scoped Data**: Personal profile, preferences, settings in `users/{userId}/*`
+- **Organization-Scoped Data**: Shows, finance, contracts, calendar in org sub-collections
+- **Complete Show Data**: assignedAgencies with auto-calculated commissions, contracts array, costs array
 
 ### 🗺️ Interactive Maps
 
@@ -1242,6 +1258,200 @@ service cloud.firestore {
     }
   }
 }
+```
+
+### Production Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        USER DEVICES                              │
+│  Web (Vercel) + PWA (Offline) + Mobile (Progressive)            │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                    VERCEL EDGE NETWORK                           │
+│  ├─ Static Assets (Vite build)                                  │
+│  ├─ API Routes (/api/*) → Serverless Functions                  │
+│  ├─ SSR (none - SPA)                                            │
+│  └─ CDN (global edge caching)                                   │
+└────────┬────────────────────────────┬──────────────────────────┘
+         │                            │
+         ▼                            ▼
+┌─────────────────────┐     ┌──────────────────────────────────┐
+│   RAILWAY BACKEND   │     │       FIREBASE SERVICES          │
+│   (Node.js/Express) │     │  ├─ Authentication               │
+│   ├─ REST API       │     │  ├─ Firestore (NoSQL)            │
+│   ├─ CalDAV Sync    │     │  │   ├─ users/{userId}/*         │
+│   ├─ WebSockets     │     │  │   ├─ organizations/{orgId}/*  │
+│   ├─ Cron Jobs      │     │  │   │   ├─ members/{userId}     │
+│   └─ Email Dispatch │     │  │   │   ├─ shows/{showId}       │
+│        │            │     │  │   │   ├─ finance_snapshots/*  │
+│        ▼            │     │  │   │   ├─ contracts/*          │
+│   ┌──────────┐     │     │  │   │   └─ calendar_events/*    │
+│   │PostgreSQL│     │     │  │   └─ Real-time subscriptions   │
+│   │   (SQL)  │     │     │  ├─ Storage (file uploads)        │
+│   └──────────┘     │     │  │   └─ Contracts, documents      │
+│   Shows, Finance   │     │  ├─ Security Rules (492 lines)    │
+└─────────────────────┘     │  │   ├─ RBAC (roles & permissions)│
+                            │  │   ├─ Field validation         │
+                            │  │   ├─ Timestamp protection     │
+                            │  │   └─ Owner safeguards         │
+                            │  └─ Cloud Functions (future)     │
+                            └──────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│                    EXTERNAL INTEGRATIONS                         │
+│  ├─ iCloud Calendar (CalDAV) ←→ Backend                        │
+│  ├─ Google Calendar (CalDAV) ←→ Backend                        │
+│  └─ Stripe (Payment Processing) - Planned                      │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Multi-Tenancy Data Flow
+
+```
+User authenticates with Firebase Auth
+          ↓
+Fetch user's organizations from Firestore
+          ↓
+organizations/{orgId}/members/{userId}
+          ↓
+Check role & permissions (owner/admin/finance/member/viewer)
+          ↓
+Subscribe to organization data
+          ↓
+organizations/{orgId}/shows/* (with real-time sync)
+organizations/{orgId}/finance_snapshots/*
+organizations/{orgId}/contracts/*
+organizations/{orgId}/calendar_events/*
+          ↓
+Apply granular permissions per module:
+- finance.read/write/delete/export
+- shows.read/write/delete
+- calendar.read/write/delete
+- contacts.read/write/delete
+- contracts.read/write/delete
+- members.invite/manage_roles/remove
+          ↓
+Real-time updates via onSnapshot()
+All org members see changes instantly
+```
+
+### Firestore Security (Production-Ready)
+
+```javascript
+// firestore.rules (492 lines) - Key Features
+
+// 1. Field Validation
+allow create: if hasRequiredFields(['name', 'type', 'createdBy']);
+
+// 2. Timestamp Protection
+allow create: if hasValidTimestamps();
+allow update: if timestampsUnchanged();
+
+// 3. Owner Protection
+allow delete: if resource.data.role != 'owner'; // Can't remove owner
+allow update: if isOwner(orgId) || request.resource.data.role != 'owner'; // Can't promote to owner
+
+// 4. Granular Permissions
+function canWriteFinance(orgId) {
+  return canRead(orgId) && (
+    hasPermission(orgId, 'finance.write') ||
+    isOwner(orgId) || isAdmin(orgId)
+  );
+}
+
+// 5. Link Invitation Security
+function isValidLinkInvitation() {
+  return request.resource.data.keys().hasAll([
+    'agencyUserId', 'artistUserId', 'status', 'createdAt'
+  ]) && request.resource.data.status in ['pending', 'accepted', 'rejected'];
+}
+
+// Structure:
+// Lines 1-50: Core Helper Functions
+// Lines 51-120: RBAC Functions
+// Lines 121-164: Granular Permissions
+// Lines 165-210: Link & Validation Helpers
+// Lines 211-330: User Data Rules
+// Lines 331-450: Organization Rules
+// Lines 451-490: Root Collections
+// Lines 491-492: Default Deny
+```
+
+### Show Data Persistence Flow
+
+```
+ShowEditorDrawer.tsx
+  ├─ User adds management agency
+  │   ↓
+  ├─ useEffect watches: mgmtAgency, bookingAgency, fee, date, country
+  │   ↓
+  ├─ Calculates commission via computeCommission()
+  │   ↓
+  ├─ Updates draft.assignedAgencies array automatically
+  │   └─ {agencyId, agencyName, agencyType, commissionPct, commissionAmount}
+  │   ↓
+  ├─ User uploads contract PDF
+  │   ↓
+  ├─ ContractsList saves to Firebase Storage
+  │   └─ draft.contracts.push({id, fileName, fileUrl, uploadedAt, fileSize, fileType})
+  │   ↓
+  ├─ User adds costs
+  │   └─ draft.costs.push({id, type, amount, desc})
+  │   ↓
+  └─ User clicks Save
+      ↓
+  HybridShowService.saveShow(draft)
+      ↓
+  FirestoreShowService.saveShow()
+      ↓
+  Firestore.setDoc(organizations/{orgId}/shows/{showId}, {
+    ...basicInfo,
+    assignedAgencies: [...],  // ✅ Saved
+    contracts: [...],         // ✅ Saved
+    costs: [...]             // ✅ Saved
+  })
+      ↓
+  onSnapshot() triggers in all org members
+      ↓
+  All users see updated show with agencies + contracts + costs
+```
+
+### Deployment Flow
+
+```bash
+# Frontend (Vercel)
+git push origin main
+  ↓
+Vercel GitHub Integration triggers
+  ↓
+Build: vite build
+  ↓
+Deploy to edge network
+  ↓
+Live: https://on-tour-app-beta.vercel.app
+
+# Backend (Railway)
+git push origin main
+  ↓
+Railway auto-deploy triggers
+  ↓
+Build: npm run build
+  ↓
+Start: npm start
+  ↓
+Live: https://on-tour-backend-production.up.railway.app
+
+# Firestore Rules
+firebase deploy --only firestore:rules
+  ↓
+Validation + syntax check
+  ↓
+Deploy to Firebase project
+  ↓
+Rules active immediately (no downtime)
 ```
 
 ### Monitoring & Logs

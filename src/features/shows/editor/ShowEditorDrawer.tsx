@@ -524,6 +524,97 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     return result;
   }, [draft.date, draft.country, draft.fee, draft.feeCurrency, draft.id, draft.city, draft.status, draft.mgmtAgency, draft.bookingAgency, bookingAgencies, managementAgencies]);
 
+  // Auto-update assignedAgencies in draft when agencies change
+  useEffect(() => {
+    const feeVal = Number(draft.fee) || 0;
+    if (feeVal === 0) return; // No point calculating if no fee
+    
+    const assignedAgencies: Array<{
+      agencyId: string;
+      agencyName: string;
+      agencyType: 'booking' | 'management';
+      commissionPct: number;
+      commissionAmount: number;
+    }> = [];
+    
+    // Add management agency if selected
+    if (draft.mgmtAgency) {
+      const mgmt = managementAgencies.find(a => a.name === draft.mgmtAgency);
+      if (mgmt) {
+        const demoShow: Show = {
+          id: draft.id || '',
+          date: draft.date || '',
+          city: draft.city || '',
+          country: draft.country || '',
+          lat: 0,
+          lng: 0,
+          fee: feeVal,
+          feeCurrency: draft.feeCurrency || 'EUR',
+          status: draft.status || 'confirmed',
+          mgmtAgency: draft.mgmtAgency,
+          bookingAgency: draft.bookingAgency,
+          __version: 1,
+          __modifiedAt: Date.now(),
+          __modifiedBy: ''
+        };
+        const commission = computeCommission(demoShow, [mgmt]);
+        assignedAgencies.push({
+          agencyId: mgmt.id,
+          agencyName: mgmt.name,
+          agencyType: 'management',
+          commissionPct: mgmt.commissionPct,
+          commissionAmount: commission
+        });
+      }
+    }
+    
+    // Add booking agency if selected
+    if (draft.bookingAgency) {
+      const booking = bookingAgencies.find(a => a.name === draft.bookingAgency);
+      if (booking) {
+        const demoShow: Show = {
+          id: draft.id || '',
+          date: draft.date || '',
+          city: draft.city || '',
+          country: draft.country || '',
+          lat: 0,
+          lng: 0,
+          fee: feeVal,
+          feeCurrency: draft.feeCurrency || 'EUR',
+          status: draft.status || 'confirmed',
+          mgmtAgency: draft.mgmtAgency,
+          bookingAgency: draft.bookingAgency,
+          __version: 1,
+          __modifiedAt: Date.now(),
+          __modifiedBy: ''
+        };
+        const commission = computeCommission(demoShow, [booking]);
+        assignedAgencies.push({
+          agencyId: booking.id,
+          agencyName: booking.name,
+          agencyType: 'booking',
+          commissionPct: booking.commissionPct,
+          commissionAmount: commission
+        });
+      }
+    }
+    
+    // Update draft if assignedAgencies changed
+    setDraft((prev: ShowDraft) => {
+      const prevAgencies = prev.assignedAgencies || [];
+      const changed = 
+        prevAgencies.length !== assignedAgencies.length ||
+        prevAgencies.some((pa, i) => 
+          pa.agencyId !== assignedAgencies[i]?.agencyId ||
+          pa.commissionAmount !== assignedAgencies[i]?.commissionAmount
+        );
+      
+      if (!changed) return prev;
+      
+      return { ...prev, assignedAgencies };
+    });
+  }, [draft.mgmtAgency, draft.bookingAgency, draft.fee, draft.date, draft.country, draft.feeCurrency, draft.status, draft.id, draft.city, managementAgencies, bookingAgencies, setDraft]);
+
   const net = computeNet({ fee, whtPct: draft.whtPct, vatPct: draft.vatPct, costs: draft.costs });
   const marginPct = fee > 0 ? (net / fee) * 100 : 0;
   

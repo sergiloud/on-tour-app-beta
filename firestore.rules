@@ -4,10 +4,16 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // ========================================
-    // MULTI-TENANCY HELPER FUNCTIONS
+    // MULTI-TENANCY SECURITY RULES
+    // On Tour App - Production Ready
+    // Last Updated: November 2025
     // ========================================
     
-    // Check if user is authenticated
+    // ========================================
+    // CORE HELPER FUNCTIONS
+    // ========================================
+    
+    // Authentication check
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -16,6 +22,15 @@ service cloud.firestore {
     function getUserId() {
       return request.auth.uid;
     }
+    
+    // Get user email
+    function getUserEmail() {
+      return request.auth.token.email;
+    }
+    
+    // ========================================
+    // ORGANIZATION MEMBERSHIP FUNCTIONS
+    // ========================================
     
     // Check if user is a member of the organization
     function isMember(orgId) {
@@ -35,31 +50,44 @@ service cloud.firestore {
     
     // Check if user has specific permission
     function hasPermission(orgId, permission) {
-      return isMember(orgId) && getMemberPermissions(orgId).hasAny([permission]);
+      return isMember(orgId) && 
+        getMemberPermissions(orgId).hasAny([permission]);
     }
     
-    // Role hierarchy checks
+    // ========================================
+    // ROLE-BASED ACCESS CONTROL (RBAC)
+    // ========================================
+    
+    // Owner: Full control over organization
     function isOwner(orgId) {
       return isMember(orgId) && getMemberRole(orgId) == 'owner';
     }
     
+    // Admin: Can manage organization (except delete)
     function isAdmin(orgId) {
       return isMember(orgId) && getMemberRole(orgId) in ['owner', 'admin'];
     }
     
+    // Finance role: Can manage financial data
     function isFinanceRole(orgId) {
       return isMember(orgId) && getMemberRole(orgId) in ['owner', 'admin', 'finance'];
     }
     
+    // Can write: Members with write privileges
     function canWrite(orgId) {
       return isMember(orgId) && getMemberRole(orgId) in ['owner', 'admin', 'member'];
     }
     
+    // Can read: All members (including viewers)
     function canRead(orgId) {
-      return isMember(orgId); // All members can read (including viewers)
+      return isMember(orgId);
     }
     
-    // Granular permission checks by module
+    // ========================================
+    // GRANULAR PERMISSION FUNCTIONS BY MODULE
+    // ========================================
+    
+    // Finance permissions
     function canReadFinance(orgId) {
       return hasPermission(orgId, 'finance.read');
     }
@@ -76,6 +104,7 @@ service cloud.firestore {
       return hasPermission(orgId, 'finance.export');
     }
     
+    // Shows permissions
     function canReadShows(orgId) {
       return hasPermission(orgId, 'shows.read');
     }
@@ -88,6 +117,7 @@ service cloud.firestore {
       return hasPermission(orgId, 'shows.delete');
     }
     
+    // Calendar permissions
     function canReadCalendar(orgId) {
       return hasPermission(orgId, 'calendar.read');
     }
@@ -100,6 +130,7 @@ service cloud.firestore {
       return hasPermission(orgId, 'calendar.delete');
     }
     
+    // Travel permissions
     function canReadTravel(orgId) {
       return hasPermission(orgId, 'travel.read');
     }
@@ -108,10 +139,15 @@ service cloud.firestore {
       return hasPermission(orgId, 'travel.write');
     }
     
+    function canBookTravel(orgId) {
+      return hasPermission(orgId, 'travel.book');
+    }
+    
     function canDeleteTravel(orgId) {
       return hasPermission(orgId, 'travel.delete');
     }
     
+    // Contacts permissions
     function canReadContacts(orgId) {
       return hasPermission(orgId, 'contacts.read');
     }
@@ -124,6 +160,7 @@ service cloud.firestore {
       return hasPermission(orgId, 'contacts.delete');
     }
     
+    // Contracts permissions
     function canReadContracts(orgId) {
       return hasPermission(orgId, 'contracts.read');
     }
@@ -136,6 +173,7 @@ service cloud.firestore {
       return hasPermission(orgId, 'contracts.delete');
     }
     
+    // Member management permissions
     function canManageMembers(orgId) {
       return hasPermission(orgId, 'members.manage_roles');
     }
@@ -148,6 +186,38 @@ service cloud.firestore {
       return hasPermission(orgId, 'members.remove');
     }
     
+    // ========================================
+    // AGENCY-ARTIST LINK PERMISSIONS
+    // ========================================
+    
+    // Check if user can manage links (agency-artist relationships)
+    function canManageLinks(userId) {
+      return isAuthenticated() && getUserId() == userId;
+    }
+    
+    // Validate link invitation data
+    function isValidLinkInvitation() {
+      return request.resource.data.keys().hasAll([
+        'agencyUserId', 'artistUserId', 'agencyOrgId', 'agencyOrgName',
+        'status', 'proposedScopes', 'createdAt', 'expiresAt'
+      ]) &&
+      request.resource.data.status in ['pending', 'accepted', 'rejected', 'cancelled'] &&
+      request.resource.data.agencyUserId == getUserId();
+    }
+    
+    // Validate link data
+    function isValidLink() {
+      return request.resource.data.keys().hasAll([
+        'agencyUserId', 'artistUserId', 'agencyOrgId', 'artistOrgId',
+        'status', 'scopes', 'createdAt'
+      ]) &&
+      request.resource.data.status in ['active', 'suspended', 'terminated'];
+    }
+    
+    // ========================================
+    // LEGACY COMPATIBILITY FUNCTIONS
+    // ========================================
+    
     // LEGACY: Check if user owns the data (backward compatibility)
     function isOwnerLegacy(userId) {
       return request.auth != null && request.auth.uid == userId;
@@ -158,155 +228,224 @@ service cloud.firestore {
       return isOwnerLegacy(userId);
     }
     
-    // User data - users can only access their own data
+    // ========================================
+    // VALIDATION HELPERS
+    // ========================================
+    
+    // Validate required fields exist
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    // Validate timestamps
+    function hasValidTimestamps() {
+      return request.resource.data.createdAt is timestamp &&
+        request.resource.data.updatedAt is timestamp;
+    }
+    
+    // Prevent timestamp manipulation
+    function timestampsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdAt']);
+    }
+    
+    // ========================================
+    // USER DATA - PERSONAL SCOPE
+    // ========================================
+    
     match /users/{userId} {
-      // Allow user to read and write their own data
-      allow read, write: if isOwner(userId);
+      // User can only access their own personal data
+      allow read, write: if isOwnerLegacy(userId);
       
-      // User profile
+      // User profile (personal settings, not org-specific)
       match /profile/{document=**} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
-      // User organizations
+      // User preferences (UI, language, etc.)
+      match /preferences/{document=**} {
+        allow read, write: if isOwnerLegacy(userId);
+      }
+      
+      // User settings (app configuration)
+      match /settings/{document=**} {
+        allow read, write: if isOwnerLegacy(userId);
+      }
+      
+      // Calendar sync configuration (personal)
+      match /calendarSync/{document=**} {
+        allow read, write: if isOwnerLegacy(userId);
+      }
+      
+      // ========================================
+      // AGENCY-ARTIST LINKS (User-scoped)
+      // ========================================
+      
+      // Active links (agency → artist relationships)
+      match /links/{linkId} {
+        allow read: if isOwnerLegacy(userId);
+        allow create: if isOwnerLegacy(userId) && isValidLink();
+        allow update: if isOwnerLegacy(userId) && isValidLink();
+        allow delete: if isOwnerLegacy(userId);
+      }
+      
+      // Link invitations received (artist inbox)
+      match /linkInvitations/{invitationId} {
+        allow read: if isOwnerLegacy(userId);
+        // Only the inviting agency can create
+        allow create: if isAuthenticated() && 
+          request.resource.data.artistUserId == userId &&
+          isValidLinkInvitation();
+        // Artist can update to accept/reject
+        allow update: if isOwnerLegacy(userId) &&
+          resource.data.status == 'pending' &&
+          request.resource.data.status in ['accepted', 'rejected'];
+        allow delete: if isOwnerLegacy(userId);
+      }
+      
+      // Sent link invitations (agency outbox)
+      match /sentLinkInvitations/{invitationId} {
+        allow read: if isOwnerLegacy(userId);
+        allow create: if isOwnerLegacy(userId) && isValidLinkInvitation();
+        // Agency can cancel pending invitations
+        allow update: if isOwnerLegacy(userId) &&
+          resource.data.status == 'pending' &&
+          request.resource.data.status == 'cancelled';
+        allow delete: if isOwnerLegacy(userId);
+      }
+      
+      // ========================================
+      // ORGANIZATION-SCOPED DATA (User → Org → Data)
+      // ========================================
+      
       match /organizations/{orgId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
         
-        // Organization profile (including completedActions)
+        // Organization profile and metadata
         match /profile/{document=**} {
           allow read, write: if userOwnsOrg(userId, orgId);
         }
         
         // ========================================
-        // SCALABLE SUB-COLLECTIONS (NEW)
+        // SCALABLE SUB-COLLECTIONS
+        // Optimized for large datasets with proper indexing
         // ========================================
         
-        // Finance snapshots with transactions sub-collection
+        // Finance snapshots with nested transactions
         match /finance_snapshots/{snapshotId} {
           allow read, write: if userOwnsOrg(userId, orgId);
           
-          // Transactions sub-collection (SCALABLE)
+          // Transactions sub-collection (supports pagination)
           match /transactions/{transactionId} {
             allow read, write: if userOwnsOrg(userId, orgId);
-            
-            // Allow queries on transactions
             allow list: if userOwnsOrg(userId, orgId);
           }
         }
         
-        // Organization-scoped shows (SCALABLE)
+        // Shows (with full show data including agencies, contracts, costs)
         match /shows/{showId} {
-          allow read, write: if userOwnsOrg(userId, orgId);
+          allow read: if userOwnsOrg(userId, orgId);
+          allow create: if userOwnsOrg(userId, orgId) && 
+            hasRequiredFields(['city', 'country', 'date', 'fee', 'status']);
+          allow update: if userOwnsOrg(userId, orgId);
+          allow delete: if userOwnsOrg(userId, orgId);
           allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped contacts (SCALABLE)
+        // Contacts (promoters, venues, etc.)
         match /contacts/{contactId} {
           allow read, write: if userOwnsOrg(userId, orgId);
           allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped venues (SCALABLE)
+        // Venues
         match /venues/{venueId} {
           allow read, write: if userOwnsOrg(userId, orgId);
           allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped calendar events (SCALABLE)
+        // Calendar events
         match /calendar_events/{eventId} {
           allow read, write: if userOwnsOrg(userId, orgId);
           allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped budgets (SCALABLE)
+        // Budgets
         match /budgets/{budgetId} {
           allow read, write: if userOwnsOrg(userId, orgId);
           allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped actions (SCALABLE)
+        // Actions/tasks
         match /actions/{actionId} {
           allow read, write: if userOwnsOrg(userId, orgId);
           allow list: if userOwnsOrg(userId, orgId);
         }
         
-        // Organization-scoped itineraries (SCALABLE)
+        // Itineraries (travel plans)
         match /itineraries/{itineraryId} {
+          allow read, write: if userOwnsOrg(userId, orgId);
+          allow list: if userOwnsOrg(userId, orgId);
+        }
+        
+        // Contracts (linked to shows)
+        match /contracts/{contractId} {
           allow read, write: if userOwnsOrg(userId, orgId);
           allow list: if userOwnsOrg(userId, orgId);
         }
       }
       
-      // LEGACY PATHS (Maintain during migration period)
-      // These will be removed after migration is complete
+      // ========================================
+      // LEGACY PATHS (Backward Compatibility)
+      // Maintained during migration period
+      // ========================================
       
-      // User shows (LEGACY - will be migrated)
       match /shows/{showId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
-      // User contacts (LEGACY - will be migrated)
       match /contacts/{contactId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
-      // User venues (LEGACY - will be migrated)
       match /venues/{venueId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
-      // User transactions/finance (LEGACY - will be migrated)
       match /transactions/{transactionId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
-      // User travel/itineraries (LEGACY - will be migrated)
       match /itineraries/{itineraryId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
-      // Calendar events (LEGACY - will be migrated)
       match /calendarEvents/{eventId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
       match /calendar_events/{eventId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
-      // Actions (LEGACY - will be migrated)
       match /actions/{actionId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwnerLegacy(userId);
       }
       
-      // Budgets (LEGACY - will be migrated)
       match /budgets/{budgetId} {
-        allow read, write: if isOwner(userId);
-      }
-      
-      // User settings (NOT migrated - stays at user level)
-      match /settings/{document=**} {
-        allow read, write: if isOwnerLegacy(userId);
-      }
-      
-      // User preferences (NOT migrated - stays at user level)
-      match /preferences/{document=**} {
-        allow read, write: if isOwnerLegacy(userId);
-      }
-      
-      // Calendar sync configuration (NOT migrated - stays at user level)
-      match /calendarSync/{document=**} {
         allow read, write: if isOwnerLegacy(userId);
       }
     }
     
     // ========================================
-    // MULTI-TENANCY: ORGANIZATIONS (NEW)
+    // MULTI-TENANCY: ORGANIZATIONS
+    // Production-ready with granular permissions
     // ========================================
     
     match /organizations/{orgId} {
       // Anyone can create an organization (becomes owner)
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll(['name', 'type', 'createdBy']) &&
+        request.resource.data.createdBy == getUserId();
       
       // Only members can read organization data
       allow read: if canRead(orgId);
@@ -317,31 +456,42 @@ service cloud.firestore {
       // Only owner can delete organization
       allow delete: if isOwner(orgId);
       
-      // Members Sub-collection
+      // ========================================
+      // MEMBERS SUB-COLLECTION
+      // ========================================
       match /members/{memberId} {
         allow read: if canRead(orgId);
-        allow create: if canInviteMembers(orgId);
+        allow create: if canInviteMembers(orgId) &&
+          request.resource.data.keys().hasAll(['userId', 'email', 'role', 'permissions', 'joinedAt']);
         allow update: if canManageMembers(orgId) &&
           // Cannot change owner role unless you are owner
           (request.resource.data.role != 'owner' || isOwner(orgId)) &&
           (resource.data.role != 'owner' || isOwner(orgId));
-        allow delete: if canRemoveMembers(orgId) && resource.data.role != 'owner';
+        allow delete: if canRemoveMembers(orgId) && 
+          // Cannot remove owner
+          resource.data.role != 'owner';
       }
       
-      // Shows Sub-collection - granular permissions
+      // ========================================
+      // SHOWS SUB-COLLECTION
+      // ========================================
       match /shows/{showId} {
         allow read: if canReadShows(orgId);
-        allow create, update: if canWriteShows(orgId);
+        allow create: if canWriteShows(orgId) &&
+          hasRequiredFields(['city', 'country', 'date', 'fee', 'status']);
+        allow update: if canWriteShows(orgId);
         allow delete: if canDeleteShows(orgId);
       }
       
-      // Finance Snapshots Sub-collection - granular permissions
+      // ========================================
+      // FINANCE SNAPSHOTS SUB-COLLECTION
+      // ========================================
       match /finance_snapshots/{snapshotId} {
         allow read: if canReadFinance(orgId);
         allow create, update: if canWriteFinance(orgId);
         allow delete: if canDeleteFinance(orgId);
         
-        // Transactions sub-collection with granular finance permissions
+        // Transactions nested collection
         match /transactions/{txId} {
           allow read: if canReadFinance(orgId);
           allow create: if canWriteFinance(orgId) &&
@@ -352,31 +502,41 @@ service cloud.firestore {
         }
       }
       
-      // Calendar Events Sub-collection - granular permissions
+      // ========================================
+      // CALENDAR EVENTS SUB-COLLECTION
+      // ========================================
       match /calendar_events/{eventId} {
         allow read: if canReadCalendar(orgId);
         allow create, update: if canWriteCalendar(orgId);
         allow delete: if canDeleteCalendar(orgId);
       }
       
-      // Contacts Sub-collection - granular permissions
+      // ========================================
+      // CONTACTS SUB-COLLECTION
+      // ========================================
       match /contacts/{contactId} {
         allow read: if canReadContacts(orgId);
         allow create, update: if canWriteContacts(orgId);
         allow delete: if canDeleteContacts(orgId);
       }
       
-      // Venues Sub-collection - granular permissions (uses contacts permissions)
+      // ========================================
+      // VENUES SUB-COLLECTION
+      // ========================================
       match /venues/{venueId} {
         allow read: if canReadContacts(orgId);
         allow create, update: if canWriteContacts(orgId);
         allow delete: if canDeleteContacts(orgId);
       }
       
-      // Contracts Sub-collection - granular permissions
+      // ========================================
+      // CONTRACTS SUB-COLLECTION
+      // ========================================
       match /contracts/{contractId} {
         allow read: if canReadContracts(orgId);
-        allow create, update: if canWriteContracts(orgId);
+        allow create: if canWriteContracts(orgId) &&
+          request.resource.data.keys().hasAll(['title', 'showId', 'status']);
+        allow update: if canWriteContracts(orgId);
         allow delete: if canDeleteContracts(orgId);
         
         // Contract parties nested collection
@@ -387,51 +547,69 @@ service cloud.firestore {
         }
       }
       
-      // Itineraries Sub-collection - granular permissions (uses travel permissions)
+      // ========================================
+      // ITINERARIES SUB-COLLECTION
+      // ========================================
       match /itineraries/{itineraryId} {
         allow read: if canReadTravel(orgId);
         allow create, update: if canWriteTravel(orgId);
         allow delete: if canDeleteTravel(orgId);
       }
       
-      // Actions Sub-collection - any member can manage actions
+      // ========================================
+      // ACTIONS SUB-COLLECTION
+      // ========================================
       match /actions/{actionId} {
         allow read: if canRead(orgId);
         allow create, update: if canWrite(orgId);
         allow delete: if canWrite(orgId);
       }
       
-      // Invitations Sub-collection
+      // ========================================
+      // INVITATIONS SUB-COLLECTION
+      // ========================================
       match /invitations/{inviteId} {
-        allow read: if canInviteMembers(orgId);
+        allow read: if canInviteMembers(orgId) || 
+          (isAuthenticated() && getUserEmail() == resource.data.email);
         allow create: if canInviteMembers(orgId) &&
           request.resource.data.invitedBy == getUserId() &&
-          request.resource.data.status == 'pending';
-        allow update: if isAuthenticated() &&
-          request.auth.token.email == resource.data.email &&
-          request.resource.data.status in ['accepted', 'rejected'];
+          request.resource.data.status == 'pending' &&
+          request.resource.data.keys().hasAll(['email', 'role', 'organizationId', 'invitedBy', 'status']);
+        allow update: if (isAuthenticated() &&
+          getUserEmail() == resource.data.email &&
+          request.resource.data.status in ['accepted', 'rejected']) ||
+          canInviteMembers(orgId);
         allow delete: if canInviteMembers(orgId);
       }
       
-      // Audit Logs Sub-collection - read-only for admins, write only via Cloud Functions
+      // ========================================
+      // AUDIT LOGS SUB-COLLECTION
+      // ========================================
       match /audit_logs/{logId} {
         allow read: if isAdmin(orgId);
-        allow create: if false; // Only Cloud Functions can write logs
-        allow update, delete: if false; // Logs are immutable
+        // Only Cloud Functions can write audit logs
+        allow create, update, delete: if false;
       }
       
-      // Timeline Events Sub-collection - read for all members, write via app/Cloud Functions
+      // ========================================
+      // TIMELINE EVENTS SUB-COLLECTION
+      // ========================================
       match /timeline_events/{eventId} {
         allow read: if canRead(orgId);
-        allow create, update: if canWrite(orgId);
+        allow create: if canWrite(orgId) &&
+          request.resource.data.userId == getUserId();
+        allow update: if canWrite(orgId) &&
+          resource.data.userId == getUserId();
         allow delete: if canWrite(orgId);
       }
     }
     
+    
     // ========================================
-    // TIMELINE EVENTS (Root Collection)
+    // ROOT COLLECTIONS (Cross-Organization)
     // ========================================
-    // Timeline events for organization activity tracking
+    
+    // Timeline events at root level (for cross-org queries)
     match /timeline_events/{eventId} {
       function getEventOrgId() {
         return resource.data.organizationId;
@@ -441,49 +619,62 @@ service cloud.firestore {
         return request.resource.data.organizationId;
       }
       
-      // Users can read timeline events from their organizations
-      allow read: if isAuthenticated() && 
-        isMember(getEventOrgId());
-      
-      // Users can create timeline events for their organizations
+      allow read: if isAuthenticated() && isMember(getEventOrgId());
       allow create: if isAuthenticated() && 
         isMember(getRequestOrgId()) &&
-        canWrite(getRequestOrgId());
-      
-      // Users can update/delete timeline events from their organizations
+        canWrite(getRequestOrgId()) &&
+        request.resource.data.userId == getUserId();
       allow update, delete: if isAuthenticated() && 
         isMember(getEventOrgId()) &&
-        canWrite(getEventOrgId());
+        canWrite(getEventOrgId()) &&
+        resource.data.userId == getUserId();
     }
     
-    // ========================================
-    // ACTIVITIES (Root Collection)
-    // ========================================
-    // Activity feed events (shared with Timeline)
+    // Activities (for activity feed - shared with timeline)
     match /activities/{activityId} {
-      // Allow read for authenticated users
-      // Client MUST filter by organizationId in queries
-      // Individual document reads check membership
+      // Read allowed for authenticated users (client filters by orgId)
       allow read: if isAuthenticated();
       
-      // Users can create activities for their organizations
+      // Create: must be member of org
       allow create: if isAuthenticated() && 
         isMember(request.resource.data.organizationId) &&
-        canWrite(request.resource.data.organizationId);
+        canWrite(request.resource.data.organizationId) &&
+        request.resource.data.userId == getUserId();
       
-      // Users can update/delete activities from their organizations
+      // Update/Delete: must be member and creator
       allow update, delete: if isAuthenticated() && 
         isMember(resource.data.organizationId) &&
-        canWrite(resource.data.organizationId);
+        canWrite(resource.data.organizationId) &&
+        resource.data.userId == getUserId();
     }
     
-    // Public data (if any) - currently none
-    // match /public/{document=**} {
-    //   allow read: if true;
-    //   allow write: if isAuthenticated();
-    // }
+    // ========================================
+    // GLOBAL COLLECTIONS (Shared Data)
+    // ========================================
     
-    // Deny all other access by default
+    // Contracts at root level (for cross-show queries)
+    match /contracts/{contractId} {
+      function getContractOrgId() {
+        return resource.data.organizationId;
+      }
+      
+      function getRequestContractOrgId() {
+        return request.resource.data.organizationId;
+      }
+      
+      allow read: if isAuthenticated() && canReadContracts(getContractOrgId());
+      allow create: if isAuthenticated() && 
+        canWriteContracts(getRequestContractOrgId()) &&
+        request.resource.data.keys().hasAll(['title', 'organizationId', 'status']);
+      allow update: if isAuthenticated() && canWriteContracts(getContractOrgId());
+      allow delete: if isAuthenticated() && canDeleteContracts(getContractOrgId());
+    }
+    
+    // ========================================
+    // DENY ALL OTHER ACCESS
+    // ========================================
+    
+    // Deny all other access by default (security by default)
     match /{document=**} {
       allow read, write: if false;
     }

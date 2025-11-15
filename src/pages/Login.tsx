@@ -92,15 +92,15 @@ const Login: React.FC = () => {
   // Demo users map (email and username-based)
   const usersMap = React.useMemo(() => ({
     // Email-based users
-    'agency@demo.com': { userId: 'user_agency', orgId: ORG_AGENCY_SHALIZI, displayName: 'Agency User' },
-    'artist@demo.com': { userId: 'user_artist', orgId: ORG_ARTIST_DANNY, displayName: 'Artist User' },
+    'agency@demo.com': { userId: 'user_agency', orgId: ORG_AGENCY_SHALIZI, displayName: 'Demo Agency User' },
+    'artist@demo.com': { userId: 'user_artist', orgId: ORG_ARTIST_DANNY, displayName: 'Demo Artist User' },
     'demo@demo.com': { userId: 'user_demo', orgId: ORG_AGENCY_SHALIZI, displayName: 'Demo User' },
     // Real users
     'danny@djdannyavila.com': { userId: 'danny_avila', orgId: ORG_ARTIST_DANNY, displayName: 'Danny Avila' },
     'booking@prophecyofficial.com': { userId: 'user_prophecy', orgId: ORG_ARTIST_PROPHECY, displayName: 'Prophecy' },
     // Username-based users
-    'agency': { userId: 'user_agency', orgId: ORG_AGENCY_SHALIZI, displayName: 'Agency User' },
-    'artist': { userId: 'user_artist', orgId: ORG_ARTIST_DANNY, displayName: 'Artist User' },
+    'agency': { userId: 'user_agency', orgId: ORG_AGENCY_SHALIZI, displayName: 'Demo Agency User' },
+    'artist': { userId: 'user_artist', orgId: ORG_ARTIST_DANNY, displayName: 'Demo Artist User' },
     'demo': { userId: 'user_demo', orgId: ORG_AGENCY_SHALIZI, displayName: 'Demo User' }
   }), []);
 

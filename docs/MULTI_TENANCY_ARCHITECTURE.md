@@ -1,143 +1,101 @@
 # Multi-Tenancy Architecture for On Tour App
 
-**Status:** 📚 Plan de Referencia (NO implementado completamente)  
-**Nota:** Actualmente existe estructura básica `users/{userId}/organizations/{orgId}` pero NO el sistema completo de colaboración multi-usuario descrito aquí.
+**Status:** ✅ Production Ready (November 2025)  
+**Implementation:** Complete with granular permissions and agency-artist linking
 
 ---
 
 ## Overview
 
-Transform the On Tour App from a single-user tool into a collaborative platform where multiple team members can manage tours together. This implements **organization-based multi-tenancy** where tours are shared resources managed by teams.
+On Tour App implements **organization-based multi-tenancy** where tours, shows, and financial data are shared resources managed by teams. The system supports two organizational types:
 
-**ESTADO ACTUAL:**
-- ✅ Estructura básica: `users/{userId}/organizations/{orgId}/*`
-- ❌ Sistema de invitaciones NO implementado
-- ❌ Roles y permisos NO implementados
-- ❌ Selector de organizaciones NO implementado
-- ❌ Panel de gestión de miembros NO implementado
-- ❌ Migración a estructura colaborativa NO realizada
+- **Agency Organizations**: Manage multiple artists, booking, and commissions
+- **Artist Organizations**: Manage tours, shows, and team collaboration
 
-Este documento describe la arquitectura objetivo para cuando se decida implementar colaboración real entre usuarios.
-
----
-
-## Problem Statement
-
-**Current Limitation:**
-```
-users/{userId}/
-  ├── organizations/{orgId}/
-  │   ├── finance_snapshots/{snapshotId}/
-  │   │   └── transactions/{txId}
-  │   ├── shows/{showId}
-  │   └── calendar_events/{eventId}
-```
-
-- Data is isolated per user
-- No collaboration between band members
-- Tour Manager must manually share information
-- No role-based permissions
-- Each person maintains separate data
-
-**Industry Reality:**
-- Tours involve 5-15+ people (band, crew, manager)
-- Financial data needs to be shared (settlement, expenses)
-- Calendar changes affect entire team
-- Travel logistics require coordination
+**CURRENT STATE:**
+- ✅ Full multi-tenant architecture: `organizations/{orgId}/*`
+- ✅ User-scoped personal data: `users/{userId}/*`
+- ✅ Role-based access control (RBAC) with granular permissions
+- ✅ Agency-Artist linking system with invitations
+- ✅ Real-time synchronization across all users
+- ✅ Backward compatibility with legacy single-user paths
+- ✅ Scalable sub-collections for large datasets
+- ✅ Production-ready Firestore security rules
 
 ---
 
-## New Architecture: Organizations as First-Class Entities
+## Architecture Overview
 
-### Core Concept
+### Dual Data Structure
 
-Organizations (tours/bands) are the **primary data containers**, not users. Users are **members** of organizations with specific roles.
-
-### Firestore Structure
+The system uses a **hybrid approach** with both user-scoped and organization-scoped data:
 
 ```
-organizations/
-  {orgId}/
-    ├── [Document Fields]
-    │   ├── name: string                 // "Summer Tour 2025"
-    │   ├── type: "tour" | "band"        // Organization type
-    │   ├── createdAt: timestamp
-    │   ├── createdBy: userId            // Owner
-    │   ├── settings: object
-    │   │   ├── currency: string
-    │   │   ├── timezone: string
-    │   │   └── defaultRole: string
-    │   └── metadata: object
-    │       ├── startDate: timestamp     // Tour start
-    │       ├── endDate: timestamp       // Tour end
-    │       └── description: string
-    │
-    ├── members/                         // Sub-collection
-    │   {userId}/
-    │     ├── email: string
-    │     ├── displayName: string
-    │     ├── photoURL: string
-    │     ├── role: "owner" | "admin" | "member" | "viewer"
-    │     ├── permissions: string[]      // ["finance.read", "shows.write"]
-    │     ├── joinedAt: timestamp
-    │     └── invitedBy: userId
-    │
-    ├── shows/                           // Sub-collection
-    │   {showId}/
-    │     ├── venue: string
-    │     ├── city: string
-    │     ├── date: timestamp
-    │     ├── fee: number
-    │     ├── status: string
-    │     ├── createdBy: userId
-    │     └── updatedAt: timestamp
-    │
-    ├── finance_snapshots/               // Sub-collection
-    │   {snapshotId}/
-    │     ├── period: "YTD" | "monthly"
-    │     ├── startDate: timestamp
-    │     ├── endDate: timestamp
-    │     ├── summary: object
-    │     └── transactions/              // Nested sub-collection
-    │         {txId}/
-    │           ├── amount: number
-    │           ├── type: "income" | "expense"
-    │           ├── category: string
-    │           ├── date: timestamp
-    │           └── createdBy: userId
-    │
-    ├── calendar_events/                 // Sub-collection
-    │   {eventId}/
-    │     ├── title: string
-    │     ├── date: timestamp
-    │     ├── type: "show" | "travel" | "meeting"
-    │     ├── relatedShowId?: string
-    │     └── createdBy: userId
-    │
-    └── invitations/                     // Sub-collection
-        {inviteId}/
-          ├── email: string              // Invitee email
-          ├── role: string               // Proposed role
-          ├── status: "pending" | "accepted" | "rejected"
-          ├── invitedBy: userId
-          ├── createdAt: timestamp
-          └── expiresAt: timestamp       // 7 days default
+users/{userId}/                          # Personal user data
+  ├── profile/                          # Personal profile
+  ├── preferences/                      # UI preferences
+  ├── settings/                         # App configuration
+  ├── links/{linkId}                    # Active agency-artist links
+  ├── linkInvitations/{invitationId}    # Received invitations (artist)
+  ├── sentLinkInvitations/{invitationId} # Sent invitations (agency)
+  └── organizations/{orgId}/            # User's org-scoped data
+      ├── shows/{showId}                # Shows for this org
+      ├── contacts/{contactId}          # Contacts
+      ├── finance_snapshots/{snapshotId} # Finance data
+      └── calendar_events/{eventId}     # Events
 
-users/
-  {userId}/
-    ├── [Document Fields]
-    │   ├── email: string
-    │   ├── displayName: string
-    │   ├── photoURL: string
-    │   └── createdAt: timestamp
-    │
-    └── organization_memberships/        // Sub-collection (denormalized)
-        {orgId}/
-          ├── organizationName: string   // Cache
-          ├── role: string               // Cache
-          ├── lastAccessed: timestamp
-          └── isFavorite: boolean
+organizations/{orgId}/                   # Shared organization data
+  ├── name, type, createdBy, settings   # Org metadata
+  ├── members/{userId}                  # Team members with roles
+  ├── shows/{showId}                    # Collaborative shows
+  ├── finance_snapshots/{snapshotId}    # Shared finances
+  │   └── transactions/{txId}           # Nested transactions
+  ├── contacts/{contactId}              # Shared contacts
+  ├── contracts/{contractId}            # Contracts
+  ├── calendar_events/{eventId}         # Team calendar
+  ├── invitations/{inviteId}            # Pending invites
+  ├── audit_logs/{logId}                # Audit trail
+  └── timeline_events/{eventId}         # Activity feed
 ```
+
+---
+
+## Organization Types
+
+### 1. Artist Organization
+
+**Purpose**: Manage a band/artist's tours, shows, and team
+
+**Key Features**:
+- Tour management and show scheduling
+- Team collaboration (band members, crew, managers)
+- Financial tracking (fees, expenses, settlements)
+- Travel logistics and itineraries
+- Contract management
+
+**Typical Roles**:
+- Owner: Artist/Band leader
+- Admin: Tour Manager
+- Member: Band members, crew
+- Finance: Accountant/Business manager
+- Viewer: Support staff
+
+### 2. Agency Organization
+
+**Purpose**: Booking agencies managing multiple artists
+
+**Key Features**:
+- Multi-artist management
+- Commission tracking per artist
+- Link invitations to artists
+- Manager assignment to linked artists
+- Consolidated booking pipeline
+
+**Typical Roles**:
+- Owner: Agency principal
+- Admin: Senior booking agents
+- Member: Booking agents
+- Viewer: Assistants
 
 ---
 
@@ -146,357 +104,483 @@ users/
 ### Role Hierarchy
 
 ```typescript
-type Role = 'owner' | 'admin' | 'member' | 'viewer';
-
-const ROLE_HIERARCHY = {
-  owner: 4,    // Full control, cannot be removed
-  admin: 3,    // Manage members, all data access
-  member: 2,   // Edit shows/finance, no member management
-  viewer: 1    // Read-only access
-};
+type MemberRole = 'owner' | 'admin' | 'finance' | 'member' | 'viewer';
 ```
 
-### Permission Matrix
+| Role | Description | Default Permissions |
+|------|-------------|---------------------|
+| **Owner** | Full control, can delete org | All permissions |
+| **Admin** | Can manage members and settings | All except org deletion |
+| **Finance** | Financial data management | Finance read/write/export |
+| **Member** | Standard team member | Shows, calendar, contacts (write) |
+| **Viewer** | Read-only access | All modules (read-only) |
 
-| Resource              | Owner | Admin | Member | Viewer |
-|-----------------------|-------|-------|--------|--------|
-| **Organizations**     |       |       |        |        |
-| Create organization   | ✅    | ❌    | ❌     | ❌     |
-| Update settings       | ✅    | ✅    | ❌     | ❌     |
-| Delete organization   | ✅    | ❌    | ❌     | ❌     |
-| **Members**           |       |       |        |        |
-| Invite members        | ✅    | ✅    | ❌     | ❌     |
-| Remove members        | ✅    | ✅    | ❌     | ❌     |
-| Change roles          | ✅    | ✅*   | ❌     | ❌     |
-| **Shows**             |       |       |        |        |
-| Create shows          | ✅    | ✅    | ✅     | ❌     |
-| Edit shows            | ✅    | ✅    | ✅     | ❌     |
-| Delete shows          | ✅    | ✅    | ✅     | ❌     |
-| View shows            | ✅    | ✅    | ✅     | ✅     |
-| **Finance**           |       |       |        |        |
-| Create transactions   | ✅    | ✅    | ✅     | ❌     |
-| Edit transactions     | ✅    | ✅    | ✅**   | ❌     |
-| Delete transactions   | ✅    | ✅    | ❌     | ❌     |
-| View finance          | ✅    | ✅    | ✅     | ✅***  |
-| **Calendar**          |       |       |        |        |
-| Create events         | ✅    | ✅    | ✅     | ❌     |
-| Edit events           | ✅    | ✅    | ✅     | ❌     |
-| Delete events         | ✅    | ✅    | ✅     | ❌     |
-| View calendar         | ✅    | ✅    | ✅     | ✅     |
+### Granular Permissions
 
-\* Admin cannot change owner's role or promote to owner  
-\*\* Member can only edit their own transactions  
-\*\*\* Viewer can see aggregates but not individual transactions
+Each module has specific permissions:
+
+```typescript
+type Permission = 
+  // Finance
+  | 'finance.read' | 'finance.write' | 'finance.delete' | 'finance.export'
+  // Shows
+  | 'shows.read' | 'shows.write' | 'shows.delete'
+  // Calendar
+  | 'calendar.read' | 'calendar.write' | 'calendar.delete'
+  // Travel
+  | 'travel.read' | 'travel.write' | 'travel.book' | 'travel.delete'
+  // Contacts
+  | 'contacts.read' | 'contacts.write' | 'contacts.delete'
+  // Contracts
+  | 'contracts.read' | 'contracts.write' | 'contracts.delete'
+  // Members
+  | 'members.invite' | 'members.manage_roles' | 'members.remove';
+```
+
+---
+
+## Agency-Artist Linking System
+
+### Overview
+
+Agencies can link with artists to manage their bookings. The system uses **invitation-based linking** for security.
+
+### Link Invitation Flow
+
+```mermaid
+sequenceDiagram
+    participant Agency
+    participant Firestore
+    participant Artist
+    
+    Agency->>Firestore: sendInvitation(artistUserId)
+    Firestore->>Artist: linkInvitations/{invitationId}
+    Artist->>Firestore: acceptInvitation(orgId, orgName)
+    Firestore->>Agency: Link created
+    Agency->>Firestore: assignManager(linkId, managerId)
+```
+
+### Data Structure
+
+```typescript
+// Agency sends invitation
+users/{agencyUserId}/sentLinkInvitations/{invitationId} {
+  agencyUserId: string;
+  artistUserId: string;
+  agencyOrgId: string;
+  agencyOrgName: string;
+  proposedScopes: LinkScopes;
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
+  createdAt: Timestamp;
+  expiresAt: Timestamp; // 30 days
+}
+
+// Artist receives invitation
+users/{artistUserId}/linkInvitations/{invitationId} {
+  // Same structure as above
+}
+
+// Active link (after acceptance)
+users/{agencyUserId}/links/{linkId} {
+  agencyUserId: string;
+  artistUserId: string;
+  agencyOrgId: string;
+  artistOrgId: string;
+  assignedManagerId?: string;
+  scopes: LinkScopes;
+  status: 'active' | 'suspended' | 'terminated';
+  createdAt: Timestamp;
+}
+```
+
+### Link Scopes
+
+```typescript
+interface LinkScopes {
+  shows: 'read' | 'write';
+  travel: 'read' | 'book';
+  finance: 'read' | 'write';
+  calendar: 'read' | 'write';
+  contacts: 'read' | 'write';
+  contracts: 'read' | 'write';
+}
+```
 
 ---
 
 ## Firestore Security Rules
 
-### Organization Access Verification
+The application uses comprehensive Firestore security rules with validation and granular permissions. See `firestore.rules` for the complete implementation.
+
+### Key Security Features
+
+#### 1. **Field Validation**
+
+All create operations require specific fields:
 
 ```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+// Organizations must include:
+hasRequiredFields(['name', 'type', 'createdBy'])
+
+// Shows must include:
+hasRequiredFields(['city', 'country', 'date', 'fee', 'status'])
+
+// Members must include:
+hasRequiredFields(['userId', 'email', 'role', 'permissions', 'joinedAt'])
+
+// Contracts must include:
+hasRequiredFields(['title', 'organizationId', 'status'])
+```
+
+#### 2. **Timestamp Protection**
+
+Prevents manipulation of audit timestamps:
+
+```javascript
+// On create: require valid timestamps
+hasValidTimestamps()
+
+// On update: prevent createdAt changes
+timestampsUnchanged()
+```
+
+#### 3. **Owner Protection**
+
+Special rules prevent accidental owner changes:
+
+```javascript
+// Cannot remove owner
+resource.data.role != 'owner'
+
+// Cannot change owner unless you're owner
+isOwner(orgId) || request.resource.data.role != 'owner'
+```
+
+#### 4. **Link Invitation Security**
+
+Agency-artist linking requires proper authorization:
+
+```javascript
+// User can manage their own links
+function canManageLinks(userId) {
+  return isAuthenticated() && getUserId() == userId;
+}
+
+// Validate invitation structure
+function isValidLinkInvitation() {
+  return request.resource.data.keys().hasAll([
+    'agencyUserId', 'artistUserId', 'status', 'createdAt'
+  ]);
+}
+```
+
+### Permission Functions
+
+The rules include helper functions for granular access control:
+
+```javascript
+// Core permissions
+function canReadFinance(orgId)
+function canWriteFinance(orgId)
+function canDeleteFinance(orgId)
+function canExportFinance(orgId)
+
+// Show permissions
+function canReadShows(orgId)
+function canWriteShows(orgId)
+function canDeleteShows(orgId)
+
+// Travel permissions
+function canReadTravel(orgId)
+function canWriteTravel(orgId)
+function canBookTravel(orgId)
+
+// Contacts permissions
+function canReadContacts(orgId)
+function canWriteContacts(orgId)
+
+// Contracts permissions
+function canReadContracts(orgId)
+function canWriteContracts(orgId)
+
+// Members permissions
+function canInviteMembers(orgId)
+function canManageRoles(orgId)
+function canRemoveMembers(orgId)
+```
+
+### Rule Structure
+
+```
+firestore.rules (492 lines)
+├── Core Helper Functions (lines 1-50)
+│   ├── isAuthenticated()
+│   ├── getUserId()
+│   ├── isMember(orgId)
+│   └── getMemberRole(orgId)
+│
+├── RBAC Functions (lines 51-120)
+│   ├── isOwner(), isAdmin(), isFinanceRole()
+│   ├── canWrite(), canRead()
+│   └── hasPermission(orgId, permission)
+│
+├── Granular Permissions (lines 121-164)
+│   ├── Finance module permissions
+│   ├── Shows module permissions
+│   ├── Travel module permissions
+│   ├── Contacts module permissions
+│   ├── Contracts module permissions
+│   └── Members module permissions
+│
+├── Link & Validation Helpers (lines 165-210)
+│   ├── canManageLinks(userId)
+│   ├── isValidLinkInvitation()
+│   ├── isValidLink()
+│   ├── hasRequiredFields(fields)
+│   ├── hasValidTimestamps()
+│   └── timestampsUnchanged()
+│
+├── User Data Rules (lines 211-330)
+│   ├── users/{userId}/profile
+│   ├── users/{userId}/preferences
+│   ├── users/{userId}/settings
+│   ├── users/{userId}/links/{linkId}
+│   ├── users/{userId}/linkInvitations/{invitationId}
+│   ├── users/{userId}/sentLinkInvitations/{invitationId}
+│   └── users/{userId}/organizations/{orgId}/*
+│
+├── Organization Rules (lines 331-450)
+│   ├── organizations/{orgId} (metadata)
+│   ├── organizations/{orgId}/members/{userId}
+│   ├── organizations/{orgId}/shows/{showId}
+│   ├── organizations/{orgId}/finance_snapshots/{snapshotId}
+│   │   └── transactions/{txId}
+│   ├── organizations/{orgId}/contacts/{contactId}
+│   ├── organizations/{orgId}/contracts/{contractId}
+│   ├── organizations/{orgId}/calendar_events/{eventId}
+│   ├── organizations/{orgId}/invitations/{inviteId}
+│   ├── organizations/{orgId}/audit_logs/{logId}
+│   └── organizations/{orgId}/timeline_events/{eventId}
+│
+├── Root Collections (lines 451-490)
+│   ├── timeline_events/{eventId}
+│   ├── activities/{activityId}
+│   └── contracts/{contractId}
+│
+└── Default Deny (lines 491-492)
+```
+
+---
+
+## Show Data Persistence
+
+### Complete Show Model
+
+Shows now save comprehensive data including agencies, contracts, and costs:
+
+```typescript
+interface Show {
+  // Basic info
+  venue: string;
+  city: string;
+  country: string;
+  date: Timestamp;
+  fee: number;
+  status: ShowStatus;
+  
+  // Agencies with calculated commissions
+  assignedAgencies?: Array<{
+    agencyId: string;
+    agencyName: string;
+    agencyType: 'booking' | 'management';
+    commissionPct: number;
+    commissionAmount: number;  // Auto-calculated
+  }>;
+  
+  // Contracts
+  contracts?: Array<{
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    uploadedAt: Timestamp;
+    fileSize: number;
+    fileType: string;
+  }>;
+  
+  // Costs
+  costs?: Array<{
+    id: string;
+    type: CostType;
+    amount: number;
+    desc: string;
+  }>;
+  
+  // Audit
+  createdBy: string;
+  updatedAt: Timestamp;
+}
+```
+
+### Auto-Calculation of Agencies
+
+The `ShowEditorDrawer` component automatically calculates commission amounts when agencies are added or show fees change:
+
+```typescript
+// In ShowEditorDrawer.tsx
+useEffect(() => {
+  // Watch for changes to agencies or fee
+  const agencies = [];
+  
+  if (draft.mgmtAgency) {
+    const commission = computeCommission(
+      draft.mgmtAgency, 
+      draft.fee, 
+      draft.date, 
+      draft.country
+    );
     
-    // ========================================
-    // Helper Functions
-    // ========================================
-    
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function getUserId() {
-      return request.auth.uid;
-    }
-    
-    // Check if user is a member of the organization
-    function isMember(orgId) {
-      return isAuthenticated() &&
-        exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(getUserId()));
-    }
-    
-    // Get user's role in organization
-    function getMemberRole(orgId) {
-      return get(/databases/$(database)/documents/organizations/$(orgId)/members/$(getUserId())).data.role;
-    }
-    
-    // Role hierarchy checks
-    function isOwner(orgId) {
-      return isMember(orgId) && getMemberRole(orgId) == 'owner';
-    }
-    
-    function isAdmin(orgId) {
-      return isMember(orgId) && getMemberRole(orgId) in ['owner', 'admin'];
-    }
-    
-    function canWrite(orgId) {
-      return isMember(orgId) && getMemberRole(orgId) in ['owner', 'admin', 'member'];
-    }
-    
-    function canRead(orgId) {
-      return isMember(orgId); // All members can read (including viewers)
-    }
-    
-    // Permission checks
-    function hasPermission(orgId, permission) {
-      let memberData = get(/databases/$(database)/documents/organizations/$(orgId)/members/$(getUserId())).data;
-      return permission in memberData.permissions;
-    }
-    
-    // ========================================
-    // Organizations
-    // ========================================
-    
-    match /organizations/{orgId} {
-      // Anyone can create an organization (becomes owner)
-      allow create: if isAuthenticated();
-      
-      // Only members can read organization data
-      allow read: if canRead(orgId);
-      
-      // Only owner/admin can update organization settings
-      allow update: if isAdmin(orgId);
-      
-      // Only owner can delete organization
-      allow delete: if isOwner(orgId);
-      
-      // ========================================
-      // Members Sub-collection
-      // ========================================
-      
-      match /members/{memberId} {
-        // Members can read member list
-        allow read: if canRead(orgId);
-        
-        // Owner/admin can add members
-        allow create: if isAdmin(orgId);
-        
-        // Owner/admin can update member roles
-        // Cannot demote owner or promote to owner (unless requester is owner)
-        allow update: if isAdmin(orgId) &&
-          (request.resource.data.role != 'owner' || isOwner(orgId)) &&
-          (resource.data.role != 'owner' || isOwner(orgId));
-        
-        // Owner/admin can remove members (except owner)
-        allow delete: if isAdmin(orgId) && resource.data.role != 'owner';
-      }
-      
-      // ========================================
-      // Shows Sub-collection
-      // ========================================
-      
-      match /shows/{showId} {
-        // All members can read shows
-        allow read: if canRead(orgId);
-        
-        // Owner/admin/member can create/update shows
-        allow create, update: if canWrite(orgId);
-        
-        // Owner/admin/member can delete shows
-        allow delete: if canWrite(orgId);
-      }
-      
-      // ========================================
-      // Finance Snapshots Sub-collection
-      // ========================================
-      
-      match /finance_snapshots/{snapshotId} {
-        // All members can read snapshots
-        allow read: if canRead(orgId);
-        
-        // Owner/admin can create/update snapshots
-        allow create, update: if isAdmin(orgId);
-        
-        // Only owner can delete snapshots
-        allow delete: if isOwner(orgId);
-        
-        // Transactions nested sub-collection
-        match /transactions/{txId} {
-          // All members can read transactions
-          allow read: if canRead(orgId);
-          
-          // Owner/admin/member can create transactions
-          allow create: if canWrite(orgId) &&
-            request.resource.data.createdBy == getUserId();
-          
-          // Owner/admin can update any transaction
-          // Members can only update their own
-          allow update: if isAdmin(orgId) ||
-            (canWrite(orgId) && resource.data.createdBy == getUserId());
-          
-          // Only owner/admin can delete transactions
-          allow delete: if isAdmin(orgId);
-        }
-      }
-      
-      // ========================================
-      // Calendar Events Sub-collection
-      // ========================================
-      
-      match /calendar_events/{eventId} {
-        // All members can read events
-        allow read: if canRead(orgId);
-        
-        // Owner/admin/member can create/update events
-        allow create, update: if canWrite(orgId);
-        
-        // Owner/admin/member can delete events
-        allow delete: if canWrite(orgId);
-      }
-      
-      // ========================================
-      // Invitations Sub-collection
-      // ========================================
-      
-      match /invitations/{inviteId} {
-        // Owner/admin can read invitations
-        allow read: if isAdmin(orgId);
-        
-        // Owner/admin can create invitations
-        allow create: if isAdmin(orgId) &&
-          request.resource.data.invitedBy == getUserId() &&
-          request.resource.data.status == 'pending';
-        
-        // Only the invited user can update (accept/reject)
-        allow update: if isAuthenticated() &&
-          request.auth.token.email == resource.data.email &&
-          request.resource.data.status in ['accepted', 'rejected'];
-        
-        // Owner/admin can delete invitations
-        allow delete: if isAdmin(orgId);
-      }
-    }
-    
-    // ========================================
-    // Users Collection
-    // ========================================
-    
-    match /users/{userId} {
-      // Users can read their own profile
-      allow read: if isAuthenticated() && getUserId() == userId;
-      
-      // Users can update their own profile
-      allow update: if isAuthenticated() && getUserId() == userId;
-      
-      // Organization memberships (denormalized cache)
-      match /organization_memberships/{orgId} {
-        // Users can read their own memberships
-        allow read: if isAuthenticated() && getUserId() == userId;
-        
-        // System creates/updates memberships (backend/cloud function)
-        // Users cannot directly modify
-        allow write: if false;
-      }
-    }
+    agencies.push({
+      agencyId: draft.mgmtAgency.id,
+      agencyName: draft.mgmtAgency.name,
+      agencyType: 'management' as const,
+      commissionPct: commission.pct,
+      commissionAmount: commission.amount
+    });
   }
+  
+  // Same for booking agency...
+  
+  setDraft(prev => ({ ...prev, assignedAgencies: agencies }));
+}, [draft.mgmtAgency, draft.bookingAgency, draft.fee, draft.date, draft.country]);
+```
+
+### Persistence Flow
+
+```
+User adds agency → 
+useEffect calculates commission → 
+assignedAgencies updated → 
+User saves show → 
+HybridShowService.saveShow() → 
+FirestoreShowService.saveShow() → 
+Firestore: organizations/{orgId}/shows/{showId}
+```
+
+All show data (agencies, contracts, costs) synchronizes across all organization members in real-time via Firestore subscriptions.
+
+---
+
+## Permission Examples
+
+### Example 1: Finance Module
+
+```javascript
+// Finance read permission
+function canReadFinance(orgId) {
+  return canRead(orgId) && (
+    hasPermission(orgId, 'finance.read') ||
+    hasPermission(orgId, 'finance.write') ||
+    hasPermission(orgId, 'finance.export')
+  );
+}
+
+// Usage in rules
+match /organizations/{orgId}/finance_snapshots/{snapshotId} {
+  allow read: if canReadFinance(orgId);
+  allow write: if canWriteFinance(orgId);
+  allow delete: if canDeleteFinance(orgId);
+}
+```
+
+### Example 2: Show Creation with Validation
+
+```javascript
+match /organizations/{orgId}/shows/{showId} {
+  allow create: if canWriteShows(orgId) &&
+    hasRequiredFields(['city', 'country', 'date', 'fee', 'status']) &&
+    hasValidTimestamps() &&
+    request.resource.data.createdBy == getUserId();
+  
+  allow update: if canWriteShows(orgId) &&
+    timestampsUnchanged();
+  
+  allow delete: if canDeleteShows(orgId);
+}
+```
+
+### Example 3: Link Invitation Flow
+
+```javascript
+// Agency sends invitation
+match /users/{userId}/sentLinkInvitations/{invitationId} {
+  allow create: if canManageLinks(userId) &&
+    isValidLinkInvitation() &&
+    request.resource.data.agencyUserId == userId;
+  
+  allow read: if canManageLinks(userId);
+  allow update: if canManageLinks(userId);
+}
+
+// Artist receives invitation
+match /users/{userId}/linkInvitations/{invitationId} {
+  allow read: if canManageLinks(userId);
+  
+  allow update: if canManageLinks(userId) &&
+    request.resource.data.status in ['accepted', 'rejected'];
 }
 ```
 
 ---
 
-## TypeScript Types
+## Real-Time Synchronization
+
+### Subscription Pattern
+
+All organization data uses Firestore real-time listeners for live updates:
 
 ```typescript
-// ========================================
-// Organization Types
-// ========================================
+// Subscribe to organization shows
+const unsubscribe = onSnapshot(
+  collection(db, `organizations/${orgId}/shows`),
+  (snapshot) => {
+    const shows = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    updateShows(shows);
+  },
+  (error) => {
+    console.error('Show subscription error:', error);
+  }
+);
 
-export type OrganizationType = 'tour' | 'band' | 'venue' | 'agency';
+// Cleanup on unmount
+useEffect(() => () => unsubscribe(), []);
+```
 
-export type MemberRole = 'owner' | 'admin' | 'member' | 'viewer';
+### Data Flow
 
-export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'expired';
+```
+User A edits show →
+Firestore update →
+Real-time listener fires →
+User B/C/D see changes instantly
+```
 
-export interface Organization {
-  id: string;
-  name: string;
-  type: OrganizationType;
-  createdAt: Date;
-  createdBy: string; // userId
-  settings: OrganizationSettings;
-  metadata: OrganizationMetadata;
-}
+This ensures all team members see the same data without manual refresh.
 
-export interface OrganizationSettings {
-  currency: string;
-  timezone: string;
-  defaultRole: MemberRole;
-  locale: string;
-  features: {
-    finance: boolean;
-    calendar: boolean;
-    travel: boolean;
-    crm: boolean;
-  };
-}
+---
 
-export interface OrganizationMetadata {
-  startDate?: Date;
-  endDate?: Date;
-  description?: string;
-  website?: string;
-  avatar?: string;
-  coverImage?: string;
-}
+## Deployment
 
-// ========================================
-// Member Types
-// ========================================
+### Deploying Firestore Rules
 
-export interface OrganizationMember {
-  id: string; // userId
-  email: string;
-  displayName: string;
-  photoURL?: string;
-  role: MemberRole;
-  permissions: Permission[];
-  joinedAt: Date;
-  invitedBy: string; // userId
-  lastActive?: Date;
-}
+```bash
+# Deploy rules to Firebase
+firebase deploy --only firestore:rules
 
-export type Permission =
-  | 'finance.read'
-  | 'finance.write'
-  | 'finance.delete'
-  | 'shows.read'
-  | 'shows.write'
-  | 'shows.delete'
-  | 'calendar.read'
-  | 'calendar.write'
-  | 'calendar.delete'
-  | 'members.read'
-  | 'members.invite'
-  | 'members.remove'
-  | 'members.manage_roles'
-  | 'settings.read'
-  | 'settings.write';
-
-export const ROLE_PERMISSIONS: Record<MemberRole, Permission[]> = {
-  owner: [
-    'finance.read', 'finance.write', 'finance.delete',
-    'shows.read', 'shows.write', 'shows.delete',
-    'calendar.read', 'calendar.write', 'calendar.delete',
-    'members.read', 'members.invite', 'members.remove', 'members.manage_roles',
-    'settings.read', 'settings.write',
-  ],
-  admin: [
-    'finance.read', 'finance.write', 'finance.delete',
-    'shows.read', 'shows.write', 'shows.delete',
-    'calendar.read', 'calendar.write', 'calendar.delete',
-    'members.read', 'members.invite', 'members.remove', 'members.manage_roles',
-    'settings.read',
-  ],
-  member: [
-    'finance.read', 'finance.write',
-    'shows.read', 'shows.write', 'shows.delete',
-    'calendar.read', 'calendar.write', 'calendar.delete',
-    'members.read',
-  ],
-  viewer: [
-    'finance.read',
+# Verify deployment
+firebase firestore:rules get
     'shows.read',
     'calendar.read',
     'members.read',
@@ -613,306 +697,301 @@ export interface OrganizationMembership {
    - Role change dropdown
 
 3. **Permissions UI**
-   - Hide/disable features based on role
-   - Show "View Only" badges for viewers
-   - Permission denied messages
+```
 
-4. **Update Existing Features**
-   - Shows: Pass orgId to all hooks
-   - Finance: Pass orgId to all hooks
-   - Calendar: Pass orgId to all hooks
+### Testing Rules
 
-### Phase 5: Testing & Refinement (Week 4)
+```bash
+# Start Firebase Emulator
+firebase emulators:start --only firestore
 
-**Goal:** Ensure stability and security
-
-1. **E2E Tests**
-   - Organization creation flow
-   - Member invitation flow
-   - Role-based access tests
-   - Organization switching
-
-2. **Security Audit**
-   - Test security rules with emulator
-   - Verify permission boundaries
-   - Check for data leaks
-
-3. **Performance Optimization**
-   - Index creation for common queries
-   - Cache organization data
-   - Optimize member lookups
+# Run test suite
+npm run test:firestore
+```
 
 ---
 
-## Migration Strategy
+## Current Implementation Status
 
-### Backward Compatibility
+### ✅ Implemented Features
 
-During migration, support both old and new structures:
+- **Multi-tenant data structure**: `organizations/{orgId}/*` and `users/{userId}/*`
+- **Role-Based Access Control (RBAC)**: owner, admin, finance, member, viewer roles
+- **Granular permissions**: finance.read/write, shows.read/write, etc.
+- **Agency-Artist linking system**: Link invitations, active links, manager assignment
+- **Complete Firestore security rules**: 492 lines with validation helpers
+- **Show data persistence**: assignedAgencies, contracts, costs arrays
+- **Auto-calculated commissions**: useEffect in ShowEditorDrawer
+- **Real-time synchronization**: onSnapshot subscriptions across all collections
+- **Field validation**: hasRequiredFields, hasValidTimestamps, timestampsUnchanged
+- **Owner protection**: Cannot remove/demote owner unless you're owner
+- **Timestamp protection**: createdAt immutable, updatedAt auto-updated
+- **Root collections**: timeline_events, activities, contracts for cross-org queries
+- **Backward compatibility**: Legacy `users/{userId}/organizations/{orgId}` paths still work
+
+### 🚧 Partial Implementation
+
+- **Organization switching UI**: Data structure exists, UI switcher not built
+- **Member management UI**: Backend ready, frontend panel not built
+- **Invitation system UI**: Security rules ready, frontend flow incomplete
+
+### ❌ Not Implemented
+
+- **E2E tests** for multi-tenancy flows
+- **Migration script** from legacy to new structure
+- **Organization creation wizard**
+- **Bulk member invite**
+- **Activity audit logs** (structure exists, not used)
+
+---
+
+## Best Practices
+
+### 1. Always Include Organization Context
 
 ```typescript
-// Check if user has old structure
-const hasLegacyData = await checkLegacyStructure(userId);
+// ❌ Bad: No organization context
+const shows = await getShows();
 
-if (hasLegacyData) {
-  // Show migration banner
-  showMigrationPrompt();
-  
-  // Auto-migrate on first login
-  await migrateUserToOrganization(userId);
-}
+// ✅ Good: Explicit organization
+const shows = await getShows(currentOrgId);
 ```
 
-### Migration Script Example
+### 2. Use Real-Time Listeners
 
 ```typescript
-async function migrateUserToOrganization(userId: string) {
-  const db = getFirestore();
-  const batch = writeBatch(db);
-  
-  // 1. Create default organization
-  const orgRef = doc(collection(db, 'organizations'));
-  const orgId = orgRef.id;
-  
-  batch.set(orgRef, {
-    name: `${user.displayName}'s Tour`,
-    type: 'tour',
-    createdAt: serverTimestamp(),
-    createdBy: userId,
-    settings: {
-      currency: 'USD',
-      timezone: 'America/New_York',
-      defaultRole: 'viewer',
-    },
-    metadata: {},
-  });
-  
-  // 2. Add user as owner
-  const memberRef = doc(db, `organizations/${orgId}/members/${userId}`);
-  batch.set(memberRef, {
-    email: user.email,
-    displayName: user.displayName,
-    photoURL: user.photoURL,
-    role: 'owner',
-    permissions: ROLE_PERMISSIONS.owner,
-    joinedAt: serverTimestamp(),
-    invitedBy: userId,
-  });
-  
-  // 3. Migrate shows
-  const oldShowsSnap = await getDocs(
-    collection(db, `users/${userId}/organizations/default/shows`)
-  );
-  
-  oldShowsSnap.forEach((showDoc) => {
-    const newShowRef = doc(db, `organizations/${orgId}/shows/${showDoc.id}`);
-    batch.set(newShowRef, showDoc.data());
-  });
-  
-  // 4. Migrate finance snapshots
-  const oldSnapshotsSnap = await getDocs(
-    collection(db, `users/${userId}/organizations/default/finance_snapshots`)
-  );
-  
-  for (const snapshotDoc of oldSnapshotsSnap.docs) {
-    const newSnapshotRef = doc(db, `organizations/${orgId}/finance_snapshots/${snapshotDoc.id}`);
-    batch.set(newSnapshotRef, snapshotDoc.data());
-    
-    // Migrate transactions
-    const oldTxSnap = await getDocs(
-      collection(db, `users/${userId}/organizations/default/finance_snapshots/${snapshotDoc.id}/transactions`)
-    );
-    
-    oldTxSnap.forEach((txDoc) => {
-      const newTxRef = doc(db, `organizations/${orgId}/finance_snapshots/${snapshotDoc.id}/transactions/${txDoc.id}`);
-      batch.set(newTxRef, {
-        ...txDoc.data(),
-        createdBy: userId,
-      });
-    });
+// ✅ All organization data should use onSnapshot
+const unsubscribe = onSnapshot(
+  collection(db, `organizations/${orgId}/shows`),
+  (snapshot) => {
+    // Update state
   }
-  
-  // 5. Create denormalized membership cache
-  const membershipRef = doc(db, `users/${userId}/organization_memberships/${orgId}`);
-  batch.set(membershipRef, {
-    organizationName: `${user.displayName}'s Tour`,
-    role: 'owner',
-    lastAccessed: serverTimestamp(),
-    isFavorite: true,
-  });
-  
-  // 6. Commit all changes
-  await batch.commit();
-  
-  console.log(`✅ Migrated user ${userId} to organization ${orgId}`);
-  return orgId;
+);
+```
+
+### 3. Validate Permissions Client-Side
+
+```typescript
+// Check before showing UI
+const { canWrite } = usePermissions();
+
+if (!canWrite('shows')) {
+  return <ViewOnlyBanner />;
+}
+```
+
+### 4. Handle Organization Switches
+
+```typescript
+// Cleanup subscriptions when switching orgs
+useEffect(() => {
+  const unsubscribe = subscribeToShows(currentOrgId);
+  return () => unsubscribe();
+}, [currentOrgId]);
+```
+
+### 5. Cache Organization Metadata
+
+```typescript
+// Store current org in context for quick access
+const { currentOrg } = useOrganizationContext();
+
+// Don't refetch on every render
+const orgName = currentOrg.name; // ✅
+const orgName = await fetchOrgName(); // ❌
+```
+
+---
+
+## Security Considerations
+
+### 1. **Never Trust Client-Side Checks**
+
+Security rules are the **only** source of truth. Client-side permission checks are for UX only.
+
+### 2. **Validate All Inputs**
+
+Use `hasRequiredFields()` and custom validation in security rules:
+
+```javascript
+allow create: if hasRequiredFields(['name', 'type']) &&
+  request.resource.data.fee >= 0 &&
+  request.resource.data.status in ['confirmed', 'pending', 'cancelled'];
+```
+
+### 3. **Protect Sensitive Data**
+
+Finance data should have stricter permissions:
+
+```javascript
+function canReadFinance(orgId) {
+  return canRead(orgId) && (
+    hasPermission(orgId, 'finance.read') ||
+    hasPermission(orgId, 'finance.write')
+  );
+}
+```
+
+### 4. **Audit Critical Actions**
+
+Log important changes to `audit_logs`:
+
+```typescript
+await addDoc(collection(db, `organizations/${orgId}/audit_logs`), {
+  action: 'member_removed',
+  performedBy: currentUserId,
+  targetUserId: removedUserId,
+  timestamp: serverTimestamp()
+});
+```
+
+### 5. **Rate Limit Invitations**
+
+Prevent spam by limiting invitations:
+
+```javascript
+// Cloud Function
+if (await getInvitationCount(orgId, last24Hours) > 50) {
+  throw new Error('Too many invitations sent');
 }
 ```
 
 ---
 
-## UI Examples
+## Performance Optimization
 
-### Organization Selector (Navbar)
+### 1. **Use Firestore Indexes**
 
-```tsx
-export function OrganizationSelector() {
-  const { organizations, currentOrg, switchOrganization } = useOrganizationContext();
-  
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button className="flex items-center gap-2">
-          <Building2 className="h-5 w-5" />
-          <span>{currentOrg?.name}</span>
-          <ChevronDown className="h-4 w-4" />
-        </button>
-      </PopoverTrigger>
-      
-      <PopoverContent>
-        <div className="space-y-2">
-          {organizations.map((org) => (
-            <button
-              key={org.id}
-              onClick={() => switchOrganization(org.id)}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded",
-                currentOrg?.id === org.id && "bg-accent"
-              )}
-            >
-              <div className="font-medium">{org.name}</div>
-              <div className="text-sm text-muted-foreground">
-                {org.type} • {getMemberRole(org.id)}
-              </div>
-            </button>
-          ))}
-          
-          <Separator />
-          
-          <button
-            onClick={openCreateOrgDialog}
-            className="w-full text-left px-3 py-2 rounded hover:bg-accent"
-          >
-            <Plus className="inline h-4 w-4 mr-2" />
-            Create Organization
-          </button>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
+Create composite indexes for common queries:
+
+```json
+// firestore.indexes.json
+{
+  "indexes": [
+    {
+      "collectionGroup": "shows",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "organizationId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "finance_snapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "organizationId", "order": "ASCENDING" },
+        { "fieldPath": "period", "order": "ASCENDING" },
+        { "fieldPath": "endDate", "order": "DESCENDING" }
+      ]
+    }
+  ]
 }
 ```
 
-### Member Management Panel
+### 2. **Batch Reads**
 
-```tsx
-export function MembersPanel({ orgId }: { orgId: string }) {
-  const { members, removeMember, updateMemberRole } = useOrganizationMembers(orgId);
-  const { invitations } = useInvitations(orgId);
-  const { currentRole } = useOrganizationContext();
-  
-  const canManageMembers = ['owner', 'admin'].includes(currentRole);
-  
-  return (
-    <div className="space-y-6">
-      {/* Members List */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium">Members ({members.length})</h3>
-          
-          {canManageMembers && (
-            <Button onClick={openInviteDialog}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Invite Member
-            </Button>
-          )}
-        </div>
-        
-        <div className="space-y-2">
-          {members.map((member) => (
-            <div key={member.id} className="flex items-center justify-between p-4 border rounded">
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={member.photoURL} />
-                  <AvatarFallback>{member.displayName[0]}</AvatarFallback>
-                </Avatar>
-                
-                <div>
-                  <div className="font-medium">{member.displayName}</div>
-                  <div className="text-sm text-muted-foreground">{member.email}</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {canManageMembers && member.role !== 'owner' ? (
-                  <Select
-                    value={member.role}
-                    onValueChange={(role) => updateMemberRole(member.id, role as MemberRole)}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="member">Member</SelectItem>
-                      <SelectItem value="viewer">Viewer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Badge>{member.role}</Badge>
-                )}
-                
-                {canManageMembers && member.role !== 'owner' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeMember(member.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-      
-      {/* Pending Invitations */}
-      {canManageMembers && invitations.length > 0 && (
-        <section>
-          <h3 className="text-lg font-medium mb-4">Pending Invitations ({invitations.length})</h3>
-          
-          <div className="space-y-2">
-            {invitations.map((invite) => (
-              <div key={invite.id} className="flex items-center justify-between p-4 border rounded">
-                <div>
-                  <div className="font-medium">{invite.email}</div>
-                  <div className="text-sm text-muted-foreground">
-                    Invited by {invite.invitedByName} • {formatDistanceToNow(invite.createdAt)} ago
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{invite.role}</Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => cancelInvitation(invite.id)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  );
+Use `getAll()` for multiple documents:
+
+```typescript
+const memberRefs = memberIds.map(id => 
+  doc(db, `organizations/${orgId}/members/${id}`)
+);
+
+const memberDocs = await getAll(...memberRefs);
+```
+
+### 3. **Denormalize Carefully**
+
+Cache frequently accessed data:
+
+```typescript
+// Store organization name in show for quick display
+{
+  showId: '123',
+  organizationId: 'org-456',
+  organizationName: 'Summer Tour 2025', // Denormalized
+  venue: 'Madison Square Garden'
 }
+```
+
+### 4. **Limit Collection Sizes**
+
+Use sub-collections for large datasets:
+
+```
+// ❌ Bad: 10,000 transactions in one collection
+organizations/{orgId}/transactions/{txId}
+
+// ✅ Good: Transactions nested under snapshots
+organizations/{orgId}/finance_snapshots/{snapshotId}/transactions/{txId}
 ```
 
 ---
+
+## Troubleshooting
+
+### Issue: "Permission Denied" Errors
+
+**Cause**: User not a member or insufficient permissions
+
+**Solution**:
+```typescript
+// Check membership
+const member = await getDoc(doc(db, `organizations/${orgId}/members/${userId}`));
+if (!member.exists()) {
+  console.error('User not a member of this organization');
+}
+
+// Check permissions
+const hasPermission = member.data().permissions.includes('finance.write');
+```
+
+### Issue: Slow Queries
+
+**Cause**: Missing Firestore indexes
+
+**Solution**:
+```bash
+# Check Firebase console for index suggestions
+# Add to firestore.indexes.json
+firebase deploy --only firestore:indexes
+```
+
+### Issue: Stale Data After Org Switch
+
+**Cause**: Subscriptions not cleaned up
+
+**Solution**:
+```typescript
+useEffect(() => {
+  const unsubscribe = subscribeToData(currentOrgId);
+  return () => unsubscribe(); // ✅ Always cleanup
+}, [currentOrgId]);
+```
+
+---
+
+## Related Documentation
+
+- **[firestore.rules](../firestore.rules)**: Complete security rules implementation
+- **[FIRESTORE_SCALABLE_ARCHITECTURE.md](./FIRESTORE_SCALABLE_ARCHITECTURE.md)**: Scalability patterns
+- **[SECURITY.md](./SECURITY.md)**: Security best practices
+- **[README.md](../README.md)**: Project overview and setup
+
+---
+
+## Changelog
+
+### November 2025
+- ✅ Complete Firestore rules rewrite (492 lines)
+- ✅ Added validation helpers: hasRequiredFields, hasValidTimestamps, timestampsUnchanged
+- ✅ Added link invitation permissions for agency-artist relationships
+- ✅ Enhanced organization creation rules (require name, type, createdBy)
+- ✅ Added owner protection (cannot remove/demote owner)
+- ✅ Added show data persistence (assignedAgencies, contracts, costs)
+- ✅ Implemented auto-calculated commissions in ShowEditorDrawer
+- ✅ Updated documentation to reflect production-ready state
 
 ## Benefits
 

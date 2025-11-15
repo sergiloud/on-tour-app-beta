@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>Clear Storage</title></head>
+<body style="font-family: system-ui; padding: 40px; max-width: 600px; margin: 0 auto;">
+  <h1>🧹 Clear localStorage</h1>
+  <p>This will clear all demo data and reload the page.</p>
+  <button onclick="clearAndReload()" style="padding: 12px 24px; font-size: 16px; cursor: pointer; background: #ef4444; color: white; border: none; border-radius: 8px;">
+    Clear & Reload
+  </button>
+  <div id="status" style="margin-top: 20px; padding: 12px; background: #f3f4f6; border-radius: 8px; display: none;"></div>
+  
+  <script>
+    function clearAndReload() {
+      const demoKeys = Object.keys(localStorage).filter(k => k.startsWith('demo:'));
+      const status = document.getElementById('status');
+      status.style.display = 'block';
+      status.innerHTML = `<strong>Clearing ${demoKeys.length} demo keys...</strong><br><pre>${demoKeys.join('\n')}</pre>`;
+      
+      demoKeys.forEach(key => localStorage.removeItem(key));
+      
+      setTimeout(() => {
+        status.innerHTML += '<br><strong>✅ Cleared! Reloading...</strong>';
+        setTimeout(() => window.location.href = '/', 500);
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

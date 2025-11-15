@@ -5,7 +5,17 @@
  * Provides bidirectional sync between On Tour events and calendar events
  */
 
-import { createDAVClient, DAVClient, DAVCalendar, DAVCalendarObject, fetchCalendars } from 'tsdav';
+import { 
+  createDAVClient, 
+  DAVClient, 
+  DAVCalendar, 
+  DAVCalendarObject, 
+  fetchCalendars,
+  fetchCalendarObjects,
+  createCalendarObject,
+  updateCalendarObject,
+  deleteCalendarObject
+} from 'tsdav';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface CalendarCredentials {
@@ -34,6 +44,7 @@ export class CalDAVClient {
   private client: DAVClient | null = null;
   private connected: boolean = false;
   private credentials: CalendarCredentials | null = null;
+  private account: any = null;
 
   /**
    * Connect to CalDAV server (iCloud, Google, etc.)
@@ -51,9 +62,10 @@ export class CalDAVClient {
         defaultAccountType: 'caldav',
       }) as unknown as DAVClient;
 
-      // Test connection by fetching calendars
+      // Test connection by fetching calendars and store account
       if (this.client) {
-        await fetchCalendars({ client: this.client });
+        const accounts = await (this.client as any).fetchPrincipalUrl?.() || [];
+        this.account = accounts[0] || null;
         this.connected = true;
         return true;
       }
@@ -75,7 +87,9 @@ export class CalDAVClient {
     }
 
     try {
-      const calendars = await this.client.fetchCalendars();
+      const calendars = await fetchCalendars({
+        account: this.account,
+      });
       return calendars;
     } catch (error) {
       console.error('[CalDAV] Failed to list calendars:', error);
@@ -92,7 +106,7 @@ export class CalDAVClient {
     }
 
     try {
-      const events = await this.client.fetchCalendarObjects({
+      const events = await fetchCalendarObjects({
         calendar: { url: calendarUrl } as DAVCalendar,
       });
       return events;
@@ -114,7 +128,7 @@ export class CalDAVClient {
     const iCalString = this.convertToICS(event, uid);
 
     try {
-      await this.client.createCalendarObject({
+      await createCalendarObject({
         calendar: { url: calendarUrl } as DAVCalendar,
         filename: `${uid}.ics`,
         iCalString,
@@ -141,10 +155,12 @@ export class CalDAVClient {
     const iCalString = this.convertToICS(event, event.uid);
 
     try {
-      await this.client.updateCalendarObject({
-        calendar: { url: calendarUrl } as DAVCalendar,
-        filename: `${event.uid}.ics`,
-        iCalString,
+      await updateCalendarObject({
+        calendarObject: {
+          url: `${calendarUrl}/${event.uid}.ics`,
+          data: iCalString,
+          etag: '',
+        } as DAVCalendarObject,
       });
     } catch (error) {
       console.error('[CalDAV] Failed to update event:', error);
@@ -161,9 +177,11 @@ export class CalDAVClient {
     }
 
     try {
-      await this.client.deleteCalendarObject({
-        calendar: { url: calendarUrl } as DAVCalendar,
-        filename: `${eventUid}.ics`,
+      await deleteCalendarObject({
+        calendarObject: {
+          url: `${calendarUrl}/${eventUid}.ics`,
+          etag: '',
+        } as DAVCalendarObject,
       });
     } catch (error) {
       console.error('[CalDAV] Failed to delete event:', error);

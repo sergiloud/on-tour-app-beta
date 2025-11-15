@@ -55,6 +55,23 @@ function set(key: string, value: any) { try { secureStorage.setItem(key, value);
 // Idempotent seed: merges by id without duplicating. Only runs client-side.
 export function ensureDemoTenants() {
   try {
+    // TEMPORARY: Keep demo data for development
+    // TODO: Remove this comment when Firestore organizations are created
+    console.log('[Tenants] Development mode - keeping demo data');
+    
+    // Seed demo data if not present
+    const orgs = get<Org[]>(K_ORGS, []);
+    if (orgs.length === 0) {
+      // Seed demo organizations
+      const demoOrgs: Org[] = [
+        { id: ORG_ARTIST_PROPHECY, name: 'Prophecy', type: 'artist', seatLimit: 10, guestLimit: 5 },
+        { id: ORG_AGENCY_SHALIZI, name: 'Shalizi', type: 'agency', seatLimit: 50, guestLimit: 20 },
+      ];
+      set(K_ORGS, demoOrgs);
+      set(K_CURRENT, ORG_ARTIST_PROPHECY);
+    }
+    
+    /* PRODUCTION BETA CODE - COMMENTED OUT TEMPORARILY
     // PRODUCTION BETA: Remove ONLY demo orgs, preserve user orgs
     // User data should come from Firestore but may also be in localStorage
     console.log('[Tenants] Production mode - removing demo orgs only');
@@ -107,6 +124,7 @@ export function ensureDemoTenants() {
     } catch (e) {
       console.warn('[Tenants] Could not remove demo data:', e);
     }
+    */
     
     return;
     

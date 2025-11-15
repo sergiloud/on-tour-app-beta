@@ -346,22 +346,25 @@ const PriorityActionsInbox: React.FC<{ isAgency: boolean; onActionClick: (action
 };
 
 const OrgOverview: React.FC = () => {
+  // ALL hooks must be called BEFORE any early returns - Rules of Hooks
   const { profile } = useAuth();
   const { orgId, org } = useOrg();
   const navigate = useNavigate();
   const toast = useToast();
   const h1Ref = useRef<HTMLHeadingElement>(null);
+  
+  // State hooks MUST be before early return
   const [showInvite, setShowInvite] = useState(false);
   const [showConnect, setShowConnect] = useState(false);
   const [showSwitchOrg, setShowSwitchOrg] = useState(false);
   const [showBranding, setShowBranding] = useState(false);
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [showArtistPanel, setShowArtistPanel] = useState(false);
-
-  if (!org) return null;
-  const isAgency = org.type === 'agency';
+  
+  // Guard: cannot render without org - but all hooks must run first
+  const isAgency = org?.type === 'agency';
   const link = getLinkAgencyToArtist();
-  const links = listLinks(orgId).filter(l => l.agencyOrgId === orgId);
+  const links = org ? listLinks(orgId).filter(l => l.agencyOrgId === orgId) : [];
   const title = (t('welcome.title') || 'Welcome, {name}').replace('{name}', profile.name || '');
   const subtitle = isAgency ? (t('welcome.subtitle.agency') || 'Manage your managers and artists') : (t('welcome.subtitle.artist') || 'All set for your upcoming shows');
   const checklistItems = isAgency
@@ -381,6 +384,9 @@ const OrgOverview: React.FC = () => {
   const checklistTotal = checklistItems.length;
   const isChecklistComplete = checklistCompleted === checklistTotal;
   const [checklistExpanded, setChecklistExpanded] = useState(!isChecklistComplete);
+  
+  // Last visit tracking - must be before any early return
+  const [lastVisit, setLastVisit] = useState<number>(() => { try { return Number(localStorage.getItem(`demo:welcome:lastVisit:${profile.id}`) || 0); } catch { return 0; } });
 
   const handlePriorityAction = (actionId: string) => {
     // Handle priority action clicks - in real app, this would navigate or open modals
@@ -473,7 +479,7 @@ const OrgOverview: React.FC = () => {
     return { text, color, symbol };
   };
   // Recents and changes since last visit (real activity data)
-  const [lastVisit, setLastVisit] = useState<number>(() => { try { return Number(localStorage.getItem(`demo:welcome:lastVisit:${profile.id}`) || 0); } catch { return 0; } });
+  // NOTE: lastVisit useState moved to top of component (line ~389) to comply with Rules of Hooks
   useEffect(() => {
     // update on unmount
     return () => { try { localStorage.setItem(`demo:welcome:lastVisit:${profile.id}`, String(Date.now())); } catch { } };
@@ -516,6 +522,11 @@ const OrgOverview: React.FC = () => {
         return { text: `${String(activity.type).replace('_', ' ')}: ${activity.item}`, time: timeString };
     }
   };
+
+  // Guard: all hooks executed, now check if we can render
+  if (!org) {
+    return null;
+  }
 
   return (
     <motion.div className="max-w-[1400px] mx-auto px-3 md:px-4 space-y-4" layoutId="dashboard-teaser">

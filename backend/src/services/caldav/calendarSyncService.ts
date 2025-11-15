@@ -8,6 +8,14 @@
 import { firestore as db } from '../../config/firebase';
 import { CalDAVClient, OnTourEvent } from './caldavClient';
 
+// Helper to ensure db is initialized
+function getDb() {
+  if (!db) {
+    throw new Error('Firestore is not initialized');
+  }
+  return db;
+}
+
 export interface SyncConfig {
   userId: string;
   calendarUrl: string;
@@ -179,7 +187,10 @@ export class CalendarSyncService {
    */
   private static async getUserSyncConfig(userId: string): Promise<SyncConfig | null> {
     try {
-      const doc = await db.collection('users').doc(userId).get();
+      if (!db) {
+        throw new Error('Firestore is not initialized');
+      }
+      const doc = await getDb().collection('users').doc(userId).get();
       const data = doc.data();
       
       if (!data || !data.calendarSync) {
@@ -198,6 +209,9 @@ export class CalendarSyncService {
    */
   private static async findEventByUid(userId: string, uid: string): Promise<any | null> {
     try {
+      if (!db) {
+        throw new Error('Firestore is not initialized');
+      }
       const snapshot = await db
         .collection('users')
         .doc(userId)
@@ -229,7 +243,7 @@ export class CalendarSyncService {
       updatedAt: new Date(),
     };
 
-    const docRef = await db
+    const docRef = await getDb()
       .collection('users')
       .doc(userId)
       .collection('calendarEvents')
@@ -246,7 +260,7 @@ export class CalendarSyncService {
     eventId: string,
     event: OnTourEvent
   ): Promise<void> {
-    await db
+    await getDb()
       .collection('users')
       .doc(userId)
       .collection('calendarEvents')
@@ -262,7 +276,7 @@ export class CalendarSyncService {
    * Update event UID after creation
    */
   private static async updateEventUid(userId: string, eventId: string, uid: string): Promise<void> {
-    await db
+    await getDb()
       .collection('users')
       .doc(userId)
       .collection('calendarEvents')
@@ -280,7 +294,7 @@ export class CalendarSyncService {
     const changes: Array<{ type: 'created' | 'updated' | 'deleted'; eventId: string; event: any }> = [];
 
     try {
-      let query = db.collection('users').doc(userId).collection('calendarEvents');
+      let query = getDb().collection('users').doc(userId).collection('calendarEvents');
 
       if (lastSync) {
         query = query.where('updatedAt', '>', lastSync) as any;
@@ -323,7 +337,7 @@ export class CalendarSyncService {
    * Update last sync timestamp
    */
   private static async updateLastSync(userId: string, timestamp: Date): Promise<void> {
-    await db.collection('users').doc(userId).update({
+    await getDb().collection('users').doc(userId).update({
       'calendarSync.lastSync': timestamp,
     });
   }
@@ -350,7 +364,7 @@ export class CalendarSyncService {
    * Save user's sync configuration
    */
   static async saveSyncConfig(userId: string, config: Partial<SyncConfig>): Promise<void> {
-    await db.collection('users').doc(userId).update({
+    await getDb().collection('users').doc(userId).update({
       calendarSync: {
         ...config,
         userId,
@@ -362,7 +376,7 @@ export class CalendarSyncService {
    * Disable sync for a user
    */
   static async disableSync(userId: string): Promise<void> {
-    await db.collection('users').doc(userId).update({
+    await getDb().collection('users').doc(userId).update({
       'calendarSync.enabled': false,
     });
   }

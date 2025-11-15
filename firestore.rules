@@ -419,6 +419,41 @@ service cloud.firestore {
         allow create: if false; // Only Cloud Functions can write logs
         allow update, delete: if false; // Logs are immutable
       }
+      
+      // Timeline Events Sub-collection - read for all members, write via app/Cloud Functions
+      match /timeline_events/{eventId} {
+        allow read: if canRead(orgId);
+        allow create, update: if canWrite(orgId);
+        allow delete: if canWrite(orgId);
+      }
+    }
+    
+    // ========================================
+    // TIMELINE EVENTS (Root Collection)
+    // ========================================
+    // Timeline events for organization activity tracking
+    match /timeline_events/{eventId} {
+      function getEventOrgId() {
+        return resource.data.organizationId;
+      }
+      
+      function getRequestOrgId() {
+        return request.resource.data.organizationId;
+      }
+      
+      // Users can read timeline events from their organizations
+      allow read: if isAuthenticated() && 
+        isMember(getEventOrgId());
+      
+      // Users can create timeline events for their organizations
+      allow create: if isAuthenticated() && 
+        isMember(getRequestOrgId()) &&
+        canWrite(getRequestOrgId());
+      
+      // Users can update/delete timeline events from their organizations
+      allow update, delete: if isAuthenticated() && 
+        isMember(getEventOrgId()) &&
+        canWrite(getEventOrgId());
     }
     
     // Public data (if any) - currently none

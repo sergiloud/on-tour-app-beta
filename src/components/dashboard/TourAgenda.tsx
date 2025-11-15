@@ -76,17 +76,6 @@ const TourAgendaComponent: React.FC = () => {
     const data = useTourStats();
     const { shows: allShows } = useShows();
     
-    // Debug logging
-    React.useEffect(() => {
-        console.log('[TourAgenda] Debug:', {
-            showAll,
-            dateRange: filters.dateRange,
-            dataAgendaLength: data.agenda.length,
-            allShowsLength: allShows.length,
-            dataAgenda: data.agenda
-        });
-    }, [showAll, filters.dateRange, data.agenda, allShows.length]);
-    
     // Get calendar data (includes travel and calendar events)
     const {
         travel,

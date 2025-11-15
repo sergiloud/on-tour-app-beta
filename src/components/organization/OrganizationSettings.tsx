@@ -16,7 +16,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrganizationContext } from '../../context/OrganizationContext';
 import { useAuth } from '../../context/AuthContext';
+import { useOrganizationMembers } from '../../hooks/useOrganizations';
 import { PermissionGuard } from '../permissions/PermissionGuard';
+import { TransferOwnershipDialog } from './TransferOwnershipDialog';
 import { t } from '../../lib/i18n';
 import { FirestoreOrgService } from '../../services/firestoreOrgService';
 import type { OrganizationType } from '../../hooks/useOrganizations';
@@ -25,6 +27,7 @@ const OrganizationSettings: React.FC = () => {
   const { currentOrg, isOwner, hasPermission } = useOrganizationContext();
   const { userId } = useAuth();
   const navigate = useNavigate();
+  const { members } = useOrganizationMembers(currentOrg?.id || '');
 
   const [form, setForm] = useState({
     name: currentOrg?.name || '',
@@ -35,6 +38,7 @@ const OrganizationSettings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [errors, setErrors] = useState<{ name?: string }>({});
@@ -272,76 +276,106 @@ const OrganizationSettings: React.FC = () => {
               </h2>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-sm text-white/70">
-                {t('org.settings.deleteWarning') ||
-                  'Deleting this organization will permanently remove all data, members, and settings. This action cannot be undone.'}
-              </p>
+            <div className="space-y-6">
+              {/* Transfer Ownership */}
+              <div className="space-y-4 p-4 rounded-lg bg-orange-500/5 border border-orange-500/20">
+                <div>
+                  <h3 className="text-sm font-semibold text-orange-300 mb-2">
+                    {t('org.transfer.title') || 'Transfer Ownership'}
+                  </h3>
+                  <p className="text-sm text-white/70">
+                    {t('org.transfer.subtitle') || 'Transfer ownership of this organization to another member'}
+                  </p>
+                </div>
 
-              {!showDeleteConfirm ? (
                 <button
                   type="button"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="px-4 py-2.5 rounded-lg border border-red-400 text-red-300 hover:bg-red-500/10 active:scale-95 transition-all"
+                  onClick={() => setShowTransferDialog(true)}
+                  className="px-4 py-2.5 rounded-lg border border-orange-400 text-orange-300 hover:bg-orange-500/10 active:scale-95 transition-all"
                 >
-                  {t('org.settings.deleteOrg') || 'Delete Organization'}
+                  {t('org.transfer.title') || 'Transfer Ownership'}
                 </button>
-              ) : (
-                <div className="space-y-4 p-4 rounded-lg bg-red-500/10 border border-red-500/30">
-                  <p className="text-sm font-medium text-red-200">
-                    {t('org.settings.deleteConfirm') ||
-                      'Are you absolutely sure? This action is irreversible.'}
-                  </p>
+              </div>
 
-                  <label className="flex flex-col gap-2">
-                    <span className="text-sm text-white/70">
-                      {t('org.settings.typeToConfirm', { name: currentOrg.name }) ||
-                        `Type "${currentOrg.name}" to confirm deletion:`}
-                    </span>
-                    <input
-                      type="text"
-                      value={deleteConfirmText}
-                      onChange={(e) => setDeleteConfirmText(e.target.value)}
-                      placeholder={currentOrg.name}
-                      className="px-3 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all"
-                      aria-describedby="delete-confirm-hint"
-                    />
-                    <span id="delete-confirm-hint" className="text-xs text-white/50">
-                      {t('org.settings.confirmHint') || 'Type the organization name exactly as shown above'}
-                    </span>
-                  </label>
+              {/* Delete Organization */}
+              <div className="space-y-4">
+                <p className="text-sm text-white/70">
+                  {t('org.settings.deleteWarning') ||
+                    'Deleting this organization will permanently remove all data, members, and settings. This action cannot be undone.'}
+                </p>
 
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      disabled={isDeleting || deleteConfirmText !== currentOrg.name}
-                      className="px-4 py-2.5 rounded-lg bg-red-500 text-white font-medium hover:brightness-95 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isDeleting
-                        ? t('org.settings.deleting') || 'Deleting...'
-                        : t('org.settings.confirmDelete') || 'Yes, Delete Forever'}
-                    </button>
+                {!showDeleteConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="px-4 py-2.5 rounded-lg border border-red-400 text-red-300 hover:bg-red-500/10 active:scale-95 transition-all"
+                  >
+                    {t('org.settings.deleteOrg') || 'Delete Organization'}
+                  </button>
+                ) : (
+                  <div className="space-y-4 p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+                    <p className="text-sm font-medium text-red-200">
+                      {t('org.settings.deleteConfirm') ||
+                        'Are you absolutely sure? This action is irreversible.'}
+                    </p>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowDeleteConfirm(false);
-                        setDeleteConfirmText('');
-                        setErrors({});
-                      }}
-                      disabled={isDeleting}
-                      className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-white/20 hover:bg-slate-100 dark:hover:bg-white/5 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {t('common.cancel') || 'Cancel'}
-                    </button>
+                    <label className="flex flex-col gap-2">
+                      <span className="text-sm text-white/70">
+                        {t('org.settings.typeToConfirm', { name: currentOrg.name }) ||
+                          `Type "${currentOrg.name}" to confirm deletion:`}
+                      </span>
+                      <input
+                        type="text"
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        placeholder={currentOrg.name}
+                        className="px-3 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all"
+                        aria-describedby="delete-confirm-hint"
+                      />
+                      <span id="delete-confirm-hint" className="text-xs text-white/50">
+                        {t('org.settings.confirmHint') || 'Type the organization name exactly as shown above'}
+                      </span>
+                    </label>
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={isDeleting || deleteConfirmText !== currentOrg.name}
+                        className="px-4 py-2.5 rounded-lg bg-red-500 text-white font-medium hover:brightness-95 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isDeleting
+                          ? t('org.settings.deleting') || 'Deleting...'
+                          : t('org.settings.confirmDelete') || 'Yes, Delete Forever'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowDeleteConfirm(false);
+                          setDeleteConfirmText('');
+                          setErrors({});
+                        }}
+                        disabled={isDeleting}
+                        className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-white/20 hover:bg-slate-100 dark:hover:bg-white/5 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {t('common.cancel') || 'Cancel'}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </section>
         )}
       </PermissionGuard>
+
+      {/* Transfer Ownership Dialog */}
+      <TransferOwnershipDialog
+        isOpen={showTransferDialog}
+        onClose={() => setShowTransferDialog(false)}
+        members={members}
+      />
 
     </div>
   );

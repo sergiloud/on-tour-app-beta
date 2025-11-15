@@ -26,6 +26,9 @@ import { trackPageView } from '../../lib/activityTracker';
 import { logger } from '../../lib/logger';
 import { agenciesForShow, computeCommission } from '../../lib/agencies';
 import { usePerfMonitor } from '../../lib/perfMonitor';
+import { activityTracker } from '../../services/activityTracker';
+import { auth } from '../../lib/firebase';
+import { getCurrentOrgId } from '../../lib/tenants';
 
 // Extended types for Shows with optional fields
 type Cost = { id: string; type: string; amount: number; desc?: string };
@@ -378,19 +381,55 @@ const Shows: React.FC = () => {
     trackEvent('shows.drawer.open', { mode: 'edit' }); 
   };
   const closeDrawer = () => { setModalOpen(false); trackEvent('shows.drawer.close'); try { lastTriggerRef.current?.focus(); } catch { } if (searchParams.get('add') || searchParams.get('edit')) navigate('/dashboard/shows', { replace: true }); };
-  const saveDraft = (d: DraftShow) => { 
+  const saveDraft = async (d: DraftShow) => { 
+    const currentUser = auth?.currentUser;
+    const orgId = getCurrentOrgId();
+
     if (mode === 'add') { 
       const id = (() => { try { return crypto.randomUUID(); } catch { return 's' + Date.now(); } })(); 
       // Cast to ShowWithExtras to allow costs property - use d.costs from draft
-      add({ ...d, id, costs: d.costs || [] } as ShowWithExtras); 
+      const newShow = { ...d, id, costs: d.costs || [] } as ShowWithExtras;
+      add(newShow); 
+      
+      // Track activity
+      if (currentUser && orgId) {
+        await activityTracker.trackShow('create', newShow, currentUser, orgId);
+      }
     } else if (mode === 'edit' && d.id) { 
+      // Check if status changed
+      const oldShow = shows.find(s => s.id === d.id);
+      const statusChanged = oldShow && oldShow.status !== d.status;
+      
       // Use d.costs from draft to ensure all fields are preserved
-      update(d.id, { ...d, costs: d.costs || [] } as ShowWithExtras); 
+      const updatedShow = { ...d, costs: d.costs || [] } as ShowWithExtras;
+      update(d.id, updatedShow); 
+      
+      // Track activity
+      if (currentUser && orgId) {
+        if (statusChanged) {
+          await activityTracker.trackShow('status_change', updatedShow, currentUser, orgId);
+        } else {
+          await activityTracker.trackShow('update', updatedShow, currentUser, orgId);
+        }
+      }
     } 
     announce('Saved'); 
     trackEvent('shows.drawer.save', { mode }); 
   };
-  const deleteDraft = (d: DraftShow) => { if (mode === 'edit' && d.id) { remove(d.id); trackEvent('shows.drawer.delete'); } };
+  const deleteDraft = async (d: DraftShow) => { 
+    if (mode === 'edit' && d.id) { 
+      const currentUser = auth?.currentUser;
+      const orgId = getCurrentOrgId();
+      
+      remove(d.id); 
+      trackEvent('shows.drawer.delete'); 
+      
+      // Track activity
+      if (currentUser && orgId) {
+        await activityTracker.trackShow('delete', d, currentUser, orgId);
+      }
+    } 
+  };
 
   // deep link
   useEffect(() => { const addFlag = searchParams.get('add'); if (addFlag === '1') openAdd(); }, [searchParams]);

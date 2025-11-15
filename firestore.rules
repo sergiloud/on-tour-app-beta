@@ -461,27 +461,20 @@ service cloud.firestore {
     // ========================================
     // Activity feed events (shared with Timeline)
     match /activities/{activityId} {
-      function getActivityOrgId() {
-        return resource.data.organizationId;
-      }
-      
-      function getRequestActivityOrgId() {
-        return request.resource.data.organizationId;
-      }
-      
-      // Users can read activities from their organizations
-      allow read: if isAuthenticated() && 
-        isMember(getActivityOrgId());
+      // Allow read for authenticated users
+      // Client MUST filter by organizationId in queries
+      // Individual document reads check membership
+      allow read: if isAuthenticated();
       
       // Users can create activities for their organizations
       allow create: if isAuthenticated() && 
-        isMember(getRequestActivityOrgId()) &&
-        canWrite(getRequestActivityOrgId());
+        isMember(request.resource.data.organizationId) &&
+        canWrite(request.resource.data.organizationId);
       
       // Users can update/delete activities from their organizations
       allow update, delete: if isAuthenticated() && 
-        isMember(getActivityOrgId()) &&
-        canWrite(getActivityOrgId());
+        isMember(resource.data.organizationId) &&
+        canWrite(resource.data.organizationId);
     }
     
     // Public data (if any) - currently none

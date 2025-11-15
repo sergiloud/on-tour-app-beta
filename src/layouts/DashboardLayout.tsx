@@ -18,6 +18,7 @@ import UserMenu from '../components/common/UserMenu';
 import { useAuth } from '../context/AuthContext';
 import { useOrg } from '../context/OrgContext';
 import { OrganizationSelector } from '../components/organization/OrganizationSelector';
+import { NotificationBell } from '../components/notifications/NotificationBell';
 import { useOrganizationContext } from '../context/OrganizationContext';
 import { CreateOrgDialog } from '../components/organization/CreateOrgDialog';
 import SubNav from '../components/common/SubNav';
@@ -336,6 +337,10 @@ export const DashboardLayout: React.FC = () => {
                 <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-slate-500 dark:text-white/70">Search</span>
                 <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[9px] text-slate-400 dark:text-white/40 font-mono">⌘K</kbd>
               </button>
+              
+              {/* Notification Bell */}
+              <NotificationBell />
+              
               <UserMenu />
               {/* Language and High-contrast toggles moved to Preferences */}
               <button className="btn-ghost px-3 py-1.5 md:px-4 md:py-2 text-xs" onClick={() => { prefetchByPath('/dashboard/org/members'); navigate('/dashboard/org/members'); }}>{t('layout.invite')}</button>

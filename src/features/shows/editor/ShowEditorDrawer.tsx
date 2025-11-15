@@ -568,8 +568,9 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     const whtVal = feeVal * (whtPctEff / 100);
     const vatPctEff = draft.vatPct || 0;
     const vatVal = feeVal * (vatPctEff / 100);
+    const invoiceTotal = feeVal + vatVal; // Total client pays (Fee + VAT)
     const costsVal = (draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0);
-    const netVal = feeVal - whtVal - vatVal - commVal - costsVal;
+    const netVal = feeVal - whtVal - commVal - costsVal; // VAT doesn't reduce net
     
     const agencyNames = selectedAgencies
       .map(a => {
@@ -578,7 +579,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
       })
       .join(', ');
     
-    return { feeVal, commVal, totalCommPct, whtPctEff, whtVal, vatPctEff, vatVal, costsVal, netVal, agencyNames };
+    return { feeVal, commVal, totalCommPct, whtPctEff, whtVal, vatPctEff, vatVal, invoiceTotal, costsVal, netVal, agencyNames };
   }, [draft.fee, draft.mgmtAgency, draft.bookingAgency, draft.whtPct, draft.vatPct, draft.costs, draft.id, draft.date, draft.city, draft.country, draft.feeCurrency, draft.status, managementAgencies, bookingAgencies]);
   
   // Financial breakdown with dynamic agency commissions
@@ -1823,13 +1824,17 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.fee') || 'Fee'}</div>
                   <div className="text-sm font-semibold tabular-nums">{fmtMoney(financeCards.feeVal)}</div>
                 </div>
+                <div className="glass rounded p-2 space-y-1 bg-green-500/10 border border-green-500/40">
+                  <div className="uppercase tracking-wide opacity-60 text-green-200">{t('shows.editor.summary.vat') || 'VAT'} {financeCards.vatPctEff ? `(${financeCards.vatPctEff}%)` : ''}</div>
+                  <div className="text-sm font-semibold tabular-nums text-green-100">+{fmtMoney(Math.round(financeCards.vatVal))}</div>
+                </div>
+                <div className="glass rounded p-2 space-y-1 bg-blue-500/10 border border-blue-500/40">
+                  <div className="uppercase tracking-wide opacity-60 text-blue-200">{t('shows.editor.summary.invoiceTotal') || 'Invoice Total'}</div>
+                  <div className="text-sm font-semibold tabular-nums text-blue-100">{fmtMoney(Math.round(financeCards.invoiceTotal))}</div>
+                </div>
                 <div className="glass rounded p-2 space-y-1">
                   <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.wht') || 'WHT'} {financeCards.whtPctEff ? `(${financeCards.whtPctEff}%)` : ''}</div>
                   <div className="text-sm font-semibold tabular-nums">-{fmtMoney(Math.round(financeCards.whtVal))}</div>
-                </div>
-                <div className="glass rounded p-2 space-y-1">
-                  <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.vat') || 'VAT'} {financeCards.vatPctEff ? `(${financeCards.vatPctEff}%)` : ''}</div>
-                  <div className="text-sm font-semibold tabular-nums">-{fmtMoney(Math.round(financeCards.vatVal))}</div>
                 </div>
                 <div
                   className="glass rounded p-2 space-y-1 relative"

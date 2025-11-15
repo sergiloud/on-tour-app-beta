@@ -7,6 +7,7 @@ import StatusBadge from '../../ui/StatusBadge';
 import { useSettings } from '../../context/SettingsContext';
 import { t } from '../../lib/i18n';
 import { countryLabel } from '../../lib/countries';
+import ContractsList from '../../components/contracts/ContractsList';
 
 const ShowDetails: React.FC = () => {
   const { id } = useParams();
@@ -56,6 +57,16 @@ const ShowDetails: React.FC = () => {
             className="text-sm px-3 py-2 rounded bg-accent-600 text-black hover:brightness-110"
             onClick={() => setFocus({ id: show.id, lng: show.lng, lat: show.lat })}
           >{t('common.centerMap') || 'Center map'}: {show.city}</button>
+        </Card>
+      </div>
+
+      {/* Contracts Section */}
+      <div className="mt-6">
+        <Card className="p-6">
+          <ContractsList 
+            showId={show.id} 
+            showName={`${show.city}, ${countryLabel(show.country, lang)}`}
+          />
         </Card>
       </div>
     </div>

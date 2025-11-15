@@ -56,6 +56,7 @@ export const Contracts: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedShowId, setSelectedShowId] = useState<string>('');
 
   // Filtrado de contratos
   const filteredContracts = useMemo(() => {
@@ -110,6 +111,7 @@ export const Contracts: React.FC = () => {
         title: file.name.replace('.pdf', ''),
         description: '',
         status: 'draft',
+        showId: selectedShowId || undefined,
         parties: [],
         fileUrl: fileData.fileUrl,
         fileName: fileData.fileName,
@@ -121,6 +123,7 @@ export const Contracts: React.FC = () => {
       await createContractMutation.mutateAsync(newContract as any);
       toast.success('Contrato creado correctamente');
       setShowUploadDialog(false);
+      setSelectedShowId(''); // Reset
     } catch (error) {
       console.error('Error uploading PDF:', error);
       toast.error('Error al subir el PDF');
@@ -340,6 +343,27 @@ export const Contracts: React.FC = () => {
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            <div className="mb-6">
+              <label className="block mb-2">
+                <span className="text-sm font-semibold text-white">Show asociado (opcional)</span>
+              </label>
+              <select
+                value={selectedShowId}
+                onChange={(e) => setSelectedShowId(e.target.value)}
+                className="w-full px-4 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent-500/50 hover:bg-interactive-hover transition-all duration-200 cursor-pointer"
+              >
+                <option value="">Sin show asociado</option>
+                {shows
+                  .filter(s => s.status !== 'canceled' && s.status !== 'archived')
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                  .map(show => (
+                    <option key={show.id} value={show.id}>
+                      {new Date(show.date).toLocaleDateString()} - {show.name || `${show.city}, ${show.country}`}
+                    </option>
+                  ))}
+              </select>
             </div>
 
             <div className="mb-6">

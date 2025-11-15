@@ -13,6 +13,7 @@ import type { Show } from '../../../lib/shows';
 import { sanitizeName } from '../../../lib/sanitize';
 import { PromoterAutocomplete } from '../../../components/shows/PromoterAutocomplete';
 import { VenueAutocomplete } from '../../../components/shows/VenueAutocomplete';
+import ContractsList from '../../../components/contracts/ContractsList';
 
 const ArrowUpIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1727,6 +1728,17 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                     </button>
                   );
                 })()}
+
+                {/* Contracts Section */}
+                {mode === 'edit' && draft.id && (
+                  <div className="pt-4 border-t border-white/10">
+                    <ContractsList 
+                      showId={draft.id} 
+                      showName={draft.name || `${draft.city}, ${draft.country}`}
+                      compact={true}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}

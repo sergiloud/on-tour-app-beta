@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Planned for v2.2.0-beta (Q1 2026)
+
+**Full roadmap:** [V2.2_ROADMAP.md](./V2.2_ROADMAP.md)
+
+**Priority Areas:**
+- 🔒 **Security:** Remove xlsx vulnerability, MFA enforcement, complete audit logging
+- ⚡ **Performance:** 85% test coverage, <700KB bundle, offline conflict resolution
+- 🎨 **Features:** Venue management with maps, template system, advanced shortcuts
+- 🌍 **i18n & UX:** Complete FR/DE/IT/PT to 100%, mobile PWA enhancements, Cloudflare CDN
+
+**Success Metrics:**
+- Test coverage: 73.5% → 85%
+- Bundle size: 845KB → <700KB
+- i18n: EN/ES 100%, Others 35-43% → All 100%
+- Zero High/Critical vulnerabilities
+
+---
+
 ## [2.1.0-beta] - 2025-11-15
 
 ### 🎉 Major Release - V2.1 Complete (8/8 Roadmap Features)

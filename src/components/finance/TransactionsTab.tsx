@@ -529,9 +529,21 @@ export function TransactionsTab({
                             {transaction.type === 'income' ? '+' : '−'}{fmtMoney(transaction.amount)}
                           </p>
                           {transaction.incomeDetail && (
-                            <p className="text-xs text-slate-300 dark:text-white/30 tabular-nums mt-0.5">
-                              Bruto: {fmtMoney(transaction.incomeDetail.grossFee)}
-                            </p>
+                            <div className="text-xs tabular-nums mt-0.5 space-y-0.5">
+                              <p className="text-slate-400 dark:text-white/40">
+                                Fee: {fmtMoney(transaction.incomeDetail.grossFee)}
+                              </p>
+                              {transaction.incomeDetail.vat && transaction.incomeDetail.vat.amount > 0 && (
+                                <p className="text-green-400">
+                                  +VAT ({transaction.incomeDetail.vat.percentage}%): {fmtMoney(transaction.incomeDetail.vat.amount)}
+                                </p>
+                              )}
+                              {transaction.incomeDetail.invoiceTotal && transaction.incomeDetail.invoiceTotal > transaction.incomeDetail.grossFee && (
+                                <p className="text-blue-400">
+                                  Invoice: {fmtMoney(transaction.incomeDetail.invoiceTotal)}
+                                </p>
+                              )}
+                            </div>
                           )}
                         </td>
                         <td className="px-4 py-3.5 text-center">

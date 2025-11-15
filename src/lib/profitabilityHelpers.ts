@@ -314,6 +314,16 @@ export function showToTransactionV3(show: FinanceShow): TransactionV3[] {
   const totalWHT = withholdingTax?.amount || 0;
   const netIncome = show.fee - totalCommissions - totalWHT;
 
+  // Calcular VAT si existe
+  const vatPct = (show as any).vatPct || 0;
+  const vatAmount = vatPct > 0 ? show.fee * (vatPct / 100) : 0;
+  const invoiceTotal = show.fee + vatAmount;
+
+  const vat = vatPct > 0 ? {
+    percentage: vatPct,
+    amount: vatAmount
+  } : undefined;
+
   // Transacción de ingreso con detalle
   transactions.push({
     id: `income-${show.id}`,
@@ -325,6 +335,8 @@ export function showToTransactionV3(show: FinanceShow): TransactionV3[] {
     status: 'paid',
     incomeDetail: {
       grossFee: show.fee,
+      vat: vat,
+      invoiceTotal: invoiceTotal,
       commissions: commissions,
       withholdingTax: withholdingTax || undefined,
       netIncome: netIncome,

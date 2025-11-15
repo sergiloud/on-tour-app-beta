@@ -28,6 +28,16 @@ export interface WithholdingTax {
 }
 
 /**
+ * Detalle del VAT (IVA - Impuesto sobre el Valor Añadido)
+ */
+export interface VAT {
+  /** Porcentaje de IVA (0-30) */
+  percentage: number;
+  /** Cantidad en euros */
+  amount: number;
+}
+
+/**
  * Detalle granular de un ingreso
  * Desglosa cómo se distribuye cada euro desde el fee bruto hasta el neto
  */
@@ -35,13 +45,19 @@ export interface IncomeDetail {
   /** Fee bruto acordado (antes de comisiones y retenciones) */
   grossFee: number;
 
+  /** IVA/VAT aplicado (se suma al fee para factura al cliente) */
+  vat?: VAT;
+
+  /** Total de factura (grossFee + VAT - lo que paga el cliente) */
+  invoiceTotal?: number;
+
   /** Lista de comisiones aplicadas */
   commissions: Commission[];
 
   /** Retención fiscal aplicada (opcional) */
   withholdingTax?: WithholdingTax;
 
-  /** Ingreso neto final (grossFee - comisiones - WHT) */
+  /** Ingreso neto final (grossFee - comisiones - WHT, sin incluir VAT) */
   netIncome: number;
 
   /** Moneda del ingreso */

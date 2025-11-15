@@ -24,6 +24,8 @@ export interface PeriodKPIs {
   expenses: number;
   balance: number;
   pending: number;
+  invoiceTotal?: number; // Total facturado (Income + VAT)
+  totalVAT?: number; // Total VAT acumulado
 }
 
 export interface ComparisonKPIs {
@@ -185,11 +187,22 @@ export function useFinanceData(
       .filter(t => t.status === 'pending')
       .reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), 0);
 
+    // Calcular totales de VAT e Invoice
+    const totalVAT = filteredTransactionsV3
+      .filter(t => t.type === 'income' && t.status === 'paid' && t.incomeDetail?.vat)
+      .reduce((sum, t) => sum + (t.incomeDetail!.vat!.amount || 0), 0);
+
+    const invoiceTotal = filteredTransactionsV3
+      .filter(t => t.type === 'income' && t.status === 'paid' && t.incomeDetail?.invoiceTotal)
+      .reduce((sum, t) => sum + (t.incomeDetail!.invoiceTotal || t.incomeDetail!.grossFee), 0);
+
     return {
       income,
       expenses,
       balance: income - expenses,
-      pending
+      pending,
+      totalVAT,
+      invoiceTotal: invoiceTotal > 0 ? invoiceTotal : undefined
     };
   }, [filteredTransactionsV3]);
 

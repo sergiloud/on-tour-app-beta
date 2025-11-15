@@ -148,10 +148,15 @@ export function DashboardTab({
               onClick={() => onDrillDown?.({ type: 'income' })}
               className="glass rounded-lg p-4 border border-slate-200 dark:border-white/10 hover:border-accent-500/30 transition-fast group cursor-pointer text-left"
             >
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 font-medium mb-1">Ingresos</div>
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 font-medium mb-1">Ingresos Netos</div>
               <div className="text-xl font-bold text-accent-400 tabular-nums group-hover:scale-105 transition-transform">
                 {fmtMoney(periodKPIs.income)}
               </div>
+              {periodKPIs.invoiceTotal && periodKPIs.invoiceTotal > periodKPIs.income && (
+                <div className="text-xs text-blue-400 mt-1 tabular-nums">
+                  Factura: {fmtMoney(periodKPIs.invoiceTotal)}
+                </div>
+              )}
             </button>
             <button
               onClick={() => onDrillDown?.({ type: 'expense' })}
@@ -161,6 +166,11 @@ export function DashboardTab({
               <div className="text-xl font-bold text-amber-400 tabular-nums group-hover:scale-105 transition-transform-fast">
                 {fmtMoney(periodKPIs.expenses)}
               </div>
+              {periodKPIs.totalVAT && periodKPIs.totalVAT > 0 && (
+                <div className="text-xs text-green-400 mt-1 tabular-nums">
+                  VAT: +{fmtMoney(periodKPIs.totalVAT)}
+                </div>
+              )}
             </button>
           </div>
         </div>

@@ -108,7 +108,7 @@ interface FirestoreTimelineEvent extends Omit<TimelineEvent, 'id' | 'timestamp'>
 }
 
 export class TimelineService {
-  private static eventsCollection = 'timeline_events';
+  private static eventsCollection = 'activities'; // Use same collection as ActivityService
   private static PAGE_SIZE = 50;
 
   /**

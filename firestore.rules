@@ -456,6 +456,34 @@ service cloud.firestore {
         canWrite(getEventOrgId());
     }
     
+    // ========================================
+    // ACTIVITIES (Root Collection)
+    // ========================================
+    // Activity feed events (shared with Timeline)
+    match /activities/{activityId} {
+      function getActivityOrgId() {
+        return resource.data.organizationId;
+      }
+      
+      function getRequestActivityOrgId() {
+        return request.resource.data.organizationId;
+      }
+      
+      // Users can read activities from their organizations
+      allow read: if isAuthenticated() && 
+        isMember(getActivityOrgId());
+      
+      // Users can create activities for their organizations
+      allow create: if isAuthenticated() && 
+        isMember(getRequestActivityOrgId()) &&
+        canWrite(getRequestActivityOrgId());
+      
+      // Users can update/delete activities from their organizations
+      allow update, delete: if isAuthenticated() && 
+        isMember(getActivityOrgId()) &&
+        canWrite(getActivityOrgId());
+    }
+    
     // Public data (if any) - currently none
     // match /public/{document=**} {
     //   allow read: if true;

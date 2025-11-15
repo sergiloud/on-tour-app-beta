@@ -19,7 +19,7 @@ interface OnboardingData {
 
 const OnboardingPage: React.FC = () => {
     const navigate = useNavigate();
-    const { updateProfile } = useAuth();
+    const { updateProfile, userId } = useAuth();
     const [step, setStep] = React.useState(1);
     const [isCompleting, setIsCompleting] = React.useState(false);
 
@@ -138,8 +138,6 @@ const OnboardingPage: React.FC = () => {
                 currency: data.currency
             });
         } catch { }
-
-        const { userId } = useAuth();
 
         // Create organization for the new user
         const newOrgId = createUserOrganization(userId, {

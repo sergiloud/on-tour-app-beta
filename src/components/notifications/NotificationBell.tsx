@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { FirestoreActivityService, type Activity } from '../../services/firestoreActivityService';
 import { t } from '../../lib/i18n';
+import { LinkInvitationsInbox, LinkInvitationBadge } from '../organization/LinkInvitationsInbox';
 
 const ACTIVITY_ICONS: Record<string, React.ComponentType<any>> = {
   show_created: Calendar,
@@ -105,7 +106,7 @@ export const NotificationBell: React.FC = () => {
       >
         <Bell className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
         
-        {/* Badge */}
+        {/* Badge for activity + link invitations */}
         {unreadCount > 0 && (
           <motion.span
             initial={{ scale: 0 }}
@@ -115,6 +116,9 @@ export const NotificationBell: React.FC = () => {
             {unreadCount}
           </motion.span>
         )}
+        
+        {/* Additional badge for link invitations */}
+        <LinkInvitationBadge />
       </button>
 
       {/* Dropdown */}
@@ -141,6 +145,9 @@ export const NotificationBell: React.FC = () => {
                 </button>
               )}
             </div>
+
+            {/* Link Invitations Section */}
+            <LinkInvitationsInbox compact limit={3} onUpdate={() => setIsOpen(false)} />
 
             {/* Activities List */}
             <div className="max-h-[400px] overflow-y-auto">

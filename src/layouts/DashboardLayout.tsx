@@ -21,6 +21,7 @@ import { OrganizationSelector } from '../components/organization/OrganizationSel
 import { NotificationBell } from '../components/notifications/NotificationBell';
 import { useOrganizationContext } from '../context/OrganizationContext';
 import { CreateOrgDialog } from '../components/organization/CreateOrgDialog';
+import { MembersManageGuard } from '../components/permissions/PermissionGuard';
 import SubNav from '../components/common/SubNav';
 import FirestoreUserPreferencesService from '../services/firestoreUserPreferencesService';
 import { BottomNav } from '../components/mobile/BottomNav';
@@ -346,7 +347,9 @@ export const DashboardLayout: React.FC = () => {
               
               <UserMenu />
               {/* Language and High-contrast toggles moved to Preferences */}
-              <button className="btn-ghost px-3 py-1.5 md:px-4 md:py-2 text-xs" onClick={() => { prefetchByPath('/dashboard/org/members'); navigate('/dashboard/org/members'); }}>{t('layout.invite')}</button>
+              <MembersManageGuard>
+                <button className="btn-ghost px-3 py-1.5 md:px-4 md:py-2 text-xs" onClick={() => { prefetchByPath('/dashboard/org/members'); navigate('/dashboard/org/members'); }}>{t('layout.invite')}</button>
+              </MembersManageGuard>
             </div>
           </header>
           <UrlFilterSync />

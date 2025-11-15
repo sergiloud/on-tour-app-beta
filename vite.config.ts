@@ -42,7 +42,7 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw-advanced.ts',
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'favicon.ico', 'offline.html'],
       manifest: {

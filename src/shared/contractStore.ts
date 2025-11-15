@@ -15,6 +15,21 @@ class ContractStore {
   constructor() {
     this.loadFromLocalStorage();
     this.updateCache();
+    
+    // Listen for storage events (cross-tab and real-time sync)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'on-tour-contracts' && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue) as Contract[];
+          this.contracts = new Map(data.map((contract) => [contract.id, contract]));
+          this.updateCache();
+          this.listeners.forEach((listener) => listener());
+          logger.info('[ContractStore] Synced from storage event', { count: data.length });
+        } catch (error) {
+          logger.error('[ContractStore] Error syncing from storage event', error as Error);
+        }
+      }
+    });
   }
 
   subscribe(listener: () => void): () => void {

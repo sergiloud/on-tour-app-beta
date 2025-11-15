@@ -18,6 +18,7 @@ import OrgClients from '../org/OrgClients';
 import OrgLinks from '../org/OrgLinks';
 import OrgDocuments from '../org/OrgDocuments';
 import OrgReports from '../org/OrgReports';
+import OrganizationSettings from '../../components/organization/OrganizationSettings';
 
 const TabButton: React.FC<{
   active: boolean;
@@ -68,7 +69,7 @@ const SubTabButton: React.FC<{
 const Settings: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'organization' | 'connections'>('profile');
-  const [orgSubTab, setOrgSubTab] = useState<'members' | 'teams' | 'branding' | 'documents' | 'integrations'>('members');
+  const [orgSubTab, setOrgSubTab] = useState<'overview' | 'members' | 'teams' | 'branding' | 'documents' | 'integrations'>('overview');
   const [connectionsSubTab, setConnectionsSubTab] = useState<'clients' | 'links' | 'billing' | 'reports'>('clients');
 
   const isAgency = isAgencyCurrent();
@@ -83,7 +84,7 @@ const Settings: React.FC = () => {
     }
 
     if (subtabParam) {
-      if (tabParam === 'organization' && ['members', 'teams', 'branding', 'documents', 'integrations'].includes(subtabParam)) {
+      if (tabParam === 'organization' && ['overview', 'members', 'teams', 'branding', 'documents', 'integrations'].includes(subtabParam)) {
         setOrgSubTab(subtabParam as any);
       } else if (tabParam === 'connections' && ['clients', 'links', 'billing', 'reports'].includes(subtabParam)) {
         setConnectionsSubTab(subtabParam as any);
@@ -409,11 +410,12 @@ const PreferencesTab: React.FC = () => {
 };
 
 const OrganizationTab: React.FC<{
-  activeSubTab: 'members' | 'teams' | 'branding' | 'documents' | 'integrations';
-  onSubTabChange: (tab: 'members' | 'teams' | 'branding' | 'documents' | 'integrations') => void
+  activeSubTab: 'overview' | 'members' | 'teams' | 'branding' | 'documents' | 'integrations';
+  onSubTabChange: (tab: 'overview' | 'members' | 'teams' | 'branding' | 'documents' | 'integrations') => void
 }> = ({ activeSubTab, onSubTabChange }) => {
   // Define organization sub-tabs configuration
   const orgSubTabs = [
+    { id: 'overview' as const, label: t('settings.organization') || 'Overview' },
     { id: 'members' as const, label: t('org.members') || 'Members' },
     { id: 'teams' as const, label: t('org.teams') || 'Teams' },
     { id: 'branding' as const, label: t('org.branding') || 'Branding' },
@@ -454,6 +456,7 @@ const OrganizationTab: React.FC<{
       </div>
 
       {/* Sub-tab Content */}
+      {activeSubTab === 'overview' && <OrganizationSettings />}
       {activeSubTab === 'members' && <OrgMembers />}
       {activeSubTab === 'teams' && <OrgTeams />}
       {activeSubTab === 'branding' && <OrgBranding />}

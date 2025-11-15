@@ -116,6 +116,16 @@ export const useTourStats = (): TourStats => {
             return showDate >= now && showDate <= maxDate;
         });
 
+        console.log('[useTourStats] filteredShows:', {
+            totalShows: shows.length,
+            dateRange: filters.dateRange,
+            dateRangeDays,
+            filtered: all.length,
+            firstShowDate: all[0]?.date,
+            now: new Date(now).toISOString(),
+            maxDate: new Date(maxDate).toISOString()
+        });
+
         // Apply status filter
         if (filters.status !== 'all') {
             all = all.filter(s => s.status === filters.status);
@@ -181,7 +191,7 @@ export const useTourStats = (): TourStats => {
         const agendaDays = filters.dateRange === 'all' ? 365 : 21;
         const maxAgendaDate = now + agendaDays * DAY;
         
-        return filteredShows
+        const result = filteredShows
             .filter(s => new Date(s.date).getTime() <= maxAgendaDate)
             .map(show => {
                 const d = new Date(show.date);
@@ -227,7 +237,22 @@ export const useTourStats = (): TourStats => {
                 };
             })
             .filter(({ dayKey }) => dayKey);
+        
+        console.log('[useTourStats] showAgendaItems built:', {
+            filteredShowsCount: filteredShows.length,
+            agendaDays,
+            resultCount: result.length,
+            first3: result.slice(0, 3).map(r => ({ day: r.dayKey, city: r.item.city }))
+        });
+        
+        return result;
     }, [filteredShows, filters.dateRange]);
+
+    console.log('[useTourStats] showAgendaItems:', {
+        filteredShowsCount: filteredShows.length,
+        showAgendaItemsCount: showAgendaItems.length,
+        first3: showAgendaItems.slice(0, 3)
+    });
 
     // Step 6: Build agenda from itinerary events (respects date range filter)
     const itineraryAgendaItems = useMemo(() => {

@@ -202,8 +202,15 @@ export const ContractsList: React.FC<ContractsListProps> = ({ showId, showName, 
 
       {/* Upload Dialog */}
       {showUploadDialog && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass rounded-xl border border-slate-200 dark:border-white/10 max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          style={{ zIndex: 10001 }}
+          onClick={() => setShowUploadDialog(false)}
+        >
+          <div 
+            className="glass rounded-xl border border-slate-200 dark:border-white/10 max-w-md w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white">Subir Contrato</h3>
@@ -257,8 +264,15 @@ export const ContractsList: React.FC<ContractsListProps> = ({ showId, showName, 
 
       {/* Contract Detail Dialog */}
       {selectedContract && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass rounded-xl border border-theme max-w-4xl w-full max-h-[90vh] overflow-auto">
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          style={{ zIndex: 10001 }}
+          onClick={() => setSelectedContract(null)}
+        >
+          <div 
+            className="glass rounded-xl border border-theme max-w-4xl w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-white/10 p-6 z-10">
               <div className="flex items-start justify-between">
                 <div>

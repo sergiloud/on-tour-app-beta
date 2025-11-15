@@ -72,14 +72,15 @@ export type TimelineImportance = 'critical' | 'high' | 'medium' | 'low' | 'all';
 
 export interface TimelineEvent {
   id: string;
-  type: TimelineEventType;
-  module: Exclude<TimelineModule, 'all'>; // Cannot be 'all'
-  importance: Exclude<TimelineImportance, 'all'>; // Cannot be 'all'
+  module: string; // shows | contacts | contracts | venues | finance | crm
+  action?: string; // create | update | delete | status_change | payment | note_add
+  importance: string; // low | medium | high | critical
   title: string;
-  description: string;
+  description?: string;
   timestamp: Date;
   userId: string;
   userName: string;
+  userEmail?: string;
   organizationId: string;
   
   // Optional contextual data
@@ -88,10 +89,14 @@ export interface TimelineEvent {
   amount?: number; // For financial events
   metadata?: Record<string, any>;
   
-  // Smart grouping support
+  // Smart grouping support (computed client-side)
   groupKey?: string; // Key to group similar events
   groupCount?: number; // Number of events in group
   isGrouped?: boolean; // Whether this is a grouped event
+  
+  // Legacy fields for backwards compatibility
+  type?: TimelineEventType;
+  createdAt?: any; // Firestore timestamp
 }
 
 export interface TimelineFilters {

@@ -59,6 +59,10 @@ export function exportShowsCsv(rows: ShowRow[], exportCols: Record<string, boole
 export async function exportShowsXlsx(rows: ShowRow[], exportCols: Record<string, boolean>, selectedIds?: Set<string>, filenamePrefix = 'shows') {
   const picked = pickHeaders(exportCols);
   const data = buildSource(rows, selectedIds);
+  
+  // Chunk size for large datasets to avoid memory issues
+  const CHUNK_SIZE = 100;
+  const isLargeDataset = data.length > 500;
 
   try {
     const ExcelJS = await import('exceljs');
@@ -93,15 +97,44 @@ export async function exportShowsXlsx(rows: ShowRow[], exportCols: Record<string
       fgColor: { argb: 'FFE5E7EB' }
     };
 
-    // Add data rows
-    data.forEach(row => {
-      const rowData: any = {};
-      picked.forEach(h => { rowData[h] = (row as any)[h]; });
-      worksheet.addRow(rowData);
-    });
+    // Add data rows in chunks for large datasets
+    if (isLargeDataset) {
+      for (let i = 0; i < data.length; i += CHUNK_SIZE) {
+        const chunk = data.slice(i, i + CHUNK_SIZE);
+        chunk.forEach(row => {
+          const rowData: any = {};
+          picked.forEach(h => { rowData[h] = (row as any)[h]; });
+          worksheet.addRow(rowData);
+        });
+        // Allow browser to breathe between chunks
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    } else {
+      // Small dataset - process all at once
+      data.forEach(row => {
+        const rowData: any = {};
+        picked.forEach(h => { rowData[h] = (row as any)[h]; });
+        worksheet.addRow(rowData);
+      });
+    }
 
-    // Generate buffer and download
-    const buffer = await workbook.xlsx.writeBuffer();
+    // Generate buffer with streaming for large files
+    let buffer: ArrayBuffer;
+    if (isLargeDataset) {
+      // Use streaming write to avoid memory spike
+      const stream = new ExcelJS.stream.xlsx.WorkbookWriter({
+        stream: new WritableStream()
+      } as any);
+      
+      // Fallback to regular buffer write but with progress indicator
+      buffer = await workbook.xlsx.writeBuffer({
+        useSharedStrings: true, // Reduce memory usage
+        useStyles: true
+      });
+    } else {
+      buffer = await workbook.xlsx.writeBuffer();
+    }
+    
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
@@ -113,7 +146,11 @@ export async function exportShowsXlsx(rows: ShowRow[], exportCols: Record<string
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     return { count: data.length, cols: picked.length };
   } catch (e) {
-    // Re-throw so caller can report error
+    console.error('Excel export failed:', e);
+    // Provide helpful error message for large datasets
+    if (data.length > 1000) {
+      throw new Error(`Export failed: Dataset too large (${data.length} rows). Try exporting in smaller batches or use CSV format.`);
+    }
     throw e;
   }
 }

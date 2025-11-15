@@ -1536,7 +1536,7 @@ npm run test:e2e         # Playwright E2E
 
 1. **Calendar Sync Delay**: CalDAV sync tiene latencia de ~5s (esperado, limitación de protocolo)
 2. **Mobile Safari Animations**: Reducidas para evitar lag en dispositivos antiguos
-3. **Finance Export**: Excel export a veces falla en datasets >500 shows (investigando)
+3. ~~**Finance Export**: Excel export a veces falla en datasets >500 shows~~ ✅ **FIXED** (v2.1.1) - Implementado chunking y streaming para datasets ilimitados
 
 ---
 

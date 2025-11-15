@@ -1768,6 +1768,8 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'common.characters': 'characters'
     , 'common.dest': 'Destination'
     , 'common.done': 'Done'
+    , 'common.error': 'Error'
+    , 'common.filters': 'Filters'
     , 'common.gotIt': 'Got it'
     , 'common.invite': 'Invite'
     , 'common.month': 'month'
@@ -1994,6 +1996,14 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'welcome.priorityActions': 'Priority Actions'
     , 'welcome.priorityActions.subtitle': 'Critical tasks requiring attention'
     , 'welcome.subtitle': 'Welcome back'
+    // Organization & Activity Feed
+    , 'organization.activityFeed': 'Activity Feed'
+    , 'organization.category': 'Category'
+    , 'organization.limit': 'Limit: {limit}'
+    , 'organization.noActivityYet': 'No activity yet'
+    , 'organization.selectToViewActivity': 'Select an organization to view activity'
+    , 'organization.severity': 'Severity'
+    , 'organization.showingLogs': 'Showing {count} of {total} logs'
   },
   es: {
     // Landing / Home
@@ -3431,6 +3441,8 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'common.characters': 'caracteres'
     , 'common.dest': 'Destino'
     , 'common.done': 'Hecho'
+    , 'common.error': 'Error'
+    , 'common.filters': 'Filtros'
     , 'common.gotIt': 'Entendido'
     , 'common.invite': 'Invitar'
     , 'common.month': 'Mes'
@@ -3723,6 +3735,14 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'welcome.priorityActions': 'Acciones prioritarias'
     , 'welcome.priorityActions.subtitle': 'Tareas críticas que requieren atención'
     , 'welcome.subtitle': 'Tu plataforma de gestión de giras'
+    // Organization & Activity Feed
+    , 'organization.activityFeed': 'Feed de Actividad'
+    , 'organization.category': 'Categoría'
+    , 'organization.limit': 'Límite: {limit}'
+    , 'organization.noActivityYet': 'Aún no hay actividad'
+    , 'organization.selectToViewActivity': 'Selecciona una organización para ver la actividad'
+    , 'organization.severity': 'Severidad'
+    , 'organization.showingLogs': 'Mostrando {count} de {total} registros'
     , 'overview.subtitle.agency': 'Panel de agencia'
     , 'overview.subtitle.artist': 'Panel de artista'
     , 'overview.title': 'Resumen general'
@@ -5033,7 +5053,19 @@ export function getLang(): Lang {
   return current;
 }
 
-export function t(key: string) { const lang = getLang(); return DICT[lang][key] || DICT.en[key] || key; }
+export function t(key: string, params?: Record<string, string | number>) { 
+  const lang = getLang(); 
+  let text = DICT[lang][key] || DICT.en[key] || key;
+  
+  // Interpolate parameters if provided
+  if (params) {
+    Object.entries(params).forEach(([paramKey, value]) => {
+      text = text.replace(`{${paramKey}}`, String(value));
+    });
+  }
+  
+  return text;
+}
 
 export function useI18n() {
   const [langState, setLangState] = useState<Lang>(() => getLang());

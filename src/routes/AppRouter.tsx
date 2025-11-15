@@ -43,6 +43,7 @@ const WelcomePage = lazy(() => import('../pages/welcome/WelcomePage'));
 
 // Org routes - lazy loaded
 const OrgOverview = lazy(() => import('../pages/org/OrgOverviewNew'));
+const OrgActivity = lazy(() => import('../pages/org/OrgActivity'));
 const OrgMembers = lazy(() => import('../pages/org/OrgMembers'));
 const OrgTeams = lazy(() => import('../pages/org/OrgTeams'));
 const OrgBranding = lazy(() => import('../pages/org/OrgBranding'));
@@ -88,6 +89,7 @@ export const AppRouter = () => {
         >
           <Route index element={<Suspense fallback={<DashboardSkeleton />}><DashboardOverview /></Suspense>} />
           <Route path="org" element={<Suspense fallback={<DashboardSkeleton />}><OrgOverview /></Suspense>} />
+          <Route path="org/activity" element={<Suspense fallback={<DashboardSkeleton />}><OrgActivity /></Suspense>} />
           <Route path="org/members" element={<Suspense fallback={<DashboardSkeleton />}><OrgMembers /></Suspense>} />
           <Route path="org/teams" element={<Suspense fallback={<DashboardSkeleton />}><OrgTeams /></Suspense>} />
           <Route path="org/branding" element={<Suspense fallback={<DashboardSkeleton />}><OrgBranding /></Suspense>} />

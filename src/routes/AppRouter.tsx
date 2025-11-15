@@ -35,6 +35,7 @@ const TravelWorkspacePage = lazy(() => import('../pages/dashboard/TravelWorkspac
 const MissionControlLab = lazy(() => import('../pages/dashboard/MissionControlLab'));
 const Calendar = lazy(() => import('../pages/dashboard/Calendar'));
 const ActivityFeedPage = lazy(() => import('../pages/dashboard/ActivityFeedPage'));
+const TimelinePage = lazy(() => import('../pages/dashboard/TimelinePage'));
 const Settings = lazy(() => import('../pages/dashboard/Settings'));
 const ProfilePage = lazy(() => import('../pages/profile/ProfileSettings'));
 const Story = lazy(() => import('../pages/dashboard/Story'));
@@ -110,6 +111,7 @@ export const AppRouter = () => {
           <Route path="mission/lab" element={<Suspense fallback={<MissionSkeleton />}><MissionControlLab /></Suspense>} />
           <Route path="calendar" element={<Suspense fallback={<CalendarPageSkeleton />}><Calendar /></Suspense>} />
           <Route path="activity" element={<Suspense fallback={<DashboardSkeleton />}><ActivityFeedPage /></Suspense>} />
+          <Route path="timeline" element={<Suspense fallback={<DashboardSkeleton />}><TimelinePage /></Suspense>} />
           <Route path="settings" element={<Suspense fallback={<SettingsSkeleton />}><Settings /></Suspense>} />
           <Route path="profile" element={<Suspense fallback={<SettingsSkeleton />}><ProfilePage /></Suspense>} />
           <Route path="data-security" element={<Suspense fallback={<SettingsSkeleton />}><DataSecurityPage /></Suspense>} />

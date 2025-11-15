@@ -148,6 +148,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'nav.calendar': 'Calendar'
     , 'nav.finance': 'Finance'
     , 'nav.activity': 'Activity'
+    , 'nav.timeline': 'Timeline'
     , 'nav.settings': 'Settings'
     , 'nav.contacts': 'Contacts'
     , 'nav.contracts': 'Contracts'
@@ -1694,6 +1695,22 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'activity.feed.title': 'Activity Feed'
     , 'activity.feed.viewAll': 'View all'
     , 'activity.justNow': 'Just now'
+    // Timeline
+    , 'timeline.title': 'Organization Timeline'
+    , 'timeline.description': 'Intelligent activity center - all organization events in one place'
+    , 'timeline.empty': 'No timeline events found'
+    , 'timeline.items': 'items'
+    , 'timeline.filters.module': 'Module'
+    , 'timeline.filters.importance': 'Importance'
+    , 'timeline.filters.dateRange': 'Date range'
+    , 'timeline.filters.search': 'Search'
+    , 'timeline.filters.searchPlaceholder': 'Search events...'
+    , 'timeline.filters.allModules': 'All modules'
+    , 'timeline.filters.allImportance': 'All levels'
+    , 'timeline.filters.last7Days': 'Last 7 days'
+    , 'timeline.filters.last30Days': 'Last 30 days'
+    , 'timeline.filters.last90Days': 'Last 90 days'
+    , 'timeline.filters.allTime': 'All time'
     , 'analytics.revenueTrends': 'Revenue trends'
     , 'calendar.announce.eventCreated': 'Event created'
     , 'calendar.bulkActions.copy': 'Copy selection'
@@ -2335,6 +2352,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     'nav.calendar': 'Calendario',
     'nav.finance': 'Finanzas',
     'nav.activity': 'Actividad',
+    'nav.timeline': 'Línea de Tiempo',
     'nav.settings': 'Ajustes',
     'insights.thisMonthTotal': 'Total del mes',
     'insights.statusBreakdown': 'Desglose por estado',
@@ -3645,6 +3663,22 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'activity.feed.title': 'Feed de actividad'
     , 'activity.feed.viewAll': 'Ver todo'
     , 'activity.justNow': 'Justo ahora'
+    // Timeline
+    , 'timeline.title': 'Línea de Tiempo de la Organización'
+    , 'timeline.description': 'Centro de actividad inteligente - todos los eventos de la organización en un solo lugar'
+    , 'timeline.empty': 'No se encontraron eventos en la línea de tiempo'
+    , 'timeline.items': 'elementos'
+    , 'timeline.filters.module': 'Módulo'
+    , 'timeline.filters.importance': 'Importancia'
+    , 'timeline.filters.dateRange': 'Rango de fechas'
+    , 'timeline.filters.search': 'Buscar'
+    , 'timeline.filters.searchPlaceholder': 'Buscar eventos...'
+    , 'timeline.filters.allModules': 'Todos los módulos'
+    , 'timeline.filters.allImportance': 'Todos los niveles'
+    , 'timeline.filters.last7Days': 'Últimos 7 días'
+    , 'timeline.filters.last30Days': 'Últimos 30 días'
+    , 'timeline.filters.last90Days': 'Últimos 90 días'
+    , 'timeline.filters.allTime': 'Todo el tiempo'
     , 'profile.name': 'Nombre'
     , 'profile.role': 'Rol'
     , 'settings.connections': 'Conexiones'

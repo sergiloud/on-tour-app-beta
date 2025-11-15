@@ -6,9 +6,11 @@
 import { useEffect, useRef } from 'react';
 import { syncNow } from '../services/calendarSyncApi';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../ui/Toast';
 
 export function useCalendarAutoSync() {
   const { userId } = useAuth();
+  const toast = useToast();
   const syncTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const lastSyncRef = useRef<number>(0);
   
@@ -35,12 +37,12 @@ export function useCalendarAutoSync() {
 
       try {
         console.log('[AutoSync] Syncing calendar changes...');
-        await syncNow(userId);
+        await syncNow(userId, toast.show);
         lastSyncRef.current = now;
         console.log('[AutoSync] Sync completed');
       } catch (error) {
         console.error('[AutoSync] Sync failed:', error);
-        // Silently fail - user can manually sync if needed
+        // Error toast already shown by syncNow()
       }
     }, 2000);
   };

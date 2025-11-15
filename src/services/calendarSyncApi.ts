@@ -4,6 +4,8 @@
  * Frontend service for interacting with CalDAV calendar sync endpoints
  */
 
+import { t } from '../lib/i18n';
+
 export interface CalendarSyncCredentials {
   provider: 'icloud' | 'google' | 'outlook' | 'caldav';
   email: string;
@@ -108,22 +110,57 @@ export async function disableCalendarSync(userId: string): Promise<{ success: bo
 
 /**
  * Manually trigger calendar sync
+ * 
+ * @param userId - User ID
+ * @param showToast - Optional toast function to show feedback
+ * @returns Sync result with counts and errors
  */
-export async function syncNow(userId: string): Promise<{ result: SyncResult }> {
-  const response = await fetch('/api/calendar-sync/sync-now', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ userId }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Sync failed');
+export async function syncNow(
+  userId: string, 
+  showToast?: (message: string, opts?: { tone?: 'info' | 'success' | 'error'; timeout?: number }) => void
+): Promise<{ result: SyncResult }> {
+  // Show "syncing..." toast if toast function provided
+  if (showToast) {
+    showToast(t('calendar.sync.inProgress') || 'Syncing with iCloud...', { tone: 'info', timeout: 6000 });
   }
 
-  return response.json();
+  try {
+    const response = await fetch('/api/calendar-sync/sync-now', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      const errorMessage = error.message || t('calendar.sync.error.failed') || 'Sync failed';
+      
+      if (showToast) {
+        showToast(errorMessage, { tone: 'error', timeout: 5000 });
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    
+    // Show success toast
+    if (showToast) {
+      showToast(t('calendar.sync.success') || 'Calendar synced successfully!', { tone: 'success', timeout: 3000 });
+    }
+    
+    return data;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : (t('calendar.sync.error.failed') || 'Sync failed');
+    
+    if (showToast) {
+      showToast(errorMessage, { tone: 'error', timeout: 5000 });
+    }
+    
+    throw error;
+  }
 }
 
 /**

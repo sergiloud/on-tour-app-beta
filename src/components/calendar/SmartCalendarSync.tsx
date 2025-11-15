@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalEvent } from './types';
 import { t } from '../../lib/i18n';
+import { useToast } from '../../ui/Toast';
 
 type Props = {
   events: CalEvent[];
@@ -30,6 +31,7 @@ export type SyncService = 'google' | 'apple' | 'outlook' | 'ics';
  * - Generic ICS/Calendar feeds
  */
 const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError }) => {
+  const toast = useToast();
   const [syncConfig, setSyncConfig] = useState<SyncData>({
     autoSync: false,
     syncFrequency: 'daily',
@@ -121,6 +123,10 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
   // Sync all connected services
   const handleSyncAll = useCallback(async () => {
     setSyncStatus('syncing');
+    
+    // Show "syncing..." toast
+    toast.show(t('calendar.sync.inProgress') || 'Syncing with iCloud...', { tone: 'info', timeout: 6000 });
+    
     try {
       const promises: Promise<CalEvent[]>[] = [];
 
@@ -150,13 +156,22 @@ const SmartCalendarSync: React.FC<Props> = ({ events, onSyncComplete, onError })
       await Promise.allSettled(promises);
       setSyncStatus('synced');
       setLastSync(new Date());
+      
+      // Show success toast
+      toast.success(t('calendar.sync.success') || 'Calendar synced successfully!', 3000);
+      
       setTimeout(() => setSyncStatus('idle'), 2000);
     } catch (error) {
       setSyncStatus('error');
-      onError?.(error instanceof Error ? error.message : 'Sync failed');
+      const errorMessage = error instanceof Error ? error.message : (t('calendar.sync.error.failed') || 'Sync failed');
+      
+      // Show error toast
+      toast.error(errorMessage, 5000);
+      
+      onError?.(errorMessage);
       setTimeout(() => setSyncStatus('idle'), 2000);
     }
-  }, [connectedServices, syncConfig.icsUrl, onError, syncFromICS]);
+  }, [connectedServices, syncConfig.icsUrl, onError, syncFromICS, toast]);
 
   // Placeholder functions for service-specific sync
   const syncFromGoogle = async (): Promise<CalEvent[]> => {

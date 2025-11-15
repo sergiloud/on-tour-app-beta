@@ -27,7 +27,7 @@ export function CalendarSyncModal({ isOpen, onClose }: Props) {
   const [credentials, setCredentials] = useState<any>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   
-  const { success, error } = useToast();
+  const { success, error, info } = useToast();
 
   // Load sync status on mount
   useEffect(() => {
@@ -110,11 +110,26 @@ export function CalendarSyncModal({ isOpen, onClose }: Props) {
 
   const handleSyncNow = async () => {
     setLoading(true);
+    
+    // Create wrapper for ToastContext compatibility
+    const toastWrapper = (message: string, opts?: { tone?: 'info' | 'success' | 'error'; timeout?: number }) => {
+      const type = opts?.tone === 'success' ? 'success' : opts?.tone === 'error' ? 'error' : 'info';
+      const duration = opts?.timeout ?? 3000;
+      if (type === 'success') {
+        success(message, duration);
+      } else if (type === 'error') {
+        error(message, duration);
+      } else {
+        info(message, duration);
+      }
+    };
+    
     try {
-      const { result } = await calendarSyncApi.syncNow('current-user-id'); // TODO: Get from auth
+      const { result } = await calendarSyncApi.syncNow('current-user-id', toastWrapper);
       success(`✓ Synced: ${result.imported} imported, ${result.exported} exported`);
       await loadSyncStatus();
     } catch (err) {
+      // Error already shown by syncNow()
       error(err instanceof Error ? err.message : 'Sync failed');
     } finally {
       setLoading(false);

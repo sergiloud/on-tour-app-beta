@@ -173,14 +173,16 @@ export const useTourStats = (): TourStats => {
             : null;
     }, [realShows]);
 
-    // Step 5: Build agenda from shows (next 21 days)
+    // Step 5: Build agenda from shows (respects date range filter)
     const showAgendaItems = useMemo(() => {
         const now = Date.now();
         const DAY = 24 * 60 * 60 * 1000;
-        const days21 = now + 21 * DAY;
+        // Use 21 days for non-'all' filters, otherwise use the full filter range
+        const agendaDays = filters.dateRange === 'all' ? 365 : 21;
+        const maxAgendaDate = now + agendaDays * DAY;
         
         return filteredShows
-            .filter(s => new Date(s.date).getTime() <= days21)
+            .filter(s => new Date(s.date).getTime() <= maxAgendaDate)
             .map(show => {
                 const d = new Date(show.date);
                 const dayKey = d.toISOString().split('T')[0];
@@ -225,13 +227,15 @@ export const useTourStats = (): TourStats => {
                 };
             })
             .filter(({ dayKey }) => dayKey);
-    }, [filteredShows]);
+    }, [filteredShows, filters.dateRange]);
 
-    // Step 6: Build agenda from itinerary events
+    // Step 6: Build agenda from itinerary events (respects date range filter)
     const itineraryAgendaItems = useMemo(() => {
         const now = Date.now();
         const DAY = 24 * 60 * 60 * 1000;
-        const days21 = now + 21 * DAY;
+        // Use 21 days for non-'all' filters, otherwise use the full filter range
+        const agendaDays = filters.dateRange === 'all' ? 365 : 21;
+        const maxAgendaDate = now + agendaDays * DAY;
         
         const items: Array<{ dayKey: string; item: any }> = [];
 
@@ -242,7 +246,7 @@ export const useTourStats = (): TourStats => {
 
             const eventEndDate = event.endDate ? new Date(event.endDate).getTime() : d.getTime();
             const eventStart = d.getTime();
-            if (eventStart > days21 && eventEndDate > days21) return;
+            if (eventStart > maxAgendaDate && eventEndDate > maxAgendaDate) return;
 
             // Map button color to calendar color
             const buttonColor = event.buttonColor;
@@ -355,7 +359,7 @@ export const useTourStats = (): TourStats => {
         });
 
         return items;
-    }, [itineraryEvents]);
+    }, [itineraryEvents, filters.dateRange]);
 
     // Step 7: Merge and group agenda items by day
     const agenda = useMemo(() => {

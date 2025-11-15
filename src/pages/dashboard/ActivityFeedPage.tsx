@@ -25,6 +25,50 @@ const ActivityFeedPage: React.FC = () => {
       return;
     }
 
+    // In development mode without Firebase, use demo data
+    if (import.meta.env.DEV) {
+      // Create demo activities for development
+      const demoActivities: Activity[] = [
+        {
+          id: '1',
+          type: 'show_added',
+          title: 'New show added',
+          description: 'Barcelona, Spain - €15,000',
+          organizationId: orgId,
+          userId: userId || 'demo',
+          userName: 'Demo User',
+          timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5 min ago
+          priority: 'medium'
+        },
+        {
+          id: '2',
+          type: 'finance_updated',
+          title: 'Finance updated',
+          description: 'Show fee updated to €18,000',
+          organizationId: orgId,
+          userId: userId || 'demo',
+          userName: 'Demo User',
+          timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 min ago
+          priority: 'low'
+        },
+        {
+          id: '3',
+          type: 'contract_signed',
+          title: 'Contract signed',
+          description: 'Madrid Festival 2025 contract finalized',
+          organizationId: orgId,
+          userId: userId || 'demo',
+          userName: 'Tour Manager',
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+          priority: 'high'
+        }
+      ];
+      
+      setActivities(demoActivities);
+      setLoading(false);
+      return () => {};
+    }
+
     const unsubscribe = FirestoreActivityService.subscribeToActivities(
       orgId,
       (newActivities) => {
@@ -37,7 +81,7 @@ const ActivityFeedPage: React.FC = () => {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [userId]);
 
   const getActivityIconSvg = (type: ActivityType): React.ReactNode => {
     const iconClass = "w-5 h-5";

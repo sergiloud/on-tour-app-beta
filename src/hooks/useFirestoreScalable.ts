@@ -81,6 +81,7 @@ export interface Show {
   lng: number;
   route?: string;
   promoter?: string;
+  contractIds?: string[]; // IDs de contratos asociados
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

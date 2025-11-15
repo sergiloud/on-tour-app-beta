@@ -53,6 +53,7 @@ const OrgDocuments = lazy(() => import('../pages/org/OrgDocuments'));
 const OrgReports = lazy(() => import('../pages/org/OrgReports'));
 const OrgClients = lazy(() => import('../pages/org/OrgClients'));
 const OrgLinks = lazy(() => import('../pages/org/OrgLinks'));
+const OrgLinkInvitations = lazy(() => import('../pages/org/OrgLinkInvitations'));
 const ArtistHub = lazy(() => import('../pages/org/ArtistHub'));
 
 // Navigation tracker component
@@ -99,6 +100,7 @@ export const AppRouter = () => {
           <Route path="org/reports" element={<Suspense fallback={<DashboardSkeleton />}><OrgReports /></Suspense>} />
           <Route path="org/clients" element={<Suspense fallback={<DashboardSkeleton />}><OrgClients /></Suspense>} />
           <Route path="org/links" element={<Suspense fallback={<DashboardSkeleton />}><OrgLinks /></Suspense>} />
+          <Route path="org/link-invitations" element={<Suspense fallback={<DashboardSkeleton />}><OrgLinkInvitations /></Suspense>} />
           <Route path="org/artist-hub" element={<Suspense fallback={<DashboardSkeleton />}><ArtistHub /></Suspense>} />
           <Route path="finance" element={<Suspense fallback={<FinanceSkeleton />}><Finance /></Suspense>} />
           <Route path="finance/overview" element={<Suspense fallback={<FinanceSkeleton />}><FinanceOverview /></Suspense>} />

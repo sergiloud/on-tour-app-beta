@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Check, X, Clock, User, FileText, Calendar, DollarSign, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { FirestoreActivityService, type Activity } from '../../services/firestoreActivityService';
@@ -148,6 +149,17 @@ export const NotificationBell: React.FC = () => {
 
             {/* Link Invitations Section */}
             <LinkInvitationsInbox compact limit={3} onUpdate={() => setIsOpen(false)} />
+            
+            {/* View All Link Invitations */}
+            <div className="px-4 py-2 border-b border-white/10">
+              <Link
+                to="/dashboard/org/link-invitations"
+                onClick={() => setIsOpen(false)}
+                className="block text-center text-xs text-accent-400 hover:text-accent-300 transition-colors font-medium"
+              >
+                {t('invitations.viewAll') || 'Ver todas las invitaciones'}
+              </Link>
+            </div>
 
             {/* Activities List */}
             <div className="max-h-[400px] overflow-y-auto">

@@ -18,6 +18,7 @@ import {
 import { useSettings } from '../../context/SettingsContext';
 import { Link } from 'react-router-dom';
 import { useMissionControl } from '../../context/MissionControlContext';
+import { useDashboardFilters } from '../../context/DashboardContext';
 import { prefetchByPath } from '../../routes/prefetch';
 import { useTourStats } from '../../hooks/useTourStats';
 import { useShows } from '../../hooks/useShows';
@@ -59,11 +60,14 @@ const TourAgendaComponent: React.FC = () => {
     
     const { fmtMoney, lang } = useSettings();
     const { setFocus } = useMissionControl();
+    const { filters, setDateRange } = useDashboardFilters();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [showAll, setShowAll] = useState(false); // Toggle between 21 days and all shows
     const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    // Derive showAll from dashboard filters
+    const showAll = filters.dateRange === 'all';
 
     // Check if user prefers reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -259,8 +263,8 @@ const TourAgendaComponent: React.FC = () => {
 
     // Toggle show all handler
     const handleToggleShowAll = React.useCallback(() => {
-        setShowAll(prev => !prev);
-    }, []);
+        setDateRange(showAll ? '30' : 'all');
+    }, [showAll, setDateRange]);
 
     // Loading State
     if (isLoading) {

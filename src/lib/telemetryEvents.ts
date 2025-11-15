@@ -36,6 +36,7 @@ export const TE = {
   COUNTRY_CLEAR: 'shows.editor.country.clear',
   TRAVEL_CTA_CLICK: 'shows.editor.travel.cta.click',
   WHT_SUGGEST_APPLY: 'shows.editor.wht.suggest.apply',
+  VAT_SUGGEST_APPLY: 'shows.editor.vat.suggest.apply',
   FX_UNAVAILABLE: 'shows.editor.fx.unavailable',
   SHOW_VENUE_SET: 'shows.editor.venue.set',
   SHOW_VENUE_CHANGED: 'shows.editor.venue.changed',

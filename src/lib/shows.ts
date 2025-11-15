@@ -26,6 +26,7 @@ export type Show = {
   promoter?: string;       // Promoter name (string for backward compatibility)
   promoterId?: string;     // Promoter contact ID (links to contactStore)
   whtPct?: number;         // Withholding tax percent (0-100)
+  vatPct?: number;         // VAT/IVA percent (0-100) - added for tax calculations
   mgmtAgency?: string;     // Management agency name
   bookingAgency?: string;  // Booking agency name
   notes?: string;

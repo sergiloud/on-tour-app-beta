@@ -492,6 +492,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     }
   }, [convertedFee, feeCurrency, baseCurrency, fee, draft.date]);
   const wht = fee * ((draft.whtPct || 0) / 100);
+  const vat = fee * ((draft.vatPct || 0) / 100);
 
   // Calculate agency commissions dynamically
   const commissions = useMemo(() => {
@@ -523,7 +524,7 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     return result;
   }, [draft.date, draft.country, draft.fee, draft.feeCurrency, draft.id, draft.city, draft.status, draft.mgmtAgency, draft.bookingAgency, bookingAgencies, managementAgencies]);
 
-  const net = computeNet({ fee, whtPct: draft.whtPct, costs: draft.costs });
+  const net = computeNet({ fee, whtPct: draft.whtPct, vatPct: draft.vatPct, costs: draft.costs });
   const marginPct = fee > 0 ? (net / fee) * 100 : 0;
   
   // Calculate Finance tab card values with selected agencies
@@ -565,8 +566,10 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
     
     const whtPctEff = draft.whtPct || 0;
     const whtVal = feeVal * (whtPctEff / 100);
+    const vatPctEff = draft.vatPct || 0;
+    const vatVal = feeVal * (vatPctEff / 100);
     const costsVal = (draft.costs || []).reduce((s: number, c: any) => s + (c.amount || 0), 0);
-    const netVal = feeVal - whtVal - commVal - costsVal;
+    const netVal = feeVal - whtVal - vatVal - commVal - costsVal;
     
     const agencyNames = selectedAgencies
       .map(a => {
@@ -575,8 +578,8 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
       })
       .join(', ');
     
-    return { feeVal, commVal, totalCommPct, whtPctEff, whtVal, costsVal, netVal, agencyNames };
-  }, [draft.fee, draft.mgmtAgency, draft.bookingAgency, draft.whtPct, draft.costs, draft.id, draft.date, draft.city, draft.country, draft.feeCurrency, draft.status, managementAgencies, bookingAgencies]);
+    return { feeVal, commVal, totalCommPct, whtPctEff, whtVal, vatPctEff, vatVal, costsVal, netVal, agencyNames };
+  }, [draft.fee, draft.mgmtAgency, draft.bookingAgency, draft.whtPct, draft.vatPct, draft.costs, draft.id, draft.date, draft.city, draft.country, draft.feeCurrency, draft.status, managementAgencies, bookingAgencies]);
   
   // Financial breakdown with dynamic agency commissions
   const financialBreakdown = useMemo(() => {
@@ -1708,6 +1711,47 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                   {validation.whtPct && <p id="err-whtPct" className="text-[10px] text-red-400">{t(validation.whtPct) || 'Out of range'}</p>}
                 </label>
 
+                {/* VAT/IVA Field */}
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/70">
+                    {t('shows.editor.label.vat') || 'VAT/IVA %'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      data-field="vatPct"
+                      aria-invalid={!!validation.vatPct}
+                      aria-describedby={(validation.vatPct ? 'err-vatPct ' : '') + 'vat-help'}
+                      type="number"
+                      step={1}
+                      min={0}
+                      max={30}
+                      className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-white/15 focus:border-accent-500 focus:bg-slate-300 dark:bg-white/15 focus:shadow-lg focus:shadow-accent-500/10 focus:ring-1 focus:ring-accent-500/20 transition-all text-sm flex-1"
+                      value={draft.vatPct ?? ''}
+                      placeholder="0"
+                      onChange={e => setDraft((d: ShowDraft) => ({ ...d, vatPct: e.target.value === '' ? undefined : Math.max(0, Math.min(30, Number(e.target.value) || 0)) }))}
+                    />
+                    {(() => {
+                      if (!draft.country) return null;
+                      const defaults: Record<string, number> = { ES: 21, FR: 20, DE: 19, IT: 22, GB: 20, PT: 23, NL: 21, BE: 21, US: 0, MX: 16, BR: 0 };
+                      const sug = defaults[draft.country];
+                      if (sug == null) return null;
+                      const isApplied = draft.vatPct === sug;
+                      const show = draft.vatPct == null || (!isApplied && draft.vatPct !== sug);
+                      if (!show) return null;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => { setDraft((d: ShowDraft) => ({ ...d, vatPct: sug })); announce((t('shows.editor.vat.suggest.applied') || 'VAT suggestion applied') + ': ' + sug + '%'); track(TE.VAT_SUGGEST_APPLY, { country: draft.country, pct: sug }); }}
+                          className={`px-2 py-1 rounded text-[10px] border whitespace-nowrap ${isApplied ? 'border-green-500/40 text-green-300 bg-green-500/10' : 'border-accent-500/40 text-accent-200 bg-accent-500/10 hover:bg-accent-500/20'}`}
+                          aria-pressed={isApplied}
+                        >{sug}%</button>
+                      );
+                    })()}
+                  </div>
+                  {validation.vatPct && <p id="err-vatPct" className="text-[10px] text-red-400">{t(validation.vatPct) || 'Out of range'}</p>}
+                  <p id="vat-help" className="text-[10px] text-slate-400 dark:text-white/50">{t('shows.editor.vat.hint') || 'Value Added Tax percentage (0-30%)'}</p>
+                </label>
+
                 {/* Travel CTA */}
                 {draft.date && draft.status !== 'canceled' && (() => {
                   const iso = String(draft.date).slice(0, 10);
@@ -1782,6 +1826,10 @@ export const ShowEditorDrawer: React.FC<ShowEditorDrawerProps> = ({ open, mode, 
                 <div className="glass rounded p-2 space-y-1">
                   <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.wht') || 'WHT'} {financeCards.whtPctEff ? `(${financeCards.whtPctEff}%)` : ''}</div>
                   <div className="text-sm font-semibold tabular-nums">-{fmtMoney(Math.round(financeCards.whtVal))}</div>
+                </div>
+                <div className="glass rounded p-2 space-y-1">
+                  <div className="uppercase tracking-wide opacity-60">{t('shows.editor.summary.vat') || 'VAT'} {financeCards.vatPctEff ? `(${financeCards.vatPctEff}%)` : ''}</div>
+                  <div className="text-sm font-semibold tabular-nums">-{fmtMoney(Math.round(financeCards.vatVal))}</div>
                 </div>
                 <div
                   className="glass rounded p-2 space-y-1 relative"

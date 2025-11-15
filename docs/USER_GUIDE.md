@@ -1,5 +1,8 @@
 # On Tour App - User Guide
 
+**Version:** 2.1.0-beta  
+**Last Updated:** November 15, 2025
+
 ## Welcome to On Tour! 🎵
 
 This guide will help you get started with managing your tours, shows, finances, and team all in one place.
@@ -16,8 +19,12 @@ This guide will help you get started with managing your tours, shows, finances, 
 6. [Contracts Management](#contracts-management)
 7. [Calendar & Travel](#calendar--travel)
 8. [Team Collaboration](#team-collaboration)
-9. [Settings & Preferences](#settings--preferences)
-10. [Tips & Best Practices](#tips--best-practices)
+9. [Link Invitations](#link-invitations-new)
+10. [Activity Timeline](#activity-timeline-new)
+11. [Export Reports](#export-reports-new)
+12. [Multi-Factor Authentication](#multi-factor-authentication-new)
+13. [Settings & Preferences](#settings--preferences)
+14. [Tips & Best Practices](#tips--best-practices)
 
 ---
 
@@ -360,6 +367,331 @@ You'll see updates within seconds!
 
 ---
 
+## Link Invitations (NEW)
+
+**v2.1 Feature**: Share temporary access to your organization via shareable links.
+
+### Overview
+
+Link Invitations allow you to:
+- Share access without knowing email addresses
+- Set expiration dates (1-30 days)
+- Specify role permissions
+- Revoke access anytime
+- Track who accepted
+
+### Creating a Link Invitation
+
+1. Go to **Organization** → **Link Invitations**
+2. Click **"Create Link Invitation"**
+3. Configure:
+   - **Role**: Viewer, Member, Admin
+   - **Expiration**: 7 days (default), or custom
+   - **Max Uses**: 1 (default), or unlimited
+   - **Note**: Internal description (optional)
+
+4. Click **"Generate Link"**
+5. Copy and share the link
+
+### Sharing Link Invitations
+
+**Best for:**
+- Quick contractor access
+- Temporary team members
+- External collaborators
+- Event-specific helpers
+
+**Share via:**
+- Email
+- Slack/Discord
+- WhatsApp
+- QR code (scan to join)
+
+### Managing Link Invitations
+
+**View All Links:**
+- Go to **Organization** → **Link Invitations**
+- See **Sent** invitations (your links)
+- See **Received** invitations (invites to other orgs)
+
+**Filter by Status:**
+- **Pending**: Not yet accepted
+- **Accepted**: Someone joined
+- **Expired**: Past expiration date
+- **Rejected**: Recipient declined
+
+**Actions:**
+- ✅ **Accept**: Join the organization (received invites)
+- ❌ **Reject**: Decline invitation (received invites)
+- 🗑️ **Cancel**: Revoke link (sent invites)
+- 📋 **Copy**: Copy link to clipboard
+- 🔄 **Regenerate**: Create new link, invalidate old
+
+### Security Tips
+
+✅ **DO:**
+- Set short expiration periods (7 days)
+- Use single-use links for sensitive access
+- Revoke links immediately when no longer needed
+- Monitor accepted invitations
+
+❌ **DON'T:**
+- Share links publicly on social media
+- Use unlimited expiration for temporary access
+- Forget to review active links monthly
+
+---
+
+## Activity Timeline (NEW)
+
+**v2.1 Feature**: Track all changes and activities across your organization.
+
+### Overview
+
+The Timeline shows:
+- All data changes (shows, contacts, finance)
+- Team member actions
+- System events (invites, permissions)
+- Import/export activities
+
+### Accessing Timeline
+
+1. Go to **Dashboard** → **Timeline**
+2. Or click **bell icon** (top right) → **View All**
+
+### Timeline Filters
+
+**Filter by Module:**
+- All Activities
+- Shows
+- Finance
+- CRM (Contacts)
+- Contracts
+- Team (Members)
+- Travel
+
+**Filter by Action:**
+- Created
+- Updated
+- Deleted
+- Imported
+- Exported
+
+**Filter by Member:**
+- All Team Members
+- Specific user
+
+**Filter by Time:**
+- Last 24 hours
+- Last 7 days
+- Last 30 days
+- Custom date range
+
+### Activity Details
+
+Each activity shows:
+- **Who**: Team member who made the change
+- **What**: Action performed
+- **When**: Timestamp
+- **Where**: Module/section
+- **Details**: Specific changes made
+
+**Example:**
+```
+Sergi Recio created Show "Paris - Le Trianon"
+Finance Module | 2 hours ago
+Details: Fee €2,500, Date: 2025-12-15
+```
+
+### Smart Grouping
+
+Related activities are automatically grouped:
+- Bulk operations (e.g., "Deleted 5 shows")
+- Rapid updates (e.g., "Updated show 3 times")
+- Import batches (e.g., "Imported 50 contacts")
+
+### Importance Badges
+
+- 🔴 **Critical**: Deletions, permission changes
+- 🟡 **Important**: New shows, finance updates
+- 🟢 **Normal**: Routine edits
+
+### Use Cases
+
+**Audit & Compliance:**
+- Track who changed financial data
+- Review permission history
+- Export activity logs for accounting
+
+**Team Coordination:**
+- See what teammates are working on
+- Identify duplicate work
+- Monitor progress
+
+**Troubleshooting:**
+- Find when data was deleted
+- Restore information from details
+- Debug sync issues
+
+---
+
+## Export Reports (NEW)
+
+**v2.1 Feature**: Export data to Excel and PDF for sharing and archiving.
+
+### Excel Export
+
+**Export from:**
+- Shows list (bulk select → Export)
+- Finance page (Export button)
+- Contacts (Export button)
+- Timeline (Export activity log)
+
+**Excel Features:**
+- Formatted tables with headers
+- Color-coded rows (status)
+- Auto-calculated totals
+- Multiple sheets (shows, finance, contacts)
+- Excel formulas included
+
+**How to Export:**
+1. Select items (or select all)
+2. Click **"Export"** → **"Excel"**
+3. Choose date range (optional)
+4. Click **"Download"**
+5. File downloads as `.xlsx`
+
+### PDF Export
+
+**Export from:**
+- Individual show details
+- Financial reports
+- Contract summaries
+- Activity reports
+
+**PDF Features:**
+- Professional formatting
+- Charts and graphs
+- Organization branding
+- Page numbers
+- Table of contents
+
+**How to Export:**
+1. Open item/report
+2. Click **"Export"** → **"PDF"**
+3. Choose options:
+   - Include charts
+   - Include notes
+   - Include signatures
+4. Click **"Generate PDF"**
+5. File downloads as `.pdf`
+
+### Bulk Export
+
+**Export all data:**
+1. Go to **Settings** → **Data Export**
+2. Click **"Export All Data"**
+3. Choose format: Excel, JSON, CSV
+4. Click **"Download Archive"**
+5. Receive `.zip` with all data
+
+**Includes:**
+- All shows
+- All contacts
+- All contracts (file list, not PDFs)
+- All finance records
+- All timeline activities
+
+**Use for:**
+- Monthly backups
+- Accountant sharing
+- End-of-year reporting
+- Migration to other systems
+
+---
+
+## Multi-Factor Authentication (NEW)
+
+**v2.1 Feature**: Add extra security to your account with MFA.
+
+### Why Enable MFA?
+
+- **10x more secure** than password alone
+- Protect against phishing attacks
+- Required for admin/owner roles (optional for members)
+- Industry best practice
+
+### Enabling MFA
+
+1. Go to **Settings** → **Security**
+2. Click **"Enable Multi-Factor Authentication"**
+3. Choose method:
+   - **Authenticator App** (recommended): Google Authenticator, Authy, 1Password
+   - **SMS Verification**: Text message codes
+   - **Email Verification**: Email codes
+
+4. Follow setup wizard
+5. Save **backup codes** (8 codes, use if you lose phone)
+
+### Using MFA
+
+**Login with MFA:**
+1. Enter email and password
+2. Open authenticator app
+3. Enter 6-digit code
+4. Click **"Verify"**
+
+**If you lose your device:**
+1. Click **"Use backup code"** at login
+2. Enter one of your 8 backup codes
+3. **Immediately** go to Settings → Security
+4. **Re-configure MFA** with new device
+
+### Authenticator Apps
+
+**Recommended:**
+- **Google Authenticator** (Free, iOS/Android)
+- **Authy** (Free, multi-device sync)
+- **1Password** (Paid, password manager integration)
+- **Microsoft Authenticator** (Free, biometric unlock)
+
+**Setup:**
+1. Download app from App Store/Play Store
+2. In On Tour settings, click "Enable MFA"
+3. Scan QR code with authenticator app
+4. Enter code to confirm
+
+### Backup Codes
+
+**Important:**
+- You get **8 one-time codes** when enabling MFA
+- Each code works **only once**
+- **Print and store securely**
+- Regenerate if you run out
+
+**To regenerate:**
+1. Settings → Security → MFA Settings
+2. Click **"Generate New Backup Codes"**
+3. Old codes become invalid
+
+### Managing MFA
+
+**Turn off MFA:**
+1. Settings → Security
+2. Click **"Disable MFA"**
+3. Enter current MFA code
+4. Confirm
+
+⚠️ **Not recommended** unless absolutely necessary
+
+**Change MFA method:**
+1. Settings → Security
+2. Click **"Change MFA Method"**
+3. Choose new method
+4. Complete setup
+
+---
+
 ## Settings & Preferences
 
 ### Personal Settings
@@ -519,4 +851,25 @@ Now that you know the basics:
 
 ---
 
-*This guide is based on beta version 2.0. Features may change. Last updated: November 2025.*
+## v2.1 Features Summary
+
+**New in v2.1.0-beta (November 2025):**
+
+✅ **Link Invitations**: Shareable links for temporary access  
+✅ **Activity Timeline**: Comprehensive audit log  
+✅ **Excel/PDF Export**: Professional data exports  
+✅ **Multi-Factor Authentication**: Enhanced security  
+✅ **Bulk CRM Operations**: Select multiple contacts/shows  
+✅ **i18n Expansion**: 6 languages (EN, ES, FR, DE, IT, PT)  
+
+**Coming in v2.2 (Q1 2026):**
+
+🔜 **Mobile App (PWA)**: Native iOS/Android experience  
+🔜 **Advanced Analytics**: Custom dashboards  
+🔜 **OAuth Login**: Google, Microsoft, Apple sign-in  
+🔜 **Webhooks**: Integrate with external services  
+🔜 **API Access**: Developer API (beta)  
+
+---
+
+*This guide is based on version 2.1.0-beta. Features may change. Last updated: November 15, 2025.*

@@ -1,247 +1,379 @@
-# 🚀 On Tour App 2.0 - Optimizaciones Completadas
+# 🚀 On Tour App - Quickstart Guide
 
-## ✨ Resumen Ultra-Rápido
-
-**Build**: ✅ 30.41s | **Errores**: ✅ 0 | **Estado**: ✅ Production Ready
-
----
-
-## 📊 Métricas Clave
-
-```
-Bundle Size:    2.5 MB → 400 KB    (-84% ⭐⭐⭐⭐⭐)
-Load Time:      5.5s → 1.8s        (-67% ⭐⭐⭐⭐⭐)
-FPS:            30-45 → 60         (+71% ⭐⭐⭐⭐⭐)
-Input Lag:      300ms → 30ms       (-90% ⭐⭐⭐⭐⭐)
-List Capacity:  1k → 100k+ items   (+10000% ⭐⭐⭐⭐⭐)
-Re-renders:     100% → 30%         (-70% ⭐⭐⭐⭐)
-```
+**Version:** 2.1.0-beta  
+**Last Updated:** November 15, 2025  
+**For:** Developers joining the project
 
 ---
 
-## 🎯 7 Sistemas Implementados
+## ⚡ Quick Setup (5 minutes)
 
-### 1️⃣ Resource Hints + Web Vitals
-```typescript
-// Archivos: index.html, src/lib/webVitals.ts (305 líneas)
-- DNS prefetch, preconnect, preload
-- LCP, CLS, INP, FCP, TTFB tracking
-- Long task detection (>50ms)
-- Google Analytics 4 integration
-```
+### Prerequisites
 
-### 2️⃣ Request Optimizer
-```typescript
-// Archivo: src/lib/requestOptimizer.ts (348 líneas)
-- Batching: 10 req/50ms
-- Deduplication: 5s cache
-- Debouncing: 300ms
-```
+- **Node.js:** 22.x (use nvm: `nvm use`)
+- **npm:** 10.x
+- **Firebase Account:** For authentication & database
+- **Git:** For version control
 
-### 3️⃣ Optimistic UI
-```typescript
-// Archivos: 3 files, 660 líneas total
-- Perceived 0ms latency
-- Auto-rollback on error
-- Toast notifications
-- Pre-built hooks
-```
-
-### 4️⃣ Virtualized Lists
-```typescript
-// Archivo: src/components/common/VirtualizedTable.tsx (380 líneas)
-- 100k+ items a 60 FPS
-- @tanstack/react-virtual
-- Sticky headers + infinite scroll
-```
-
-### 5️⃣ Code Splitting
-```typescript
-// Archivo: src/lib/codeSplitting.tsx (350 líneas)
-- lazyLoad() wrapper
-- Prefetch on hover/idle
-- Code split monitor
-```
-
-### 6️⃣ Prefetch Predictivo
-```typescript
-// Archivo: src/lib/predictivePrefetch.ts (400 líneas)
-- Hover intent detection
-- Scroll velocity prediction
-- Navigation ML patterns
-- Viewport intersection
-```
-
-### 7️⃣ Network Resilience
-```typescript
-// Archivos: Multiple (650 líneas total)
-- Exponential backoff retry
-- Online/offline detection
-- Service Worker + offline page
-- Finance Web Worker
-```
-
----
-
-## 📚 Documentación
-
-1. **docs/advanced-optimizations.md** - Guía completa (400+ líneas)
-2. **docs/virtualized-lists.md** - Guía de virtualización (300+ líneas)
-3. **docs/EXECUTIVE_SUMMARY.md** - Resumen ejecutivo
-4. **docs/QUICKSTART.md** - Este archivo
-
----
-
-## 🔧 Cómo Usar
-
-### Virtualized Lists
-
-```typescript
-import { VirtualizedShowsTable } from '@/components/common/VirtualizedTable';
-
-<VirtualizedShowsTable
-  shows={shows} // 100k+ items
-  height={600}
-  onShowClick={(show) => navigate(`/shows/${show.id}`)}
-/>
-```
-
-### Optimistic UI
-
-```typescript
-import { useOptimisticShowUpdate } from '@/hooks/useOptimisticMutation';
-
-const updateShow = useOptimisticShowUpdate();
-
-updateShow.mutate({
-  id: '123',
-  updates: { title: 'New Title' }
-});
-// UI actualiza INSTANTÁNEAMENTE ⚡
-```
-
-### Request Optimization
-
-```typescript
-import { batchFetch, dedupFetch, debouncedFetch } from '@/lib/requestOptimizer';
-
-// Batch multiple requests
-batchFetch('/api/shows', { id: 1 });
-batchFetch('/api/shows', { id: 2 });
-
-// Deduplicate identical requests
-const data = await dedupFetch('/api/shows/123');
-
-// Debounce search requests
-const results = await debouncedFetch('search', '/api/search?q=term', {}, 300);
-```
-
-### Prefetch Predictivo
-
-```typescript
-import { usePrefetchOnHover } from '@/lib/predictivePrefetch';
-
-const hoverProps = usePrefetchOnHover('/finance', { hoverDelay: 50 });
-
-<Link to="/finance" {...hoverProps}>
-  Finance
-</Link>
-```
-
-### Code Splitting
-
-```typescript
-import { lazyLoad } from '@/lib/codeSplitting';
-
-const HeavyChart = lazyLoad(
-  () => import('./HeavyChart'),
-  { fallback: <Loader /> }
-);
-
-<HeavyChart data={data} />
-```
-
----
-
-## 🎉 Antes vs Después
-
-### ❌ Antes
-```
-Bundle: 2.5 MB
-Load: 5.5s
-FPS: 30-45
-Lists: Crash con 10k items
-Network errors: App breaks
-No monitoring
-```
-
-### ✅ Después
-```
-Bundle: 400 KB (-84%)
-Load: 1.8s (-67%)
-FPS: 60 constant
-Lists: 100k+ items a 60 FPS
-Network errors: Auto-retry + offline
-Real-time Web Vitals monitoring
-```
-
----
-
-## 🚀 Build & Deploy
+### 1. Clone & Install
 
 ```bash
-# Build production
-npm run build
-# ✓ built in 30.41s
-# Bundle: ~400 KB (Brotli)
+# Clone the repository
+git clone https://github.com/sergiloud/on-tour-app-beta
+cd on-tour-app-beta
 
-# Deploy
-netlify deploy --prod
+# Install dependencies
+npm install --legacy-peer-deps
+
+# Time: ~2 minutes
+```
+
+### 2. Environment Setup
+
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit .env with your Firebase credentials
+# Required variables:
+# - VITE_FIREBASE_API_KEY
+# - VITE_FIREBASE_AUTH_DOMAIN
+# - VITE_FIREBASE_PROJECT_ID
+# - VITE_FIREBASE_STORAGE_BUCKET
+# - VITE_FIREBASE_MESSAGING_SENDER_ID
+# - VITE_FIREBASE_APP_ID
+```
+
+**Firebase Setup:**
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project (or use existing)
+3. Enable Authentication → Email/Password
+4. Enable Firestore Database
+5. Copy config from Project Settings → Web App
+6. Paste into `.env`
+
+### 3. Run Development Server
+
+```bash
+npm run dev
+
+# Opens at http://localhost:5173
+# Time: ~5 seconds
 ```
 
 ---
 
-## 📊 Performance Comparison
+## 📱 Available Scripts
 
-| Scenario | Items | FPS | Memory | Load Time |
-|----------|-------|-----|--------|-----------|
-| **Before** | 1,000 | 30-45 | 120 MB | 800ms |
-| **After** | 1,000 | 60 | 45 MB | 120ms |
-| **Before** | 10,000 | 15-20 | 1.2 GB | 8s |
-| **After** | 10,000 | 60 | 48 MB | 130ms |
-| **Before** | 100,000 | Crash | OOM | N/A |
-| **After** | 100,000 | **60** | **52 MB** | **145ms** |
+### Development
+```bash
+npm run dev              # Start dev server (Vite)
+npm run dev:host         # Dev server accessible on network
+npm run preview          # Preview production build
+```
 
----
+### Building
+```bash
+npm run build            # Production build
+npm run build:analyze    # Build + bundle analyzer
+```
 
-## 🎯 Web Vitals Targets
+### Testing
+```bash
+npm test                 # Run unit tests (Vitest)
+npm run test:ui          # Test UI with Vitest UI
+npm run test:coverage    # Generate coverage report
+npm run test:e2e         # Run E2E tests (Playwright)
+```
 
-| Métrica | Target | Status |
-|---------|--------|--------|
-| LCP | < 2.5s | ✅ Monitored |
-| CLS | < 0.1 | ✅ Monitored |
-| INP | < 200ms | ✅ Monitored |
-| FCP | < 1.8s | ✅ Monitored |
-| TTFB | < 800ms | ✅ Monitored |
+### Code Quality
+```bash
+npm run lint             # Run ESLint
+npm run lint:fix         # Auto-fix lint issues
+npm run type-check       # TypeScript check
+npm run format           # Format with Prettier
+```
 
----
-
-## 💡 Tips
-
-1. **Virtualize large lists**: Use `VirtualizedTable` for 1k+ items
-2. **Optimize updates**: Use `useOptimisticMutation` for instant UX
-3. **Batch requests**: Use `batchFetch` for multiple similar requests
-4. **Prefetch routes**: Use `usePrefetchOnHover` on navigation links
-5. **Split code**: Use `lazyLoad` for heavy components
-
----
-
-## 📞 Support
-
-- **Docs**: `/docs` folder
-- **Examples**: Check component files for usage examples
-- **Issues**: All TypeScript errors resolved ✅
+### Firebase
+```bash
+npm run firebase:emulators    # Start Firebase emulators
+npm run firebase:deploy       # Deploy to Firebase
+```
 
 ---
 
-**¡La app está lista para producción! 🎉**
+## 🏗️ Project Structure
+
+```
+on-tour-app/
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   ├── common/         # Shared components
+│   │   ├── organization/   # Multi-tenancy components
+│   │   └── crm/           # CRM-specific components
+│   ├── pages/              # Route pages
+│   │   ├── dashboard/     # Dashboard pages
+│   │   └── org/          # Organization pages
+│   ├── context/            # React Contexts (state)
+│   ├── hooks/              # Custom React hooks
+│   ├── services/           # Business logic & API
+│   ├── lib/                # Utilities & helpers
+│   ├── types/              # TypeScript definitions
+│   └── styles/             # Global styles
+├── docs/                   # Documentation
+├── e2e/                    # E2E tests (Playwright)
+├── public/                 # Static assets
+└── scripts/                # Build & utility scripts
+```
+
+---
+
+## 🎯 Key Concepts
+
+### 1. Multi-Tenancy
+
+The app uses **organization-based multi-tenancy**:
+
+```typescript
+// Access current organization
+import { useOrganizationContext } from '@/context/OrganizationContext';
+
+const { currentOrg, currentRole, canManageMembers } = useOrganizationContext();
+```
+
+**Roles:**
+- `owner` - Full control, can transfer ownership
+- `admin` - Manage members, settings, data
+- `member` - Create/edit data
+- `viewer` - Read-only access
+
+### 2. State Management
+
+**Context for UI & Auth:**
+```typescript
+import { useAuth } from '@/context/AuthContext';
+import { useSettings } from '@/context/SettingsContext';
+```
+
+**React Query for Server State:**
+```typescript
+import { useContactsQuery } from '@/hooks/useContactsQuery';
+
+const { data: contacts, isLoading } = useContactsQuery();
+```
+
+**Custom Stores for Specific Needs:**
+```typescript
+import { showStore } from '@/shared/showStore';
+import { contactStore } from '@/shared/contactStore';
+```
+
+### 3. Routing
+
+```typescript
+// Lazy-loaded routes
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Shows = lazy(() => import('@/pages/dashboard/Shows'));
+
+// Protected routes with AuthLayout
+<Route path="/dashboard/*" element={<AuthLayout><DashboardLayout /></AuthLayout>}>
+  <Route path="shows" element={<Suspense><Shows /></Suspense>} />
+</Route>
+```
+
+### 4. Internationalization
+
+```typescript
+import { t } from '@/lib/i18n';
+import { useSettings } from '@/context/SettingsContext';
+
+const { lang, setLang } = useSettings();
+
+// Use translations
+<h1>{t('dashboard.title')}</h1>
+
+// 6 languages: EN, ES, FR, DE, IT, PT
+```
+
+### 5. Firebase Integration
+
+```typescript
+import { db, auth } from '@/lib/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+
+// Query with organization isolation
+const showsRef = collection(db, `organizations/${orgId}/shows`);
+const q = query(showsRef, where('status', '==', 'confirmed'));
+const snapshot = await getDocs(q);
+```
+
+---
+
+## 🔥 Common Tasks
+
+### Creating a New Page
+
+```bash
+# 1. Create page component
+touch src/pages/dashboard/MyNewPage.tsx
+
+# 2. Add lazy import in AppRouter.tsx
+const MyNewPage = lazy(() => import('@/pages/dashboard/MyNewPage'));
+
+# 3. Add route
+<Route path="my-page" element={<Suspense><MyNewPage /></Suspense>} />
+
+# 4. Add navigation link in DashboardLayout.tsx
+<NavLink to="/dashboard/my-page">My Page</NavLink>
+```
+
+### Adding a New Hook
+
+```typescript
+// src/hooks/useMyHook.ts
+import { useState, useEffect } from 'react';
+
+export function useMyHook() {
+  const [data, setData] = useState(null);
+  
+  useEffect(() => {
+    // Your logic
+  }, []);
+  
+  return { data };
+}
+```
+
+### Adding Translations
+
+```typescript
+// src/lib/i18n.ts
+export const TRANSLATIONS = {
+  en: {
+    'myFeature.title': 'My Feature',
+    'myFeature.description': 'Description here',
+  },
+  es: {
+    'myFeature.title': 'Mi Característica',
+    'myFeature.description': 'Descripción aquí',
+  },
+  // ... FR, DE, IT, PT
+};
+```
+
+### Creating a New Service
+
+```typescript
+// src/services/myService.ts
+import { db } from '@/lib/firebase';
+import { collection, addDoc, query, getDocs } from 'firebase/firestore';
+
+export class MyService {
+  static async create(orgId: string, data: any) {
+    const ref = collection(db, `organizations/${orgId}/myCollection`);
+    return await addDoc(ref, {
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+  
+  static async getAll(orgId: string) {
+    const ref = collection(db, `organizations/${orgId}/myCollection`);
+    const snapshot = await getDocs(query(ref));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+}
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Build Errors
+
+```bash
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install --legacy-peer-deps
+
+# Clear Vite cache
+rm -rf .vite dist
+npm run build
+```
+
+### Firebase Connection Issues
+
+```bash
+# Check .env file has all required variables
+cat .env | grep VITE_FIREBASE
+
+# Test Firebase connection
+npm run firebase:test
+```
+
+### TypeScript Errors
+
+```bash
+# Run type check
+npm run type-check
+
+# Generate types
+npm run generate:types
+```
+
+### Test Failures
+
+```bash
+# Run tests in watch mode
+npm test -- --watch
+
+# Run specific test file
+npm test -- path/to/test.test.ts
+
+# Update snapshots
+npm test -- -u
+```
+
+---
+
+## 📚 Next Steps
+
+1. **Read Architecture:** [ARCHITECTURE.md](./ARCHITECTURE.md)
+2. **Review Multi-Tenancy:** [MULTI_TENANCY_ARCHITECTURE.md](./MULTI_TENANCY_ARCHITECTURE.md)
+3. **Check Security:** [SECURITY.md](./SECURITY.md)
+4. **Design System:** [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)
+5. **User Guide:** [USER_GUIDE.md](./USER_GUIDE.md)
+
+---
+
+## 🆘 Getting Help
+
+- **Documentation:** `/docs` folder
+- **Code Comments:** Inline JSDoc comments
+- **GitHub Issues:** [Report bugs or request features](https://github.com/sergiloud/on-tour-app-beta/issues)
+- **Team Chat:** Slack workspace (beta testers only)
+
+---
+
+## 📝 Contributing
+
+1. Create feature branch: `git checkout -b feat/my-feature`
+2. Make changes with conventional commits
+3. Run tests: `npm test`
+4. Submit PR to `main` branch
+
+**Commit Convention:**
+```
+feat: add new feature
+fix: bug fix
+docs: documentation update
+style: formatting changes
+refactor: code restructuring
+test: add tests
+chore: maintenance tasks
+```
+
+---
+
+**Happy Coding! 🚀**

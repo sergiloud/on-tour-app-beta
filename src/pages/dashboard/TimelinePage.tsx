@@ -7,6 +7,8 @@ import { t } from '../../lib/i18n';
 import { trackPageView } from '../../lib/activityTracker';
 
 const TimelinePage: React.FC = () => {
+  console.log('[TimelinePage] Component mounted');
+  
   const { userId } = useAuth();
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +16,7 @@ const TimelinePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    console.log('[TimelinePage] Tracking page view');
     trackPageView('timeline');
   }, []);
 
@@ -21,14 +24,20 @@ const TimelinePage: React.FC = () => {
   useEffect(() => {
     const orgId = getCurrentOrgId();
     
+    console.log('[TimelinePage] useEffect triggered - orgId:', orgId, 'userId:', userId);
+    
     if (!orgId || orgId === '') {
+      console.warn('[TimelinePage] No organization ID, skipping subscription');
       setLoading(false);
       return;
     }
 
+    console.log('[TimelinePage] Subscribing with filters:', { filterModule, searchQuery });
+
     const unsubscribe = TimelineService.subscribeToTimeline(
       orgId,
       (newEvents) => {
+        console.log('[TimelinePage] Received events callback:', newEvents.length, 'events');
         setEvents(newEvents);
         setLoading(false);
       },
@@ -38,7 +47,10 @@ const TimelinePage: React.FC = () => {
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      console.log('[TimelinePage] Cleaning up subscription');
+      unsubscribe();
+    };
   }, [userId, filterModule, searchQuery]);
 
   const getEventIconSvg = (type: TimelineEventType): React.ReactNode => {

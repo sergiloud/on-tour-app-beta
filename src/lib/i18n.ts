@@ -147,6 +147,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'nav.travel': 'Travel'
     , 'nav.calendar': 'Calendar'
     , 'nav.finance': 'Finance'
+    , 'nav.activity': 'Activity'
     , 'nav.settings': 'Settings'
     , 'nav.contacts': 'Contacts'
     , 'nav.contracts': 'Contracts'
@@ -2327,6 +2328,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     'nav.travel': 'Viajes',
     'nav.calendar': 'Calendario',
     'nav.finance': 'Finanzas',
+    'nav.activity': 'Actividad',
     'nav.settings': 'Ajustes',
     'insights.thisMonthTotal': 'Total del mes',
     'insights.statusBreakdown': 'Desglose por estado',

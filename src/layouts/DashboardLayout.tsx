@@ -77,6 +77,7 @@ function useNavItems(collapsed: boolean) {
     { to: '/dashboard/finance', labelKey: 'nav.finance' },
     { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
     { to: '/dashboard/contracts', labelKey: 'nav.contracts' },
+    { to: '/dashboard/activity', labelKey: 'nav.activity' },
     { to: '', labelKey: '', separator: true, separatorLabel: collapsed ? '' : 'En desarrollo' },
     { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
     { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },

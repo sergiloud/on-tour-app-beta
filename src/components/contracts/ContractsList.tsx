@@ -122,7 +122,10 @@ export const ContractsList: React.FC<ContractsListProps> = ({ showId, showName, 
           Contratos
         </span>
         <button
-          onClick={() => setShowUploadDialog(true)}
+          onMouseDown={(e) => { 
+            e.stopPropagation();
+            setShowUploadDialog(true); 
+          }}
           className="px-2 py-1 rounded-md bg-accent-500/20 border border-accent-500/40 text-accent-200 hover:bg-accent-500/30 text-[10px] font-medium transition-all inline-flex items-center gap-1"
         >
           <Plus className="w-3 h-3" />

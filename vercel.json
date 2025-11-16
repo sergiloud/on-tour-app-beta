@@ -7,8 +7,8 @@
   "installCommand": "npm ci",
   "env": {
     "NODE_ENV": "production",
-    "VITE_APP_VERSION": "@vercel_git_commit_sha",
-    "VITE_BUILD_TIME": "@vercel_git_commit_date",
+    "VITE_APP_VERSION": "2.2.1-production",
+    "VITE_BUILD_TIME": "2025-11-16",
     "VITE_ENVIRONMENT": "production"
   },
   "headers": [

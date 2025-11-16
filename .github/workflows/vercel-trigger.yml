@@ -1,0 +1,31 @@
+name: Vercel Deployment Trigger
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deployment-trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run build test
+        run: npm run build
+        
+      - name: Trigger Vercel Deployment
+        run: |
+          echo "Deployment should be triggered by Vercel webhook"
+          echo "Commit: $GITHUB_SHA"
+          echo "Branch: $GITHUB_REF"

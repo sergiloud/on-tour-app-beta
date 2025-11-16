@@ -1,11 +1,17 @@
-import init, { FinancialEngine } from '../../wasm-financial-engine/pkg/wasm_financial_engine.js';
 import type { Show, FinancialMetrics, ForecastResult, ScenarioAnalysis, WasmFinancialEngineInterface } from '../types/finance';
 import { toast } from 'sonner';
 
+// WASM module interface for type safety
+interface WasmFinancialEngineModule {
+  FinancialEngine: new() => any;
+  default: () => Promise<void>;
+}
+
 class WasmFinancialEngineService implements WasmFinancialEngineInterface {
-  private engine: FinancialEngine | null = null;
+  private engine: any = null;
   private initialized = false;
   private initializing = false;
+  private wasmAvailable = false;
 
   constructor() {
     // Auto-initialize on first import
@@ -20,28 +26,52 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
     this.initializing = true;
     
     try {
-      console.log('🚀 Initializing WASM Financial Engine...');
+      console.log('🚀 Initializing Financial Engine...');
       
-      // Initialize the WASM module
-      await init();
-      
-      // Create engine instance
-      this.engine = new FinancialEngine();
-      this.initialized = true;
-      
-      console.log('✅ WASM Financial Engine initialized successfully');
-      toast.success('High-performance financial engine loaded', {
-        description: '10x faster calculations now available',
-        duration: 3000,
-      });
+      // Try to load WASM module
+      try {
+        const wasmModule: WasmFinancialEngineModule = await import('../../wasm-financial-engine/pkg/wasm_financial_engine.js');
+        
+        // Initialize the WASM module
+        await wasmModule.default();
+        
+        // Create engine instance
+        this.engine = new wasmModule.FinancialEngine();
+        this.wasmAvailable = true;
+        this.initialized = true;
+        
+        console.log('✅ WASM Financial Engine initialized successfully');
+        toast.success('High-performance financial engine loaded', {
+          description: '8x faster calculations now available',
+          duration: 3000,
+        });
+        
+      } catch (wasmError) {
+        console.warn('🔶 WASM not available, using JavaScript fallback:', wasmError);
+        
+        // Fallback to JavaScript implementation
+        this.engine = new JavaScriptFinancialEngine();
+        this.wasmAvailable = false;
+        this.initialized = true;
+        
+        console.log('✅ JavaScript Financial Engine initialized as fallback');
+        toast.info('Standard financial engine loaded', {
+          description: 'WASM not available, using JavaScript calculations',
+          duration: 3000,
+        });
+      }
       
     } catch (error) {
-      console.error('❌ Failed to initialize WASM Financial Engine:', error);
+      console.error('❌ Failed to initialize Financial Engine:', error);
       toast.error('Financial engine initialization failed', {
-        description: 'Falling back to JavaScript calculations',
+        description: 'Some calculations may be slower',
         duration: 5000,
       });
-      throw error;
+      
+      // Final fallback - create a minimal engine
+      this.engine = new JavaScriptFinancialEngine();
+      this.wasmAvailable = false;
+      this.initialized = true;
     } finally {
       this.initializing = false;
     }
@@ -59,6 +89,11 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
 
   async calculateMetrics(shows: Show[]): Promise<FinancialMetrics> {
     this.ensureInitialized();
+    
+    if (!this.wasmAvailable) {
+      // Use JavaScript fallback
+      return await this.engine.calculateMetrics(shows);
+    }
     
     try {
       // Convert shows to WASM format
@@ -97,6 +132,11 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
 
   async forecastRevenue(shows: Show[], monthsAhead: number): Promise<ForecastResult> {
     this.ensureInitialized();
+    
+    if (!this.wasmAvailable) {
+      // Use JavaScript fallback
+      return await this.engine.forecastRevenue(shows, monthsAhead);
+    }
     
     try {
       // Convert shows to WASM format
@@ -137,6 +177,11 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
   ): Promise<ScenarioAnalysis> {
     this.ensureInitialized();
     
+    if (!this.wasmAvailable) {
+      // Use JavaScript fallback
+      return await this.engine.scenarioAnalysis(shows, ticketPriceChange, capacityChange, expenseChange);
+    }
+    
     try {
       // Convert shows to WASM format
       const wasmShows = shows.map(show => ({
@@ -175,12 +220,107 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
   async getEngineStats(): Promise<{ showsLoaded: number; engineVersion: string }> {
     this.ensureInitialized();
     
-    const statsJson = this.engine!.get_stats();
-    const stats = JSON.parse(statsJson);
+    if (this.wasmAvailable && this.engine?.get_stats) {
+      const statsJson = this.engine.get_stats();
+      const stats = JSON.parse(statsJson);
+      
+      return {
+        showsLoaded: stats.shows_loaded,
+        engineVersion: stats.engine_version,
+      };
+    } else {
+      // JavaScript fallback stats
+      return {
+        showsLoaded: 0,
+        engineVersion: 'JavaScript v1.0',
+      };
+    }
+  }
+}
+
+// JavaScript fallback implementation
+class JavaScriptFinancialEngine {
+  private shows: Show[] = [];
+
+  async calculateMetrics(shows: Show[]): Promise<FinancialMetrics> {
+    this.shows = shows;
     
+    const totalRevenue = shows.reduce((sum, show) => sum + (show.revenue || 0), 0);
+    const totalExpenses = shows.reduce((sum, show) => sum + (show.expenses || 0), 0);
+    const totalTicketsSold = shows.reduce((sum, show) => sum + (show.ticketsSold || 0), 0);
+    const totalCapacity = shows.reduce((sum, show) => sum + (show.venue?.capacity || 0), 0);
+
+    const profit = totalRevenue - totalExpenses;
+    const profitMargin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
+    const averageTicketPrice = totalTicketsSold > 0 ? totalRevenue / totalTicketsSold : 0;
+    const utilizationRate = totalCapacity > 0 ? (totalTicketsSold / totalCapacity) * 100 : 0;
+    const revenuePerShow = shows.length > 0 ? totalRevenue / shows.length : 0;
+    const breakEvenTickets = averageTicketPrice > 0 ? totalExpenses / averageTicketPrice : 0;
+
     return {
-      showsLoaded: stats.shows_loaded,
-      engineVersion: stats.engine_version,
+      totalRevenue,
+      totalExpenses,
+      netProfit: profit,
+      profitMargin,
+      averageTicketPrice,
+      utilizationRate,
+      revenuePerShow,
+      breakEvenTickets,
+    };
+  }
+
+  async forecastRevenue(shows: Show[], monthsAhead: number): Promise<ForecastResult> {
+    const currentMetrics = await this.calculateMetrics(shows);
+    const monthlyRevenue = currentMetrics.totalRevenue / Math.max(1, monthsAhead);
+    const monthlyExpenses = currentMetrics.totalExpenses / Math.max(1, monthsAhead);
+
+    // Generate arrays for forecast periods
+    const projectedRevenue = Array.from({ length: monthsAhead }, (_, i) => monthlyRevenue * (i + 1));
+    const projectedExpenses = Array.from({ length: monthsAhead }, (_, i) => monthlyExpenses * (i + 1));
+    const projectedProfit = projectedRevenue.map((rev, i) => rev - (projectedExpenses[i] || 0));
+    const confidenceInterval = Array.from({ length: monthsAhead }, () => 0.75);
+
+    return {
+      projectedRevenue,
+      projectedExpenses,
+      projectedProfit,
+      confidenceInterval,
+      trendSlope: monthlyRevenue > monthlyExpenses ? 1.0 : -0.5,
+      seasonalityFactor: 1.0,
+    };
+  }
+
+  async scenarioAnalysis(
+    shows: Show[], 
+    ticketPriceChange: number, 
+    capacityChange: number, 
+    expenseChange: number
+  ): Promise<ScenarioAnalysis> {
+    const currentMetrics = await this.calculateMetrics(shows);
+    
+    // Simple scenario calculations
+    const ticketMultiplier = 1 + (ticketPriceChange / 100);
+    const capacityMultiplier = 1 + (capacityChange / 100);
+    const expenseMultiplier = 1 + (expenseChange / 100);
+    
+    const projectedRevenue = currentMetrics.totalRevenue * ticketMultiplier * capacityMultiplier;
+    const projectedExpenses = currentMetrics.totalExpenses * expenseMultiplier;
+    const projectedProfit = projectedRevenue - projectedExpenses;
+    
+    const profitChangePercent = currentMetrics.netProfit !== 0 
+      ? ((projectedProfit - currentMetrics.netProfit) / Math.abs(currentMetrics.netProfit)) * 100 
+      : 0;
+
+    return {
+      currentRevenue: currentMetrics.totalRevenue,
+      currentExpenses: currentMetrics.totalExpenses,
+      currentProfit: currentMetrics.netProfit,
+      projectedRevenue,
+      projectedExpenses,
+      projectedProfit,
+      profitChangePercent,
+      newTicketPrice: currentMetrics.averageTicketPrice * ticketMultiplier,
+      projectedTickets: shows.reduce((sum, show) => sum + (show.ticketsSold || 0), 0) * capacityMultiplier,
     };
   }
 }
@@ -190,16 +330,8 @@ export const wasmFinancialEngine = new WasmFinancialEngineService();
 
 // Fallback factory for when WASM isn't available
 export async function createFinancialEngine(): Promise<WasmFinancialEngineInterface> {
-  try {
-    await wasmFinancialEngine.initialize();
-    return wasmFinancialEngine;
-  } catch (error) {
-    console.warn('WASM Financial Engine unavailable, using JavaScript fallback');
-    
-    // Import JavaScript fallback
-    const { JavaScriptFinancialEngine } = await import('./jsFinancialEngine');
-    return new JavaScriptFinancialEngine();
-  }
+  await wasmFinancialEngine.initialize();
+  return wasmFinancialEngine;
 }
 
 // Export types for TypeScript

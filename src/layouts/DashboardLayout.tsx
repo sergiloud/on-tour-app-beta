@@ -53,6 +53,7 @@ function useNavItems(collapsed: boolean) {
       { to: '/dashboard/shows', labelKey: 'nav.shows' },
       { to: '/dashboard/travel', labelKey: 'nav.travel' },
       { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
+      { to: '/dashboard/timeline', labelKey: 'nav.timeline' },
       { to: '/dashboard/finance', labelKey: 'nav.finance' },
       { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
       { to: '/dashboard/contracts', labelKey: 'nav.contracts' },

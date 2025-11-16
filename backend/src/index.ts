@@ -9,6 +9,7 @@ import { setupSwagger } from './config/swagger-v2.js';
 import { showsRouter } from './routes/shows.js';
 import { financeRouter } from './routes/finance.js';
 import { travelRouter } from './routes/travel.js';
+import { timelineRouter } from './routes/timeline.js';
 import { createAmadeusRouter } from './routes/amadeus.js';
 import { createStripeRouter } from './routes/stripe.js';
 import { createEmailRouter } from './routes/email.js';
@@ -98,6 +99,7 @@ app.use('/api/organizations', organizationsRouter);
 app.use('/api/shows', authMiddleware, showsRouter);
 app.use('/api/finance', authMiddleware, financeRouter);
 app.use('/api/travel', authMiddleware, travelRouter);
+app.use('/api/timeline', timelineRouter); // Timeline already includes authMiddleware
 app.use('/api/audit', authMiddleware, auditRouter);
 
 // External service routes

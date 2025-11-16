@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // Import the `console.log` function from the browser
 #[wasm_bindgen]
@@ -44,9 +45,81 @@ pub struct ForecastResult {
     pub seasonality_factor: f64,
 }
 
+// Timeline Maestro v3.0 - Timeline Simulation Types
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TimelineTask {
+    pub id: String,
+    pub task_type: String,
+    pub status: String,
+    pub priority: String,
+    pub deadline: String,
+    pub estimated_hours: f64,
+    pub completion_percentage: f64,
+    pub cost_impact: f64,
+    pub revenue_impact: f64,
+    pub dependencies: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TimelineRelease {
+    pub id: String,
+    pub release_type: String,
+    pub release_date: String,
+    pub budget: f64,
+    pub projected_revenue: f64,
+    pub platforms: Vec<String>,
+    pub marketing_spend: f64,
+    pub dependencies: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TimelineShow {
+    pub id: String,
+    pub date: String,
+    pub revenue: f64,
+    pub expenses: f64,
+    pub status: String,
+    pub venue_capacity: u32,
+    pub expected_attendance: u32,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TimelineData {
+    pub tasks: Vec<TimelineTask>,
+    pub releases: Vec<TimelineRelease>,
+    pub shows: Vec<TimelineShow>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TimelineChange {
+    pub change_type: String, // "delay", "complete", "reschedule", "cancel"
+    pub entity_type: String, // "task", "release", "show"
+    pub entity_id: String,
+    pub new_date: Option<String>,
+    pub new_status: Option<String>,
+    pub new_completion: Option<f64>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TimelineSimulationResult {
+    pub financial_impact: f64,
+    pub affected_entities: Vec<String>,
+    pub cascade_effects: Vec<String>,
+    pub new_deadlines: HashMap<String, String>,
+    pub risk_score: f64,
+    pub revenue_change: f64,
+    pub expense_change: f64,
+    pub critical_path: Vec<String>,
+}
+
 #[wasm_bindgen]
 pub struct FinancialEngine {
     shows: Vec<Show>,
+}
+
+#[wasm_bindgen]
+pub struct TimelineSimulator {
+    timeline_data: Option<TimelineData>,
 }
 
 #[wasm_bindgen]
@@ -291,8 +364,289 @@ impl FinancialEngine {
     }
 }
 
+#[wasm_bindgen]
+impl TimelineSimulator {
+    /// Create a new TimelineSimulator instance
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> TimelineSimulator {
+        console_log!("🎯 Timeline Simulator initialized");
+        TimelineSimulator {
+            timeline_data: None,
+        }
+    }
+
+    /// Load timeline data into the simulator
+    #[wasm_bindgen]
+    pub fn load_timeline_data(&mut self, data_json: &str) -> Result<(), JsValue> {
+        let timeline_data: TimelineData = serde_json::from_str(data_json)
+            .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
+        
+        console_log!("📊 Timeline data loaded: {} tasks, {} releases, {} shows", 
+            timeline_data.tasks.len(), 
+            timeline_data.releases.len(), 
+            timeline_data.shows.len());
+        
+        self.timeline_data = Some(timeline_data);
+        Ok(())
+    }
+
+    /// Simulate the financial and operational impact of a timeline change
+    #[wasm_bindgen]
+    pub fn simulate_timeline_change(&self, change_json: &str) -> Result<String, JsValue> {
+        let timeline_data = self.timeline_data.as_ref()
+            .ok_or_else(|| JsValue::from_str("Timeline data not loaded"))?;
+
+        let change: TimelineChange = serde_json::from_str(change_json)
+            .map_err(|e| JsValue::from_str(&format!("Change parse error: {}", e)))?;
+
+        console_log!("🔄 Simulating {} on {} {}", change.change_type, change.entity_type, change.entity_id);
+
+        // Calculate financial impact
+        let financial_impact = self.calculate_financial_impact(&change, timeline_data)?;
+        
+        // Find cascade effects (dependent tasks/releases)
+        let affected_entities = self.find_affected_entities(&change, timeline_data);
+        
+        // Calculate new deadlines for dependent items
+        let new_deadlines = self.calculate_new_deadlines(&change, timeline_data)?;
+        
+        // Calculate risk score (0-100)
+        let risk_score = self.calculate_risk_score(&change, timeline_data, &affected_entities);
+        
+        // Find critical path items
+        let critical_path = self.find_critical_path(&change, timeline_data);
+
+        let result = TimelineSimulationResult {
+            financial_impact,
+            affected_entities: affected_entities.clone(),
+            cascade_effects: self.generate_cascade_effects(&change, &affected_entities),
+            new_deadlines,
+            risk_score,
+            revenue_change: if financial_impact > 0.0 { financial_impact } else { 0.0 },
+            expense_change: if financial_impact < 0.0 { financial_impact.abs() } else { 0.0 },
+            critical_path,
+        };
+
+        serde_json::to_string(&result)
+            .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+    }
+
+    /// Get real-time performance metrics for the timeline
+    #[wasm_bindgen]
+    pub fn get_timeline_metrics(&self) -> Result<String, JsValue> {
+        let timeline_data = self.timeline_data.as_ref()
+            .ok_or_else(|| JsValue::from_str("Timeline data not loaded"))?;
+
+        let total_tasks = timeline_data.tasks.len();
+        let completed_tasks = timeline_data.tasks.iter()
+            .filter(|t| t.status == "completed")
+            .count();
+        
+        let total_releases = timeline_data.releases.len();
+        let released = timeline_data.releases.iter()
+            .filter(|r| r.release_type == "released") // Assume status is in type for simplicity
+            .count();
+
+        let overdue_tasks = timeline_data.tasks.iter()
+            .filter(|t| self.is_overdue(&t.deadline) && t.status != "completed")
+            .count();
+
+        let total_revenue_impact: f64 = timeline_data.tasks.iter()
+            .map(|t| t.revenue_impact)
+            .sum::<f64>() + 
+            timeline_data.releases.iter()
+            .map(|r| r.projected_revenue)
+            .sum::<f64>() +
+            timeline_data.shows.iter()
+            .map(|s| s.revenue)
+            .sum::<f64>();
+
+        let total_cost_impact: f64 = timeline_data.tasks.iter()
+            .map(|t| t.cost_impact)
+            .sum::<f64>() + 
+            timeline_data.releases.iter()
+            .map(|r| r.budget + r.marketing_spend)
+            .sum::<f64>() +
+            timeline_data.shows.iter()
+            .map(|s| s.expenses)
+            .sum::<f64>();
+
+        #[derive(Serialize)]
+        struct TimelineMetrics {
+            total_tasks: usize,
+            completed_tasks: usize,
+            completion_rate: f64,
+            total_releases: usize,
+            released_count: usize,
+            overdue_tasks: usize,
+            total_revenue_impact: f64,
+            total_cost_impact: f64,
+            net_impact: f64,
+            efficiency_score: f64,
+        }
+
+        let completion_rate = if total_tasks > 0 { 
+            (completed_tasks as f64 / total_tasks as f64) * 100.0 
+        } else { 0.0 };
+
+        let efficiency_score = if total_tasks > 0 {
+            ((completed_tasks as f64 / total_tasks as f64) * 0.6 + 
+             (1.0 - (overdue_tasks as f64 / total_tasks as f64)) * 0.4) * 100.0
+        } else { 0.0 };
+
+        let metrics = TimelineMetrics {
+            total_tasks,
+            completed_tasks,
+            completion_rate,
+            total_releases,
+            released_count: released,
+            overdue_tasks,
+            total_revenue_impact,
+            total_cost_impact,
+            net_impact: total_revenue_impact - total_cost_impact,
+            efficiency_score,
+        };
+
+        serde_json::to_string(&metrics)
+            .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+    }
+}
+
+// Private helper methods for TimelineSimulator
+impl TimelineSimulator {
+    fn calculate_financial_impact(&self, change: &TimelineChange, timeline_data: &TimelineData) -> Result<f64, JsValue> {
+        match change.entity_type.as_str() {
+            "task" => {
+                if let Some(task) = timeline_data.tasks.iter().find(|t| t.id == change.entity_id) {
+                    match change.change_type.as_str() {
+                        "delay" => Ok(-task.revenue_impact * 0.1), // 10% revenue loss for delays
+                        "complete" => Ok(task.revenue_impact),
+                        "cancel" => Ok(-task.revenue_impact - task.cost_impact),
+                        _ => Ok(0.0),
+                    }
+                } else {
+                    Err(JsValue::from_str("Task not found"))
+                }
+            },
+            "release" => {
+                if let Some(release) = timeline_data.releases.iter().find(|r| r.id == change.entity_id) {
+                    match change.change_type.as_str() {
+                        "delay" => Ok(-release.projected_revenue * 0.2), // 20% revenue loss for release delays
+                        "complete" => Ok(release.projected_revenue - release.budget - release.marketing_spend),
+                        "cancel" => Ok(-release.budget - release.marketing_spend),
+                        _ => Ok(0.0),
+                    }
+                } else {
+                    Err(JsValue::from_str("Release not found"))
+                }
+            },
+            "show" => {
+                if let Some(show) = timeline_data.shows.iter().find(|s| s.id == change.entity_id) {
+                    match change.change_type.as_str() {
+                        "delay" => Ok(-show.revenue * 0.15), // 15% revenue loss for show reschedules
+                        "cancel" => Ok(-show.revenue + show.expenses * 0.5), // Lose revenue but save some costs
+                        _ => Ok(0.0),
+                    }
+                } else {
+                    Err(JsValue::from_str("Show not found"))
+                }
+            },
+            _ => Ok(0.0),
+        }
+    }
+
+    fn find_affected_entities(&self, change: &TimelineChange, timeline_data: &TimelineData) -> Vec<String> {
+        let mut affected = Vec::new();
+
+        // Find tasks that depend on the changed entity
+        for task in &timeline_data.tasks {
+            if task.dependencies.contains(&change.entity_id) {
+                affected.push(format!("task:{}", task.id));
+            }
+        }
+
+        // Find releases that depend on the changed entity
+        for release in &timeline_data.releases {
+            if release.dependencies.contains(&change.entity_id) {
+                affected.push(format!("release:{}", release.id));
+            }
+        }
+
+        affected
+    }
+
+    fn calculate_new_deadlines(&self, change: &TimelineChange, timeline_data: &TimelineData) -> Result<HashMap<String, String>, JsValue> {
+        let mut new_deadlines = HashMap::new();
+
+        if change.change_type == "delay" {
+            if let Some(new_date) = &change.new_date {
+                // Cascade delay to dependent items (simplified - add 1 day)
+                let affected = self.find_affected_entities(change, timeline_data);
+                for entity in affected {
+                    new_deadlines.insert(entity, format!("{}", new_date)); // Simplified
+                }
+            }
+        }
+
+        Ok(new_deadlines)
+    }
+
+    fn calculate_risk_score(&self, change: &TimelineChange, timeline_data: &TimelineData, affected_entities: &[String]) -> f64 {
+        let base_risk = match change.change_type.as_str() {
+            "delay" => 40.0,
+            "cancel" => 80.0,
+            "complete" => 0.0,
+            _ => 20.0,
+        };
+
+        let cascade_risk = (affected_entities.len() as f64) * 5.0; // 5 points per affected entity
+        let total_risk = base_risk + cascade_risk;
+        
+        if total_risk > 100.0 { 100.0 } else { total_risk }
+    }
+
+    fn find_critical_path(&self, _change: &TimelineChange, timeline_data: &TimelineData) -> Vec<String> {
+        // Simplified critical path: tasks with highest revenue impact + dependencies
+        let mut critical_tasks: Vec<_> = timeline_data.tasks.iter()
+            .filter(|t| t.revenue_impact > 1000.0 || !t.dependencies.is_empty())
+            .map(|t| t.id.clone())
+            .collect();
+        
+        critical_tasks.sort();
+        critical_tasks
+    }
+
+    fn generate_cascade_effects(&self, change: &TimelineChange, affected_entities: &[String]) -> Vec<String> {
+        let mut effects = Vec::new();
+
+        match change.change_type.as_str() {
+            "delay" => {
+                effects.push("Timeline compression for dependent items".to_string());
+                if affected_entities.len() > 0 {
+                    effects.push(format!("{} dependent items require rescheduling", affected_entities.len()));
+                }
+            },
+            "cancel" => {
+                effects.push("Resource reallocation required".to_string());
+                effects.push("Budget impact on dependent items".to_string());
+            },
+            "complete" => {
+                effects.push("Accelerated timeline for dependent items".to_string());
+            },
+            _ => {}
+        }
+
+        effects
+    }
+
+    fn is_overdue(&self, deadline: &str) -> bool {
+        // Simplified: assume current date is "2024-01-15" for demo
+        deadline < "2024-01-15"
+    }
+}
+
 // Initialize the WASM module
 #[wasm_bindgen(start)]
 pub fn main() {
-    console_log!("🦀 WASM Financial Engine loaded - Ready for 10x performance!");
+    console_log!("🦀 WASM Financial Engine + Timeline Simulator loaded - Ready for 10x performance!");
 }

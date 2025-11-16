@@ -2135,6 +2135,100 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'invitations.noInvitationsHint': 'You\'ll see invitations from agencies here'
     , 'invitations.noSentInvitationsHint': 'Send invitations from the Members page'
     , 'invitations.viewAll': 'View all invitations'
+
+    // Timeline Maestro v3.0
+    , 'timelineMaestro.title': 'Timeline Maestro'
+    , 'timelineMaestro.loading': 'Loading timeline data...'
+    , 'timelineMaestro.loading.timeline': 'Loading timeline view...'
+    , 'timelineMaestro.error.title': 'Timeline Error'
+    , 'timelineMaestro.error.retry': 'Try Again'
+    , 'timelineMaestro.permissions.denied': 'Access Denied'
+    , 'timelineMaestro.permissions.message': 'You don\'t have permission to view the timeline'
+    , 'timelineMaestro.empty.title': 'No Timeline Data'
+    , 'timelineMaestro.empty.message': 'No items found for the current filters'
+    , 'timelineMaestro.view.title': 'Project Timeline'
+    , 'timelineMaestro.view.items': 'items'
+    , 'timelineMaestro.view.zoom': 'view'
+    , 'timelineMaestro.grid.empty': 'No items to display'
+    , 'timelineMaestro.grid.item': 'Item'
+    , 'timelineMaestro.grid.dates': 'Dates'
+    , 'timelineMaestro.grid.status': 'Status'
+    , 'timelineMaestro.grid.details': 'Details'
+
+    // Timeline Types
+    , 'timelineMaestro.types.show': 'Shows'
+    , 'timelineMaestro.types.travel': 'Travel'
+    , 'timelineMaestro.types.finance': 'Finance'
+    , 'timelineMaestro.types.task': 'Tasks'
+    , 'timelineMaestro.types.release': 'Releases'
+
+    // Timeline Status
+    , 'timelineMaestro.status.draft': 'Draft'
+    , 'timelineMaestro.status.scheduled': 'Scheduled'
+    , 'timelineMaestro.status.active': 'Active'
+    , 'timelineMaestro.status.completed': 'Completed'
+    , 'timelineMaestro.status.cancelled': 'Cancelled'
+
+    // Timeline Priority
+    , 'timelineMaestro.priority.low': 'Low'
+    , 'timelineMaestro.priority.medium': 'Medium'
+    , 'timelineMaestro.priority.high': 'High'
+    , 'timelineMaestro.priority.critical': 'Critical'
+
+    // Timeline Groups
+    , 'timelineMaestro.groups.type': 'By Type'
+    , 'timelineMaestro.groups.status': 'By Status'
+    , 'timelineMaestro.groups.assignee': 'By Assignee'
+    , 'timelineMaestro.groups.all': 'All Items'
+    , 'timelineMaestro.groups.Unassigned': 'Unassigned'
+
+    // Timeline Filters
+    , 'timelineMaestro.filters.search': 'Search'
+    , 'timelineMaestro.filters.searchPlaceholder': 'Search timeline items...'
+    , 'timelineMaestro.filters.types': 'Entity Types'
+    , 'timelineMaestro.filters.status': 'Status'
+    , 'timelineMaestro.filters.dateRange': 'Date Range'
+    , 'timelineMaestro.filters.startDate': 'Start Date'
+    , 'timelineMaestro.filters.endDate': 'End Date'
+    , 'timelineMaestro.filters.quickStats': 'Quick Stats'
+    , 'timelineMaestro.filters.reset': 'Reset Filters'
+
+    // Timeline Stats
+    , 'timelineMaestro.stats.total': 'Total Items'
+    , 'timelineMaestro.stats.upcoming': 'Upcoming'
+    , 'timelineMaestro.stats.overdue': 'Overdue Tasks'
+    , 'timelineMaestro.stats.revenue': 'Total Revenue'
+    , 'timelineMaestro.stats.expenses': 'Total Expenses'
+
+    // Timeline Simulation
+    , 'timelineMaestro.simulation.active': 'Simulation Mode'
+    , 'timelineMaestro.simulation.enter': 'Enter Simulation'
+    , 'timelineMaestro.simulation.commit': 'Save Changes'
+    , 'timelineMaestro.simulation.discard': 'Cancel'
+    , 'timelineMaestro.simulation.save': 'Save'
+    , 'timelineMaestro.simulation.cancel': 'Cancel'
+    , 'timelineMaestro.simulation.controls': 'Simulation Controls'
+    , 'timelineMaestro.simulation.live': 'Live'
+    , 'timelineMaestro.simulation.changes': 'Changes'
+    , 'timelineMaestro.simulation.moreChanges': 'more changes'
+    , 'timelineMaestro.simulation.impact': 'Impact Analysis'
+    , 'timelineMaestro.simulation.revenue': 'Revenue Impact'
+    , 'timelineMaestro.simulation.conflicts': 'Schedule Conflicts'
+    , 'timelineMaestro.simulation.risk': 'Risk Level'
+    , 'timelineMaestro.simulation.recommendations': 'Recommendations'
+    , 'timelineMaestro.simulation.help': 'Drag items to simulate changes and see real-time impact'
+
+    // Timeline Change Types
+    , 'timelineMaestro.simulation.changeType.move': 'Moved'
+    , 'timelineMaestro.simulation.changeType.update': 'Updated'
+    , 'timelineMaestro.simulation.changeType.create': 'Created'
+    , 'timelineMaestro.simulation.changeType.delete': 'Deleted'
+
+    // Timeline Risk Levels
+    , 'timelineMaestro.simulation.riskLevel.low': 'Low'
+    , 'timelineMaestro.simulation.riskLevel.medium': 'Medium'
+    , 'timelineMaestro.simulation.riskLevel.high': 'High'
+    , 'timelineMaestro.simulation.riskLevel.critical': 'Critical'
   },
   es: {
     // Landing / Home
@@ -4278,6 +4372,100 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'shows.empty.title': 'No hay shows'
     , 'shows.empty.description': 'Crea tu primer show para comenzar'
     , 'shows.empty.action': 'Crear show'
+
+    // Timeline Maestro v3.0
+    , 'timelineMaestro.title': 'Timeline Maestro'
+    , 'timelineMaestro.loading': 'Cargando datos del timeline...'
+    , 'timelineMaestro.loading.timeline': 'Cargando vista del timeline...'
+    , 'timelineMaestro.error.title': 'Error del Timeline'
+    , 'timelineMaestro.error.retry': 'Intentar de nuevo'
+    , 'timelineMaestro.permissions.denied': 'Acceso Denegado'
+    , 'timelineMaestro.permissions.message': 'No tienes permisos para ver el timeline'
+    , 'timelineMaestro.empty.title': 'Sin Datos del Timeline'
+    , 'timelineMaestro.empty.message': 'No se encontraron elementos para los filtros actuales'
+    , 'timelineMaestro.view.title': 'Timeline del Proyecto'
+    , 'timelineMaestro.view.items': 'elementos'
+    , 'timelineMaestro.view.zoom': 'vista'
+    , 'timelineMaestro.grid.empty': 'No hay elementos para mostrar'
+    , 'timelineMaestro.grid.item': 'Elemento'
+    , 'timelineMaestro.grid.dates': 'Fechas'
+    , 'timelineMaestro.grid.status': 'Estado'
+    , 'timelineMaestro.grid.details': 'Detalles'
+
+    // Tipos de Timeline
+    , 'timelineMaestro.types.show': 'Shows'
+    , 'timelineMaestro.types.travel': 'Viajes'
+    , 'timelineMaestro.types.finance': 'Finanzas'
+    , 'timelineMaestro.types.task': 'Tareas'
+    , 'timelineMaestro.types.release': 'Lanzamientos'
+
+    // Estados del Timeline
+    , 'timelineMaestro.status.draft': 'Borrador'
+    , 'timelineMaestro.status.scheduled': 'Programado'
+    , 'timelineMaestro.status.active': 'Activo'
+    , 'timelineMaestro.status.completed': 'Completado'
+    , 'timelineMaestro.status.cancelled': 'Cancelado'
+
+    // Prioridades del Timeline
+    , 'timelineMaestro.priority.low': 'Baja'
+    , 'timelineMaestro.priority.medium': 'Media'
+    , 'timelineMaestro.priority.high': 'Alta'
+    , 'timelineMaestro.priority.critical': 'Crítica'
+
+    // Grupos del Timeline
+    , 'timelineMaestro.groups.type': 'Por Tipo'
+    , 'timelineMaestro.groups.status': 'Por Estado'
+    , 'timelineMaestro.groups.assignee': 'Por Asignado'
+    , 'timelineMaestro.groups.all': 'Todos los Elementos'
+    , 'timelineMaestro.groups.Unassigned': 'Sin Asignar'
+
+    // Filtros del Timeline
+    , 'timelineMaestro.filters.search': 'Buscar'
+    , 'timelineMaestro.filters.searchPlaceholder': 'Buscar elementos del timeline...'
+    , 'timelineMaestro.filters.types': 'Tipos de Entidad'
+    , 'timelineMaestro.filters.status': 'Estado'
+    , 'timelineMaestro.filters.dateRange': 'Rango de Fechas'
+    , 'timelineMaestro.filters.startDate': 'Fecha de Inicio'
+    , 'timelineMaestro.filters.endDate': 'Fecha de Fin'
+    , 'timelineMaestro.filters.quickStats': 'Estadísticas Rápidas'
+    , 'timelineMaestro.filters.reset': 'Resetear Filtros'
+
+    // Estadísticas del Timeline
+    , 'timelineMaestro.stats.total': 'Elementos Totales'
+    , 'timelineMaestro.stats.upcoming': 'Próximos'
+    , 'timelineMaestro.stats.overdue': 'Tareas Vencidas'
+    , 'timelineMaestro.stats.revenue': 'Ingresos Totales'
+    , 'timelineMaestro.stats.expenses': 'Gastos Totales'
+
+    // Simulación del Timeline
+    , 'timelineMaestro.simulation.active': 'Modo Simulación'
+    , 'timelineMaestro.simulation.enter': 'Entrar Simulación'
+    , 'timelineMaestro.simulation.commit': 'Guardar Cambios'
+    , 'timelineMaestro.simulation.discard': 'Cancelar'
+    , 'timelineMaestro.simulation.save': 'Guardar'
+    , 'timelineMaestro.simulation.cancel': 'Cancelar'
+    , 'timelineMaestro.simulation.controls': 'Controles de Simulación'
+    , 'timelineMaestro.simulation.live': 'En Vivo'
+    , 'timelineMaestro.simulation.changes': 'Cambios'
+    , 'timelineMaestro.simulation.moreChanges': 'más cambios'
+    , 'timelineMaestro.simulation.impact': 'Análisis de Impacto'
+    , 'timelineMaestro.simulation.revenue': 'Impacto en Ingresos'
+    , 'timelineMaestro.simulation.conflicts': 'Conflictos de Horario'
+    , 'timelineMaestro.simulation.risk': 'Nivel de Riesgo'
+    , 'timelineMaestro.simulation.recommendations': 'Recomendaciones'
+    , 'timelineMaestro.simulation.help': 'Arrastra elementos para simular cambios y ver el impacto en tiempo real'
+
+    // Tipos de Cambios del Timeline
+    , 'timelineMaestro.simulation.changeType.move': 'Movido'
+    , 'timelineMaestro.simulation.changeType.update': 'Actualizado'
+    , 'timelineMaestro.simulation.changeType.create': 'Creado'
+    , 'timelineMaestro.simulation.changeType.delete': 'Eliminado'
+
+    // Niveles de Riesgo del Timeline
+    , 'timelineMaestro.simulation.riskLevel.low': 'Bajo'
+    , 'timelineMaestro.simulation.riskLevel.medium': 'Medio'
+    , 'timelineMaestro.simulation.riskLevel.high': 'Alto'
+    , 'timelineMaestro.simulation.riskLevel.critical': 'Crítico'
   },
   // ============================================
   // FRENCH (FR)

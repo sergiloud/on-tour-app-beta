@@ -34,7 +34,7 @@ const Travel = lazy(() => import('../pages/dashboard/TravelV2'));
 const TravelWorkspacePage = lazy(() => import('../pages/dashboard/TravelWorkspacePage'));
 const MissionControlLab = lazy(() => import('../pages/dashboard/MissionControlLab'));
 const Calendar = lazy(() => import('../pages/dashboard/Calendar'));
-const TimelinePage = lazy(() => import('../pages/dashboard/TimelinePage'));
+const TimelinePage = lazy(() => import('../features/timeline/pages/TimelinePage'));
 const Settings = lazy(() => import('../pages/dashboard/Settings'));
 const ProfilePage = lazy(() => import('../pages/profile/ProfileSettings'));
 const Story = lazy(() => import('../pages/dashboard/Story'));

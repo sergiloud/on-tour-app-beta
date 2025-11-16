@@ -18,6 +18,23 @@ import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 import type { Request, Response, NextFunction } from 'express';
 
+// Extend Express Request interface for rate limiting and session
+declare module 'express' {
+  interface Request {
+    rateLimit?: {
+      limit: number;
+      current: number;
+      remaining: number;
+      resetTime: Date;
+    };
+    session?: {
+      id: string;
+      userId?: string;
+      [key: string]: any;
+    };
+  }
+}
+
 // ==========================================
 // Helmet.js - Security Headers
 // ==========================================
@@ -147,7 +164,7 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 export const corsMiddleware = cors({
-  origin: (origin, callback) => {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
     

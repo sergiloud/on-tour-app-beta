@@ -671,6 +671,46 @@ service cloud.firestore {
     }
     
     // ========================================
+    // AUDIT LOGS (Compliance & Security)
+    // ========================================
+    
+    // Audit logs collection (organization-scoped)
+    match /auditLogs/{logId} {
+      function getLogOrgId() {
+        return resource.data.organizationId;
+      }
+      
+      function getRequestLogOrgId() {
+        return request.resource.data.organizationId;
+      }
+      
+      // Only admins and owners can read audit logs
+      allow read: if isAuthenticated() && isAdmin(getLogOrgId());
+      
+      // Only service can write audit logs (client creates via service)
+      // Prevents tampering with audit trail
+      allow create: if isAuthenticated() && 
+        isMember(getRequestLogOrgId()) &&
+        request.resource.data.keys().hasAll([
+          'organizationId', 
+          'category', 
+          'action', 
+          'severity',
+          'userId',
+          'userEmail',
+          'description',
+          'timestamp',
+          'success'
+        ]) &&
+        request.resource.data.userId == getUserId() &&
+        request.resource.data.userEmail == getUserEmail();
+      
+      // Audit logs are immutable - no updates or deletes allowed
+      // Retention handled by server-side cleanup jobs
+      allow update, delete: if false;
+    }
+    
+    // ========================================
     // DENY ALL OTHER ACCESS
     // ========================================
     

@@ -75,7 +75,6 @@ function useNavItems(collapsed: boolean) {
   // Both artist and agency get full access to all sections
   return [
     ...commonStart,
-    { to: '/dashboard/org', labelKey: 'nav.overview', section: 'org' },
     { to: '/dashboard/shows', labelKey: 'nav.shows' },
     { to: '/dashboard/travel', labelKey: 'nav.travel' },
     { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
@@ -84,6 +83,7 @@ function useNavItems(collapsed: boolean) {
     { to: '/dashboard/contracts', labelKey: 'nav.contracts' },
     { to: '/dashboard/org/members', labelKey: 'nav.members', section: 'org' },
     { to: '', labelKey: '', separator: true, separatorLabel: collapsed ? '' : 'En desarrollo' },
+    { to: '/dashboard/org', labelKey: 'nav.overview', section: 'org' },
     { to: '/dashboard/timeline', labelKey: 'nav.timeline' },
     { to: '/dashboard/roadmap', labelKey: 'nav.roadmap' },
     { to: '/dashboard/org/activity', labelKey: 'nav.activity', section: 'org' },

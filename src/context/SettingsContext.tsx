@@ -285,6 +285,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLangState(l);
     try { setI18nLang(l as any); } catch { }
     try { trackEvent('settings.lang', { lang: l }); } catch { }
+    // Force hard reload to bypass cache and apply language change
+    setTimeout(() => {
+      // Clear any potential caches
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name));
+        });
+      }
+      // Hard reload (bypasses cache)
+      window.location.href = window.location.href;
+    }, 150);
   }, []);
 
   const handleSetMaskAmounts = useCallback((_v: boolean) => {

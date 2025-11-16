@@ -4,7 +4,7 @@
  * - Allows creating new promoter contacts inline
  * - Syncs bidirectionally with contactStore + Firestore
  */
-import { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { contactStore } from '../../shared/contactStore';

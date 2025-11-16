@@ -5,7 +5,7 @@
  * - Syncs bidirectionally with venueStore
  * - Also creates a venue_manager contact for centralized CRM
  */
-import { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { venueStore } from '../../shared/venueStore';

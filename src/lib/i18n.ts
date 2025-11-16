@@ -5869,8 +5869,14 @@ let current: Lang = detectInitialLang();
 
 export function setLang(l: Lang) {
   if (current === l) return;
+  console.log(`🌐 i18n: Changing language from ${current} to ${l}`);
   current = l;
-  try { secureStorage.setItem('lang', l); } catch { }
+  try { 
+    secureStorage.setItem('lang', l);
+    console.log(`✅ i18n: Language saved to storage: ${l}`);
+  } catch (error) {
+    console.error('❌ i18n: Failed to save language:', error);
+  }
   listeners.forEach((listener) => {
     try {
       listener(l);
@@ -5882,9 +5888,14 @@ export function getLang(): Lang {
   try {
     const stored = secureStorage.getItem<Lang>('lang');
     if (stored && SUPPORTED_LANGS.includes(stored)) {
+      console.log(`📖 i18n: Retrieved language from storage: ${stored}`);
       current = stored;
+    } else {
+      console.log(`📖 i18n: No stored language, using current: ${current}`);
     }
-  } catch { }
+  } catch (error) {
+    console.error('❌ i18n: Failed to retrieve language:', error);
+  }
   return current;
 }
 

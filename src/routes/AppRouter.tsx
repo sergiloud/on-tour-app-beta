@@ -38,6 +38,7 @@ const TimelinePage = lazy(() => import('../pages/dashboard/TimelinePage'));
 const Settings = lazy(() => import('../pages/dashboard/Settings'));
 const ProfilePage = lazy(() => import('../pages/profile/ProfileSettings'));
 const Story = lazy(() => import('../pages/dashboard/Story'));
+const EnhancedCapabilitiesDemo = lazy(() => import('../pages/dashboard/EnhancedCapabilitiesDemo'));
 const DataSecurityPage = lazy(() => import('../pages/DataSecurityPage'));
 const WelcomePage = lazy(() => import('../pages/welcome/WelcomePage'));
 const ServiceWorkerDemo = lazy(() => import('../pages/ServiceWorkerDemo'));
@@ -118,6 +119,7 @@ export const AppRouter = () => {
           <Route path="timeline" element={<Suspense fallback={<DashboardSkeleton />}><TimelinePage /></Suspense>} />
           <Route path="settings" element={<Suspense fallback={<SettingsSkeleton />}><Settings /></Suspense>} />
           <Route path="profile" element={<Suspense fallback={<SettingsSkeleton />}><ProfilePage /></Suspense>} />
+          <Route path="enhanced" element={<Suspense fallback={<DashboardSkeleton />}><EnhancedCapabilitiesDemo /></Suspense>} />
           <Route path="data-security" element={<Suspense fallback={<SettingsSkeleton />}><DataSecurityPage /></Suspense>} />
           <Route path="sw-demo" element={<Suspense fallback={<DashboardSkeleton />}><ServiceWorkerDemo /></Suspense>} />
         </Route>

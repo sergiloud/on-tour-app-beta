@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
+import wasm from 'vite-plugin-wasm';
+import topLevelAwait from 'vite-plugin-top-level-await';
 import path from 'path';
 
 export default defineConfig({
@@ -29,6 +31,9 @@ export default defineConfig({
     react({
       jsxRuntime: 'classic'
     }),
+    // WebAssembly support for high-performance financial calculations
+    wasm(),
+    topLevelAwait(),
     // Bundle analyzer (solo en local, desactivado en Vercel para builds más rápidos)
     ...(process.env.VERCEL ? [] : [
       visualizer({

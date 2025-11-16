@@ -20,6 +20,8 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { logger } from '../lib/logger';
+import auditLogService from './AuditLogService';
+import { AuditAction, AuditCategory, AuditSeverity } from '../types/auditLog';
 
 export interface FinanceTransaction {
   id: string;
@@ -68,18 +70,57 @@ export class FirestoreFinanceService {
   /**
    * Save transaction to Firestore
    */
-  static async saveTransaction(transaction: FinanceTransaction, userId: string, orgId: string): Promise<void> {
+  static async saveTransaction(
+    transaction: FinanceTransaction, 
+    userId: string, 
+    orgId: string,
+    userEmail?: string,
+    userName?: string
+  ): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
     const transactionRef = doc(db, `users/${userId}/organizations/${orgId}/transactions/${transaction.id}`);
+    
+    // Check if transaction exists (for audit logging)
+    const existingDoc = await getDoc(transactionRef);
+    const isUpdate = existingDoc.exists();
+    
     const transactionData = this.removeUndefined({
       ...transaction,
       updatedAt: Timestamp.now()
     });
 
     await setDoc(transactionRef, transactionData, { merge: true });
+
+    // Audit log
+    await auditLogService.log({
+      organizationId: orgId,
+      category: AuditCategory.FINANCE,
+      action: isUpdate ? AuditAction.FINANCE_UPDATED : AuditAction.FINANCE_CREATED,
+      severity: AuditSeverity.INFO,
+      userId,
+      userEmail: userEmail || '',
+      userName: userName || '',
+      entity: { 
+        type: 'transaction', 
+        id: transaction.id, 
+        name: `${transaction.type} - ${transaction.description}` 
+      },
+      description: isUpdate 
+        ? `Updated ${transaction.type} transaction: ${transaction.description}` 
+        : `Created ${transaction.type} transaction: ${transaction.description}`,
+      metadata: {
+        type: transaction.type,
+        amount: transaction.amount,
+        currency: transaction.currency,
+        category: transaction.category,
+        showId: transaction.showId,
+        ...(isUpdate && { previousValue: existingDoc.data() }),
+      },
+      success: true,
+    });
   }
 
   /**
@@ -194,13 +235,50 @@ export class FirestoreFinanceService {
   /**
    * Delete transaction from Firestore
    */
-  static async deleteTransaction(transactionId: string, userId: string, orgId: string): Promise<void> {
+  static async deleteTransaction(
+    transactionId: string, 
+    userId: string, 
+    orgId: string,
+    userEmail?: string,
+    userName?: string
+  ): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
     const transactionRef = doc(db, `users/${userId}/organizations/${orgId}/transactions/${transactionId}`);
+    
+    // Get transaction data before deleting (for audit log)
+    const transactionSnap = await getDoc(transactionRef);
+    const transactionData = transactionSnap.data();
+    
     await deleteDoc(transactionRef);
+
+    // Audit log
+    if (transactionData) {
+      await auditLogService.log({
+        organizationId: orgId,
+        category: AuditCategory.FINANCE,
+        action: AuditAction.FINANCE_DELETED,
+        severity: AuditSeverity.WARNING,
+        userId,
+        userEmail: userEmail || '',
+        userName: userName || '',
+        entity: { 
+          type: 'transaction', 
+          id: transactionId, 
+          name: `${transactionData.type} - ${transactionData.description}` 
+        },
+        description: `Deleted ${transactionData.type} transaction: ${transactionData.description}`,
+        metadata: {
+          deletedTransaction: transactionData,
+          amount: transactionData.amount,
+          currency: transactionData.currency,
+          type: transactionData.type,
+        },
+        success: true,
+      });
+    }
   }
 
   /**

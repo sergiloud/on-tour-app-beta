@@ -27,6 +27,8 @@ import {
 import { db } from '../lib/firebase';
 import { logger } from '../lib/logger';
 import { FirestoreLinkService, type LinkScopes } from './firestoreLinkService';
+import auditLogService from './AuditLogService';
+import { AuditAction, AuditCategory, AuditSeverity } from '../types/auditLog';
 
 export interface LinkInvitation {
   id: string;
@@ -117,6 +119,25 @@ export class FirestoreLinkInvitationService {
       invitationId,
       agencyOrgId,
       artistUserId,
+    });
+
+    // Audit log
+    await auditLogService.log({
+      organizationId: agencyOrgId,
+      category: AuditCategory.INVITATION,
+      action: AuditAction.LINK_INVITE_CREATED,
+      severity: AuditSeverity.INFO,
+      userId: agencyUserId,
+      userEmail: agencyUserEmail,
+      userName: agencyUserName,
+      entity: { type: 'linkInvitation', id: invitationId, name: `Invitation to ${artistUserId}` },
+      description: `Sent link invitation to artist ${artistUserId}`,
+      metadata: {
+        artistUserId,
+        proposedScopes: invitation.proposedScopes,
+        expiresAt: expiresAt.toISOString(),
+      },
+      success: true,
     });
 
     return invitation;
@@ -266,6 +287,28 @@ export class FirestoreLinkInvitationService {
       artistOrgId,
       artistOrgName,
     });
+
+    // Audit log
+    await auditLogService.log({
+      organizationId: artistOrgId,
+      category: AuditCategory.INVITATION,
+      action: AuditAction.LINK_INVITE_USED,
+      severity: AuditSeverity.INFO,
+      userId: artistUserId,
+      userEmail: '', // Will be filled by the caller
+      userName: artistOrgName,
+      entity: { type: 'linkInvitation', id: invitationId, name: `Accepted invitation from ${invitation.agencyOrgName}` },
+      relatedEntities: [
+        { type: 'organization', id: invitation.agencyOrgId, name: invitation.agencyOrgName }
+      ],
+      description: `Accepted link invitation from ${invitation.agencyOrgName}`,
+      metadata: {
+        agencyOrgId: invitation.agencyOrgId,
+        agencyOrgName: invitation.agencyOrgName,
+        scopes: invitation.proposedScopes,
+      },
+      success: true,
+    });
   }
 
   /**
@@ -298,6 +341,24 @@ export class FirestoreLinkInvitationService {
     await setDoc(agencySentRef, updatedInvitation, { merge: true });
 
     logger.info('[LinkInvitationService] Invitation rejected', { invitationId });
+
+    // Audit log
+    await auditLogService.log({
+      organizationId: invitation.agencyOrgId,
+      category: AuditCategory.INVITATION,
+      action: AuditAction.INVITE_REJECTED,
+      severity: AuditSeverity.INFO,
+      userId: artistUserId,
+      userEmail: '', // Will be filled by the caller
+      userName: invitation.artistOrgName || 'Artist',
+      entity: { type: 'linkInvitation', id: invitationId, name: `Rejected invitation from ${invitation.agencyOrgName}` },
+      description: `Rejected link invitation from ${invitation.agencyOrgName}`,
+      metadata: {
+        agencyOrgId: invitation.agencyOrgId,
+        agencyOrgName: invitation.agencyOrgName,
+      },
+      success: true,
+    });
   }
 
   /**
@@ -330,6 +391,24 @@ export class FirestoreLinkInvitationService {
     await setDoc(artistInvitationRef, updatedInvitation, { merge: true });
 
     logger.info('[LinkInvitationService] Invitation cancelled', { invitationId });
+
+    // Audit log
+    await auditLogService.log({
+      organizationId: invitation.agencyOrgId,
+      category: AuditCategory.INVITATION,
+      action: AuditAction.LINK_INVITE_REVOKED,
+      severity: AuditSeverity.WARNING,
+      userId: agencyUserId,
+      userEmail: invitation.agencyUserEmail,
+      userName: invitation.agencyUserName,
+      entity: { type: 'linkInvitation', id: invitationId, name: `Cancelled invitation to ${invitation.artistUserId}` },
+      description: `Cancelled link invitation to artist ${invitation.artistUserId}`,
+      metadata: {
+        artistUserId: invitation.artistUserId,
+        originalStatus: 'pending',
+      },
+      success: true,
+    });
   }
 
   /**

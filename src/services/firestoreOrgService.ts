@@ -18,6 +18,8 @@ import {
   type Unsubscribe
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import auditLogService from './AuditLogService';
+import { AuditAction, AuditCategory, AuditSeverity } from '../types/auditLog';
 
 export interface OrgMembership {
   userId: string;
@@ -137,19 +139,49 @@ export class FirestoreOrgService {
   static async updateOrganization(
     orgId: string,
     updates: Partial<Organization>,
-    userId: string
+    userId: string,
+    userEmail?: string,
+    userName?: string
   ): Promise<void> {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
     const orgRef = doc(db, `users/${userId}/organizations/${orgId}`);
+    
+    // Get previous data for audit log
+    const orgSnap = await getDoc(orgRef);
+    const previousData = orgSnap.data();
+    
     const orgData = this.removeUndefined({
       ...updates,
       updatedAt: Timestamp.now()
     });
 
     await setDoc(orgRef, orgData, { merge: true });
+
+    // Audit log
+    const changedFields = Object.keys(updates).filter(key => key !== 'updatedAt');
+    await auditLogService.log({
+      organizationId: orgId,
+      category: AuditCategory.ORGANIZATION,
+      action: AuditAction.ORG_UPDATED,
+      severity: AuditSeverity.INFO,
+      userId,
+      userEmail: userEmail || '',
+      userName: userName || '',
+      entity: { type: 'organization', id: orgId, name: updates.name || previousData?.name || orgId },
+      description: `Updated organization settings: ${changedFields.join(', ')}`,
+      metadata: {
+        changedFields,
+        previousValue: changedFields.reduce((acc, field) => {
+          acc[field] = previousData?.[field];
+          return acc;
+        }, {} as Record<string, any>),
+        newValue: updates,
+      },
+      success: true,
+    });
   }
 
   /**

@@ -711,6 +711,84 @@ service cloud.firestore {
     }
     
     // ========================================
+    // MFA & WEBAUTHN (User Security)
+    // ========================================
+    
+    // WebAuthn credentials (user-scoped, private)
+    match /users/{userId}/webauthn_credentials/{credentialId} {
+      // Users can only access their own credentials
+      allow read: if isAuthenticated() && getUserId() == userId;
+      
+      // Users can create their own credentials
+      allow create: if isAuthenticated() && 
+        getUserId() == userId &&
+        request.resource.data.keys().hasAll([
+          'id',
+          'userId',
+          'publicKey',
+          'counter',
+          'type',
+          'authenticatorType',
+          'deviceName',
+          'createdAt'
+        ]) &&
+        request.resource.data.userId == userId;
+      
+      // Users can update last used timestamp
+      allow update: if isAuthenticated() && 
+        getUserId() == userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastUsedAt', 'counter']);
+      
+      // Users can delete their own credentials
+      allow delete: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    // Backup codes (user-scoped, private, single-use)
+    match /users/{userId}/backup_codes/{codeId} {
+      // Users can only read their own backup codes
+      allow read: if isAuthenticated() && getUserId() == userId;
+      
+      // Users can create backup codes
+      allow create: if isAuthenticated() && 
+        getUserId() == userId &&
+        request.resource.data.keys().hasAll([
+          'id',
+          'userId',
+          'codeHash',
+          'used',
+          'createdAt'
+        ]) &&
+        request.resource.data.userId == userId &&
+        request.resource.data.used == false;
+      
+      // Users can mark codes as used (but not modify the hash)
+      allow update: if isAuthenticated() && 
+        getUserId() == userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedAt']) &&
+        request.resource.data.used == true &&
+        resource.data.used == false;
+      
+      // Users can delete unused backup codes
+      allow delete: if isAuthenticated() && 
+        getUserId() == userId &&
+        resource.data.used == false;
+    }
+    
+    // MFA settings (user-scoped, private)
+    match /users/{userId}/mfa_settings/{settingId} {
+      // Users can read their own settings
+      allow read: if isAuthenticated() && getUserId() == userId;
+      
+      // Users can update their own settings
+      allow create, update: if isAuthenticated() && 
+        getUserId() == userId &&
+        request.resource.data.userId == userId;
+      
+      // Users cannot delete MFA settings (only disable)
+      allow delete: if false;
+    }
+    
+    // ========================================
     // DENY ALL OTHER ACCESS
     // ========================================
     

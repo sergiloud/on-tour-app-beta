@@ -9,10 +9,11 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:wasm:safe && vite build",
-    "build:production": "NODE_ENV=production npm run build:wasm:safe && vite build --mode production",
+    "build": "npm run build:wasm:conditional && SKIP_WASM=true VITE_SKIP_WASM=true vite build",
+    "build:production": "NODE_ENV=production npm run build:wasm:conditional && SKIP_WASM=true VITE_SKIP_WASM=true vite build --mode production",
     "build:wasm": "cd wasm-financial-engine && wasm-pack build --target web --out-dir pkg --release",
     "build:wasm:safe": "npm run build:wasm || echo 'WASM build skipped - using JavaScript fallback'",
+    "build:wasm:conditional": "if [ \"$VERCEL\" != \"1\" ]; then npm run build:wasm:safe; else echo 'Vercel build - skipping WASM compilation'; fi",
     "build:check": "tsc --noEmit || true && npm run build",
     "build:strict": "tsc && npm run build",
     "build:analyze": "npm run build && node scripts/analyze-bundle.js",

@@ -37,7 +37,19 @@ SECURITY.md
 .prettierrc
 .eslintrc.json
 .lintstagedrc.json
-backend/
+backend/src/
+backend/config/
+backend/scripts/
+backend/tests/
+backend/tsconfig.json
+backend/package.json
+backend/README.md
+backend/AUDIT_RESPONSE.md
+backend/FIREBASE_INTEGRATION.md
+backend/SECURITY_IMPROVEMENTS.md
+
+# Keep WASM engine for client-side use
+!wasm-financial-engine/pkg/
 
 # Netlify (no longer used)
 

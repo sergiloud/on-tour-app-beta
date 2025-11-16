@@ -38,8 +38,22 @@ export async function loadWasmModule() {
   }
   
   try {
-    // Dynamic import that only happens when truly needed
-    const wasmModule = await import('../../wasm-financial-engine/pkg/wasm_financial_engine.js');
+    // Use dynamic import with try-catch for build environments
+    let wasmModule;
+    
+    if (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'development') {
+      // Development mode - try to load from local build
+      wasmModule = await import('../../wasm-financial-engine/pkg/wasm_financial_engine.js');
+    } else {
+      // Production mode - load from public assets or use fallback
+      try {
+        wasmModule = await import('../../wasm-financial-engine/pkg/wasm_financial_engine.js');
+      } catch (importError) {
+        console.warn('WASM module not available, using JavaScript fallback');
+        throw new Error('WASM not available in production build');
+      }
+    }
+    
     return wasmModule;
   } catch (error) {
     console.warn('Failed to load WASM module:', error);

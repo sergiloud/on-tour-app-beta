@@ -46,6 +46,10 @@ export function useTimelineSimulator(options: UseTimelineSimulatorOptions = {}) 
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
+      // Check if WASM is available
+      if (typeof WebAssembly === 'undefined') {
+        throw new Error('WebAssembly not supported in this environment');
+      }
       // Create worker
       workerRef.current = new Worker(
         new URL('../workers/timelineSimulationWorker.ts', import.meta.url),

@@ -33,9 +33,11 @@ export default defineConfig({
     react({
       jsxRuntime: 'classic'
     }),
-    // WebAssembly support for high-performance financial calculations
-    wasm(),
-    topLevelAwait(),
+    // WebAssembly support for high-performance financial calculations (skip in Vercel build)
+    ...(process.env.SKIP_WASM !== 'true' && process.env.VERCEL !== '1' ? [
+      wasm(),
+      topLevelAwait(),
+    ] : []),
     // Professional compression for optimal delivery
     compression({
       algorithm: 'gzip',

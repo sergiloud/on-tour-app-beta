@@ -5,6 +5,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { trackEvent } from '../../lib/telemetry';
 import { useFinance } from '../../context/FinanceContext';
 import { announce } from '../../lib/announcer';
+import { useCleanup } from '../../hooks/useCleanup';
 // duplicate import removed
 
 export const NetTimeline: React.FC = () => {
@@ -56,6 +57,7 @@ export const NetTimeline: React.FC = () => {
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null);
   const rectRef = useRef<DOMRect | null>(null);
   const raf = useRef<number | null>(null);
+  const cleanup = useCleanup();
   const onEnter = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     rectRef.current = (e.currentTarget.parentElement as HTMLElement)?.getBoundingClientRect() ?? null;
   }, []);
@@ -79,14 +81,16 @@ export const NetTimeline: React.FC = () => {
     setTip(null);
   }, []);
 
+  // Automatic cleanup on unmount via useCleanup hook
   useEffect(() => {
     return () => {
       if (raf.current) {
         cancelAnimationFrame(raf.current);
         raf.current = null;
       }
+      cleanup.clearAll();
     };
-  }, []);
+  }, [cleanup]);
   return (
     <Card className="p-4 overflow-hidden relative">
       <div className="flex items-center justify-between mb-2">

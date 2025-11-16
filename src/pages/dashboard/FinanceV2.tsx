@@ -1,3 +1,5 @@
+
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { logger } from "../../lib/logger";
 /**
  * Finance V2 - Módulo de Finanzas Refactorizado
@@ -38,7 +40,6 @@ import { logger } from "../../lib/logger";
  * - Escalable: Añadir features sin tocar orquestador
  */
 
-import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, Plus, Download, BarChart3, Receipt, Wallet, TrendingUp, Loader2 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';

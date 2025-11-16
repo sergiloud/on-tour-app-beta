@@ -8,7 +8,7 @@
  * - Organization list
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { useOrganizations } from '../hooks/useOrganizations';
 import type { Organization, MemberRole, Permission } from '../hooks/useOrganizations';
 
@@ -75,7 +75,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     setCurrentRole('owner');
   }, [organizations, currentOrgId]);
 
-  const switchOrganization = (orgId: string) => {
+  const switchOrganization = useCallback((orgId: string) => {
     setCurrentOrgId(orgId);
     localStorage.setItem(CURRENT_ORG_KEY, orgId);
     
@@ -83,46 +83,52 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     // updateDoc(doc(db, `users/${userId}/organization_memberships/${orgId}`), {
     //   lastAccessed: serverTimestamp()
     // });
-  };
+  }, []);
 
-  const hasPermission = (permission: Permission): boolean => {
+  // Memoize role permissions to avoid recreating the object on every render
+  const rolePermissions = useMemo((): Record<string, Permission[]> => ({
+    owner: [
+      'finance.read', 'finance.write', 'finance.delete',
+      'shows.read', 'shows.write', 'shows.delete',
+      'calendar.read', 'calendar.write', 'calendar.delete',
+      'members.read', 'members.invite', 'members.remove', 'members.manage_roles',
+      'settings.read', 'settings.write',
+    ],
+    admin: [
+      'finance.read', 'finance.write', 'finance.delete',
+      'shows.read', 'shows.write', 'shows.delete',
+      'calendar.read', 'calendar.write', 'calendar.delete',
+      'members.read', 'members.invite', 'members.remove', 'members.manage_roles',
+      'settings.read',
+    ],
+    member: [
+      'finance.read', 'finance.write',
+      'shows.read', 'shows.write', 'shows.delete',
+      'calendar.read', 'calendar.write', 'calendar.delete',
+      'members.read',
+    ],
+    viewer: [
+      'finance.read',
+      'shows.read',
+      'calendar.read',
+      'members.read',
+    ],
+  }), []);
+
+  const hasPermission = useCallback((permission: Permission): boolean => {
     if (!currentRole) return false;
-    
-    // TODO: Get from actual member document
-    // For now, use role-based permissions
-    const rolePermissions: Record<MemberRole, Permission[]> = {
-      owner: [
-        'finance.read', 'finance.write', 'finance.delete',
-        'shows.read', 'shows.write', 'shows.delete',
-        'calendar.read', 'calendar.write', 'calendar.delete',
-        'members.read', 'members.invite', 'members.remove', 'members.manage_roles',
-        'settings.read', 'settings.write',
-      ],
-      admin: [
-        'finance.read', 'finance.write', 'finance.delete',
-        'shows.read', 'shows.write', 'shows.delete',
-        'calendar.read', 'calendar.write', 'calendar.delete',
-        'members.read', 'members.invite', 'members.remove', 'members.manage_roles',
-        'settings.read',
-      ],
-      member: [
-        'finance.read', 'finance.write',
-        'shows.read', 'shows.write', 'shows.delete',
-        'calendar.read', 'calendar.write', 'calendar.delete',
-        'members.read',
-      ],
-      viewer: [
-        'finance.read',
-        'shows.read',
-        'calendar.read',
-        'members.read',
-      ],
-    };
-    
-    return rolePermissions[currentRole].includes(permission);
-  };
+    return rolePermissions[currentRole]?.includes(permission) ?? false;
+  }, [currentRole, rolePermissions]);
 
-  const value: OrganizationContextValue = {
+  // Memoize derived permissions to avoid recalculating on every render
+  const derivedPermissions = useMemo(() => ({
+    canWrite: hasPermission('shows.write'),
+    canManageMembers: hasPermission('members.invite'),
+    isOwner: currentRole === 'owner',
+    isAdmin: currentRole === 'owner' || currentRole === 'admin',
+  }), [hasPermission, currentRole]);
+
+  const value: OrganizationContextValue = useMemo(() => ({
     currentOrg,
     currentOrgId,
     currentRole,
@@ -131,11 +137,18 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     error,
     switchOrganization,
     hasPermission,
-    canWrite: hasPermission('shows.write'),
-    canManageMembers: hasPermission('members.invite'),
-    isOwner: currentRole === 'owner',
-    isAdmin: currentRole === 'owner' || currentRole === 'admin',
-  };
+    ...derivedPermissions,
+  }), [
+    currentOrg,
+    currentOrgId,
+    currentRole,
+    organizations,
+    isLoading,
+    error,
+    switchOrganization,
+    hasPermission,
+    derivedPermissions,
+  ]);
 
   return (
     <OrganizationContext.Provider value={value}>

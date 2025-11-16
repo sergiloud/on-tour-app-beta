@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { showsQueryKeys } from './useShowsQuery';
+import { showsQueryKeys } from '../lib/queryClient';
 
 /**
  * useShowsSync - Integrate showStore sync events with React Query cache

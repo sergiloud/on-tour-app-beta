@@ -11,7 +11,7 @@ import { PerformanceMonitor } from './components/dev/PerformanceMonitor';
 import { prefetch } from './routes/prefetch';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 import { useShowsSync } from './hooks/useShowsSync';
-import { swManager } from './lib/serviceWorkerManager';
+import { serviceWorkerManager } from './lib/serviceWorkerManager';
 import { ServiceWorkerUpdater } from './components/common/ServiceWorkerUpdater';
 import { nuclearCleanupLocations } from './services/travelApi';
 
@@ -33,7 +33,7 @@ export const App: React.FC = () => {
     if (import.meta.env.DEV) return;
 
     // Register service worker for offline support and better caching
-    swManager.register();
+    // Note: serviceWorkerManager auto-initializes in constructor
 
     // Use requestIdleCallback for better performance
     if ('requestIdleCallback' in window) {

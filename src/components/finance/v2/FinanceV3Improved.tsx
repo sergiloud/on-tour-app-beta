@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { regionOfCountry, REGIONS } from '../../../lib/geo';
 import PeriodSelector from '../../finance/PeriodSelector';
-import { exportFinanceCsv } from '../../../lib/finance/export';
+// Dynamic import for exportFinanceCsv to reduce bundle size
 import { useToast } from '../../../ui/Toast';
 import { can } from '../../../lib/tenants';
 import { announce } from '../../../lib/announcer';
@@ -100,8 +100,9 @@ const FinanceV3: React.FC = () => {
         };
     }, [snapshot]);
 
-    const handleExportCSV = () => {
+    const handleExportCSV = async () => {
         try { trackEvent('finance.export.start', { type: 'csv' }); } catch { }
+        const { exportFinanceCsv } = await import('../../../lib/finance/export');
         exportFinanceCsv(snapshot.shows as any, {
             masked: false,
             columns: ['date', 'city', 'country', 'venue', 'promoter', 'fee', 'status', 'route', 'net']

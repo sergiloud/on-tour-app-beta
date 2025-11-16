@@ -21,7 +21,7 @@
  * }, 'tour-data');
  */
 
-import ExcelJS from 'exceljs';
+// ExcelJS dynamic import to reduce bundle size
 
 export interface ExcelExportOptions {
   /** File name without extension */
@@ -84,6 +84,9 @@ export async function exportToExcel<T extends Record<string, any>>(
   const headers = Object.keys(processedData[0] || {});
   const displayHeaders = headers.map(key => columnHeaders[key] || key);
 
+  // Dynamic import ExcelJS to reduce bundle size
+  const ExcelJS = await import('exceljs');
+  
   // Create workbook and worksheet
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(sheetName);
@@ -101,10 +104,10 @@ export async function exportToExcel<T extends Record<string, any>>(
   });
 
   // Auto-size columns based on content
-  worksheet.columns.forEach(column => {
+  worksheet.columns.forEach((column: any) => {
     if (!column.eachCell) return;
     let maxLength = 0;
-    column.eachCell({ includeEmpty: false }, (cell) => {
+    column.eachCell({ includeEmpty: false }, (cell: any) => {
       const cellValue = cell.value ? String(cell.value) : '';
       maxLength = Math.max(maxLength, cellValue.length);
     });
@@ -139,6 +142,8 @@ export async function exportMultiSheetExcel(
   sheets: Record<string, any[]>,
   filename: string
 ): Promise<void> {
+  // Dynamic import ExcelJS to reduce bundle size
+  const ExcelJS = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
 
   Object.entries(sheets).forEach(([sheetName, data]) => {
@@ -161,10 +166,10 @@ export async function exportMultiSheetExcel(
       });
 
       // Auto-size columns
-      worksheet.columns.forEach(column => {
+      worksheet.columns.forEach((column: any) => {
         if (!column.eachCell) return;
         let maxLength = 0;
-        column.eachCell({ includeEmpty: false }, (cell) => {
+        column.eachCell({ includeEmpty: false }, (cell: any) => {
           const cellValue = cell.value ? String(cell.value) : '';
           maxLength = Math.max(maxLength, cellValue.length);
         });

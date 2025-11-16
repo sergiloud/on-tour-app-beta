@@ -2,7 +2,7 @@ import React from 'react';
 import { useFinance } from '../../../context/FinanceContext';
 import { useSettings } from '../../../context/SettingsContext';
 import { t } from '../../../lib/i18n';
-import { exportFinanceCsv } from '../../../lib/finance/export';
+// Dynamic import for exportFinanceCsv to reduce bundle size
 import { useToast } from '../../../ui/Toast';
 import { announce } from '../../../lib/announcer';
 import { trackEvent } from '../../../lib/telemetry';
@@ -50,7 +50,7 @@ function calculateAgencyCommissions(show: any, bookingAgencies: any[], managemen
   }
 }
 
-const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ filter = null, onClearFilter }) => {
+const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = React.memo(({ filter = null, onClearFilter }) => {
   const { snapshot } = useFinance();
   const { fmtMoney, bookingAgencies, managementAgencies } = useSettings();
   const toast = useToast();
@@ -232,7 +232,7 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
             <button
               className="px-4 py-2 rounded-lg text-xs font-medium glass border border-slate-200 dark:border-white/10 hover:border-accent-500/30 hover:bg-gradient-to-br hover:from-accent-500/10 hover:to-transparent transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg flex items-center gap-2"
               disabled={!can('finance:export')}
-              onClick={() => { exportFinanceCsv(rowsView, { columns: ['date', 'city', 'country', 'venue', 'promoter', 'fee', 'status', 'route', 'net'] }); try { toast.success(t('finance.export.csv.success') || 'Exported ✓'); announce(t('finance.export.csv.success') || 'Exported ✓'); } catch { } }}
+              onClick={async () => { const { exportFinanceCsv } = await import('../../../lib/finance/export'); exportFinanceCsv(rowsView, { columns: ['date', 'city', 'country', 'venue', 'promoter', 'fee', 'status', 'route', 'net'] }); try { toast.success(t('finance.export.csv.success') || 'Exported ✓'); announce(t('finance.export.csv.success') || 'Exported ✓'); } catch { } }}
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -479,8 +479,9 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
                             <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-slate-200 dark:bg-white/10" onClick={() => {
                               try { navigator.clipboard.writeText(JSON.stringify(s)); toast.success(t('common.copied') || 'Copied \u2713'); } catch { }
                             }}>{t('actions.copyRow') || 'Copy row'}</button>
-                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 disabled:opacity-50" disabled={!can('finance:export')} onClick={() => {
+                            <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 disabled:opacity-50" disabled={!can('finance:export')} onClick={async () => {
                               if (!can('finance:export')) return;
+                              const { exportFinanceCsv } = await import('../../../lib/finance/export');
                               exportFinanceCsv([s] as any, { columns: ['date', 'city', 'country', 'venue', 'promoter', 'fee', 'status', 'route', 'net'] });
                             }}>{t('actions.exportRowCsv') || 'Export row (CSV)'}</button>
                             <button role="menuitem" className="block w-full text-left px-3 py-1 hover:bg-slate-200 dark:bg-white/10" onClick={() => {
@@ -528,6 +529,8 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = ({ fi
       </div>
     </div>
   );
-};
+});
+
+PLTable.displayName = 'PLTable';
 
 export default PLTable;

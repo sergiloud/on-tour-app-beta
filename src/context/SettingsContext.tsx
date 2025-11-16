@@ -118,9 +118,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [presentationMode, setPresentationMode] = useState<boolean>(userPrefs?.presentationMode ?? !!legacyInitial.presentationMode);
   const [dashboardView, setDashboardView] = useState<DashboardView>((legacyInitial.dashboardView as DashboardView) || 'default');
   // Build default range for THIS YEAR (Jan 1 - Dec 31 of current year)
-  const defaultRange = (() => { const now = new Date(); const y = now.getFullYear(); const from = `${y}-01-01`; const to = `${y}-12-31`; return { from, to }; })();
+  // Memoized to prevent recalculation on every render
+  const defaultRange = useMemo(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const from = `${y}-01-01`;
+    const to = `${y}-12-31`;
+    return { from, to };
+  }, []);
   const [region, setRegion] = useState<Region>((userPrefs?.defaultRegion as any) || (legacyInitial.region as any) || 'all');
-  const [dateRange, setDateRange] = useState<DateRange>(legacyInitial.dateRange && legacyInitial.dateRange.from && legacyInitial.dateRange.to ? legacyInitial.dateRange : defaultRange);
+  const [dateRange, setDateRange] = useState<DateRange>(() => 
+    legacyInitial.dateRange && legacyInitial.dateRange.from && legacyInitial.dateRange.to 
+      ? legacyInitial.dateRange 
+      : defaultRange
+  );
   const [periodPreset, setPeriodPresetState] = useState<PeriodPreset>(((legacyInitial as any).periodPreset as PeriodPreset) || 'YTD');
   const [comparePrev, setComparePrevState] = useState<boolean>(userPrefs?.comparePrev ?? !!(legacyInitial as any).comparePrev);
   const [selectedStatuses, setSelectedStatusesState] = useState<Array<'confirmed' | 'pending' | 'offer' | 'canceled' | 'archived' | 'postponed'>>(userPrefs?.defaultStatuses || (legacyInitial as any).selectedStatuses || ['confirmed', 'pending', 'offer']);
@@ -368,15 +379,26 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const handleUpdateAgency = useCallback((id: string, patch: Partial<AgencyConfig>) => {
-    const apply = (arr: AgencyConfig[]) => arr.map(a => a.id === id ? { ...a, ...patch, commissionPct: patch.commissionPct != null ? Math.max(0, Math.min(100, patch.commissionPct)) : a.commissionPct } : a);
-    setBookingAgencies(a => apply(a));
-    setManagementAgencies(a => apply(a));
+    const apply = (arr: AgencyConfig[]) => arr.map(a => 
+      a.id === id 
+        ? { 
+            ...a, 
+            ...patch, 
+            commissionPct: patch.commissionPct != null 
+              ? Math.max(0, Math.min(100, patch.commissionPct)) 
+              : a.commissionPct 
+          } 
+        : a
+    );
+    setBookingAgencies(apply);
+    setManagementAgencies(apply);
     try { trackEvent('settings.agency.update', { id, ...patch }); } catch { }
   }, []);
 
   const handleRemoveAgency = useCallback((id: string) => {
-    setBookingAgencies(a => a.filter(x => x.id !== id));
-    setManagementAgencies(a => a.filter(x => x.id !== id));
+    const removeById = (arr: AgencyConfig[]) => arr.filter(x => x.id !== id);
+    setBookingAgencies(removeById);
+    setManagementAgencies(removeById);
     try { trackEvent('settings.agency.remove', { id }); } catch { }
   }, []);
 

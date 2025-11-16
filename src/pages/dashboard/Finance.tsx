@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { trackPageView } from '../../lib/activityTracker';
-import FinanceV2 from './FinanceV2';
+
+// Lazy load FinanceV2 to reduce main bundle size
+const FinanceV2 = React.lazy(() => import('./FinanceV2'));
 
 const Finance: React.FC = () => {
   const { userId } = useAuth();
@@ -10,7 +12,15 @@ const Finance: React.FC = () => {
     trackPageView('finance');
   }, [userId]);
 
-  return <FinanceV2 />;
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-500"></div>
+      </div>
+    }>
+      <FinanceV2 />
+    </Suspense>
+  );
 };
 
 export default Finance;

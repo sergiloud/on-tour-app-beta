@@ -5,7 +5,7 @@
  * Displays "who did what, when" for team collaboration visibility.
  */
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuditLogs } from '../../hooks/useAuditLogs';
 import { useOrganizationContext } from '../../context/OrganizationContext';
 import type { AuditAction, AuditSeverity, AuditLogEntry } from '../../types/audit';

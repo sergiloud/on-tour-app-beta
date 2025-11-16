@@ -1,4 +1,5 @@
 // Shows page – definitive clean implementation with NATIVE drag & drop
+
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -18,7 +19,7 @@ import { useToast } from '../../ui/Toast';
 import ShowEditorDrawer from '../../features/shows/editor/ShowEditorDrawer';
 import GuardedAction from '../../components/common/GuardedAction';
 import { countryLabel } from '../../lib/countries';
-import { exportShowsCsv, exportShowsXlsx } from '../../lib/shows/export';
+// Dynamic import for show exports to reduce bundle size
 import { can } from '../../lib/tenants';
 import { AnimatedButton } from '../../components/common/animations';
 import { useAuth } from '../../context/AuthContext';
@@ -296,8 +297,9 @@ const Shows: React.FC = () => {
     return stats;
   }, [rows]);
 
-  // export
-  const exportCsv = (selectedOnly?: boolean) => {
+  // export with dynamic imports to reduce bundle size
+  const exportCsv = async (selectedOnly?: boolean) => {
+    const { exportShowsCsv } = await import('../../lib/shows/export');
     const { count, cols } = exportShowsCsv(rows, exportCols, selectedOnly ? selected : undefined, 'shows');
     trackEvent('shows.csv.export', { count, cols });
     toast.success(t('shows.export.csv.success') || 'Exported ✓');
@@ -305,6 +307,7 @@ const Shows: React.FC = () => {
   const exportXlsx = async (selectedOnly?: boolean) => {
     setExporting(true);
     try {
+      const { exportShowsXlsx } = await import('../../lib/shows/export');
       const { count, cols } = await exportShowsXlsx(rows, exportCols, selectedOnly ? selected : undefined, 'shows');
       trackEvent('shows.xlsx.export', { count, cols });
       toast.success(t('shows.export.xlsx.success') || 'Exported ✓');

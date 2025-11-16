@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { useFinanceKpis } from '../hooks/useFinanceKpis';
 
 const KPIDataContext = createContext<ReturnType<typeof useFinanceKpis> | null>(null);

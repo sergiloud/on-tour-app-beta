@@ -3,7 +3,7 @@
  * Shows load time metrics in development
  */
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface PerfMetrics {
   fcp: number; // First Contentful Paint

@@ -1,4 +1,4 @@
-import { Suspense, useEffect, lazy } from 'react';
+import React, { Suspense, useEffect, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { RouteLoading, InlineRouteLoading } from '../components/common/RouteLoading';
 import {
@@ -40,6 +40,7 @@ const ProfilePage = lazy(() => import('../pages/profile/ProfileSettings'));
 const Story = lazy(() => import('../pages/dashboard/Story'));
 const DataSecurityPage = lazy(() => import('../pages/DataSecurityPage'));
 const WelcomePage = lazy(() => import('../pages/welcome/WelcomePage'));
+const ServiceWorkerDemo = lazy(() => import('../pages/ServiceWorkerDemo'));
 
 // Org routes - lazy loaded
 const OrgOverview = lazy(() => import('../pages/org/OrgOverviewNew'));
@@ -118,6 +119,7 @@ export const AppRouter = () => {
           <Route path="settings" element={<Suspense fallback={<SettingsSkeleton />}><Settings /></Suspense>} />
           <Route path="profile" element={<Suspense fallback={<SettingsSkeleton />}><ProfilePage /></Suspense>} />
           <Route path="data-security" element={<Suspense fallback={<SettingsSkeleton />}><DataSecurityPage /></Suspense>} />
+          <Route path="sw-demo" element={<Suspense fallback={<DashboardSkeleton />}><ServiceWorkerDemo /></Suspense>} />
         </Route>
       </Routes>
     </BrowserRouter>

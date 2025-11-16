@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Card } from '../../ui/Card';
 import { t } from '../../lib/i18n';
 import ErrorBoundary from '../../components/common/ErrorBoundary';
@@ -24,7 +24,8 @@ const ArrowDownIcon = () => (
 
 // Lazy to keep parity with Dashboard
 const FinanceQuicklookLazy = React.lazy(() => import('../../components/dashboard/FinanceQuicklook'));
-import { InteractiveMap } from '../../components/mission/InteractiveMap';
+// Lazy load InteractiveMap to reduce bundle size  
+const LazyInteractiveMap = React.lazy(() => import('../../components/mission/InteractiveMap').then(mod => ({ default: mod.InteractiveMap })));
 import { MissionHud } from '../../components/mission/MissionHud';
 import { ActionHub } from '../../components/dashboard/ActionHub';
 import TourOverviewCard from '../../components/dashboard/TourOverviewCard';
@@ -208,7 +209,13 @@ export const MissionControlLab: React.FC = () => {
           </div>
           <ErrorBoundary fallback={<div className="text-xs opacity-80 flex items-center gap-2"><span>{t('hud.mapLoadError')}</span></div>}>
             <LazyVisible height={tile.h || (tile.size === 'lg' ? 360 : tile.size === 'md' ? 320 : 280)}>
-              <InteractiveMap className={`w-full ${hCls}`} />
+              <Suspense fallback={
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-500"></div>
+                </div>
+              }>
+                <LazyInteractiveMap className={`w-full ${hCls}`} />
+              </Suspense>
             </LazyVisible>
           </ErrorBoundary>
         </Card>

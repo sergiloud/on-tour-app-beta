@@ -5,7 +5,7 @@
  * Split heavy components and routes into separate chunks
  */
 
-import { lazy, Suspense, ComponentType } from 'react';
+import React, { lazy, Suspense, ComponentType } from 'react';
 import { Loader2 } from 'lucide-react';
 
 // ========================================

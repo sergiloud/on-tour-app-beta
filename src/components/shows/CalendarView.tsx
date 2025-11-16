@@ -18,7 +18,7 @@ interface CalendarEvent {
   year: number;
 }
 
-export const CalendarView: React.FC<CalendarViewProps> = ({
+export const CalendarView = React.memo<CalendarViewProps>(({
   shows,
   onShowClick,
   onEdit,
@@ -298,4 +298,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       </AnimatePresence>
     </div>
   );
-};
+});
+
+CalendarView.displayName = 'CalendarView';

@@ -61,7 +61,7 @@ export interface CalendarViewRouterProps {
  * Router component that delegates to specific calendar views
  * Keeps Calendar.tsx clean by isolating view-specific rendering
  */
-export const CalendarViewRouter: React.FC<CalendarViewRouterProps> = ({
+export const CalendarViewRouter = React.memo<CalendarViewRouterProps>(({
   view,
   eventsByDay,
   grid,
@@ -193,4 +193,6 @@ export const CalendarViewRouter: React.FC<CalendarViewRouterProps> = ({
     default:
       return null;
   }
-};
+});
+
+CalendarViewRouter.displayName = 'CalendarViewRouter';

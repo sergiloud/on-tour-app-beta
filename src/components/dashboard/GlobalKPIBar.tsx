@@ -11,7 +11,7 @@ import { t } from '../../lib/i18n';
 const pctDelta = (current:number, prev:number) => prev === 0 ? (current === 0 ? 0 : 100) : ((current - prev) / prev) * 100;
 // Masking removed: use real values directly
 
-export const GlobalKPIBar: React.FC = () => {
+export const GlobalKPIBar = React.memo(() => {
   const { raw, display, targets } = useKpi();
   const { loading, thisMonth } = useFinance();
   const { setKpiTickerHidden } = useSettings();
@@ -75,7 +75,9 @@ export const GlobalKPIBar: React.FC = () => {
       </Card>
     </div>
   );
-};
+});
+
+GlobalKPIBar.displayName = 'GlobalKPIBar';
 
 type KPIProps = { label: string; value: string; progress: number; tone?: 'amber'|'rose'|'emerald'; sparkline?: number[]; mask?: boolean; deltaPct?: number };
 

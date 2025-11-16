@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { KPIDataProvider } from './context/KPIDataContext';
@@ -7,8 +7,9 @@ import { ThemeProvider } from './hooks/useTheme';
 import { HighContrastProvider } from './context/HighContrastContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { initTelemetry } from './lib/telemetry';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { createOptimizedQueryClient, setupQueryPersistence, setupBackgroundSync } from './lib/reactQueryOptimizations.v2';
 import './styles/index.css';
 import './styles/performance.css';
 // DISABLED FOR PRODUCTION BETA - all data comes from Firestore now
@@ -32,30 +33,14 @@ initTelemetry();
 // trackResourceTiming();
 // trackLongTasks();
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 10 * 60 * 1000, // 10 minutes - data stays fresh longer
-      gcTime: 30 * 60 * 1000, // 30 minutes - cache lifetime extended
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error instanceof Error && 'status' in error && typeof error.status === 'number') {
-          return error.status >= 500 && failureCount < 2;
-        }
-        return failureCount < 2;
-      },
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: 'always',
-      refetchOnMount: false, // Don't refetch if data is fresh
-      networkMode: 'online',
-      structuralSharing: true, // Enable for better performance
-    },
-    mutations: {
-      retry: 1,
-      networkMode: 'online',
-    },
-  },
-});
+// Create optimized query client with enhanced caching and performance
+const queryClient = createOptimizedQueryClient();
+
+// Setup persistence and background sync
+if (typeof window !== 'undefined') {
+  setupQueryPersistence(queryClient);
+  setupBackgroundSync(queryClient);
+}
 
 const AppProviders = ({ children }: { children: React.ReactNode }) => (
   <ErrorBoundary>

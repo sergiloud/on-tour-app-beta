@@ -1,3 +1,4 @@
+import React from 'react';
 import type { AppDefinition, AppComponentProps } from '../types/mobileOS';
 import { 
   Music, 

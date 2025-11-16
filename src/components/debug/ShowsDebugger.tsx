@@ -2,6 +2,7 @@
  * ShowsDebugger - Componente de diagnóstico para verificar el estado de los shows
  * Solo visible en modo desarrollo
  */
+
 import React, { useEffect, useState } from 'react';
 import { useShows } from '../../hooks/useShows';
 import { showStore } from '../../shared/showStore';

@@ -49,7 +49,7 @@ export interface KPICardProps {
  * - Opcional: barra de progreso
  * - Animación de entrada con framer-motion
  */
-export function KPICard({
+export const KPICard = React.memo(function KPICard({
   title,
   value,
   description,
@@ -168,4 +168,4 @@ export function KPICard({
       )}
     </motion.div>
   );
-}
+});

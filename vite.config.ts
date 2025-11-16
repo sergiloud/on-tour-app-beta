@@ -26,7 +26,9 @@ export default defineConfig({
     },
   },
   plugins: [
-    react(),
+    react({
+      jsxRuntime: 'classic'
+    }),
     // Bundle analyzer (solo en local, desactivado en Vercel para builds más rápidos)
     ...(process.env.VERCEL ? [] : [
       visualizer({
@@ -39,9 +41,7 @@ export default defineConfig({
     ]),
     // PWA - Offline-first for tour managers on the road
     VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw-advanced.ts',
+      strategies: 'generateSW',
       registerType: 'prompt',
       injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'favicon.ico', 'offline.html'],
@@ -70,7 +70,9 @@ export default defineConfig({
           }
         ]
       },
-      injectManifest: {
+      workbox: {
+        cleanupOutdatedCaches: true,
+        sourcemap: false,
         globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],
         globIgnores: [
           '**/node_modules/**/*',
@@ -80,18 +82,33 @@ export default defineConfig({
           '**/migrate-*.html',
           '**/unregister-*.html'
         ],
-        // Exclude heavy chunks from precache - load on demand
         dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
         maximumFileSizeToCacheInBytes: 5000000, // 5MB limit
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          }
+        ]
       },
       devOptions: {
-        enabled: true, // Enable in dev for testing
+        enabled: true,
         type: 'module',
         navigateFallback: 'index.html'
-      },
-      workbox: {
-        cleanupOutdatedCaches: true,
-        sourcemap: false
       }
     })
   ],
@@ -103,19 +120,34 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       'react',
-      'react/jsx-runtime',
+      'react/jsx-runtime', 
       'react-dom',
       'react-router-dom',
       'react-is',
       '@tanstack/react-query',
+      '@tanstack/query-core',
       'lucide-react',
       'sonner',
       'date-fns',
       'clsx',
+      'framer-motion',
     ],
-    exclude: ['exceljs', 'xlsx', 'maplibre-gl', 'firebase'],
+    exclude: [
+      'exceljs', 
+      'xlsx', 
+      'maplibre-gl', 
+      'firebase',
+      '@firebase/firestore',
+      '@firebase/auth',
+    ],
     esbuildOptions: {
       target: 'es2020',
+      define: {
+        // Remove debug code in production
+        'process.env.NODE_ENV': '"production"',
+      },
+      treeShaking: true,
+      minify: true,
     },
   },
   ssr: {
@@ -139,7 +171,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         format: 'es',
-        // Optimized chunking strategy
+        // Enhanced chunking strategy for better performance
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
             // CRITICAL: Keep React ecosystem TOGETHER to prevent initialization errors
@@ -156,9 +188,16 @@ export default defineConfig({
               return 'vendor-react';
             }
             
-            // Firebase - large but independent
+            // Firebase - large but independent, split into sub-chunks
             if (id.includes('firebase') || id.includes('@firebase')) {
-              return 'vendor-firebase';
+              // Split Firebase into smaller, more focused chunks
+              if (id.includes('firestore') || id.includes('firebase/firestore')) {
+                return 'vendor-firebase-firestore';
+              }
+              if (id.includes('auth') || id.includes('firebase/auth')) {
+                return 'vendor-firebase-auth';
+              }
+              return 'vendor-firebase-core';
             }
             
             // Framer Motion - uses React but safer to keep separate (loaded after React)
@@ -171,10 +210,8 @@ export default defineConfig({
               return 'vendor-maplibre';
             }
             
-            // Excel/XLSX - heavy, lazy loaded
-            if (id.includes('exceljs') || id.includes('xlsx')) {
-              return 'vendor-excel';
-            }
+            // Excel/XLSX - Dynamic imports only, no manual chunking (load on demand)
+            // Removed explicit chunking to enable true lazy loading
             
             // DND Kit
             if (id.includes('@dnd-kit')) {
@@ -193,9 +230,54 @@ export default defineConfig({
               return 'vendor-date';
             }
             
+            // Form libraries
+            if (id.includes('react-hook-form') || 
+                id.includes('@hookform') ||
+                id.includes('zod')) {
+              return 'vendor-forms';
+            }
+            
+            // Utility libraries
+            if (id.includes('lodash') || 
+                id.includes('clsx')) {
+              return 'vendor-utils';
+            }
+            
             // IMPORTANT: Don't create a catch-all vendor chunk
             // Let Rollup handle remaining dependencies to avoid initialization issues
             // Only explicitly defined chunks above will be created
+          }
+          
+          // Application-level chunking for better code splitting
+          // Split large feature areas into separate chunks
+          if (id.includes('/src/')) {
+            // Finance feature chunk
+            if (id.includes('/features/finance/') || 
+                id.includes('/pages/dashboard/FinanceV2') ||
+                id.includes('/context/FinanceContext')) {
+              return 'app-finance';
+            }
+            
+            // Calendar feature chunk  
+            if (id.includes('/pages/dashboard/Calendar') ||
+                id.includes('/features/calendar/') ||
+                id.includes('/components/calendar/')) {
+              return 'app-calendar';
+            }
+            
+            // Travel feature chunk
+            if (id.includes('/pages/dashboard/TravelV2') ||
+                id.includes('/features/travel/') ||
+                id.includes('/pages/TravelWorkspace')) {
+              return 'app-travel';
+            }
+            
+            // Settings and configuration
+            if (id.includes('/pages/dashboard/Settings') ||
+                id.includes('/pages/profile/') ||
+                id.includes('/context/SettingsContext')) {
+              return 'app-settings';
+            }
           }
         },
         chunkFileNames: 'assets/[name]-[hash].js',
@@ -211,17 +293,27 @@ export default defineConfig({
         interop: 'auto',
         hoistTransitiveImports: false, // Improve tree shaking
         minifyInternalExports: true,
+        // Enhanced performance settings
+        experimentalMinChunkSize: 10000, // Minimum chunk size (10KB)
       },
       treeshake: {
-        moduleSideEffects: 'no-external',
+        moduleSideEffects: (id, external) => {
+          // Allow side effects for CSS and known libraries that need them
+          return id.endsWith('.css') || 
+                 id.includes('firebase') || 
+                 id.includes('maplibre') ||
+                 !external;
+        },
         propertyReadSideEffects: false,
         tryCatchDeoptimization: false,
+        preset: 'recommended',
+        annotations: true,
       },
     },
-    chunkSizeWarningLimit: 800,
+    chunkSizeWarningLimit: 600, // Reduced from 800KB to encourage better chunking
     reportCompressedSize: true,
     cssMinify: 'esbuild',
-    assetsInlineLimit: 4096,
+    assetsInlineLimit: 2048, // Reduced from 4096 to minimize base64 inlining
   },
   server: {
     host: true,

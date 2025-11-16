@@ -21,7 +21,7 @@ interface ExportImportPanelProps {
  * - JSON: Raw data backup
  * - PDF: Professional printable itinerary document
  */
-export const ExportImportPanel: React.FC<ExportImportPanelProps> = ({
+export const ExportImportPanel = React.memo<ExportImportPanelProps>(({
   events,
   onImport,
 }) => {
@@ -535,4 +535,6 @@ export const ExportImportPanel: React.FC<ExportImportPanelProps> = ({
       </AnimatePresence>
     </motion.div>
   );
-};
+});
+
+ExportImportPanel.displayName = 'ExportImportPanel';

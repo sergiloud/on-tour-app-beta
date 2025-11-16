@@ -79,29 +79,49 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   useEffect(() => {
     let mounted = true;
+    let unsubscribe: (() => void) | null = null;
+    
     // In tests, avoid async fetch/subscription noise; seed from local store once.
     if (isTest) {
       // Keep tests lightweight: provide an empty snapshot; finance-specific tests can override via context if needed
       setBaseSnapshot(buildFinanceSnapshotFromShows([], new Date()));
       return () => { mounted = false; };
     }
+    
     (async () => {
       setLoading(true);
       try {
+        // Fetch finance snapshot with mounted check to prevent memory leaks
         const s = await fetchFinanceSnapshot(new Date());
-        if (mounted) setBaseSnapshot(s);
+        if (mounted) {
+          setBaseSnapshot(s);
+        }
+      } catch (error) {
+        if (mounted) {
+          console.error('[FinanceContext] Failed to fetch snapshot:', error);
+        }
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     })();
-    const unsub = subscribeSnapshot((evt) => {
-      if (evt.type === 'snapshot.updated') {
+    
+    // Setup subscription with memory leak protection
+    unsubscribe = subscribeSnapshot((evt) => {
+      if (evt.type === 'snapshot.updated' && mounted) {
         nowRef.current = new Date();
         setBaseSnapshot(evt.payload);
       }
     });
-    return () => { mounted = false; unsub(); };
-  }, []);
+    
+    return () => { 
+      mounted = false; 
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [isTest]);
 
   // Derive filtered snapshot from base snapshot and global filters
   const snapshot: FinanceSnapshot = useMemo(() => {
@@ -175,8 +195,30 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const refreshMemo = React.useCallback(() => {
+    let mounted = true;
     setLoading(true);
-    fetchFinanceSnapshot(new Date()).then(s => setBaseSnapshot(s)).finally(() => setLoading(false));
+    
+    fetchFinanceSnapshot(new Date())
+      .then(s => {
+        if (mounted) {
+          setBaseSnapshot(s);
+        }
+      })
+      .catch(error => {
+        if (mounted) {
+          console.error('[FinanceContext] Failed to refresh snapshot:', error);
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setLoading(false);
+        }
+      });
+      
+    // Return cleanup function to prevent state updates if component unmounts
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Memoize entire context value to prevent cascading re-renders

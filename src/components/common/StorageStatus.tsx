@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { HybridShowService } from '../../services/hybridShowService';
 import { Cloud, HardDrive, Wifi, WifiOff } from 'lucide-react';
+import { useEventListeners } from '../../hooks/useCleanup';
 
 interface StorageStatusProps {
   className?: string;
@@ -13,6 +14,7 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({ className = '' }) 
     userId: 'unknown'
   });
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const listeners = useEventListeners();
 
   useEffect(() => {
     // Update status
@@ -22,22 +24,15 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({ className = '' }) 
 
     updateStatus();
     
-    // Listen for shows updates
+    // Setup event listeners with automatic cleanup
     const handleShowsUpdate = () => updateStatus();
-    window.addEventListener('shows-updated', handleShowsUpdate);
-
-    // Listen for online/offline
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
 
-    return () => {
-      window.removeEventListener('shows-updated', handleShowsUpdate);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+    listeners.add(window, 'shows-updated', handleShowsUpdate);
+    listeners.add(window, 'online', handleOnline);
+    listeners.add(window, 'offline', handleOffline);
+  }, [listeners]);
 
   const getStorageIcon = () => {
     if (!isOnline) return <WifiOff className="w-4 h-4 text-gray-400" />;

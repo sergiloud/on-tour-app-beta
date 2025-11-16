@@ -1,7 +1,7 @@
 {
   "name": "on-tour-app",
   "private": true,
-  "version": "0.0.3",
+  "version": "2.2.2",
   "type": "module",
   "engines": {
     "node": "22.x",
@@ -9,9 +9,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:wasm && vite build",
-    "build:production": "NODE_ENV=production npm run build:wasm && vite build --mode production",
+    "build": "npm run build:wasm:safe && vite build",
+    "build:production": "NODE_ENV=production npm run build:wasm:safe && vite build --mode production",
     "build:wasm": "cd wasm-financial-engine && wasm-pack build --target web --out-dir pkg --release",
+    "build:wasm:safe": "npm run build:wasm || echo 'WASM build skipped - using JavaScript fallback'",
     "build:check": "tsc --noEmit || true && npm run build",
     "build:strict": "tsc && npm run build",
     "build:analyze": "npm run build && node scripts/analyze-bundle.js",

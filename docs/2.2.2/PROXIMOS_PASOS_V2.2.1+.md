@@ -1,6 +1,6 @@
-# 🎯 Próximos Pasos - On Tour App v2.2.1+
+# 🎯 Próximos Pasos - On Tour App v2.2.2+
 **Fecha:** 16 de noviembre de 2025  
-**Estado del Proyecto:** v2.2.1 Completado ✅  
+**Estado del Proyecto:** v2.2.2 Iniciado 🚀  
 **Repositorio:** https://github.com/sergiloud/on-tour-app-beta
 
 ## 📋 RESUMEN DE TAREAS PENDIENTES

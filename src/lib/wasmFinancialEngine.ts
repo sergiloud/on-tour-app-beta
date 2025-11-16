@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 // WASM module interface for type safety
 interface WasmFinancialEngineModule {
   FinancialEngine: new() => any;
-  default: () => Promise<void>;
+  default: () => Promise<any>;
 }
 
 class WasmFinancialEngineService implements WasmFinancialEngineInterface {
@@ -27,6 +27,14 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
     
     try {
       console.log('🚀 Initializing Financial Engine...');
+      
+      // Check if WASM should be skipped (e.g., in Vercel build)
+      const skipWasm = import.meta.env.SKIP_WASM === 'true' || import.meta.env.VITE_SKIP_WASM === 'true';
+      
+      if (skipWasm) {
+        console.log('🔶 WASM skipped by environment variable, using JavaScript fallback');
+        throw new Error('WASM skipped by configuration');
+      }
       
       // Try to load WASM module
       try {

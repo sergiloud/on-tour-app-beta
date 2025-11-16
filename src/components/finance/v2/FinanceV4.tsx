@@ -379,10 +379,10 @@ const FinanceV4: React.FC = () => {
                             <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Performance Analysis</h3>
                             <button
                                 onClick={() => toggleMinimize('performance')}
-                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -403,10 +403,10 @@ const FinanceV4: React.FC = () => {
                             <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Pivot Analysis</h3>
                             <button
                                 onClick={() => toggleMinimize('pivot')}
-                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -427,10 +427,10 @@ const FinanceV4: React.FC = () => {
                             <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Cash Flow & AR Management</h3>
                             <button
                                 onClick={() => toggleMinimize('ar')}
-                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -451,10 +451,10 @@ const FinanceV4: React.FC = () => {
                             <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Trends & Growth</h3>
                             <button
                                 onClick={() => toggleMinimize('trends')}
-                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -477,10 +477,10 @@ const FinanceV4: React.FC = () => {
                             </div>
                             <button
                                 onClick={() => toggleMinimize('pl')}
-                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">
@@ -496,10 +496,10 @@ const FinanceV4: React.FC = () => {
                             <h3 className="text-sm font-medium text-slate-400 dark:text-white/60 uppercase tracking-wider">Expense Management</h3>
                             <button
                                 onClick={() => toggleMinimize('expenses')}
-                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 transition-colors"
+                                className="p-1.5 rounded hover:bg-slate-200 dark:bg-white/10 transition-colors"
                                 title="Minimize section"
                             >
-                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-400 dark:text-white/60" />
+                                <Minimize2 className="w-4 h-4 text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60" />
                             </button>
                         </div>
                         <div className="p-6">

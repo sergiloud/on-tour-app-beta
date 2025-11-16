@@ -1,68 +1,96 @@
 /**
- * useShowsQuery - Enhanced with React Query Optimizations
- * Advanced React Query hook with intelligent caching, background sync,
- * optimistic updates, and performance optimizations.
+ * useShowsQuery - Professional React Query Integration
+ * 
+ * Enhanced shows query hook with performance monitoring and optimistic updates.
  */
 
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import type { Show } from '../lib/shows';
 import { showStore } from '../shared/showStore';
-import { useEnhancedQuery, useOptimisticMutation, useBackgroundSync } from '../lib/reactQueryOptimizations';
-import { showsQueryKeys } from '../lib/queryClient';
+import { performanceTracker, backgroundSyncQueue } from '../lib/react-query-advanced';
+import { logger } from '../lib/logger';
+import { toast } from 'sonner';
 
-// Re-export for compatibility
-export { showsQueryKeys };
+// ============================================================================
+// QUERY KEYS
+// ============================================================================
+
+export const showsQueryKeys = {
+  all: ['shows'] as const,
+  lists: () => [...showsQueryKeys.all, 'list'] as const,
+  list: (filters: string) => [...showsQueryKeys.lists(), { filters }] as const,
+  details: () => [...showsQueryKeys.all, 'detail'] as const,
+  detail: (id: string) => [...showsQueryKeys.details(), id] as const,
+};
+
+// ============================================================================
+// QUERY FUNCTIONS
+// ============================================================================
 
 /**
- * Fetch all shows from the store
- * During transition period, uses showStore to ensure compatibility
- * Post-migration: would fetch from API
+ * Fetch all shows with performance tracking
  */
 async function fetchAllShows(): Promise<Show[]> {
-  // Transition phase: read from existing showStore
-  // This ensures backward compatibility during migration
-  return showStore.getAll();
+  const startTime = performance.now();
+  try {
+    const shows = showStore.getAll();
+    const duration = performance.now() - startTime;
+    performanceTracker.track(showsQueryKeys.lists(), duration);
+    logger.debug(`Fetched ${shows.length} shows in ${duration}ms`);
+    return shows;
+  } catch (error) {
+    const duration = performance.now() - startTime;
+    performanceTracker.track(showsQueryKeys.lists(), duration);
+    logger.error('Failed to fetch shows', error as Error);
+    throw error;
+  }
 }
 
 /**
- * Fetch a single show by ID
+ * Fetch single show by ID with performance tracking
  */
 async function fetchShowById(id: string): Promise<Show | undefined> {
-  return showStore.getById(id);
+  const startTime = performance.now();
+  try {
+    const show = showStore.getById(id);
+    const duration = performance.now() - startTime;
+    performanceTracker.track(showsQueryKeys.detail(id), duration);
+    logger.debug(`Fetched show ${id} in ${duration}ms`);
+    return show;
+  } catch (error) {
+    const duration = performance.now() - startTime;
+    performanceTracker.track(showsQueryKeys.detail(id), duration);
+    logger.error(`Failed to fetch show ${id}`, error as Error);
+    throw error;
+  }
 }
 
+// ============================================================================
+// QUERY HOOKS
+// ============================================================================
+
 /**
- * Enhanced useShowsQuery with background sync and intelligent caching
- * Features:
- * - Dynamic stale time based on data freshness
- * - Background synchronization
- * - Intelligent cache management
- * - Performance optimizations
+ * Professional useShowsQuery with advanced React Query optimizations
  */
-export function useShowsQuery(options?: { backgroundSync?: boolean; dataType?: 'static' | 'dynamic' | 'realtime' }) {
-  const { backgroundSync = true, dataType = 'dynamic' } = options || {};
-  
-  // Enhanced query with intelligent caching
-  const query = useEnhancedQuery(
-    showsQueryKeys.lists(),
-    fetchAllShows,
-    {
-      dataType,
-      backgroundSync,
-      // Shows are dynamic data - refresh every 5 minutes
-      staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
+export function useShowsQuery() {
+  return useQuery({
+    queryKey: showsQueryKeys.lists(),
+    queryFn: fetchAllShows,
+    staleTime: 5 * 60 * 1000, // 5 minutes - shows don't change frequently
+    gcTime: 30 * 60 * 1000, // 30 minutes in cache
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    retry: (failureCount, error) => {
+      // Don't retry validation errors
+      if (error instanceof Error && error.message.includes('validation')) {
+        return false;
+      }
+      return failureCount < 2;
+    },
+    meta: {
+      errorMessage: 'Failed to load shows'
     }
-  );
-  
-  // Background sync for real-time updates
-  useBackgroundSync(
-    [showsQueryKeys.all as readonly unknown[]],
-    30000, // 30 seconds
-    backgroundSync && dataType !== 'static'
-  );
-  
-  return query;
+  });
 }
 
 /**
@@ -79,61 +107,215 @@ export function useShowQuery(id: string | undefined) {
   });
 }
 
+// ============================================================================
+// MUTATION HOOKS
+// ============================================================================
+
 /**
- * Enhanced useAddShowMutation with optimistic updates
- * Provides instant UI feedback with automatic rollback on error
+ * Professional add show mutation with optimistic updates
  */
 export function useAddShowMutation() {
-  return useOptimisticMutation<Show[], Error, Show>(
-    async (newShow: Show) => {
-      showStore.addShow(newShow);
-      return showStore.getAll(); // Return updated list
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (newShow: Omit<Show, 'id'>): Promise<Show> => {
+      // Queue for background sync if offline
+      if (!navigator.onLine) {
+        const syncId = backgroundSyncQueue.enqueue({
+          url: '/api/shows',
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: newShow
+        });
+        logger.info(`Queued show creation for background sync: ${syncId}`);
+      }
+      
+      const showWithId: Show = {
+        ...newShow,
+        id: `show_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      };
+      showStore.addShow(showWithId);
+      return showWithId;
     },
-    {
-      queryKey: showsQueryKeys.lists(),
-      updateFn: (oldShows: Show[] = [], newShow: Show) => [...oldShows, newShow],
-      successMessage: 'Show added successfully',
-      errorMessage: 'Failed to add show. Please try again.',
+    onMutate: async (newShow) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: showsQueryKeys.lists() });
+      
+      // Snapshot previous value
+      const previousShows = queryClient.getQueryData(showsQueryKeys.lists());
+      
+      // Optimistically update
+      const optimisticShow: Show = {
+        ...newShow,
+        id: `temp_${Date.now()}`,
+      };
+      
+      queryClient.setQueryData(showsQueryKeys.lists(), (old: Show[] = []) => [
+        ...old,
+        optimisticShow
+      ]);
+      
+      return { previousShows, optimisticShow };
+    },
+    onError: (error, newShow, context) => {
+      // Rollback on error
+      if (context?.previousShows) {
+        queryClient.setQueryData(showsQueryKeys.lists(), context.previousShows);
+      }
+      logger.error('Add show mutation failed', error as Error);
+      toast.error('Failed to add show');
+    },
+    onSuccess: (addedShow, newShow, context) => {
+      // Replace optimistic update with real data
+      queryClient.setQueryData(showsQueryKeys.lists(), (old: Show[] = []) =>
+        old.map(show => 
+          show.id === context?.optimisticShow.id ? addedShow : show
+        )
+      );
+      toast.success('Show added successfully');
+      logger.info(`Show added: ${addedShow.id}`);
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency
+      queryClient.invalidateQueries({ queryKey: showsQueryKeys.all });
     }
-  );
+  });
 }
 
 /**
- * Enhanced useUpdateShowMutation with optimistic updates
+ * Professional update show mutation with optimistic updates
  */
 export function useUpdateShowMutation() {
-  return useOptimisticMutation<Show[], Error, { id: string; patch: Partial<Show> & Record<string, unknown> }>(
-    async ({ id, patch }) => {
-      showStore.updateShow(id, patch);
-      return showStore.getAll();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      updates 
+    }: { 
+      id: string; 
+      updates: Partial<Show>; 
+    }): Promise<Show> => {
+      // Queue for background sync if offline
+      if (!navigator.onLine) {
+        const syncId = backgroundSyncQueue.enqueue({
+          url: `/api/shows/${id}`,
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: updates
+        });
+        logger.info(`Queued show update for background sync: ${syncId}`);
+      }
+      
+      showStore.updateShow(id, updates);
+      const updatedShow = showStore.getById(id);
+      if (!updatedShow) throw new Error(`Show ${id} not found after update`);
+      return updatedShow;
     },
-    {
-      queryKey: showsQueryKeys.lists(),
-      updateFn: (oldShows: Show[] = [], { id, patch }) => 
-        oldShows.map(show => show.id === id ? { ...show, ...patch } : show),
-      successMessage: 'Show updated successfully',
-      errorMessage: 'Failed to update show. Please try again.',
+    onMutate: async ({ id, updates }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: showsQueryKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: showsQueryKeys.detail(id) });
+      
+      // Snapshot previous values
+      const previousShows = queryClient.getQueryData(showsQueryKeys.lists());
+      const previousShow = queryClient.getQueryData(showsQueryKeys.detail(id));
+      
+      // Optimistically update list
+      queryClient.setQueryData(showsQueryKeys.lists(), (old: Show[] = []) =>
+        old.map(show => 
+          show.id === id ? { ...show, ...updates } : show
+        )
+      );
+      
+      // Optimistically update individual show
+      if (previousShow) {
+        queryClient.setQueryData(showsQueryKeys.detail(id), (old: Show) => ({
+          ...old,
+          ...updates
+        }));
+      }
+      
+      return { previousShows, previousShow, id };
+    },
+    onError: (error, { id }, context) => {
+      // Rollback on error
+      if (context?.previousShows) {
+        queryClient.setQueryData(showsQueryKeys.lists(), context.previousShows);
+      }
+      if (context?.previousShow) {
+        queryClient.setQueryData(showsQueryKeys.detail(id), context.previousShow);
+      }
+      logger.error(`Update show mutation failed: ${id}`, error as Error);
+      toast.error('Failed to update show');
+    },
+    onSuccess: (updatedShow, { id }) => {
+      // Update with real data
+      queryClient.setQueryData(showsQueryKeys.lists(), (old: Show[] = []) =>
+        old.map(show => show.id === id ? updatedShow : show)
+      );
+      queryClient.setQueryData(showsQueryKeys.detail(id), updatedShow);
+      toast.success('Show updated successfully');
+      logger.info(`Show updated: ${id}`);
+    },
+    onSettled: (data, error, { id }) => {
+      // Refetch to ensure consistency
+      queryClient.invalidateQueries({ queryKey: showsQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: showsQueryKeys.detail(id) });
     }
-  );
+  });
 }
 
 /**
- * useRemoveShowMutation - Replaces showStore.removeShow()
- * Automatically invalidates the shows cache after success
+ * Professional remove show mutation with optimistic updates
  */
 export function useRemoveShowMutation() {
   const queryClient = useQueryClient();
-
+  
   return useMutation({
-    mutationFn: (id: string) => {
-      showStore.removeShow(id);
-      return Promise.resolve(id);
+    mutationFn: async (id: string): Promise<void> => {
+      // Queue for background sync if offline
+      if (!navigator.onLine) {
+        const syncId = backgroundSyncQueue.enqueue({
+          url: `/api/shows/${id}`,
+          method: 'DELETE'
+        });
+        logger.info(`Queued show deletion for background sync: ${syncId}`);
+        return;
+      }
+      
+      await showStore.removeShow(id);
     },
-    onSuccess: (_data, variables) => {
-      // Invalidate all shows and the specific show
+    onMutate: async (id) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: showsQueryKeys.lists() });
+      
+      // Snapshot previous value
+      const previousShows = queryClient.getQueryData(showsQueryKeys.lists());
+      
+      // Optimistically remove
+      queryClient.setQueryData(showsQueryKeys.lists(), (old: Show[] = []) =>
+        old.filter(show => show.id !== id)
+      );
+      
+      return { previousShows, removedId: id };
+    },
+    onError: (error, id, context) => {
+      // Rollback on error
+      if (context?.previousShows) {
+        queryClient.setQueryData(showsQueryKeys.lists(), context.previousShows);
+      }
+      logger.error(`Remove show mutation failed: ${id}`, error as Error);
+      toast.error('Failed to remove show');
+    },
+    onSuccess: (data, id) => {
+      toast.success('Show removed successfully');
+      logger.info(`Show removed: ${id}`);
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency
       queryClient.invalidateQueries({ queryKey: showsQueryKeys.all });
-      queryClient.invalidateQueries({ queryKey: showsQueryKeys.detail(variables) });
-    },
+    }
   });
 }
 
@@ -155,13 +337,32 @@ export function useSetAllShowsMutation() {
   });
 }
 
+// ============================================================================
+// EXPORTS AND UTILITIES
+// ============================================================================
+
 /**
- * useShowsSubscription - Advanced hook for reactive updates
- * Maintains synchronization when other tabs/windows update shows
- * Returns the same interface as useShowsQuery for compatibility
+ * Export query functions for direct use
  */
-export function useShowsSubscription() {
-  // For now, useShowsQuery provides the same functionality
-  // In future, could add multi-tab synchronization via event listeners
-  return useShowsQuery();
+export {
+  fetchAllShows,
+  fetchShowById,
+};
+
+/**
+ * Prefetch shows for performance optimization
+ */
+export function prefetchShows(client: ReturnType<typeof useQueryClient>) {
+  return client.prefetchQuery({
+    queryKey: showsQueryKeys.lists(),
+    queryFn: fetchAllShows,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Invalidate all show queries (useful for manual refresh)
+ */
+export function invalidateShowsQueries(client: ReturnType<typeof useQueryClient>) {
+  return client.invalidateQueries({ queryKey: showsQueryKeys.all });
 }

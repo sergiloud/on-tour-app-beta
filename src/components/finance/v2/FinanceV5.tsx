@@ -503,8 +503,8 @@ const FinanceV5: React.FC = () => {
                         </div>
                         <div className="text-xs text-slate-300 dark:text-white/50 space-y-1">
                             <div className="flex items-center gap-2">
-                                <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[10px] font-mono text-slate-400 dark:text-white/60">⌘</kbd>
-                                <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[10px] font-mono text-slate-400 dark:text-white/60">1-7</kbd>
+                                <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-[10px] font-mono text-slate-400 dark:text-white/60">⌘</kbd>
+                                <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-[10px] font-mono text-slate-400 dark:text-white/60">1-7</kbd>
                                 <span className="text-[11px]">Navigate sections</span>
                             </div>
                         </div>
@@ -603,7 +603,7 @@ const FinanceV5: React.FC = () => {
                                             {stats.byRegion.map((region, index) => (
                                                 <div
                                                     key={region.region}
-                                                    className="flex items-center gap-6 p-5 rounded-xl glass border border-slate-100 dark:border-white/5 hover:border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/5 transition-all group"
+                                                    className="flex items-center gap-6 p-5 rounded-xl glass border border-slate-100 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10 hover:bg-slate-100 dark:bg-white/5 transition-all group"
                                                 >
                                                     <div className="flex items-center gap-4 flex-1">
                                                         <div className="text-2xl font-bold text-slate-300 dark:text-white/30 tabular-nums w-8">

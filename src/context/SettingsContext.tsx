@@ -111,21 +111,33 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const userPrefs = (() => { try { return readAllPrefs(userId); } catch { return null as any; } })();
 
-  const [currency, setCurrency] = useState<Currency>((userPrefs?.currency as Currency) || (legacyInitial.currency as any) || 'EUR');
-  const [unit, setUnit] = useState<DistanceUnit>((userPrefs?.unit as DistanceUnit) || (legacyInitial.unit as any) || 'km');
-  const [lang, setLangState] = useState<'en' | 'es'>((userPrefs?.lang as any) || (legacyInitial.lang as any) || 'en');
-  const [maskAmounts, _setMaskAmounts] = useState<boolean>(false);
-  const [presentationMode, setPresentationMode] = useState<boolean>(userPrefs?.presentationMode ?? !!legacyInitial.presentationMode);
-  const [dashboardView, setDashboardView] = useState<DashboardView>((legacyInitial.dashboardView as DashboardView) || 'default');
-  // Build default range for THIS YEAR (Jan 1 - Dec 31 of current year)
-  // Memoized to prevent recalculation on every render
+  // Professional memoization: Build default range for THIS YEAR (Jan 1 - Dec 31)
   const defaultRange = useMemo(() => {
     const now = new Date();
-    const y = now.getFullYear();
-    const from = `${y}-01-01`;
-    const to = `${y}-12-31`;
-    return { from, to };
-  }, []);
+    const year = now.getFullYear();
+    return {
+      from: `${year}-01-01`,
+      to: `${year}-12-31`
+    };
+  }, []); // Only recalculates when component mounts
+
+  // Optimized state initialization with lazy evaluation to prevent expensive calculations on every render
+  const [currency, setCurrency] = useState<Currency>(() => 
+    (userPrefs?.currency as Currency) || (legacyInitial.currency as any) || 'EUR'
+  );
+  const [unit, setUnit] = useState<DistanceUnit>(() => 
+    (userPrefs?.unit as DistanceUnit) || (legacyInitial.unit as any) || 'km'
+  );
+  const [lang, setLangState] = useState<'en' | 'es'>(() => 
+    (userPrefs?.lang as any) || (legacyInitial.lang as any) || 'en'
+  );
+  const [maskAmounts, _setMaskAmounts] = useState<boolean>(false);
+  const [presentationMode, setPresentationMode] = useState<boolean>(() => 
+    userPrefs?.presentationMode ?? !!legacyInitial.presentationMode
+  );
+  const [dashboardView, setDashboardView] = useState<DashboardView>(() => 
+    (legacyInitial.dashboardView as DashboardView) || 'default'
+  );
   const [region, setRegion] = useState<Region>((userPrefs?.defaultRegion as any) || (legacyInitial.region as any) || 'all');
   const [dateRange, setDateRange] = useState<DateRange>(() => 
     legacyInitial.dateRange && legacyInitial.dateRange.from && legacyInitial.dateRange.to 

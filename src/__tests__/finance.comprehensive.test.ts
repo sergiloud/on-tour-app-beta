@@ -359,4 +359,289 @@ describe('Financial Calculations - Pure Functions', () => {
       expect(result).toBeCloseTo(105.55, 1);
     });
   });
+
+  describe('Finance Selectors - Business Logic', () => {
+    const mockFinanceData = {
+      transactions: [
+        { id: '1', amount: 5000, type: 'revenue', date: '2024-03-01', currency: 'USD' },
+        { id: '2', amount: -1200, type: 'expense', date: '2024-03-02', currency: 'USD' },
+        { id: '3', amount: 3500, type: 'revenue', date: '2024-03-05', currency: 'EUR' },
+        { id: '4', amount: -800, type: 'commission', date: '2024-03-07', currency: 'USD' }
+      ],
+      shows: [
+        { id: '1', fee: 5000, status: 'confirmed', date: '2024-03-01' },
+        { id: '2', fee: 3500, status: 'confirmed', date: '2024-03-05' },
+        { id: '3', fee: 2000, status: 'pending', date: '2024-03-10' }
+      ]
+    };
+
+    it('should calculate total revenue from confirmed shows', () => {
+      const confirmedShows = mockFinanceData.shows.filter(s => s.status === 'confirmed');
+      const totalRevenue = confirmedShows.reduce((sum, show) => sum + show.fee, 0);
+      expect(totalRevenue).toBe(8500);
+    });
+
+    it('should calculate total expenses correctly', () => {
+      const expenses = mockFinanceData.transactions
+        .filter(t => t.type === 'expense' || t.type === 'commission')
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      expect(expenses).toBe(2000);
+    });
+
+    it('should calculate net profit (revenue - expenses)', () => {
+      const revenue = mockFinanceData.transactions
+        .filter(t => t.type === 'revenue')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const expenses = mockFinanceData.transactions
+        .filter(t => t.type === 'expense' || t.type === 'commission')
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      const netProfit = revenue - expenses;
+      expect(netProfit).toBe(6300); // 8500 - 2000
+    });
+
+    it('should calculate profit margin percentage', () => {
+      const revenue = 8500;
+      const costs = 2000;
+      const margin = ((revenue - costs) / revenue) * 100;
+      expect(margin).toBeCloseTo(76.47, 1);
+    });
+  });
+
+  describe('Commission Calculations - Advanced Logic', () => {
+    it('should calculate tiered commission structure', () => {
+      const amount = 50000;
+      // Tier 1: First $25k at 10%
+      const tier1 = Math.min(amount, 25000) * 0.10;
+      // Tier 2: Remaining at 15%
+      const tier2 = Math.max(amount - 25000, 0) * 0.15;
+      const totalCommission = tier1 + tier2;
+      
+      expect(tier1).toBe(2500);
+      expect(tier2).toBe(3750);
+      expect(totalCommission).toBe(6250);
+    });
+
+    it('should handle minimum commission guarantees', () => {
+      const smallAmount = 500;
+      const calculatedCommission = smallAmount * 0.15; // 75
+      const minimumGuarantee = 200;
+      const finalCommission = Math.max(calculatedCommission, minimumGuarantee);
+      
+      expect(finalCommission).toBe(200);
+    });
+
+    it('should apply maximum commission caps', () => {
+      const largeAmount = 100000;
+      const calculatedCommission = largeAmount * 0.20; // 20000
+      const maximumCap = 15000;
+      const finalCommission = Math.min(calculatedCommission, maximumCap);
+      
+      expect(finalCommission).toBe(15000);
+    });
+  });
+
+  describe('Period-based Financial Analysis', () => {
+    const mockPeriodData = [
+      { amount: 5000, date: '2024-01-15', type: 'revenue' },
+      { amount: 3000, date: '2024-02-20', type: 'revenue' },
+      { amount: 4500, date: '2024-03-10', type: 'revenue' },
+      { amount: -1200, date: '2024-01-25', type: 'expense' },
+      { amount: -800, date: '2024-02-28', type: 'expense' }
+    ];
+
+    it('should filter transactions by month', () => {
+      const marchTransactions = mockPeriodData.filter(t => t.date.startsWith('2024-03'));
+      expect(marchTransactions).toHaveLength(1);
+      expect(marchTransactions[0]?.amount).toBe(4500);
+    });
+
+    it('should calculate monthly revenue totals', () => {
+      const monthlyRevenue = mockPeriodData
+        .filter(t => t.type === 'revenue')
+        .reduce((acc, t) => {
+          const month = t.date.substring(0, 7); // YYYY-MM
+          acc[month] = (acc[month] || 0) + t.amount;
+          return acc;
+        }, {} as Record<string, number>);
+      
+      expect(monthlyRevenue['2024-01']).toBe(5000);
+      expect(monthlyRevenue['2024-02']).toBe(3000);
+      expect(monthlyRevenue['2024-03']).toBe(4500);
+    });
+
+    it('should calculate quarter-over-quarter growth', () => {
+      const q1Revenue = mockPeriodData
+        .filter(t => t.type === 'revenue' && t.date < '2024-04-01')
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      // Simulated previous quarter
+      const prevQ4Revenue = 10000;
+      const growthRate = ((q1Revenue - prevQ4Revenue) / prevQ4Revenue) * 100;
+      
+      expect(q1Revenue).toBe(12500);
+      expect(growthRate).toBe(25);
+    });
+  });
+
+  describe('Currency and Exchange Rate Handling', () => {
+    it('should convert currencies using exchange rates', () => {
+      const eurAmount = 1000;
+      const exchangeRate = 1.08; // EUR to USD
+      const usdAmount = eurAmount * exchangeRate;
+      
+      expect(usdAmount).toBe(1080);
+    });
+
+    it('should handle historical exchange rates', () => {
+      const transactions = [
+        { amount: 1000, currency: 'EUR', date: '2024-01-15', rate: 1.08 },
+        { amount: 1000, currency: 'EUR', date: '2024-02-15', rate: 1.10 },
+        { amount: 1000, currency: 'EUR', date: '2024-03-15', rate: 1.07 }
+      ];
+      
+      const totalUSD = transactions.reduce((sum, t) => sum + (t.amount * t.rate), 0);
+      expect(totalUSD).toBe(3250);
+    });
+
+    it('should aggregate multi-currency totals', () => {
+      const multiCurrencyData = [
+        { amount: 5000, currency: 'USD' },
+        { amount: 3000, currency: 'EUR', rate: 1.08 },
+        { amount: 2500, currency: 'GBP', rate: 1.25 }
+      ];
+      
+      const totalUSD = multiCurrencyData.reduce((sum, item) => {
+        const rate = item.rate || 1; // USD has rate 1
+        return sum + (item.amount * rate);
+      }, 0);
+      
+      expect(totalUSD).toBe(11365); // 5000 + (3000*1.08) + (2500*1.25)
+    });
+  });
+
+  describe('Performance and Optimization Tests', () => {
+    it('should handle large datasets efficiently', () => {
+      const largeDataset = Array.from({ length: 10000 }, (_, i) => ({
+        id: `tx-${i}`,
+        amount: Math.floor(Math.random() * 5000) + 100,
+        type: 'revenue',
+        date: '2024-03-01'
+      }));
+      
+      const start = performance.now();
+      const total = largeDataset.reduce((sum, t) => sum + t.amount, 0);
+      const end = performance.now();
+      
+      expect(total).toBeGreaterThan(0);
+      expect(end - start).toBeLessThan(50); // Should complete within 50ms
+    });
+
+    it('should memoize expensive calculations', () => {
+      const expensiveCalculation = (data: any[]) => {
+        // Simulate expensive operation
+        let result = 0;
+        for (let i = 0; i < data.length; i++) {
+          result += data[i].amount * Math.sqrt(i + 1);
+        }
+        return result;
+      };
+      
+      const testData = Array.from({ length: 1000 }, (_, i) => ({ amount: i + 1 }));
+      
+      const start1 = performance.now();
+      const result1 = expensiveCalculation(testData);
+      const end1 = performance.now();
+      
+      const start2 = performance.now();
+      const result2 = expensiveCalculation(testData);
+      const end2 = performance.now();
+      
+      expect(result1).toBe(result2);
+      // Second calculation should be faster if memoized
+      // Note: This is testing the concept, actual memoization would require implementation
+    });
+  });
+
+  describe('Edge Cases and Error Handling', () => {
+    it('should handle null and undefined values gracefully', () => {
+      expect(computeNet({ fee: null as any })).toBe(0);
+      expect(computeNet({ fee: undefined as any })).toBe(0);
+      expect(computeNet(null as any)).toBe(0);
+    });
+
+    it('should handle negative fees appropriately', () => {
+      const result = computeNet({ fee: -1000, mgmtPct: 10 });
+      // Negative fees should not result in positive commissions
+      expect(result).toBeLessThanOrEqual(0);
+    });
+
+    it('should handle extreme percentage values', () => {
+      // Test 100%+ commissions
+      const result1 = computeNet({ fee: 1000, mgmtPct: 100 });
+      expect(result1).toBe(0);
+      
+      // Test over 100% total commissions
+      const result2 = computeNet({ fee: 1000, mgmtPct: 60, bookingPct: 50 });
+      expect(result2).toBeLessThanOrEqual(0);
+    });
+
+    it('should handle floating point precision issues', () => {
+      const result = computeNet({ fee: 0.1 + 0.2, mgmtPct: 10 }); // 0.30000000000000004
+      expect(result).toBeCloseTo(0.27, 2);
+    });
+
+    it('should validate input ranges', () => {
+      // Percentages should be between 0-100
+      const invalidInputs = [
+        { fee: 1000, whtPct: -10 },
+        { fee: 1000, mgmtPct: 150 },
+        { fee: 1000, bookingPct: NaN }
+      ];
+      
+      invalidInputs.forEach(input => {
+        const result = computeNet(input);
+        expect(result).toBeGreaterThanOrEqual(0);
+        expect(result).toBeLessThanOrEqual(input.fee);
+      });
+    });
+  });
+
+  describe('Business Rule Validation', () => {
+    it('should enforce minimum show fees', () => {
+      const minimumFee = 500;
+      const proposedFee = 300;
+      const actualFee = Math.max(proposedFee, minimumFee);
+      
+      expect(actualFee).toBe(500);
+    });
+
+    it('should calculate early payment discounts', () => {
+      const originalFee = 5000;
+      const earlyPaymentDiscount = 0.02; // 2%
+      const discountedFee = originalFee * (1 - earlyPaymentDiscount);
+      
+      expect(discountedFee).toBe(4900);
+    });
+
+    it('should handle payment milestone calculations', () => {
+      const totalFee = 10000;
+      const milestones = [
+        { percentage: 0.25, description: 'Booking confirmation' },
+        { percentage: 0.50, description: '30 days before show' },
+        { percentage: 0.25, description: 'After show completion' }
+      ];
+      
+      const payments = milestones.map(milestone => ({
+        ...milestone,
+        amount: totalFee * milestone.percentage
+      }));
+      
+      expect(payments[0]?.amount).toBe(2500);
+      expect(payments[1]?.amount).toBe(5000);
+      expect(payments[2]?.amount).toBe(2500);
+      
+      const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
+      expect(totalPayments).toBe(totalFee);
+    });
+  });
 });

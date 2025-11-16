@@ -356,9 +356,9 @@ const FinanceV3: React.FC = () => {
                             </div>
                         </div>
                         {expandedSection === 'performance' ? (
-                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         )}
                     </button>
                     {expandedSection === 'performance' && (
@@ -388,9 +388,9 @@ const FinanceV3: React.FC = () => {
                             </div>
                         </div>
                         {expandedSection === 'pivot' ? (
-                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         )}
                     </button>
                     {expandedSection === 'pivot' && (
@@ -420,9 +420,9 @@ const FinanceV3: React.FC = () => {
                             </div>
                         </div>
                         {expandedSection === 'ar' ? (
-                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         )}
                     </button>
                     {expandedSection === 'ar' && (
@@ -452,9 +452,9 @@ const FinanceV3: React.FC = () => {
                             </div>
                         </div>
                         {expandedSection === 'trends' ? (
-                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         )}
                     </button>
                     {expandedSection === 'trends' && (
@@ -483,9 +483,9 @@ const FinanceV3: React.FC = () => {
                             )}
                         </div>
                         {expandedSection === 'pl' ? (
-                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         )}
                     </button>
                     {expandedSection === 'pl' && (
@@ -509,9 +509,9 @@ const FinanceV3: React.FC = () => {
                             </div>
                         </div>
                         {expandedSection === 'expenses' ? (
-                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-400 dark:text-white/60 transition-colors" />
+                            <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/60 transition-colors" />
                         )}
                     </button>
                     {expandedSection === 'expenses' && (

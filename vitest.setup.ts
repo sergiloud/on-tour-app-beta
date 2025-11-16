@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { afterEach, vi } from 'vitest';
+import './src/__tests__/__mocks__/wasm-and-pwa';
 import { cleanup } from '@testing-library/react';
 
 // Ensure RTL cleans up the DOM between tests to avoid duplicate nodes
@@ -37,7 +38,7 @@ if (typeof window.URL !== 'undefined' && typeof window.URL.revokeObjectURL !== '
 }
 
 // Minimal ResizeObserver stub for JSDOM environment
-if (typeof (global as any).ResizeObserver === 'undefined') {
+if (typeof globalThis.ResizeObserver === 'undefined') {
 	class ResizeObserverStub {
 		private callback: ResizeObserverCallback;
 		constructor(cb: ResizeObserverCallback) { this.callback = cb; }
@@ -46,7 +47,7 @@ if (typeof (global as any).ResizeObserver === 'undefined') {
 		disconnect() {/* no-op */}
 	}
 	// @ts-ignore
-	(global as any).ResizeObserver = ResizeObserverStub;
+	globalThis.ResizeObserver = ResizeObserverStub;
 }
 
 // Minimal IntersectionObserver stub for JSDOM environment
@@ -120,3 +121,60 @@ try {
 	// @ts-ignore
 	(globalThis as any).maplibregl = (globalThis as any).maplibregl || {};
 } catch {}
+
+// WebAssembly mock to prevent hanging tests
+if (typeof (globalThis as any).WebAssembly === 'undefined') {
+	(globalThis as any).WebAssembly = {
+		Memory: vi.fn().mockImplementation(() => ({})),
+		Module: vi.fn().mockImplementation(() => ({})),
+		Instance: vi.fn().mockImplementation(() => ({})),
+		instantiate: vi.fn().mockResolvedValue({ instance: {}, module: {} }),
+		instantiateStreaming: vi.fn().mockResolvedValue({ instance: {}, module: {} }),
+		compile: vi.fn().mockResolvedValue({}),
+		compileStreaming: vi.fn().mockResolvedValue({}),
+		validate: vi.fn().mockReturnValue(true),
+	};
+}
+
+// Service Worker API mock to prevent hanging tests
+if (typeof navigator !== 'undefined' && !(navigator as any).serviceWorker) {
+	(navigator as any).serviceWorker = {
+		register: vi.fn().mockResolvedValue({
+			installing: null,
+			waiting: null,
+			active: { scriptURL: '/sw.js' },
+			scope: '/',
+			update: vi.fn().mockResolvedValue(undefined),
+			unregister: vi.fn().mockResolvedValue(true),
+			addEventListener: vi.fn(),
+			removeEventListener: vi.fn(),
+		}),
+		ready: Promise.resolve({
+			installing: null,
+			waiting: null,
+			active: { scriptURL: '/sw.js' },
+			scope: '/',
+			update: vi.fn().mockResolvedValue(undefined),
+			unregister: vi.fn().mockResolvedValue(true),
+			addEventListener: vi.fn(),
+			removeEventListener: vi.fn(),
+		}),
+		controller: null,
+		addEventListener: vi.fn(),
+		removeEventListener: vi.fn(),
+		getRegistration: vi.fn().mockResolvedValue(undefined),
+		getRegistrations: vi.fn().mockResolvedValue([]),
+	};
+}
+
+// Mock fetch for PWA offline scenarios
+if (typeof (globalThis as any).fetch === 'undefined') {
+	(globalThis as any).fetch = vi.fn().mockResolvedValue({
+		ok: true,
+		status: 200,
+		json: vi.fn().mockResolvedValue({}),
+		text: vi.fn().mockResolvedValue(''),
+		blob: vi.fn().mockResolvedValue(new Blob()),
+		arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+	});
+}

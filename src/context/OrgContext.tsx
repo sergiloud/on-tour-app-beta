@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import {
   ensureDemoTenants,
   getCurrentOrgId,
@@ -18,6 +18,25 @@ import {
 import { secureStorage } from '../lib/secureStorage';
 import { useAuth } from './AuthContext';
 
+// ============================================================================
+// PROFESSIONAL PERMISSION SYSTEM
+// ============================================================================
+
+export type Permission = 
+  | 'read:org' 
+  | 'write:org' 
+  | 'admin:org'
+  | 'read:members' 
+  | 'write:members'
+  | 'read:settings'
+  | 'write:settings'
+  | 'read:teams'
+  | 'write:teams'
+  | 'read:links'
+  | 'write:links';
+
+type MemberRole = 'owner' | 'manager';
+
 interface OrgCtx {
   orgId: string;
   org?: Org;
@@ -28,6 +47,10 @@ interface OrgCtx {
   settings: OrgSettings;
   refresh: () => void;
   updateSettings: (patch: Partial<OrgSettings>) => void;
+  // Professional permission system
+  currentRole: MemberRole | null;
+  hasPermission: (permission: Permission) => boolean;
+  rolePermissions: Record<MemberRole, Permission[]>;
 }
 
 const OrgContext = createContext<OrgCtx | null>(null);
@@ -146,16 +169,87 @@ export const OrgProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return undefined;
   }, [orgId, version]);
 
+  // Professional memoization: compute data only when dependencies change
   const members = useMemo(() => listMembers(orgId), [orgId, version]);
   const teams = useMemo(() => listTeams(orgId), [orgId, version]);
   const links = useMemo(() => listLinks(orgId), [orgId, version]);
   const seats = useMemo(() => getSeatsUsage(orgId), [orgId, version]);
   const settings = useMemo(() => getOrgSettings(orgId), [orgId, version]);
 
-  const refresh = () => setVersion(v => v + 1);
-  const updateSettings = (patch: Partial<OrgSettings>) => { try { upsertOrgSettings(orgId, patch); setVersion(v => v + 1); } catch { } };
+  // ============================================================================
+  // PROFESSIONAL PERMISSION SYSTEM IMPLEMENTATION
+  // ============================================================================
 
-  const value = useMemo(() => ({ orgId, org, members, teams, links, seats, settings, refresh, updateSettings }), [orgId, org, members, teams, links, seats, settings]);
+  // Memoized role permissions to prevent recreation on every render
+  const rolePermissions = useMemo((): Record<MemberRole, Permission[]> => ({
+    owner: [
+      'read:org', 'write:org', 'admin:org',
+      'read:members', 'write:members',
+      'read:settings', 'write:settings',
+      'read:teams', 'write:teams',
+      'read:links', 'write:links'
+    ],
+    manager: [
+      'read:org', 'write:org',
+      'read:members',
+      'read:settings',
+      'read:teams', 'write:teams',
+      'read:links', 'write:links'
+    ]
+  }), []);
+
+  // Get current user's role in this organization
+  const currentRole = useMemo((): MemberRole | null => {
+    if (!userId || !orgId) return null;
+    const member = members.find(m => m.user?.id === userId);
+    return member?.role || null;
+  }, [userId, orgId, members]);
+
+  // Professional permission check with memoized lookup
+  const hasPermission = useCallback((permission: Permission): boolean => {
+    if (!currentRole) return false;
+    return rolePermissions[currentRole]?.includes(permission) || false;
+  }, [currentRole, rolePermissions]);
+
+  // Optimized callback functions to prevent unnecessary re-renders
+  const refresh = useCallback(() => setVersion(v => v + 1), []);
+  const updateSettings = useCallback((patch: Partial<OrgSettings>) => { 
+    try { 
+      upsertOrgSettings(orgId, patch); 
+      setVersion(v => v + 1); 
+    } catch (error) { 
+      console.error('Failed to update org settings:', error);
+    } 
+  }, [orgId]);
+
+  // Comprehensive value object with all optimizations
+  const value = useMemo(() => ({ 
+    orgId, 
+    org, 
+    members, 
+    teams, 
+    links, 
+    seats, 
+    settings, 
+    refresh, 
+    updateSettings,
+    currentRole,
+    hasPermission,
+    rolePermissions
+  }), [
+    orgId, 
+    org, 
+    members, 
+    teams, 
+    links, 
+    seats, 
+    settings, 
+    refresh, 
+    updateSettings, 
+    currentRole, 
+    hasPermission, 
+    rolePermissions
+  ]);
   return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
 };
 

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useMemoryManagement, useListenerCleanup } from '../lib/memoryManagement';
 
 export interface Notification {
   id: string;
@@ -27,6 +28,10 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 const STORAGE_KEY = 'notifications-storage';
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Memory management for notification provider
+  const { isMounted, safeSetState } = useMemoryManagement('NotificationProvider');
+  const { addListener } = useListenerCleanup('notification-events');
+  
   const [notifications, setNotifications] = useState<Notification[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -48,14 +53,25 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
     return 0;
   });
+  
+  // Safe state setters
+  const safeSetNotifications = safeSetState(setNotifications);
+  const safeSetUnreadCount = safeSetState(setUnreadCount);
 
-  // Persist to localStorage
+  // Persist to localStorage safely
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
-    setUnreadCount(notifications.filter(n => !n.read).length);
-  }, [notifications]);
+    if (!isMounted()) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
+      safeSetUnreadCount(notifications.filter(n => !n.read).length);
+    } catch (error) {
+      console.error('Failed to persist notifications:', error);
+    }
+  }, [notifications, isMounted, safeSetUnreadCount]);
 
   const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    if (!isMounted()) return;
+    
     const newNotification: Notification = {
       ...notification,
       id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -63,41 +79,55 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       read: false,
     };
 
-    setNotifications(prev => [newNotification, ...prev].slice(0, 50));
+    safeSetNotifications(prev => [newNotification, ...prev].slice(0, 50));
 
-    // Show browser notification if supported
+    // Show browser notification if supported (with cleanup)
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(newNotification.title, {
+      const browserNotif = new Notification(newNotification.title, {
         body: newNotification.message,
         icon: '/logo-192.png',
         badge: '/logo-192.png',
         tag: newNotification.id,
       });
+      
+      // Auto-close and cleanup after 5 seconds
+      const cleanup = () => {
+        try {
+          browserNotif.close();
+        } catch {}
+      };
+      
+      setTimeout(cleanup, 5000);
+      addListener(cleanup);
     }
 
     // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate([10, 50, 10]);
     }
-  }, []);
+  }, [isMounted, safeSetNotifications, addListener]);
 
   const markAsRead = useCallback((id: string) => {
-    setNotifications(prev =>
+    if (!isMounted()) return;
+    safeSetNotifications(prev =>
       prev.map(n => (n.id === id ? { ...n, read: true } : n))
     );
-  }, []);
+  }, [isMounted, safeSetNotifications]);
 
   const markAllAsRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  }, []);
+    if (!isMounted()) return;
+    safeSetNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }, [isMounted, safeSetNotifications]);
 
   const deleteNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
+    if (!isMounted()) return;
+    safeSetNotifications(prev => prev.filter(n => n.id !== id));
+  }, [isMounted, safeSetNotifications]);
 
   const clearAll = useCallback(() => {
-    setNotifications([]);
-  }, []);
+    if (!isMounted()) return;
+    safeSetNotifications([]);
+  }, [isMounted, safeSetNotifications]);
 
   return (
     <NotificationContext.Provider

@@ -28,6 +28,7 @@ import { BottomNav } from '../components/mobile/BottomNav';
 import { MoreMenu } from '../components/mobile/MoreMenu';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { MobileOS } from '../components/mobile/ios/MobileOS';
+import { SkipNavigation, MainContent, Landmark } from '../components/accessibility/SkipNavigation';
 
 function useNavItems(collapsed: boolean) {
   const { org } = useOrg();
@@ -270,11 +271,16 @@ export const DashboardLayout: React.FC = () => {
   return (
     <MissionControlProvider>
       <div className="min-h-screen flex bg-dark-900">
-        {/* Skip to content for keyboard users */}
-        <a href="#dash-main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:rounded-md focus:bg-accent-500 focus:text-black">{t('common.skipToContent') || 'Skip to content'}</a>
+        {/* Enhanced Skip Navigation */}
+        <SkipNavigation />
         {/* Persistent View-As Banner */}
         {isViewingAs() && <ViewAsBanner />}
-        <aside className={`hidden md:flex flex-col border-r border-slate-100 dark:border-white/5 bg-ink-900/35 backdrop-blur-xl glass p-4 gap-5 transition-all duration-300 ${collapsed ? 'w-20' : 'w-60'} fixed top-0 bottom-0 left-0 overflow-y-auto`} aria-label="Dashboard navigation" aria-expanded={!collapsed}>
+        <Landmark
+          role="navigation"
+          id="primary-navigation"
+          ariaLabel="Dashboard navigation"
+          className={`hidden md:flex flex-col border-r border-slate-100 dark:border-white/5 bg-ink-900/35 backdrop-blur-xl glass p-4 gap-5 transition-all duration-300 ${collapsed ? 'w-20' : 'w-60'} fixed top-0 bottom-0 left-0 overflow-y-auto`}
+        >
           <div className="flex items-center justify-between gap-2">
             <div className="font-bold tracking-tight text-accent-500 text-sm truncate" aria-hidden={collapsed}>{collapsed ? 'OT' : 'OnTour'}</div>
             <div className="flex items-center gap-1 ml-auto">
@@ -317,7 +323,7 @@ export const DashboardLayout: React.FC = () => {
             <div>{t('layout.build')}</div>
             <div>{t('layout.demo')}</div>
           </div>
-        </aside>
+        </Landmark>
         <div className="flex-1 flex flex-col min-w-0 md:ml-[var(--sidebar-width,15rem)]" style={{ '--sidebar-width': collapsed ? '5rem' : '15rem' } as any}>
           <header className="px-3 md:px-5 py-3 md:py-3.5 flex items-center justify-between border-b border-slate-100 dark:border-white/5 backdrop-blur-xl bg-ink-900/25">
             <h1 className="text-base md:text-lg font-semibold tracking-tight">{t('nav.dashboard')}</h1>
@@ -354,7 +360,10 @@ export const DashboardLayout: React.FC = () => {
           </header>
           <UrlFilterSync />
           <GlobalFilters />
-          <main className={`flex-1 overflow-y-auto pr-2 md:pr-3 pl-2 md:pl-3 ${prefs.compactView ? 'py-3 md:py-4 pb-16 md:pb-4' : 'py-6 md:py-8 pb-20 md:pb-8'}`} id="dash-main">
+          <MainContent
+            className={`flex-1 overflow-y-auto pr-2 md:pr-3 pl-2 md:pl-3 ${prefs.compactView ? 'py-3 md:py-4 pb-16 md:pb-4' : 'py-6 md:py-8 pb-20 md:pb-8'}`}
+            skipToId="main-content"
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
@@ -370,7 +379,7 @@ export const DashboardLayout: React.FC = () => {
                 <Outlet />
               </motion.div>
             </AnimatePresence>
-          </main>
+          </MainContent>
           {/* Mobile bottom bar navigation - Enhanced with icons and active states */}
           <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[21] border-t border-slate-200 dark:border-white/10 bg-ink-900/95 backdrop-blur-xl shadow-2xl" role="navigation" aria-label="Primary mobile navigation">
             <ul className="grid grid-cols-5 gap-0" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.25rem)' } as any}>

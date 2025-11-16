@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
+import { useMemoryManagement, useFirestoreListener } from '../lib/memoryManagement';
 
 export interface SyncedCalendarEvent {
   id: string;
@@ -23,56 +24,57 @@ export function useSyncedCalendarEvents() {
   const [events, setEvents] = useState<SyncedCalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  
+  // Memory management for this component
+  const { isMounted, safeSetState } = useMemoryManagement('useSyncedCalendarEvents');
+  
+  // Safe state setters
+  const safeSetEvents = safeSetState(setEvents);
+  const safeSetLoading = safeSetState(setLoading);
+  const safeSetError = safeSetState(setError);
 
+  // Use our professional Firestore listener with automatic cleanup
+  useFirestoreListener({
+    collectionPath: userId ? `users/${userId}/calendarEvents` : '',
+    queryConstraints: userId ? [where('syncedFrom', '==', 'caldav')] : [],
+    onData: (data) => {
+      if (!isMounted()) return;
+      
+      const loadedEvents: SyncedCalendarEvent[] = data.map((doc: any) => ({
+        id: doc.id,
+        title: doc.title || 'Untitled Event',
+        date: doc.date || '',
+        endDate: doc.endDate,
+        description: doc.description,
+        location: doc.location,
+        syncedFrom: 'caldav' as const,
+        syncedAt: doc.syncedAt || new Date().toISOString(),
+      }));
+      
+      safeSetEvents(loadedEvents);
+      safeSetLoading(false);
+      console.log('[SyncedEvents] Loaded', loadedEvents.length, 'synced events from Firestore');
+    },
+    onError: (err) => {
+      if (!isMounted()) return;
+      console.error('[SyncedEvents] Error loading events:', err);
+      safeSetError(err);
+      safeSetLoading(false);
+    },
+    debounceMs: 500 // Debounce rapid updates
+  });
+
+  // Clear events when no user
   useEffect(() => {
     if (!userId) {
-      setEvents([]);
-      return;
+      safeSetEvents([]);
+      safeSetLoading(false);
+      safeSetError(null);
+    } else {
+      safeSetLoading(true);
+      safeSetError(null);
     }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const eventsRef = collection(db, 'users', userId, 'calendarEvents');
-      const q = query(eventsRef, where('syncedFrom', '==', 'caldav'));
-
-      // Real-time subscription
-      const unsubscribe = onSnapshot(
-        q,
-        (snapshot) => {
-          const loadedEvents: SyncedCalendarEvent[] = [];
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            loadedEvents.push({
-              id: doc.id,
-              title: data.title || 'Untitled Event',
-              date: data.date || '',
-              endDate: data.endDate,
-              description: data.description,
-              location: data.location,
-              syncedFrom: 'caldav',
-              syncedAt: data.syncedAt || new Date().toISOString(),
-            });
-          });
-          setEvents(loadedEvents);
-          setLoading(false);
-          console.log('[SyncedEvents] Loaded', loadedEvents.length, 'synced events from Firestore');
-        },
-        (err) => {
-          console.error('[SyncedEvents] Error loading events:', err);
-          setError(err as Error);
-          setLoading(false);
-        }
-      );
-
-      return unsubscribe;
-    } catch (err) {
-      console.error('[SyncedEvents] Setup error:', err);
-      setError(err as Error);
-      setLoading(false);
-    }
-  }, [userId]);
+  }, [userId, safeSetEvents, safeSetLoading, safeSetError]);
 
   return { events, loading, error };
 }

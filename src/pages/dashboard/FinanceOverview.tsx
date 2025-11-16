@@ -39,7 +39,7 @@ const FinanceOverview: React.FC = () => {
             <Pill active={region==='AMER'} onClick={()=> setRegion('AMER')}>AMER</Pill>
             <Pill active={region==='APAC'} onClick={()=> setRegion('APAC')}>APAC</Pill>
           </div>
-          <GuardedAction scope="finance:export" className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/15 text-[11px]" onClick={async ()=> { const { exportFinanceCsv } = await import('../../lib/finance/export'); exportFinanceCsv(snapshot.shows as any, { masked: false, columns: ['date','city','country','fee','status','net'] }); }}>
+          <GuardedAction scope="finance:export" className="px-2 py-1 rounded bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-[11px]" onClick={async ()=> { const { exportFinanceCsv } = await import('../../lib/finance/export'); exportFinanceCsv(snapshot.shows as any, { masked: false, columns: ['date','city','country','fee','status','net'] }); }}>
             {t('actions.exportCsv') || 'Export CSV'}
           </GuardedAction>
         </div>

@@ -1,0 +1,199 @@
+# ============================================================================
+# Docker Compose for On Tour App 2.0 - Development & Production
+# Supports WebAssembly compilation, PWA testing, and deployment
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # Development service with hot reload
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: ontour-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/wasm-financial-engine/target
+    environment:
+      - NODE_ENV=development
+      - VITE_APP_VERSION=dev-docker
+    profiles:
+      - dev
+    networks:
+      - ontour-network
+
+  # Production build and serve
+  app-production:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: ontour-prod
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    profiles:
+      - prod
+    networks:
+      - ontour-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # WASM Builder (standalone for CI/CD)
+  wasm-builder:
+    image: rust:1.75-slim
+    container_name: ontour-wasm-builder
+    working_dir: /app
+    volumes:
+      - ./wasm-financial-engine:/app
+    command: >
+      bash -c "
+        apt-get update && 
+        apt-get install -y pkg-config curl &&
+        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh &&
+        wasm-pack build --target web --out-dir pkg --release
+      "
+    profiles:
+      - wasm
+      - build
+
+  # Testing service with comprehensive test suite
+  app-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: ontour-test
+    environment:
+      - NODE_ENV=test
+      - CI=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: >
+      bash -c "
+        echo '🧪 Running comprehensive test suite...' &&
+        npm run test -- --run --coverage &&
+        npm run test:unit -- --run &&
+        echo '✅ All tests completed successfully!'
+      "
+    profiles:
+      - test
+    networks:
+      - ontour-network
+
+  # E2E Testing with Playwright
+  app-e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: ontour-e2e
+    environment:
+      - NODE_ENV=test
+      - CI=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: >
+      bash -c "
+        echo '🎭 Running E2E tests...' &&
+        npx playwright install &&
+        npm run test:e2e &&
+        echo '✅ E2E tests completed!'
+      "
+    profiles:
+      - e2e
+    networks:
+      - ontour-network
+    depends_on:
+      - app-dev
+
+  # Bundle analyzer
+  bundle-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: node-builder
+    container_name: ontour-analyzer
+    volumes:
+      - .:/app
+    command: >
+      bash -c "
+        echo '📊 Analyzing bundle size...' &&
+        npm run build:analyze &&
+        echo '✅ Bundle analysis complete!'
+      "
+    profiles:
+      - analyze
+
+  # Performance testing
+  performance-test:
+    image: sitespeedio/sitespeed.io:latest
+    container_name: ontour-perf
+    command: >
+      --budget.configPath /sitespeed-budget.json 
+      --outputFolder /tmp/sitespeed-result 
+      http://app-production/
+    volumes:
+      - ./performance/sitespeed-budget.json:/sitespeed-budget.json:ro
+      - ./performance/results:/tmp/sitespeed-result
+    profiles:
+      - perf
+    networks:
+      - ontour-network
+    depends_on:
+      - app-production
+
+networks:
+  ontour-network:
+    driver: bridge
+    name: ontour-network
+
+volumes:
+  node_modules:
+    driver: local
+  wasm_target:
+    driver: local
+
+# ============================================================================
+# Usage Examples:
+# 
+# Development:
+# docker-compose --profile dev up
+#
+# Production build and serve:
+# docker-compose --profile prod up --build
+#
+# Run tests:
+# docker-compose --profile test up --abort-on-container-exit
+#
+# E2E testing:
+# docker-compose --profile e2e up --abort-on-container-exit
+#
+# WASM compilation only:
+# docker-compose --profile wasm up wasm-builder
+#
+# Bundle analysis:
+# docker-compose --profile analyze up --abort-on-container-exit
+#
+# Performance testing:
+# docker-compose --profile prod up -d
+# docker-compose --profile perf up --abort-on-container-exit
+#
+# Full CI pipeline:
+# docker-compose --profile wasm up wasm-builder
+# docker-compose --profile test up --abort-on-container-exit  
+# docker-compose --profile prod up --build -d
+# docker-compose --profile perf up --abort-on-container-exit
+# ============================================================================

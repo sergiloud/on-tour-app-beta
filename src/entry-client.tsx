@@ -12,21 +12,11 @@ import { FinanceProvider } from './context/FinanceContext';
 import { ThemeProvider } from './hooks/useTheme';
 import { HighContrastProvider } from './context/HighContrastContext';
 import { SettingsProvider } from './context/SettingsContext';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { queryClient, QueryClientProvider } from './lib/react-query-advanced';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { logger } from './lib/logger';
 import './styles/index.css';
 import './styles/performance.css';
-
-// Create QueryClient
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            staleTime: 1000 * 60, // 1 minute
-            refetchOnWindowFocus: false,
-        },
-    },
-});
 
 /**
  * Hydrate the app

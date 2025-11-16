@@ -4,7 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
 import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
+import compression from 'vite-plugin-compression';
 import path from 'path';
+import { manualChunks, compressionConfig } from './src/lib/bundleOptimization';
 
 export default defineConfig({
   base: '/', // Always use root path for Vercel deployment
@@ -34,6 +36,16 @@ export default defineConfig({
     // WebAssembly support for high-performance financial calculations
     wasm(),
     topLevelAwait(),
+    // Professional compression for optimal delivery
+    compression({
+      algorithm: 'gzip',
+      threshold: 1024,
+    }),
+    compression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 1024,
+    }),
     // Bundle analyzer (solo en local, desactivado en Vercel para builds más rápidos)
     ...(process.env.VERCEL ? [] : [
       visualizer({
@@ -176,118 +188,28 @@ export default defineConfig({
     rollupOptions: {
       output: {
         format: 'es',
-        // Enhanced chunking strategy for better performance
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // CRITICAL: Keep React ecosystem TOGETHER to prevent initialization errors
-            // React, React-DOM, React-Router, Scheduler, TanStack Query AND Recharts
-            // ALL of these use React APIs (createElement, forwardRef, etc.) and MUST load together
-            if (id.includes('react') || 
-                id.includes('react-dom') || 
-                id.includes('react-router') ||
-                id.includes('scheduler') ||
-                id.includes('@tanstack/react-query') ||
-                id.includes('@tanstack/query-core') ||
-                id.includes('recharts') ||
-                id.includes('d3-')) {
-              return 'vendor-react';
-            }
-            
-            // Firebase - large but independent, split into sub-chunks
-            if (id.includes('firebase') || id.includes('@firebase')) {
-              // Split Firebase into smaller, more focused chunks
-              if (id.includes('firestore') || id.includes('firebase/firestore')) {
-                return 'vendor-firebase-firestore';
-              }
-              if (id.includes('auth') || id.includes('firebase/auth')) {
-                return 'vendor-firebase-auth';
-              }
-              return 'vendor-firebase-core';
-            }
-            
-            // Framer Motion - uses React but safer to keep separate (loaded after React)
-            if (id.includes('framer-motion')) {
-              return 'vendor-motion';
-            }
-            
-            // MapLibre - truly independent, load on demand
-            if (id.includes('maplibre-gl')) {
-              return 'vendor-maplibre';
-            }
-            
-            // Excel/XLSX - Dynamic imports only, no manual chunking (load on demand)
-            // Removed explicit chunking to enable true lazy loading
-            
-            // DND Kit
-            if (id.includes('@dnd-kit')) {
-              return 'vendor-dnd';
-            }
-            
-            // UI utilities - small, can be grouped
-            if (id.includes('lucide-react') || 
-                id.includes('sonner') || 
-                id.includes('@tanstack/react-virtual')) {
-              return 'vendor-ui';
-            }
-            
-            // Date utilities
-            if (id.includes('date-fns')) {
-              return 'vendor-date';
-            }
-            
-            // Form libraries
-            if (id.includes('react-hook-form') || 
-                id.includes('@hookform') ||
-                id.includes('zod')) {
-              return 'vendor-forms';
-            }
-            
-            // Utility libraries
-            if (id.includes('lodash') || 
-                id.includes('clsx')) {
-              return 'vendor-utils';
-            }
-            
-            // IMPORTANT: Don't create a catch-all vendor chunk
-            // Let Rollup handle remaining dependencies to avoid initialization issues
-            // Only explicitly defined chunks above will be created
-          }
-          
-          // Application-level chunking for better code splitting
-          // Split large feature areas into separate chunks
-          if (id.includes('/src/')) {
-            // Finance feature chunk
-            if (id.includes('/features/finance/') || 
-                id.includes('/pages/dashboard/FinanceV2') ||
-                id.includes('/context/FinanceContext')) {
-              return 'app-finance';
-            }
-            
-            // Calendar feature chunk  
-            if (id.includes('/pages/dashboard/Calendar') ||
-                id.includes('/features/calendar/') ||
-                id.includes('/components/calendar/')) {
-              return 'app-calendar';
-            }
-            
-            // Travel feature chunk
-            if (id.includes('/pages/dashboard/TravelV2') ||
-                id.includes('/features/travel/') ||
-                id.includes('/pages/TravelWorkspace')) {
-              return 'app-travel';
-            }
-            
-            // Settings and configuration
-            if (id.includes('/pages/dashboard/Settings') ||
-                id.includes('/pages/profile/') ||
-                id.includes('/context/SettingsContext')) {
-              return 'app-settings';
-            }
-          }
+        // Professional chunking strategy from bundleOptimization
+        manualChunks,
+        chunkFileNames: (chunkInfo) => {
+          // Add hash to chunk names for better caching
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+          return `assets/[name]-[hash].js`;
         },
-        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          // Organize assets by type
+          const name = assetInfo.name || 'asset';
+          if (name.endsWith('.css')) {
+            return 'assets/css/[name]-[hash][extname]';
+          }
+          if (name.match(/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i)) {
+            return 'assets/images/[name]-[hash][extname]';
+          }
+          if (name.match(/\.(woff2?|eot|ttf|otf)$/i)) {
+            return 'assets/fonts/[name]-[hash][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
         entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
         exports: 'auto',
         generatedCode: {
           constBindings: true,

@@ -22,9 +22,15 @@ interface TimelineItem {
 interface TimelineResponse {
   items: TimelineItem[];
   permissions: {
+    canView: boolean;
     canEdit: boolean;
+    canDelete: boolean;
     canSimulate: boolean;
     canViewFinances: boolean;
+    canCreateTasks: boolean;
+    canManageReleases: boolean;
+    visibleTypes: TimelineItem['type'][];
+    editableTypes: TimelineItem['type'][];
   };
   pagination: {
     total: number;
@@ -171,9 +177,15 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     const timelineData: TimelineResponse = {
       items: paginatedItems,
       permissions: {
+        canView: true,
         canEdit: true,
+        canDelete: true,
         canSimulate: true, 
-        canViewFinances: true
+        canViewFinances: true,
+        canCreateTasks: true,
+        canManageReleases: true,
+        visibleTypes: ['show', 'travel', 'finance', 'task', 'release'],
+        editableTypes: ['show', 'travel', 'finance', 'task', 'release']
       },
       pagination: {
         total: items.length,
@@ -190,9 +202,15 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       data: timelineData,
       meta: {
         permissions: {
+          canView: true,
           canEdit: true,
+          canDelete: true,
           canSimulate: true,
-          canViewFinances: true
+          canViewFinances: true,
+          canCreateTasks: true,
+          canManageReleases: true,
+          visibleTypes: ['show', 'travel', 'finance', 'task', 'release'],
+          editableTypes: ['show', 'travel', 'finance', 'task', 'release']
         }
       }
     };

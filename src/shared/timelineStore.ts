@@ -13,6 +13,7 @@ import {
   SimulationResults,
   TimelineItemType 
 } from '../features/timeline/types';
+import { fetchTimelineData } from '../lib/timelineApi';
 
 // WASM-compatible types for Timeline Simulation Worker
 export interface TimelineData {
@@ -164,20 +165,8 @@ export const useTimelineStore = create<TimelineStore>()(
             searchParams.append('offset', query.offset.toString());
           }
 
-          // Fetch from API
-          const response = await fetch(`/api/timeline?${searchParams.toString()}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          });
-
-          if (!response.ok) {
-            throw new Error(`Failed to fetch timeline: ${response.status}`);
-          }
-
-          const data = await response.json();
+          // Fetch from API (mock in development, real in production)
+          const data = await fetchTimelineData(searchParams);
           
           if (!data.success) {
             throw new Error(data.error || 'Failed to fetch timeline data');

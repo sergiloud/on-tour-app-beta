@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "on-tour-app-production",
+  "name": "on-tour-app-production", 
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",

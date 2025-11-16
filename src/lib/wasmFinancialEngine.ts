@@ -1,5 +1,6 @@
 import type { Show, FinancialMetrics, ForecastResult, ScenarioAnalysis, WasmFinancialEngineInterface } from '../types/finance';
 import { toast } from 'sonner';
+import { shouldSkipWasm, loadWasmModule, isWasmAvailable } from './wasmUtils';
 
 // WASM module interface for type safety
 interface WasmFinancialEngineModule {
@@ -14,8 +15,11 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
   private wasmAvailable = false;
 
   constructor() {
-    // Auto-initialize on first import
-    this.initialize();
+    // Only auto-initialize in browser environment
+    if (typeof window !== 'undefined') {
+      // Defer initialization to avoid import issues during build
+      setTimeout(() => this.initialize(), 0);
+    }
   }
 
   async initialize(): Promise<void> {
@@ -28,17 +32,15 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
     try {
       console.log('🚀 Initializing Financial Engine...');
       
-      // Check if WASM should be skipped (e.g., in Vercel build)
-      const skipWasm = import.meta.env.SKIP_WASM === 'true' || import.meta.env.VITE_SKIP_WASM === 'true';
-      
-      if (skipWasm) {
-        console.log('🔶 WASM skipped by environment variable, using JavaScript fallback');
+      // Use the safe WASM detection utility
+      if (shouldSkipWasm()) {
+        console.log('🔶 WASM skipped by environment variable or SSR, using JavaScript fallback');
         throw new Error('WASM skipped by configuration');
       }
       
-      // Try to load WASM module
+      // Try to load WASM module using safe loader
       try {
-        const wasmModule: WasmFinancialEngineModule = await import('../../wasm-financial-engine/pkg/wasm_financial_engine.js');
+        const wasmModule: WasmFinancialEngineModule = await loadWasmModule();
         
         // Initialize the WASM module
         await wasmModule.default();

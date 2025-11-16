@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Service Worker Cleanup</title>
+</head>
+<body>
+    <h1>Cleaning Service Workers...</h1>
+    <p id="status">Checking for service workers...</p>
+    
+    <script>
+    async function cleanupServiceWorkers() {
+        const status = document.getElementById('status');
+        
+        if ('serviceWorker' in navigator) {
+            try {
+                // Get all registrations
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                status.textContent = `Found ${registrations.length} service worker(s). Unregistering...`;
+                
+                // Unregister all service workers
+                for (const registration of registrations) {
+                    await registration.unregister();
+                    console.log('Unregistered service worker:', registration.scope);
+                }
+                
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (const cacheName of cacheNames) {
+                        await caches.delete(cacheName);
+                        console.log('Deleted cache:', cacheName);
+                    }
+                }
+                
+                status.innerHTML = `
+                    <p style="color: green;">✅ All service workers unregistered and caches cleared!</p>
+                    <p>You can now close this tab and restart your development server.</p>
+                    <button onclick="window.close()">Close Tab</button>
+                `;
+                
+            } catch (error) {
+                status.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+                console.error('Cleanup error:', error);
+            }
+        } else {
+            status.textContent = 'Service Workers not supported in this browser.';
+        }
+    }
+    
+    // Run cleanup when page loads
+    cleanupServiceWorkers();
+    </script>
+</body>
+</html>

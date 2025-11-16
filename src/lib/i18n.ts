@@ -149,6 +149,11 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'nav.finance': 'Finance'
     , 'nav.activity': 'Activity'
     , 'nav.timeline': 'Timeline'
+    , 'nav.roadmap': 'Roadmap'
+    , 'roadmap.emptyState.title': 'No roadmap items found'
+    , 'roadmap.emptyState.noItems': 'Create your first show or milestone to get started with your roadmap.'
+    , 'roadmap.emptyState.noResults': 'Try adjusting your search or filters to see more items.'
+    , 'roadmap.actions.addNew': 'Add New Item'
     , 'nav.settings': 'Settings'
     , 'nav.contacts': 'Contacts'
     , 'nav.contracts': 'Contracts'
@@ -2628,6 +2633,11 @@ const DICT: Record<Lang, Record<string, string>> = {
     'nav.finance': 'Finanzas',
     'nav.activity': 'Actividad',
     'nav.timeline': 'Línea de Tiempo',
+    'nav.roadmap': 'Hoja de Ruta',
+    'roadmap.emptyState.title': 'No se encontraron elementos del roadmap',
+    'roadmap.emptyState.noItems': 'Crea tu primer show o hito para comenzar con tu hoja de ruta.',
+    'roadmap.emptyState.noResults': 'Intenta ajustar tu búsqueda o filtros para ver más elementos.',
+    'roadmap.actions.addNew': 'Agregar Nuevo',
     'nav.settings': 'Ajustes',
     'insights.thisMonthTotal': 'Total del mes',
     'insights.statusBreakdown': 'Desglose por estado',

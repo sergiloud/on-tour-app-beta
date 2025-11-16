@@ -1,12 +1,12 @@
 # Security Policy
 
-**Version:** 2.1.0-beta  
-**Last Updated:** November 15, 2025  
+**Version:** 2.2.0-dev  
+**Last Updated:** November 16, 2025  
 **Scope:** Production & Beta Environments
 
 ---
 
-## 🔒 Security Features (v2.1)
+## 🔒 Security Features (v2.2)
 
 ### Authentication & Access Control
 
@@ -39,6 +39,7 @@
 - ✅ **Dependency Scanning:** Automated npm audit on CI/CD
 - ✅ **Secret Management:** Environment variables, no hardcoded secrets
 - ✅ **Audit Logging:** Activity tracking in Timeline feature
+- ✅ **Secure Export Libraries:** ExcelJS (no known vulnerabilities) + Papaparse for CSV
 
 See [SECURITY_HARDENING.md](./SECURITY_HARDENING.md) for implementation details.
 
@@ -46,24 +47,24 @@ See [SECURITY_HARDENING.md](./SECURITY_HARDENING.md) for implementation details.
 
 ## 📋 Known Vulnerabilities
 
-### xlsx (SheetJS)
+### ~~xlsx (SheetJS)~~ - **RESOLVED in v2.2**
 
-**Severity:** High  
-**Status:** Acknowledged - Under Review  
-**Issue:** Prototype Pollution and ReDoS vulnerabilities  
+**Previous Status:** High severity - Prototype Pollution and ReDoS vulnerabilities  
+**Resolution Date:** November 16, 2025  
+**Action Taken:** Migrated to **ExcelJS** (secure alternative) + **Papaparse** for CSV exports
 
-**Mitigation:**
-- Library is only used for **export functionality** (user-initiated)
-- **No user-provided Excel files are parsed** (no upload feature)
-- Feature runs in **controlled environment** (browser sandboxed)
-- Input data is **sanitized and validated** before export
-- Consider migration to **alternative library** in v2.2 (Q1 2026)
+**Changes:**
+- ✅ Removed vulnerable `xlsx` package completely
+- ✅ Replaced with `exceljs` (actively maintained, no known CVEs)
+- ✅ Added `papaparse` for lightweight CSV exports
+- ✅ Updated all export utilities in `src/lib/excelExport.ts`
+- ✅ Maintained backward compatibility with existing export functions
 
-**Tracking:**
-- [GHSA-4r6h-8v6p-xvw6](https://github.com/advisories/GHSA-4r6h-8v6p-xvw6) - Prototype Pollution
-- [GHSA-5pgg-2g8v-p4x9](https://github.com/advisories/GHSA-5pgg-2g8v-p4x9) - ReDoS
-
-**Risk Assessment:** Low (export-only, no file uploads, sanitized data)
+**Security Benefits:**
+- Zero known vulnerabilities in new dependencies
+- Better performance and smaller bundle size
+- Enhanced Excel formatting capabilities
+- Improved CSV parsing with RFC 4180 compliance
 
 ---
 

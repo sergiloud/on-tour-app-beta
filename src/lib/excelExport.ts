@@ -21,7 +21,7 @@
  * }, 'tour-data');
  */
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export interface ExcelExportOptions {
   /** File name without extension */
@@ -41,12 +41,12 @@ export interface ExcelExportOptions {
 /**
  * Export array of objects to Excel file
  */
-export function exportToExcel<T extends Record<string, any>>(
+export async function exportToExcel<T extends Record<string, any>>(
   data: T[],
   filename: string,
   sheetName: string = 'Sheet1',
   options?: Partial<ExcelExportOptions>
-): void {
+): Promise<void> {
   if (!data || data.length === 0) {
     console.warn('No data to export');
     return;
@@ -80,66 +80,118 @@ export function exportToExcel<T extends Record<string, any>>(
   }
 
   // Apply custom column headers
-  if (options?.columnHeaders) {
-    processedData = processedData.map(row => {
-      const renamed: Record<string, any> = {};
-      Object.keys(row).forEach(key => {
-        const newKey = options.columnHeaders![key] || key;
-        renamed[newKey] = row[key];
-      });
-      return renamed as T;
-    });
-  }
+  const columnHeaders = options?.columnHeaders || {};
+  const headers = Object.keys(processedData[0] || {});
+  const displayHeaders = headers.map(key => columnHeaders[key] || key);
 
-  // Create worksheet from data
-  const worksheet = XLSX.utils.json_to_sheet(processedData);
+  // Create workbook and worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(sheetName);
 
-  // Auto-size columns
-  const columnWidths = Object.keys(processedData[0] || {}).map(key => {
-    const maxLength = Math.max(
-      key.length,
-      ...processedData.map(row => String(row[key] || '').length)
-    );
-    return { wch: Math.min(maxLength + 2, 50) }; // Max width 50
+  // Add headers
+  worksheet.columns = headers.map((key, index) => ({
+    header: displayHeaders[index],
+    key: key,
+    width: 15, // Default width
+  }));
+
+  // Add data rows
+  processedData.forEach(row => {
+    worksheet.addRow(row);
   });
-  worksheet['!cols'] = columnWidths;
 
-  // Create workbook
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  // Auto-size columns based on content
+  worksheet.columns.forEach(column => {
+    if (!column.eachCell) return;
+    let maxLength = 0;
+    column.eachCell({ includeEmpty: false }, (cell) => {
+      const cellValue = cell.value ? String(cell.value) : '';
+      maxLength = Math.max(maxLength, cellValue.length);
+    });
+    column.width = Math.min(maxLength + 2, 50); // Max width 50
+  });
 
-  // Write file
-  XLSX.writeFile(workbook, `${filename}.xlsx`);
+  // Style header row
+  worksheet.getRow(1).font = { bold: true };
+  worksheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFE0E0E0' },
+  };
+
+  // Write to buffer and download
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}.xlsx`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 /**
  * Export multiple sheets to single Excel file
  */
-export function exportMultiSheetExcel(
+export async function exportMultiSheetExcel(
   sheets: Record<string, any[]>,
   filename: string
-): void {
-  const workbook = XLSX.utils.book_new();
+): Promise<void> {
+  const workbook = new ExcelJS.Workbook();
 
   Object.entries(sheets).forEach(([sheetName, data]) => {
     if (data && data.length > 0) {
-      const worksheet = XLSX.utils.json_to_sheet(data);
+      const worksheet = workbook.addWorksheet(sheetName.slice(0, 31)); // Excel limit 31 chars
+      
+      // Get headers from first row
+      const headers = Object.keys(data[0]);
+      
+      // Add columns
+      worksheet.columns = headers.map(key => ({
+        header: key,
+        key: key,
+        width: 15,
+      }));
+
+      // Add data rows
+      data.forEach(row => {
+        worksheet.addRow(row);
+      });
 
       // Auto-size columns
-      const columnWidths = Object.keys(data[0] || {}).map(key => {
-        const maxLength = Math.max(
-          key.length,
-          ...data.map(row => String(row[key] || '').length)
-        );
-        return { wch: Math.min(maxLength + 2, 50) };
+      worksheet.columns.forEach(column => {
+        if (!column.eachCell) return;
+        let maxLength = 0;
+        column.eachCell({ includeEmpty: false }, (cell) => {
+          const cellValue = cell.value ? String(cell.value) : '';
+          maxLength = Math.max(maxLength, cellValue.length);
+        });
+        column.width = Math.min(maxLength + 2, 50);
       });
-      worksheet['!cols'] = columnWidths;
 
-      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName.slice(0, 31)); // Excel limit 31 chars
+      // Style header row
+      worksheet.getRow(1).font = { bold: true };
+      worksheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE0E0E0' },
+      };
     }
   });
 
-  XLSX.writeFile(workbook, `${filename}.xlsx`);
+  // Write to buffer and download
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}.xlsx`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 /**
@@ -151,7 +203,7 @@ export function convertToCSV<T extends Record<string, any>>(
 ): string {
   if (!data || data.length === 0) return '';
 
-  const headers = Object.keys(data[0]);
+  const headers = Object.keys(data[0] || {});
   const csvRows = [
     headers.join(delimiter),
     ...data.map(row =>

@@ -27,8 +27,9 @@ const FinanceQuicklookLazy = React.lazy(() => import('../../components/dashboard
 // Lazy load InteractiveMap to reduce bundle size  
 const LazyInteractiveMap = React.lazy(() => import('../../components/mission/InteractiveMap').then(mod => ({ default: mod.InteractiveMap })));
 import { MissionHud } from '../../components/mission/MissionHud';
-import { ActionHub } from '../../components/dashboard/ActionHub';
-import TourOverviewCard from '../../components/dashboard/TourOverviewCard';
+// Lazy load heavy components for better performance
+const ActionHub = React.lazy(() => import('../../components/dashboard/ActionHub').then(mod => ({ default: mod.ActionHub })));
+const TourOverviewCard = React.lazy(() => import('../../components/dashboard/TourOverviewCard'));
 
 type Tile = {
   id: string;
@@ -50,7 +51,7 @@ function SizeCycler({ tile, onChange }: { tile: Tile; onChange: (size: 'sm' | 'm
     onChange(n);
   };
   return (
-    <button className="text-[11px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20" onClick={next} title="Cycle size">{tile.size?.toUpperCase() || 'MD'}</button>
+    <button className="text-[11px] px-2 py-0.5 rounded bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20" onClick={next} title="Cycle size">{tile.size?.toUpperCase() || 'MD'}</button>
   );
 }
 
@@ -288,8 +289,8 @@ export const MissionControlLab: React.FC = () => {
         <div className="absolute -top-2 left-2 text-[10px] px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-white/10">Drag</div>
         {/* keyboard move buttons */}
         <div className="absolute -top-3 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20" onClick={() => move('up')} aria-label="Move up"><ArrowUpIcon /></button>
-          <button className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20" onClick={() => move('down')} aria-label="Move down"><ArrowDownIcon /></button>
+          <button className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20" onClick={() => move('up')} aria-label="Move up"><ArrowUpIcon /></button>
+          <button className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20" onClick={() => move('down')} aria-label="Move down"><ArrowDownIcon /></button>
         </div>
         {renderWidget(tile, tile.id)}
         {/* resizer handle */}

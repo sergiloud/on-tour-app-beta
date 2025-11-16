@@ -18,6 +18,7 @@ import DayGrid from './DayGrid';
 import AgendaList from './AgendaList';
 import { TimelineView } from './TimelineView';
 import type { CalEvent } from './types';
+import type { CalendarEvent } from './AdvancedCalendarTypes';
 import type { Show } from '../../lib/shows';
 import type { Itinerary } from '../../services/travelApi';
 import type { MonthCell } from '../../hooks/useCalendarMatrix';
@@ -50,6 +51,7 @@ export interface CalendarViewRouterProps {
   
   // Handlers
   onDayClick: (date: string) => void;
+  setSelectedDay: (date: string) => void;
   onEventClick: (ev: CalEvent) => void;
   onEventDoubleClick: (ev: CalEvent) => void;
   onCreateEvent: (date: string) => void;
@@ -78,6 +80,7 @@ export const CalendarViewRouter = React.memo<CalendarViewRouterProps>(({
   isSelected,
   toggleSelection,
   onDayClick,
+  setSelectedDay,
   onEventClick,
   onEventDoubleClick,
   onCreateEvent,
@@ -92,51 +95,41 @@ export const CalendarViewRouter = React.memo<CalendarViewRouterProps>(({
           eventsByDay={eventsByDay}
           selectedDay={selectedDay}
           today={today}
-          onDayClick={onDayClick}
-          onEventClick={onEventClick}
-          onEventDoubleClick={onEventDoubleClick}
-          onCreateEvent={onCreateEvent}
-          onMoveEvent={onMoveEvent}
-          selectedEventIds={selectedEventIds}
-          isSelected={isSelected}
-          toggleSelection={toggleSelection}
+          setSelectedDay={setSelectedDay}
+          onOpen={onEventClick}
+          onOpenDay={onDayClick}
+          onMoveShow={onMoveEvent}
           onSpanAdjust={onSpanAdjust}
           heatmapMode={heatmapMode}
           shows={shows}
+          selectedEventIds={selectedEventIds}
+          onMultiSelectEvent={(eventId, isSelected) => {
+            if (isSelected) {
+              toggleSelection(eventId);
+            }
+          }}
         />
       );
       
     case 'week':
       return (
         <WeekGrid
-          cursor={cursor}
+          weekStart={cursor}
           eventsByDay={eventsByDay}
-          selectedDay={selectedDay}
-          today={today}
-          onDayClick={onDayClick}
-          onEventClick={onEventClick}
-          onEventDoubleClick={onEventDoubleClick}
+          tz={tz}
+          onOpen={onEventClick}
           onCreateEvent={onCreateEvent}
           onMoveEvent={onMoveEvent}
-          selectedEventIds={selectedEventIds}
-          isSelected={isSelected}
-          toggleSelection={toggleSelection}
-          weekStartsOn={weekStartsOn}
-          tz={tz}
         />
       );
       
     case 'day':
       return (
         <DayGrid
-          date={selectedDay || today}
-          eventsByDay={eventsByDay}
-          onEventClick={onEventClick}
-          onEventDoubleClick={onEventDoubleClick}
-          onCreateEvent={onCreateEvent}
-          selectedEventIds={selectedEventIds}
-          isSelected={isSelected}
-          toggleSelection={toggleSelection}
+          day={selectedDay || today}
+          events={eventsByDay.get(selectedDay || today) || []}
+          onOpen={onEventClick}
+          tz={tz}
         />
       );
       
@@ -144,49 +137,48 @@ export const CalendarViewRouter = React.memo<CalendarViewRouterProps>(({
       return (
         <AgendaList
           eventsByDay={eventsByDay}
-          cursor={cursor}
-          onEventClick={onEventClick}
-          onEventDoubleClick={onEventDoubleClick}
-          selectedEventIds={selectedEventIds}
-          isSelected={isSelected}
-          toggleSelection={toggleSelection}
-          lang={lang}
+          onOpen={onEventClick}
         />
       );
       
     case 'timeline':
+      const timelineEvents: CalendarEvent[] = [
+        // Convert shows to events
+        ...shows.map(show => ({
+          id: `show:${show.id}`,
+          date: show.date,
+          kind: 'show' as const,
+          title: show.city || 'Show',
+          meta: show.venue || '',
+          status: show.status,
+          city: show.city,
+          country: show.country,
+        })),
+        // Convert travel to events
+        ...travel.map(trip => ({
+          id: `travel:${trip.id}`,
+          date: trip.date,
+          kind: 'travel' as const,
+          title: trip.departure && trip.destination ? `${trip.departure} → ${trip.destination}` : trip.title,
+          meta: trip.btnType || '',
+          status: trip.status || 'confirmed',
+          city: trip.city,
+        }))
+      ];
+
+      // Get current month from cursor or default to current month
+      const now = new Date();
+      const currentMonth = cursor || `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+      const fromDate = `${currentMonth}-01`;
+      const daysInMonth = new Date(Number(currentMonth.split('-')[0]), Number(currentMonth.split('-')[1]), 0).getDate();
+      const toDate = `${currentMonth}-${daysInMonth.toString().padStart(2, '0')}`;
+
       return (
         <TimelineView
-          shows={shows}
-          travel={travel}
-          onEventClick={(ev) => {
-            // Convert to CalEvent format for consistency
-            if ('city' in ev) {
-              // It's a show
-              onEventClick({
-                id: `show:${ev.id}`,
-                date: ev.date,
-                kind: 'show',
-                title: ev.city,
-                meta: '',
-                status: ev.status,
-                spanLength: 1,
-                spanIndex: 0,
-              });
-            } else {
-              // It's travel
-              onEventClick({
-                id: `travel:${ev.id}`,
-                date: ev.date,
-                kind: 'travel',
-                title: ev.title,
-                meta: '',
-                spanLength: 1,
-                spanIndex: 0,
-              });
-            }
-          }}
-          lang={lang}
+          events={timelineEvents}
+          from={fromDate}
+          to={toDate}
+          onEventClick={onEventClick}
         />
       );
       

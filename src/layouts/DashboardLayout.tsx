@@ -338,13 +338,13 @@ export const DashboardLayout: React.FC = () => {
                   window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
                   trackEvent('commandPalette.clickHint');
                 }}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all group"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 hover:dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all group"
                 title="Quick search (CMD+K)"
               >
                 <svg className="w-3.5 h-3.5 text-slate-400 dark:text-white/60 group-hover:text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-slate-500 dark:text-white/70">Search</span>
+                <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-slate-500 group-hover:dark:text-white/70">Search</span>
                 <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-[9px] text-slate-400 dark:text-white/40 font-mono">⌘K</kbd>
               </button>
               

@@ -52,7 +52,7 @@ export const manualChunks: ManualChunksOption = (id: string) => {
     return 'vendor-firebase-core';
   }
 
-  // Heavy libraries - isolate for lazy loading
+  // Heavy libraries - isolate for lazy loading (keep small)
   if (id.includes('node_modules/exceljs')) {
     return 'vendor-excel';
   }
@@ -94,7 +94,7 @@ export const manualChunks: ManualChunksOption = (id: string) => {
     return 'vendor-realtime';
   }
 
-  // Application features - split by feature
+  // Application features - split by feature with smaller chunks
   if (id.includes('/src/pages/dashboard/Calendar') || 
       id.includes('/src/components/calendar') || 
       id.includes('/src/hooks/useCalendar')) {
@@ -117,6 +117,13 @@ export const manualChunks: ManualChunksOption = (id: string) => {
       id.includes('/src/components/settings') ||
       id.includes('/src/context/SettingsContext')) {
     return 'app-settings';
+  }
+
+  // Split MissionControlLab separately due to its size
+  if (id.includes('/src/pages/dashboard/MissionControlLab') ||
+      id.includes('/src/components/mission') ||
+      id.includes('/src/features/dashboard/viewConfig')) {
+    return 'app-mission';
   }
 
   // Everything else from node_modules goes to vendor

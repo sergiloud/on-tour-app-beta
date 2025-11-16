@@ -231,7 +231,7 @@ const FinanceV3: React.FC = () => {
                     <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-slate-100 dark:from-white/5 hover:to-transparent cursor-default">
                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div className="relative">
-                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 dark:text-white/60 transition-colors">
+                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 group-hover:dark:text-white/60 transition-colors">
                                 Total Revenue
                             </div>
                             <div className="text-2xl lg:text-3xl font-light text-white tabular-nums tracking-tight">
@@ -247,7 +247,7 @@ const FinanceV3: React.FC = () => {
                     <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-slate-100 dark:from-white/5 hover:to-transparent cursor-default">
                         <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div className="relative">
-                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 dark:text-white/60 transition-colors">
+                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 group-hover:dark:text-white/60 transition-colors">
                                 Total Costs
                             </div>
                             <div className="text-2xl lg:text-3xl font-light text-white tabular-nums tracking-tight">
@@ -286,7 +286,7 @@ const FinanceV3: React.FC = () => {
                     <div className="group relative p-6 lg:p-8 text-center transition-all duration-300 hover:bg-gradient-to-br hover:from-slate-100 dark:from-white/5 hover:to-transparent cursor-default">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div className="relative">
-                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 dark:text-white/60 transition-colors">
+                            <div className="text-xs text-slate-400 dark:text-white/40 uppercase tracking-wider mb-3 font-medium group-hover:text-slate-400 group-hover:dark:text-white/60 transition-colors">
                                 Next 30 Days
                             </div>
                             <div className="text-2xl lg:text-3xl font-light text-white tabular-nums tracking-tight">

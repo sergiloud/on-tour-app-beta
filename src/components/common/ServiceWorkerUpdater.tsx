@@ -4,7 +4,7 @@
  * Provides notifications for updates, offline sync, and performance monitoring
  */
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useServiceWorker, type ServiceWorkerMetrics } from '../../lib/serviceWorkerManager';
 import { toast } from 'sonner';
 
@@ -75,6 +75,7 @@ export function ServiceWorkerUpdater() {
 
             return () => clearInterval(interval);
         }
+        return () => {}; // Return cleanup function even when inactive
     }, [swStatus?.active, refreshMetrics]);
 
     // Notificar problemas de rendimiento

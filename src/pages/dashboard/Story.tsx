@@ -79,7 +79,7 @@ const Story: React.FC = () => {
         <h2 className="text-sm font-semibold">{t('story.title')}</h2>
         <div className="flex items-center gap-2 text-xs">
           <button
-            className="px-2 py-1 rounded bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-slate-200 dark:bg-white/20"
+            className="px-2 py-1 rounded bg-slate-200 dark:bg-white/10 hover:bg-slate-200 hover:dark:bg-white/20"
             onClick={() => { trackEvent('story.toggle', { next: !playing }); setPlaying(p => !p); }}
             aria-pressed={playing}
           >{playing ? t('story.pause') : t('story.play')}</button>

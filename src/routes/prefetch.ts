@@ -103,6 +103,21 @@ export function prefetchByPath(path: string) {
     // Skip if already prefetched
     if (prefetchedPaths.has(path)) return;
 
+    // Check network conditions - only prefetch on good connections
+    if ('connection' in navigator) {
+      const conn = (navigator as any).connection;
+      if (conn && (conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g')) {
+        return; // Skip prefetch on slow connections
+      }
+    }
+
+    // Only prefetch during idle time or low battery usage
+    if ('getBattery' in navigator) {
+      (navigator as any).getBattery().then((battery: any) => {
+        if (battery.level < 0.2) return; // Skip when battery is low
+      });
+    }
+
     // Normalize to handle dynamic segments (e.g., /dashboard/shows/:id)
     const key = path.startsWith('/dashboard/shows/') ? '/dashboard/show' : path;
     const load = loaders[key];

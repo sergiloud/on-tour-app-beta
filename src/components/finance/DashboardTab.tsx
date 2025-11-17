@@ -211,9 +211,13 @@ export function DashboardTab({
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500/20 to-accent-600/10 flex items-center justify-center shadow-sm border border-white/5">
                   <BarChart3 className="w-5 h-5 text-accent-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight">Ingresos vs Gastos</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight">
+                  {t('finance.dashboard.incomeVsExpenses') || 'Income vs Expenses'}
+                </h3>
               </div>
-              <p className="text-xs text-slate-400 dark:text-white/40 ml-[52px]">Evolución temporal del flujo de caja</p>
+              <p className="text-xs text-slate-400 dark:text-white/40 ml-[52px]">
+                {t('finance.dashboard.cashFlowEvolution') || 'Cash flow evolution over time'}
+              </p>
 
               {/* Legend con indicador de comparación */}
               {comparisonKPIs && (
@@ -229,7 +233,9 @@ export function DashboardTab({
                 </div>
               )}
             </div>
-            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 px-2.5 py-1.5 rounded-lg bg-interactive border border-slate-200 dark:border-white/10 font-medium">Últimos 6 meses</span>
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 px-2.5 py-1.5 rounded-lg bg-interactive border border-slate-200 dark:border-white/10 font-medium">
+              {t('finance.dashboard.last6Months') || 'Last 6 months'}
+            </span>
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={[...incomeVsExpensesData]}>
@@ -323,9 +329,13 @@ export function DashboardTab({
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center shadow-sm border border-white/5">
                 <PieChartIcon className="w-5 h-5 text-purple-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight">Gastos por Categoría</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight">
+                {t('finance.dashboard.expensesByCategory') || 'Expenses by Category'}
+              </h3>
             </div>
-            <p className="text-xs text-slate-400 dark:text-white/40 ml-[52px]">Distribución de egresos</p>
+            <p className="text-xs text-slate-400 dark:text-white/40 ml-[52px]">
+              {t('finance.dashboard.expenseDistribution') || 'Expense distribution'}
+            </p>
           </div>
           {categoryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
@@ -373,15 +383,19 @@ export function DashboardTab({
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500/20 to-accent-600/10 flex items-center justify-center shadow-sm border border-white/5">
                 <Receipt className="w-5 h-5 text-accent-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight">Transacciones Recientes</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight">
+                {t('finance.dashboard.recentTransactions') || 'Recent Transactions'}
+              </h3>
             </div>
-            <p className="text-xs text-slate-400 dark:text-white/40 ml-[52px]">Últimos movimientos registrados</p>
+            <p className="text-xs text-slate-400 dark:text-white/40 ml-[52px]">
+              {t('finance.dashboard.latestMovements') || 'Latest recorded movements'}
+            </p>
           </div>
           <button
             onClick={onViewAllTransactions}
             className="text-xs text-accent-400 hover:text-accent-300 transition-colors flex items-center gap-1.5 font-medium"
           >
-            Ver todas
+            {t('finance.dashboard.viewAll') || 'View all'}
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -444,8 +458,12 @@ export function DashboardTab({
               <Plus className="w-5 h-5 text-accent-400" />
             </div>
             <div>
-              <p className="text-base font-semibold text-slate-900 dark:text-white tracking-tight mb-0.5">Añadir Ingreso</p>
-              <p className="text-xs text-slate-300 dark:text-white/40">Registra un nuevo ingreso</p>
+              <p className="text-base font-semibold text-slate-900 dark:text-white tracking-tight mb-0.5">
+                {t('finance.dashboard.addIncome') || 'Add Income'}
+              </p>
+              <p className="text-xs text-slate-300 dark:text-white/40">
+                {t('finance.dashboard.registerNewIncome') || 'Register a new income'}
+              </p>
             </div>
           </div>
         </button>
@@ -459,8 +477,12 @@ export function DashboardTab({
               <Plus className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <p className="text-base font-semibold text-slate-900 dark:text-white tracking-tight mb-0.5">Añadir Gasto</p>
-              <p className="text-xs text-slate-300 dark:text-white/40">Registra un nuevo gasto</p>
+              <p className="text-base font-semibold text-slate-900 dark:text-white tracking-tight mb-0.5">
+                {t('finance.dashboard.addExpense') || 'Add Expense'}
+              </p>
+              <p className="text-xs text-slate-300 dark:text-white/40">
+                {t('finance.dashboard.registerNewExpense') || 'Register a new expense'}
+              </p>
             </div>
           </div>
         </button>

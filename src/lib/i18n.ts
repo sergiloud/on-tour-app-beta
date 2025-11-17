@@ -5872,7 +5872,9 @@ export function setLang(l: Lang) {
   console.log(`🌐 i18n: Changing language from ${current} to ${l}`);
   current = l;
   try { 
+    // Save to both secureStorage AND plain localStorage as fallback
     secureStorage.setItem('lang', l);
+    localStorage.setItem('lang_plain', l); // Unencrypted fallback
     console.log(`✅ i18n: Language saved to storage: ${l}`);
   } catch (error) {
     console.error('❌ i18n: Failed to save language:', error);
@@ -5886,9 +5888,18 @@ export function setLang(l: Lang) {
 
 export function getLang(): Lang {
   try {
+    // Try plain localStorage first (more reliable)
+    const plainStored = localStorage.getItem('lang_plain') as Lang;
+    if (plainStored && SUPPORTED_LANGS.includes(plainStored)) {
+      console.log(`📖 i18n: Retrieved language from plain storage: ${plainStored}`);
+      current = plainStored;
+      return current;
+    }
+    
+    // Fallback to secureStorage
     const stored = secureStorage.getItem<Lang>('lang');
     if (stored && SUPPORTED_LANGS.includes(stored)) {
-      console.log(`📖 i18n: Retrieved language from storage: ${stored}`);
+      console.log(`📖 i18n: Retrieved language from secure storage: ${stored}`);
       current = stored;
     } else {
       console.log(`📖 i18n: No stored language, using current: ${current}`);

@@ -171,38 +171,38 @@ const ContactRow = React.memo<{
             {showsCount !== undefined && showsCount > 0 && (
               <div className="flex items-center gap-1.5 mt-1">
                 <Calendar className="w-3 h-3 text-purple-400/70" />
-                <p className="text-xs text-purple-400 dark:text-purple-300">{showsCount} shows</p>
+                <p className="text-xs text-purple-400 dark:text-purple-300">{showsCount} {t('crm.contactRow.shows') || 'shows'}</p>
               </div>
             )}
           </>
         ) : contact.type === 'promoter' && contact.shows && contact.shows.length > 0 ? (
           <>
-            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || 'Promoter'}</p>
+            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || t('crm.contactRow.promoter') || 'Promoter'}</p>
             <div className="flex items-center gap-1.5 mt-1">
               <Calendar className="w-3 h-3 text-blue-400" />
-              <p className="text-xs text-blue-400">{contact.shows.length} shows promovidos</p>
+              <p className="text-xs text-blue-400">{contact.shows.length} {t('crm.contactRow.showsPromoted') || 'shows promoted'}</p>
             </div>
           </>
         ) : contact.type === 'booking_agent' ? (
           <>
-            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || 'Booking Agency'}</p>
+            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || t('crm.contactRow.bookingAgency') || 'Booking Agency'}</p>
             <div className="flex items-center gap-1.5 mt-1">
               <TrendingUp className="w-3 h-3 text-orange-400" />
-              <p className="text-xs text-orange-400">10-15% comisión</p>
+              <p className="text-xs text-orange-400">{t('crm.contactRow.commission') || '10-15% commission'}</p>
             </div>
           </>
         ) : contact.type === 'label_rep' ? (
           <>
-            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || 'Label'}</p>
+            <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || t('crm.contactRow.label') || 'Label'}</p>
             <div className="flex items-center gap-1.5 mt-1">
               <Music className="w-3 h-3 text-pink-400" />
-              <p className="text-xs text-pink-400">A&R / Label Rep</p>
+              <p className="text-xs text-pink-400">{t('crm.contactRow.labelRep') || 'A&R / Label Rep'}</p>
             </div>
           </>
         ) : (
           <>
             <p className="text-slate-900 dark:text-white text-sm font-medium truncate">{contact.company || '—'}</p>
-            <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || 'Sin cargo'}</p>
+            <p className="text-slate-300 dark:text-white/50 text-xs mt-0.5 truncate">{contact.position || t('crm.contactRow.noPosition') || 'No position'}</p>
           </>
         )}
       </div>
@@ -234,21 +234,21 @@ const ContactRow = React.memo<{
           contact.priority === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
           contact.priority === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
           'bg-green-500/15 text-green-400 border border-green-500/30'
-        }`}>{contact.priority === 'high' ? 'Alta' : contact.priority === 'medium' ? 'Media' : 'Baja'}</span>
+        }`}>{contact.priority === 'high' ? t('crm.priority.high') || 'High' : contact.priority === 'medium' ? t('crm.priority.medium') || 'Medium' : t('crm.priority.low') || 'Low'}</span>
       </div>
 
       {/* Acciones */}
       <div className="flex items-center justify-end gap-1">
         <button onClick={(e) => { e.stopPropagation(); onView(contact); }}
-          className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400" title="Ver">
+          className="p-2 rounded-lg hover:bg-accent-500/20 text-theme-secondary hover:text-accent-400" title={t('crm.actions.view') || 'View'}>
           <Eye className="w-4 h-4" />
         </button>
         <button onClick={(e) => { e.stopPropagation(); onEdit(contact); }}
-          className="p-2 rounded-lg hover:bg-blue-500/20 text-theme-secondary hover:text-blue-400" title="Editar">
+          className="p-2 rounded-lg hover:bg-blue-500/20 text-theme-secondary hover:text-blue-400" title={t('crm.actions.edit') || 'Edit'}>
           <Edit2 className="w-4 h-4" />
         </button>
         <button onClick={(e) => { e.stopPropagation(); onDelete(contact.id); }}
-          className="p-2 rounded-lg hover:bg-red-500/20 text-theme-secondary hover:text-red-400" title="Eliminar">
+          className="p-2 rounded-lg hover:bg-red-500/20 text-theme-secondary hover:text-red-400" title={t('crm.actions.delete') || 'Delete'}>
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
@@ -475,27 +475,27 @@ export const Contacts: React.FC = () => {
     try {
       if (editingContact) {
         await updateContactMutation.mutateAsync({ id: editingContact.id, data: contactData });
-        toast.success('Contacto actualizado correctamente');
+        toast.success(t('crm.save.successUpdate') || 'Contact updated successfully');
       } else {
         await createContactMutation.mutateAsync(contactData);
-        toast.success('Contacto creado correctamente');
+        toast.success(t('crm.save.successCreate') || 'Contact created successfully');
       }
       setShowEditor(false); setEditingContact(undefined);
     } catch (error) { 
       logger.error('Error saving contact', error as Error);
-      toast.error('Error al guardar contacto'); 
+      toast.error(t('crm.save.error') || 'Error saving contact'); 
     }
   };
 
   const handleDeleteContact = useCallback(async (id: string) => {
-    if (confirm('¿Eliminar contacto?')) {
+    if (confirm(t('crm.delete.confirm') || 'Delete contact?')) {
       try {
         await deleteContactMutation.mutateAsync(id);
         setSelectedContact(prev => prev?.id === id ? null : prev);
-        toast.success('Contacto eliminado');
+        toast.success(t('crm.delete.success') || 'Contact deleted');
       } catch (error) { 
         logger.error('Error deleting contact', error as Error, { contactId: id });
-        toast.error('Error al eliminar'); 
+        toast.error(t('crm.delete.error') || 'Error deleting'); 
       }
     }
   }, [deleteContactMutation, toast]);
@@ -543,10 +543,10 @@ export const Contacts: React.FC = () => {
       try {
         const text = await file.text();
         contactStore.import(JSON.parse(text));
-        toast.success('Importado correctamente');
+        toast.success(t('crm.import.success') || 'Imported successfully');
       } catch (error) { 
         logger.error('Error importing contacts', error as Error);
-        toast.error('Error al importar'); 
+        toast.error(t('crm.import.error') || 'Error importing'); 
       }
     };
     input.click();
@@ -566,7 +566,7 @@ export const Contacts: React.FC = () => {
     <div className="h-full flex items-center justify-center">
       <div className="glass rounded-xl p-8 border border-theme">
         <Loader2 className="w-8 h-8 text-accent-400 animate-spin mx-auto mb-4" />
-        <p className="text-theme-secondary">Cargando contactos...</p>
+        <p className="text-theme-secondary">{t('crm.sidePanel.loading') || 'Loading contact...'}</p>
       </div>
     </div>
   );
@@ -575,8 +575,8 @@ export const Contacts: React.FC = () => {
     <div className="h-full flex items-center justify-center">
       <div className="glass rounded-xl p-8 border border-red-500/20">
         <div className="text-2xl mb-4">⚠️</div>
-        <p className="text-slate-900 dark:text-white font-medium">Error al cargar contactos</p>
-        <p className="text-sm text-theme-secondary">{error?.message || 'Error desconocido'}</p>
+        <p className="text-slate-900 dark:text-white font-medium">{t('crm.empty.noContacts') || 'No contacts'}</p>
+        <p className="text-sm text-theme-secondary">{error?.message || t('common.error') || 'Unknown error'}</p>
       </div>
     </div>
   );
@@ -586,12 +586,12 @@ export const Contacts: React.FC = () => {
       {/* Header mejorado */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-theme">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-theme-primary">Contactos CRM</h1>
+          <h1 className="text-2xl font-bold text-theme-primary">{t('crm.title') || 'CRM Contacts'}</h1>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-slate-300 dark:text-white/50">{categoryFilteredContacts.length} de {contacts.length}</span>
+            <span className="text-sm text-slate-300 dark:text-white/50">{categoryFilteredContacts.length} {t('crm.of') || 'of'} {contacts.length}</span>
             {(selectedCountry !== 'all' || selectedCity !== 'all') && (
               <span className="text-xs px-2.5 py-1 bg-accent-500/10 border border-accent-500/30 rounded-md text-accent-400 font-medium">
-                Filtrado
+                {t('crm.filtered') || 'Filtered'}
               </span>
             )}
           </div>
@@ -602,19 +602,19 @@ export const Contacts: React.FC = () => {
             className={`px-3 py-2 border rounded-lg transition-all duration-200 flex items-center gap-2 text-sm font-medium ${
               showStats ? 'bg-accent-500 text-black border-accent-500 shadow-lg shadow-accent-500/25' : 'bg-interactive border-slate-200 dark:border-white/10 text-theme-secondary hover:text-white hover:bg-interactive-hover hover:border-theme-strong'
             }`}>
-            <BarChart3 className="w-4 h-4" /> Stats
+            <BarChart3 className="w-4 h-4" /> {t('crm.stats') || 'Stats'}
           </button>
           <button onClick={handleExportCSV} className="px-3 py-2 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-theme-secondary hover:text-white hover:bg-interactive-hover hover:border-theme-strong transition-all duration-200 flex items-center gap-2 text-sm">
-            <FileText className="w-4 h-4" /> CSV
+            <FileText className="w-4 h-4" /> {t('crm.csv') || 'CSV'}
           </button>
           <button onClick={handleExport} className="px-3 py-2 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-theme-secondary hover:text-white hover:bg-interactive-hover hover:border-theme-strong transition-all duration-200 flex items-center gap-2 text-sm">
-            <Download className="w-4 h-4" /> JSON
+            <Download className="w-4 h-4" /> {t('crm.json') || 'JSON'}
           </button>
           <button onClick={handleImport} className="px-3 py-2 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-theme-secondary hover:text-white hover:bg-interactive-hover hover:border-theme-strong transition-all duration-200 flex items-center gap-2 text-sm">
-            <Upload className="w-4 h-4" /> Import
+            <Upload className="w-4 h-4" /> {t('crm.import') || 'Import'}
           </button>
           <button onClick={handleCreateContact} className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 rounded-lg text-white hover:from-accent-600 hover:to-accent-700 font-medium flex items-center gap-2 shadow-lg shadow-accent-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-accent-500/30 hover:scale-[1.02]">
-            <Plus className="w-4 h-4" /> Nuevo Contacto
+            <Plus className="w-4 h-4" /> {t('crm.newContact') || 'New Contact'}
           </button>
         </div>
       </div>
@@ -624,23 +624,23 @@ export const Contacts: React.FC = () => {
         <div className="px-6 py-5 bg-gradient-to-r from-accent-500/10 to-purple-500/10 border-b border-slate-200 dark:border-white/10 animate-fadeIn">
           <div className="grid grid-cols-5 gap-4">
             <div className="bg-interactive rounded-lg p-4 border border-slate-200 dark:border-white/10 hover:bg-interactive-hover hover:border-theme-strong transition-all duration-200">
-              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">Total Contactos</div>
+              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">{t('crm.stats.totalContacts') || 'Total Contacts'}</div>
               <div className="text-2xl font-bold text-theme-primary">{categoryFilteredContacts.length}</div>
             </div>
             <div className="bg-interactive rounded-lg p-4 border border-slate-200 dark:border-white/10 hover:bg-interactive-hover hover:border-theme-strong transition-all duration-200">
-              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">Países</div>
+              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">{t('crm.stats.countries') || 'Countries'}</div>
               <div className="text-2xl font-bold text-accent-400">{geoStats.totalCountries}</div>
             </div>
             <div className="bg-interactive rounded-lg p-4 border border-slate-200 dark:border-white/10 hover:bg-interactive-hover hover:border-theme-strong transition-all duration-200">
-              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">Ciudades</div>
+              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">{t('crm.stats.cities') || 'Cities'}</div>
               <div className="text-2xl font-bold text-purple-400">{geoStats.totalCities}</div>
             </div>
             <div className="bg-interactive rounded-lg p-4 border border-slate-200 dark:border-white/10 hover:bg-interactive-hover hover:border-theme-strong transition-all duration-200">
-              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">Con Ubicación</div>
+              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">{t('crm.stats.withLocation') || 'With Location'}</div>
               <div className="text-2xl font-bold text-green-400">{geoStats.withLocation}</div>
             </div>
             <div className="bg-interactive rounded-lg p-4 border border-slate-200 dark:border-white/10 hover:bg-interactive-hover hover:border-theme-strong transition-all duration-200">
-              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">Sin Ubicación</div>
+              <div className="text-xs text-slate-300 dark:text-white/50 mb-2 font-medium uppercase tracking-wide">{t('crm.stats.withoutLocation') || 'Without Location'}</div>
               <div className="text-2xl font-bold text-red-400">{geoStats.withoutLocation}</div>
             </div>
           </div>
@@ -670,33 +670,33 @@ export const Contacts: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-white/40" />
-            <input ref={searchInputRef} type="text" placeholder="Buscar por nombre, empresa, email... (⌘K)" value={filters.search}
+            <input ref={searchInputRef} type="text" placeholder={t('crm.search.placeholder') || 'Search by name, company, email... (⌘K)'} value={filters.search}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               className="w-full pl-10 pr-4 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white placeholder:text-theme-muted focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-sm transition-all duration-200" />
           </div>
 
           <select value={filters.priority} onChange={(e) => setFilters({ ...filters, priority: e.target.value as any })}
             className="px-3 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-interactive-hover transition-all duration-200 cursor-pointer">
-            <option value="all">Prioridad</option>
-            <option value="high">Alta</option>
-            <option value="medium">Media</option>
-            <option value="low">Baja</option>
+            <option value="all">{t('crm.priority.all') || 'Priority'}</option>
+            <option value="high">{t('crm.priority.high') || 'High'}</option>
+            <option value="medium">{t('crm.priority.medium') || 'Medium'}</option>
+            <option value="low">{t('crm.priority.low') || 'Low'}</option>
           </select>
 
           <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value as any })}
             className="px-3 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-interactive-hover transition-all duration-200 cursor-pointer">
-            <option value="all">Estado</option>
-            <option value="active">Activo</option>
-            <option value="pending">Pendiente</option>
-            <option value="inactive">Inactivo</option>
+            <option value="all">{t('crm.status.all') || 'Status'}</option>
+            <option value="active">{t('crm.status.active') || 'Active'}</option>
+            <option value="pending">{t('crm.status.pending') || 'Pending'}</option>
+            <option value="inactive">{t('crm.status.inactive') || 'Inactive'}</option>
           </select>
 
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
             className="px-3 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-interactive-hover transition-all duration-200 cursor-pointer">
-            <option value="name">Ordenar: Nombre</option>
-            <option value="company">Ordenar: Empresa</option>
-            <option value="recent">Ordenar: Más reciente</option>
-            <option value="priority">Ordenar: Prioridad</option>
+            <option value="name">{t('crm.sort.name') || 'Sort: Name'}</option>
+            <option value="company">{t('crm.sort.company') || 'Sort: Company'}</option>
+            <option value="recent">{t('crm.sort.recent') || 'Sort: Most Recent'}</option>
+            <option value="priority">{t('crm.sort.priority') || 'Sort: Priority'}</option>
           </select>
         </div>
 
@@ -704,7 +704,7 @@ export const Contacts: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-xs text-theme-secondary">
             <MapPin className="w-4 h-4" />
-            <span className="font-medium">Ubicación:</span>
+            <span className="font-medium">{t('crm.location.label') || 'Location:'}</span>
           </div>
 
           {/* Filtro por País */}
@@ -712,7 +712,7 @@ export const Contacts: React.FC = () => {
             value={selectedCountry}
             onChange={(e) => { setSelectedCountry(e.target.value); setSelectedCity('all'); }}
             className="px-3 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-interactive-hover min-w-[160px] transition-all duration-200 cursor-pointer">
-            <option value="all">Todos los países</option>
+            <option value="all">{t('crm.location.allCountries') || 'All countries'}</option>
             {countriesWithCounts.map(({ country, count }) => (
               <option key={country} value={country}>
                 {country} ({count})
@@ -726,7 +726,7 @@ export const Contacts: React.FC = () => {
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
               className="px-3 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-interactive-hover min-w-[160px] transition-all duration-200 cursor-pointer animate-fadeIn">
-              <option value="all">Todas las ciudades</option>
+              <option value="all">{t('crm.location.allCities') || 'All cities'}</option>
               {citiesWithCounts.map(({ city, count }) => (
                 <option key={city} value={city}>
                   {city} ({count})
@@ -739,7 +739,7 @@ export const Contacts: React.FC = () => {
           {companiesWithCounts.length > 0 && (
             <select
               className="px-3 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent-500/50 focus:bg-slate-200 dark:bg-slate-200 dark:bg-white/10 hover:bg-interactive-hover min-w-[200px] transition-all duration-200 cursor-pointer">
-              <option value="all">Todas las empresas</option>
+              <option value="all">{t('crm.location.allCompanies') || 'All companies'}</option>
               {companiesWithCounts.map(({ company, count }) => (
                 <option key={company} value={company}>
                   {company} ({count})
@@ -757,7 +757,7 @@ export const Contacts: React.FC = () => {
               setSelectedCountry('all');
               setSelectedCity('all');
             }} className="px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 hover:bg-red-500/20 flex items-center gap-2 text-sm">
-              <X className="w-4 h-4" /> Limpiar filtros
+              <X className="w-4 h-4" /> {t('crm.clearFilters') || 'Clear filters'}
             </button>
           )}
         </div>
@@ -770,11 +770,11 @@ export const Contacts: React.FC = () => {
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <Users className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">{contacts.length === 0 ? 'No hay contactos' : 'Sin resultados'}</h3>
-                <p className="text-theme-secondary mb-6">{contacts.length === 0 ? 'Crea tu primer contacto' : 'Ajusta los filtros'}</p>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">{contacts.length === 0 ? t('crm.empty.noContacts') || 'No contacts' : t('crm.empty.noResults') || 'No results'}</h3>
+                <p className="text-theme-secondary mb-6">{contacts.length === 0 ? t('crm.empty.createFirst') || 'Create your first contact' : t('crm.empty.adjustFilters') || 'Adjust filters'}</p>
                 {contacts.length === 0 && (
                   <button onClick={handleCreateContact} className="px-6 py-3 bg-gradient-to-r from-accent-500 to-accent-600 rounded-xl text-white hover:from-accent-600 hover:to-accent-700 font-medium inline-flex items-center gap-2">
-                    <Plus className="w-5 h-5" /> Crear Contacto
+                    <Plus className="w-5 h-5" /> {t('crm.empty.createContact') || 'Create Contact'}
                   </button>
                 )}
               </div>
@@ -783,12 +783,12 @@ export const Contacts: React.FC = () => {
             <div ref={tableContainerRef} className="flex-1 overflow-auto scroll-smooth" style={{ height: '100%', width: '100%' }}>
               {/* Header Grid */}
               <div className="sticky top-0 bg-surface-card/95 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 z-10 grid grid-cols-[20%_20%_22%_15%_11%_12%] gap-0 px-6 py-4">
-                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Contacto</div>
-                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Empresa / Cargo</div>
-                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Info</div>
-                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Ubicación</div>
-                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">Prioridad</div>
-                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider text-right">Acciones</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">{t('crm.table.contact') || 'Contact'}</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">{t('crm.table.companyPosition') || 'Company / Position'}</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">{t('crm.table.info') || 'Info'}</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">{t('crm.table.location') || 'Location'}</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider">{t('crm.table.priority') || 'Priority'}</div>
+                <div className="text-xs font-semibold text-slate-300 dark:text-white/50 uppercase tracking-wider text-right">{t('crm.table.actions') || 'Actions'}</div>
               </div>
 
               {/* Virtual Rows */}
@@ -890,10 +890,10 @@ export const Contacts: React.FC = () => {
                       href={`mailto:${selectedContact.email}`}
                       onClick={(e) => e.stopPropagation()}
                       className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-interactive hover:bg-interactive-hover border border-slate-200 dark:border-white/10 hover:border-accent-500/40 transition-all duration-150 group"
-                      title="Enviar email"
+                      title={t('crm.sidePanel.actions.email') || 'Email'}
                     >
                       <Mail className="w-4 h-4 text-theme-secondary group-hover:text-accent-400 transition-colors" />
-                      <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-white font-medium">Email</span>
+                      <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-white font-medium">{t('crm.sidePanel.actions.email') || 'Email'}</span>
                     </a>
                   )}
                   {selectedContact.phone && (
@@ -901,22 +901,22 @@ export const Contacts: React.FC = () => {
                       href={`tel:${selectedContact.phone}`}
                       onClick={(e) => e.stopPropagation()}
                       className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-interactive hover:bg-interactive-hover border border-slate-200 dark:border-white/10 hover:border-green-500/40 transition-all duration-150 group"
-                      title="Llamar"
+                      title={t('crm.sidePanel.actions.call') || 'Call'}
                     >
                       <Phone className="w-4 h-4 text-theme-secondary group-hover:text-green-400 transition-colors" />
-                      <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-white font-medium">Llamar</span>
+                      <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-white font-medium">{t('crm.sidePanel.actions.call') || 'Call'}</span>
                     </a>
                   )}
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(`${selectedContact.firstName} ${selectedContact.lastName}\n${selectedContact.email || ''}\n${selectedContact.phone || ''}`);
-                      toast.success('Contacto copiado al portapapeles');
+                      toast.success(t('crm.toast.copied') || 'Contact copied to clipboard');
                     }}
                     className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-interactive hover:bg-interactive-hover border border-slate-200 dark:border-white/10 hover:border-blue-500/40 transition-all duration-150 group"
-                    title="Copiar info"
+                    title={t('crm.sidePanel.actions.copy') || 'Copy'}
                   >
                     <Copy className="w-4 h-4 text-theme-secondary group-hover:text-blue-400 transition-colors" />
-                    <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-white font-medium">Copiar</span>
+                    <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-white font-medium">{t('crm.sidePanel.actions.copy') || 'Copy'}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -927,10 +927,10 @@ export const Contacts: React.FC = () => {
                       if (navigator.share) navigator.share(shareData);
                     }}
                     className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-interactive hover:bg-interactive-hover border border-slate-200 dark:border-white/10 hover:border-purple-500/40 transition-all duration-150 group"
-                    title="Compartir"
+                    title={t('crm.sidePanel.actions.share') || 'Share'}
                   >
                     <Share2 className="w-4 h-4 text-theme-secondary group-hover:text-purple-400 transition-colors" />
-                    <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-white font-medium">Compartir</span>
+                    <span className="text-[10px] text-slate-300 dark:text-white/50 group-hover:text-white font-medium">{t('crm.sidePanel.actions.share') || 'Share'}</span>
                   </button>
                 </div>
               </div>
@@ -947,7 +947,7 @@ export const Contacts: React.FC = () => {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <FileText className="w-4 h-4" />
-                    <span>Info</span>
+                    <span>{t('crm.sidePanel.tabs.info') || 'Info'}</span>
                   </div>
                 </button>
                 <button
@@ -960,7 +960,7 @@ export const Contacts: React.FC = () => {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <MessageSquare className="w-4 h-4" />
-                    <span>Notas</span>
+                    <span>{t('crm.sidePanel.tabs.notes') || 'Notes'}</span>
                     {selectedContact.notes && selectedContact.notes.length > 0 && (
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                         activeTab === 'notes' ? 'bg-black/20 text-black' : 'bg-accent-500/30 text-accent-400'
@@ -980,7 +980,7 @@ export const Contacts: React.FC = () => {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <Clock className="w-4 h-4" />
-                    <span>Historial</span>
+                    <span>{t('crm.sidePanel.tabs.history') || 'History'}</span>
                     {selectedContact.interactions && selectedContact.interactions.length > 0 && (
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                         activeTab === 'history' ? 'bg-black/20 text-black' : 'bg-accent-500/30 text-accent-400'

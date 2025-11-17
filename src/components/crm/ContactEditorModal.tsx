@@ -24,6 +24,7 @@ import {
 import type { Contact, ContactType, ContactPriority, ContactStatus, ContactNote } from '../../types/crm';
 import { CONTACT_TYPE_LABELS, COMMON_TAGS } from '../../types/crm';
 import { logger } from '../../lib/logger';
+import { t } from '../../lib/i18n';
 
 interface ContactEditorModalProps {
   contact?: Contact;
@@ -64,13 +65,13 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'El nombre es obligatorio';
+      newErrors.firstName = t('crm.editor.error.firstNameRequired') || 'First name is required';
     }
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'El apellido es obligatorio';
+      newErrors.lastName = t('crm.editor.error.lastNameRequired') || 'Last name is required';
     }
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
+      newErrors.email = t('crm.editor.error.invalidEmail') || 'Invalid email';
     }
 
     setErrors(newErrors);
@@ -149,17 +150,17 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
               {contact ? (
                 <>
                   <User className="w-6 h-6 text-accent-400" />
-                  Editar Contacto
+                  {t('crm.editor.edit') || 'Edit Contact'}
                 </>
               ) : (
                 <>
                   <User className="w-6 h-6 text-accent-400" />
-                  Nuevo Contacto
+                  {t('crm.editor.new') || 'New Contact'}
                 </>
               )}
             </h2>
             <p className="text-sm text-slate-400 dark:text-white/60 mt-1">
-              {contact ? 'Actualiza la información del contacto' : 'Añade un nuevo contacto profesional a tu CRM'}
+              {contact ? t('crm.editor.subtitle.edit') || 'Update contact information' : t('crm.editor.subtitle.new') || 'Add a new professional contact to your CRM'}
             </p>
           </div>
           <button
@@ -177,12 +178,12 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
             <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-5">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <User className="w-4 h-4 text-accent-400" />
-                Información Personal
+                {t('crm.editor.section.personal') || 'Personal Information'}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Nombre *
+                    {t('crm.editor.field.firstName') || 'First Name *'}
                   </label>
                   <input
                     type="text"
@@ -191,7 +192,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, firstName: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="Ej: Juan"
+                    placeholder={t('crm.editor.placeholder.firstName') || 'e.g. Juan'}
                   />
                   {errors.firstName && (
                     <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
@@ -203,7 +204,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Apellido *
+                    {t('crm.editor.field.lastName') || 'Last Name *'}
                   </label>
                   <input
                     type="text"
@@ -212,7 +213,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, lastName: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="Ej: Pérez"
+                    placeholder={t('crm.editor.placeholder.lastName') || 'e.g. Pérez'}
                   />
                   {errors.lastName && (
                     <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
@@ -224,7 +225,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Empresa
+                    {t('crm.editor.field.company') || 'Company'}
                   </label>
                   <input
                     type="text"
@@ -233,13 +234,13 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, company: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="Ej: Live Nation"
+                    placeholder={t('crm.editor.placeholder.company') || 'e.g. Live Nation'}
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Cargo
+                    {t('crm.editor.field.position') || 'Position'}
                   </label>
                   <input
                     type="text"
@@ -248,7 +249,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, position: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="Ej: Booking Manager"
+                    placeholder={t('crm.editor.placeholder.position') || 'e.g. Booking Manager'}
                   />
                 </div>
               </div>
@@ -258,12 +259,12 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
             <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-5">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Building className="w-4 h-4 text-accent-400" />
-                Clasificación
+                {t('crm.editor.section.classification') || 'Classification'}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Tipo de Contacto
+                    {t('crm.editor.field.type') || 'Contact Type'}
                   </label>
                   <select
                     value={formData.type}
@@ -282,7 +283,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Prioridad
+                    {t('crm.editor.field.priority') || 'Priority'}
                   </label>
                   <select
                     value={formData.priority}
@@ -291,15 +292,15 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white focus:border-accent-500/50 focus:outline-none transition-fast"
                   >
-                    <option value="low">Baja</option>
-                    <option value="medium">Media</option>
-                    <option value="high">Alta</option>
+                    <option value="low">{t('crm.priority.low') || 'Low'}</option>
+                    <option value="medium">{t('crm.priority.medium') || 'Medium'}</option>
+                    <option value="high">{t('crm.priority.high') || 'High'}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Estado
+                    {t('crm.editor.field.status') || 'Status'}
                   </label>
                   <select
                     value={formData.status}
@@ -308,9 +309,9 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white focus:border-accent-500/50 focus:outline-none transition-fast"
                   >
-                    <option value="active">Activo</option>
-                    <option value="pending">Pendiente</option>
-                    <option value="inactive">Inactivo</option>
+                    <option value="active">{t('crm.status.active') || 'Active'}</option>
+                    <option value="pending">{t('crm.status.pending') || 'Pending'}</option>
+                    <option value="inactive">{t('crm.status.inactive') || 'Inactive'}</option>
                   </select>
                 </div>
               </div>
@@ -320,12 +321,12 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
             <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-5">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Mail className="w-4 h-4 text-accent-400" />
-                Datos de Contacto
+                {t('crm.editor.section.contactData') || 'Contact Data'}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Email
+                    {t('crm.editor.field.email') || 'Email'}
                   </label>
                   <input
                     type="email"
@@ -334,7 +335,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, email: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="contacto@ejemplo.com"
+                    placeholder={t('crm.editor.placeholder.email') || 'contact@example.com'}
                   />
                   {errors.email && (
                     <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
@@ -346,7 +347,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Teléfono
+                    {t('crm.editor.field.phone') || 'Phone'}
                   </label>
                   <input
                     type="tel"
@@ -355,13 +356,13 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, phone: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="+34 600 00 00 00"
+                    placeholder={t('crm.editor.placeholder.phone') || '+34 600 00 00 00'}
                   />
                 </div>
 
                 <div className="md:col-span-2">
                   <label className="block text-xs uppercase tracking-wider text-slate-400 dark:text-white/40 mb-2 font-medium">
-                    Sitio Web
+                    {t('crm.editor.field.website') || 'Website'}
                   </label>
                   <input
                     type="url"
@@ -370,7 +371,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, website: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="https://ejemplo.com"
+                    placeholder={t('crm.editor.placeholder.website') || 'https://example.com'}
                   />
                 </div>
               </div>
@@ -380,7 +381,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
             <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-5">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Globe className="w-4 h-4 text-accent-400" />
-                Redes Sociales
+                {t('crm.editor.section.socialMedia') || 'Social Media'}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -395,7 +396,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, instagram: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="@usuario"
+                    placeholder={t('crm.editor.placeholder.username') || '@username'}
                   />
                 </div>
 
@@ -411,7 +412,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, twitter: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="@usuario"
+                    placeholder={t('crm.editor.placeholder.username') || '@username'}
                   />
                 </div>
 
@@ -427,7 +428,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, linkedin: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="linkedin.com/in/usuario"
+                    placeholder="linkedin.com/in/username"
                   />
                 </div>
 
@@ -443,7 +444,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
                       setFormData({ ...formData, facebook: e.target.value })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-white placeholder-slate-400 dark:placeholder-white/30 focus:border-accent-500/50 focus:outline-none transition-fast"
-                    placeholder="facebook.com/usuario"
+                    placeholder="facebook.com/username"
                   />
                 </div>
               </div>
@@ -582,7 +583,7 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between gap-3 p-6 border-t border-slate-200 dark:border-white/10 bg-white/[0.02]">
           <div className="text-xs text-slate-300 dark:text-white/50">
-            {contact ? `ID: ${contact.id.slice(0, 8)}...` : '* Campos obligatorios'}
+            {contact ? `ID: ${contact.id.slice(0, 8)}...` : '* ' + (t('crm.editor.error.firstNameRequired').replace('First name', 'Required fields') || 'Required fields')}
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -590,14 +591,14 @@ export const ContactEditorModal: React.FC<ContactEditorModalProps> = ({
               onClick={onClose}
               className="px-6 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-white hover:bg-slate-200 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-fast font-medium"
             >
-              Cancelar
+              {t('crm.editor.button.cancel') || 'Cancel'}
             </button>
             <button
               onClick={handleSubmit}
               className="px-6 py-2.5 bg-gradient-to-r from-accent-500 to-accent-600 border border-accent-500/30 rounded-xl text-white hover:from-accent-600 hover:to-accent-700 transition-all font-medium flex items-center gap-2 shadow-lg shadow-accent-500/20"
             >
               <Save className="w-4 h-4" />
-              {contact ? 'Guardar Cambios' : 'Crear Contacto'}
+              {contact ? t('crm.editor.button.save') || 'Save Changes' : t('crm.empty.createContact') || 'Create Contact'}
             </button>
           </div>
         </div>

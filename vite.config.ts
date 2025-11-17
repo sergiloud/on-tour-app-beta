@@ -22,6 +22,7 @@ export default defineConfig({
     minifyWhitespace: true,
     keepNames: false, // Reduce bundle size
     charset: 'utf8',
+    mangleProps: undefined, // Don't mangle property names - can cause runtime errors
   },
   css: {
     devSourcemap: true,
@@ -166,6 +167,8 @@ export default defineConfig({
       },
       treeShaking: true,
       minify: true,
+      keepNames: false,
+      mangleProps: undefined, // Prevent property mangling that can cause runtime errors
     },
   },
   ssr: {
@@ -213,13 +216,13 @@ export default defineConfig({
         entryFileNames: 'assets/[name]-[hash].js',
         exports: 'auto',
         generatedCode: {
-          constBindings: true,
+          constBindings: false, // Changed from true - prevents TDZ errors
           arrowFunctions: true,
           objectShorthand: true,
         },
         compact: true,
         interop: 'auto',
-        hoistTransitiveImports: false, // Improve tree shaking
+        hoistTransitiveImports: true, // Changed from false - required to prevent circular ref errors
         minifyInternalExports: true,
         // Enhanced performance settings
         experimentalMinChunkSize: 10000, // Minimum chunk size (10KB)

@@ -275,7 +275,7 @@ const TravelV2: React.FC = () => {
               </div>
               <div>
                 <div className="text-2xl font-semibold tracking-tight text-theme-primary">{stats.total}</div>
-                <div className="text-xs text-slate-400 dark:text-white/40 tracking-wide uppercase">Total Vuelos</div>
+                <div className="text-xs text-slate-400 dark:text-white/40 tracking-wide uppercase">{t('travel.stats.totalFlights')}</div>
               </div>
             </div>
           </div>
@@ -289,7 +289,7 @@ const TravelV2: React.FC = () => {
               </div>
               <div>
                 <div className="text-2xl font-semibold tracking-tight text-theme-primary">{stats.upcoming}</div>
-                <div className="text-xs text-slate-400 dark:text-white/40 tracking-wide uppercase">Próximos</div>
+                <div className="text-xs text-slate-400 dark:text-white/40 tracking-wide uppercase">{t('travel.stats.upcoming')}</div>
               </div>
             </div>
           </div>
@@ -303,7 +303,7 @@ const TravelV2: React.FC = () => {
               </div>
               <div>
                 <div className="text-2xl font-semibold tracking-tight text-theme-primary">{(stats.totalDistance / 1000).toFixed(0)}k</div>
-                <div className="text-xs text-slate-400 dark:text-white/40 tracking-wide uppercase">Km Totales</div>
+                <div className="text-xs text-slate-400 dark:text-white/40 tracking-wide uppercase">{t('travel.stats.totalKm')}</div>
               </div>
             </div>
           </div>
@@ -319,10 +319,10 @@ const TravelV2: React.FC = () => {
           </div>
           {(['all', 'upcoming', 'departed', 'landed'] as const).map((status) => {
             const labels = {
-              all: 'Todos',
-              upcoming: 'Próximos',
-              departed: 'En Vuelo',
-              landed: 'Aterrizados',
+              all: t('travel.filter.all'),
+              upcoming: t('travel.filter.upcoming'),
+              departed: t('travel.filter.departed'),
+              landed: t('travel.filter.landed'),
             };
             return (
               <button
@@ -354,11 +354,11 @@ const TravelV2: React.FC = () => {
             <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-slate-700/30 to-slate-800/30 flex items-center justify-center mx-auto mb-4 border border-white/5">
               <Plane className="w-7 h-7 text-slate-300 dark:text-white/40" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 tracking-tight">No hay vuelos</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 tracking-tight">{t('travel.empty.title')}</h3>
             <p className="text-slate-400 dark:text-white/40 text-sm mb-6">
               {filterStatus !== 'all'
-                ? 'Intenta ajustar los filtros'
-                : 'Comienza agregando tu primer vuelo'
+                ? t('travel.empty.subtitle.filtered')
+                : t('travel.empty.subtitle.all')
               }
             </p>
             {filterStatus === 'all' && (
@@ -369,7 +369,7 @@ const TravelV2: React.FC = () => {
                 className="px-5 py-2.5 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-white font-medium hover:bg-slate-300 dark:bg-white/15 transition-all inline-flex items-center gap-2 border border-theme"
               >
                 <Plus className="w-4 h-4" />
-                Agregar Primer Vuelo
+                {t('travel.empty.cta')}
               </motion.button>
             )}
           </motion.div>
@@ -385,11 +385,11 @@ const TravelV2: React.FC = () => {
   const renderSearch = () => (
     <motion.div variants={staggerFast} initial="initial" animate="animate" className="space-y-5">
       <motion.div variants={slideUp} className="glass rounded-lg border border-theme p-6">
-        <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-5 tracking-tight">Buscar Vuelos</h3>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-5 tracking-tight">{t('travel.search.title')}</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
           <div>
-            <label className="block text-xs text-slate-400 dark:text-white/40 mb-2 uppercase tracking-wide font-medium">Origen</label>
+            <label className="block text-xs text-slate-400 dark:text-white/40 mb-2 uppercase tracking-wide font-medium">{t('travel.search.origin')}</label>
             <input
               type="text"
               value={searchQueryInput.origin}
@@ -400,7 +400,7 @@ const TravelV2: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 dark:text-white/40 mb-2 uppercase tracking-wide font-medium">Destino</label>
+            <label className="block text-xs text-slate-400 dark:text-white/40 mb-2 uppercase tracking-wide font-medium">{t('travel.search.destination')}</label>
             <input
               type="text"
               value={searchQueryInput.dest}
@@ -411,7 +411,7 @@ const TravelV2: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 dark:text-white/40 mb-2 uppercase tracking-wide font-medium">Fecha</label>
+            <label className="block text-xs text-slate-400 dark:text-white/40 mb-2 uppercase tracking-wide font-medium">{t('travel.search.departure_date')}</label>
             <input
               type="date"
               value={searchQueryInput.date}
@@ -430,7 +430,7 @@ const TravelV2: React.FC = () => {
             className="px-4 py-2.5 rounded-lg bg-purple-600/20 text-purple-300 font-medium hover:bg-purple-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 border border-purple-500/20 text-sm"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            Skyscanner
+            {t('travel.search.skyscanner')}
           </motion.button>
 
           <motion.button
@@ -440,7 +440,7 @@ const TravelV2: React.FC = () => {
             className="px-4 py-2.5 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-white font-medium hover:bg-slate-300 dark:bg-white/15 transition-all flex items-center gap-2 border border-theme text-sm"
           >
             <Plus className="w-3.5 h-3.5" />
-            Búsqueda Avanzada
+            {t('travel.search.advanced')}
           </motion.button>
         </div>
       </motion.div>
@@ -539,9 +539,9 @@ const TravelV2: React.FC = () => {
                 timeline: Calendar,
               };
               const labels = {
-                flights: 'Mis Vuelos',
-                search: 'Buscar',
-                timeline: 'Timeline',
+                flights: t('travel.tabs.flights'),
+                search: t('travel.tabs.search'),
+                timeline: t('travel.tabs.timeline'),
               };
               const Icon = icons[tab];
 

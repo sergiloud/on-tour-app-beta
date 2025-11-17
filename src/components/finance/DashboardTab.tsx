@@ -9,6 +9,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
 } from 'recharts';
 import { slideUp, staggerFast } from '../../lib/animations';
+import { t } from '../../lib/i18n';
 import { ProfitabilityWaterfallChart } from './ProfitabilityWaterfallChart';
 import { FinancialDistributionPieChart } from './FinancialDistributionPieChart';
 import type { TransactionV3, ProfitabilityAnalysis } from '../../types/financeV3';
@@ -270,7 +271,7 @@ export function DashboardTab({
                 fillOpacity={1}
                 fill="url(#colorIncome)"
                 strokeWidth={2}
-                name="Ingresos"
+                name={t('finance.chart.income')}
               />
               <Area
                 type="monotone"
@@ -279,7 +280,7 @@ export function DashboardTab({
                 fillOpacity={1}
                 fill="url(#colorExpense)"
                 strokeWidth={2}
-                name="Gastos"
+                name={t('finance.chart.expenses')}
               />
 
               {/* Series de comparación (solo si existen datos) */}
@@ -293,7 +294,7 @@ export function DashboardTab({
                     fillOpacity={0}
                     strokeWidth={2}
                     strokeOpacity={0.5}
-                    name="Ingresos (comparación)"
+                    name={t('finance.chart.incomeComparison')}
                   />
                   <Area
                     type="monotone"
@@ -303,7 +304,7 @@ export function DashboardTab({
                     fillOpacity={0}
                     strokeWidth={2}
                     strokeOpacity={0.5}
-                    name="Gastos (comparación)"
+                    name={t('finance.chart.expensesComparison')}
                   />
                 </>
               )}

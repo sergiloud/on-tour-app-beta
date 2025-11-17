@@ -38,6 +38,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { slideUp, staggerFast } from '../../lib/animations';
+import { t } from '../../lib/i18n';
 import type { TransactionV3 } from '../../types/financeV3';
 import {
   useProjections,
@@ -293,7 +294,7 @@ export function ProjectionsTab({ transactions, fmtMoney }: ProjectionsTabProps) 
               stroke="#10b981"
               strokeWidth={2}
               fill="url(#incomeGradient)"
-              name="Ingresos Reales"
+              name={t('finance.chart.income')}
               connectNulls
             />
             <Area
@@ -302,7 +303,7 @@ export function ProjectionsTab({ transactions, fmtMoney }: ProjectionsTabProps) 
               stroke="#f59e0b"
               strokeWidth={2}
               fill="url(#expenseGradient)"
-              name="Gastos Reales"
+              name={t('finance.chart.expenses')}
               connectNulls
             />
 

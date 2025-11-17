@@ -2274,6 +2274,31 @@ const en = {
     , 'timelineMaestro.simulation.riskLevel.medium': 'Medium'
     , 'timelineMaestro.simulation.riskLevel.high': 'High'
     , 'timelineMaestro.simulation.riskLevel.critical': 'Critical'
+
+    // Finance - Chart labels
+    , 'finance.chart.income': 'Income'
+    , 'finance.chart.expenses': 'Expenses'
+    , 'finance.chart.incomeComparison': 'Income (comparison)'
+    , 'finance.chart.expensesComparison': 'Expenses (comparison)'
+
+    // Travel - Status and filters
+    , 'travel.stats.totalFlights': 'Total Flights'
+    , 'travel.stats.upcoming': 'Upcoming'
+    , 'travel.stats.totalKm': 'Total Km'
+    , 'travel.filter.all': 'All'
+    , 'travel.filter.upcoming': 'Upcoming'
+    , 'travel.filter.departed': 'In Flight'
+    , 'travel.filter.landed': 'Landed'
+    , 'travel.tabs.flights': 'My Flights'
+    , 'travel.tabs.search': 'Search'
+    , 'travel.tabs.timeline': 'Timeline'
+    , 'travel.empty.title': 'No flights'
+    , 'travel.empty.subtitle.filtered': 'Try adjusting the filters'
+    , 'travel.empty.subtitle.all': 'Start by adding your first flight'
+    , 'travel.empty.cta': 'Add First Flight'
+    , 'travel.search.skyscanner': 'Skyscanner'
+    , 'travel.search.advanced': 'Advanced Search'
+    , 'travel.subtitle': 'Manage your flights and trips'
 };
 
 const es = {
@@ -4557,6 +4582,31 @@ const es = {
     , 'timelineMaestro.simulation.riskLevel.medium': 'Medio'
     , 'timelineMaestro.simulation.riskLevel.high': 'Alto'
     , 'timelineMaestro.simulation.riskLevel.critical': 'Crítico'
+
+    // Finance - Etiquetas de gráficos
+    , 'finance.chart.income': 'Ingresos'
+    , 'finance.chart.expenses': 'Gastos'
+    , 'finance.chart.incomeComparison': 'Ingresos (comparación)'
+    , 'finance.chart.expensesComparison': 'Gastos (comparación)'
+
+    // Travel - Estado y filtros
+    , 'travel.stats.totalFlights': 'Total Vuelos'
+    , 'travel.stats.upcoming': 'Próximos'
+    , 'travel.stats.totalKm': 'Km Totales'
+    , 'travel.filter.all': 'Todos'
+    , 'travel.filter.upcoming': 'Próximos'
+    , 'travel.filter.departed': 'En Vuelo'
+    , 'travel.filter.landed': 'Aterrizados'
+    , 'travel.tabs.flights': 'Mis Vuelos'
+    , 'travel.tabs.search': 'Buscar'
+    , 'travel.tabs.timeline': 'Timeline'
+    , 'travel.empty.title': 'No hay vuelos'
+    , 'travel.empty.subtitle.filtered': 'Intenta ajustar los filtros'
+    , 'travel.empty.subtitle.all': 'Comienza agregando tu primer vuelo'
+    , 'travel.empty.cta': 'Agregar Primer Vuelo'
+    , 'travel.search.skyscanner': 'Skyscanner'
+    , 'travel.search.advanced': 'Búsqueda Avanzada'
+    , 'travel.subtitle': 'Gestiona tus vuelos y viajes'
 };
 
 const fr = {

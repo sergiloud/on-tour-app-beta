@@ -27,6 +27,7 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
   const polylineLayerRef = useRef<L.LayerGroup | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [ready, setReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { profile } = useAuth();
@@ -237,15 +238,44 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     }
 
     return () => {
+      // Clear any pending timeouts
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
+      
+      // Clear layers before removing map
+      if (markerLayerRef.current) {
+        markerLayerRef.current.clearLayers();
+        markerLayerRef.current = null;
+      }
+      if (polylineLayerRef.current) {
+        polylineLayerRef.current.clearLayers();
+        polylineLayerRef.current = null;
+      }
+      
+      // Clear marker and polyline references
+      markersRef.current = [];
+      polylinesRef.current = [];
+      
+      // Properly remove map instance
       if (mapRef.current) {
-        mapRef.current.remove();
+        try {
+          mapRef.current.off(); // Remove all event listeners
+          mapRef.current.remove(); // Remove map and clean up
+        } catch (e) {
+          // Ignore errors during cleanup
+          console.warn('Map cleanup warning:', e);
+        }
         mapRef.current = null;
       }
-      markerLayerRef.current = null;
-      polylineLayerRef.current = null;
+      
+      setReady(false);
     };
   }, []);
 
@@ -385,24 +415,37 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
       
       // Auto-open first show and fit bounds (after all markers added)
       if (markersToAdd.length > 0 && shows.length > 0) {
+        // Clear any existing timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        
         // Use setTimeout to avoid blocking
-        setTimeout(() => {
-          markersToAdd[0]!.openPopup();
+        timeoutRef.current = setTimeout(() => {
+          // Check if map still exists before operating
+          if (!mapRef.current || !markersToAdd[0]) return;
           
-          if (shows.length > 1) {
-            const bounds = L.latLngBounds(shows.map(s => [s.lat, s.lng]));
-            map.fitBounds(bounds, { 
-              padding: [50, 50],
-              maxZoom: 5,
-              animate: true,
-              duration: 0.5, // Faster animation
-              easeLinearity: 0.2, // Smoother easing
-            });
-          } else {
-            map.setView([shows[0]!.lat, shows[0]!.lng], 4, { 
-              animate: true,
-              duration: 0.5,
-            });
+          try {
+            markersToAdd[0].openPopup();
+            
+            if (shows.length > 1) {
+              const bounds = L.latLngBounds(shows.map(s => [s.lat, s.lng]));
+              mapRef.current.fitBounds(bounds, { 
+                padding: [50, 50],
+                maxZoom: 5,
+                animate: true,
+                duration: 0.5, // Faster animation
+                easeLinearity: 0.2, // Smoother easing
+              });
+            } else {
+              mapRef.current.setView([shows[0]!.lat, shows[0]!.lng], 4, { 
+                animate: true,
+                duration: 0.5,
+              });
+            }
+          } catch (e) {
+            // Ignore errors if component unmounted
+            console.warn('Map animation warning:', e);
           }
         }, 300); // Reduced delay
       }
@@ -436,8 +479,14 @@ const InteractiveMapComponent: React.FC<{ className?: string }> = ({ className =
     animationFrameRef.current = requestAnimationFrame(renderMap);
 
     return () => {
+      // Clear pending timeout when effect re-runs or unmounts
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
     };
   }, [shows, ready, homeLocation, fmtMoney, homeIcon, tourLegs, markerIcons, getStatusColor]);

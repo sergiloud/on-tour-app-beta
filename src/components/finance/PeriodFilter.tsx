@@ -204,7 +204,9 @@ const PeriodFilter: React.FC<PeriodFilterProps> = ({ value, dateRange, onChange 
         >
           <Calendar className="w-4 h-4 text-accent-400" />
           <div className="flex-1 text-left">
-            <p className="text-[10px] uppercase tracking-wide text-slate-300 dark:text-white/40">PERÍODO</p>
+            <p className="text-[10px] uppercase tracking-wide text-slate-300 dark:text-white/40">
+              {t('finance.period.label') || 'PERIOD'}
+            </p>
             <p className="text-sm font-medium text-slate-900 dark:text-white">{formatDateRange()}</p>
           </div>
           <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -218,16 +220,24 @@ const PeriodFilter: React.FC<PeriodFilterProps> = ({ value, dateRange, onChange 
             onChange={(e) => setComparisonMode(e.target.value as ComparisonMode)}
             className="bg-transparent text-sm text-slate-700 dark:text-slate-700 dark:text-white/90 focus:outline-none cursor-pointer"
           >
-            <option value="none" className="bg-dark-800 text-slate-900 dark:text-white">Sin comparar</option>
-            <option value="previous" className="bg-dark-800 text-slate-900 dark:text-white">vs. Período anterior</option>
-            <option value="yearAgo" className="bg-dark-800 text-slate-900 dark:text-white">vs. Año pasado</option>
+            <option value="none" className="bg-dark-800 text-slate-900 dark:text-white">
+              {t('finance.comparison.none') || 'No comparison'}
+            </option>
+            <option value="previous" className="bg-dark-800 text-slate-900 dark:text-white">
+              {t('finance.comparison.previous') || 'vs. Previous period'}
+            </option>
+            <option value="yearAgo" className="bg-dark-800 text-slate-900 dark:text-white">
+              {t('finance.comparison.yearAgo') || 'vs. Last year'}
+            </option>
           </select>
         </div>
 
         {/* Comparison Range Display */}
         {comparisonMode !== 'none' && comparisonDateRange && (
           <div className="glass rounded-lg border border-accent-500/30 px-3 py-2 bg-accent-500/5">
-            <p className="text-[10px] uppercase tracking-wide text-accent-400">COMPARANDO CON</p>
+            <p className="text-[10px] uppercase tracking-wide text-accent-400">
+              {t('finance.comparison.comparingWith') || 'COMPARING WITH'}
+            </p>
             <p className="text-sm font-medium text-slate-900 dark:text-white">{formatComparisonRange()}</p>
           </div>
         )}

@@ -6,6 +6,7 @@ import { ProgressBar } from '../../ui/ProgressBar';
 import type { BudgetCategory } from '../../hooks/useFinanceData';
 import { usePerfMonitor } from '../../lib/perfMonitor';
 import { EditBudgetModal } from './EditBudgetModal';
+import { t } from '../../lib/i18n';
 
 export interface BudgetsTabProps {
   /** Categorías de presupuesto */
@@ -48,8 +49,12 @@ export function BudgetsTab({
       <div className="glass rounded-xl border border-theme p-6 hover:border-accent-500/30 transition-fast">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">Presupuestos por Categoría</h3>
-            <p className="text-xs text-slate-300 dark:text-white/40">Seguimiento de ejecución presupuestaria</p>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">
+              {t('finance.budgets.title') || 'Budgets by Category'}
+            </h3>
+            <p className="text-xs text-slate-300 dark:text-white/40">
+              {t('finance.budgets.tracking') || 'Budget execution tracking'}
+            </p>
           </div>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -58,7 +63,7 @@ export function BudgetsTab({
             className="px-4 py-2 bg-accent-500/20 border border-accent-500/30 rounded-lg text-xs text-accent-400 hover:bg-accent-500/30 transition-fast font-medium flex items-center gap-2"
           >
             <Settings className="w-3.5 h-3.5" />
-            Editar Presupuestos
+            {t('finance.budgets.editBudgets') || 'Edit Budgets'}
           </motion.button>
         </div>
         <div className="space-y-5">
@@ -70,9 +75,9 @@ export function BudgetsTab({
             };
 
             const getStatusText = () => {
-              if (budget.percentage >= 100) return 'Excedido';
-              if (budget.percentage >= 80) return 'Cerca del límite';
-              return 'Bajo control';
+              if (budget.percentage >= 100) return t('finance.budgets.exceeded') || 'Exceeded';
+              if (budget.percentage >= 80) return t('finance.budgets.nearLimit') || 'Near limit';
+              return t('finance.budgets.underControl') || 'Under control';
             };
 
             const getStatusColor = () => {
@@ -124,7 +129,9 @@ export function BudgetsTab({
             <AlertCircle className="w-5 h-5 text-amber-400" />
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Alertas de Presupuesto</h4>
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+              {t('finance.budgets.alerts') || 'Budget Alerts'}
+            </h4>
             {budgetCategories.filter(b => b.percentage >= 80).length > 0 ? (
               <ul className="space-y-2">
                 {budgetCategories.filter(b => b.percentage >= 80).map(b => (
@@ -145,7 +152,7 @@ export function BudgetsTab({
               </ul>
             ) : (
               <p className="text-xs text-slate-300 dark:text-white/50">
-                No hay alertas activas. Todos los presupuestos están bajo control.
+                {t('finance.budgets.noAlerts') || 'No active alerts. All budgets under control.'}
               </p>
             )}
           </div>

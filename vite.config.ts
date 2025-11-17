@@ -140,6 +140,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
+      'react',
+      'react-dom',
+      'react-is',
       'react/jsx-runtime',
       'react-router-dom',
       '@tanstack/react-query',
@@ -151,10 +154,6 @@ export default defineConfig({
       'framer-motion',
     ],
     exclude: [
-      // Force React to be in entry bundle, not in optimized deps
-      'react',
-      'react-dom',
-      'react-is',
       // Heavy libraries
       'exceljs', 
       'xlsx', 

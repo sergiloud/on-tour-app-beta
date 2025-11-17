@@ -210,7 +210,7 @@ const FinanceV2Inner: React.FC = () => {
               };
               const labels = {
                 dashboard: t('nav.dashboard') || 'Dashboard',
-                transactions: t('finance.transactions') || 'Transactions',
+                transactions: t('finance.tabs.transactions') || 'Transactions',
                 budgets: t('finance.budget') || 'Budgets',
                 projections: t('finance.forecast') || 'Forecast',
               };

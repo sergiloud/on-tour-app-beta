@@ -39,17 +39,19 @@ export default defineConfig({
       wasm(),
       topLevelAwait(),
     ] : []),
-    // Professional compression for optimal delivery
-    compression({
-      algorithm: 'gzip',
-      threshold: 1024,
-    }),
-    compression({
-      algorithm: 'brotliCompress',
-      ext: '.br',
-      threshold: 1024,
-    }),
-    // Bundle analyzer (solo en local, desactivado en Vercel para builds más rápidos)
+    // Professional compression (skip in Vercel - they compress automatically)
+    ...(process.env.VERCEL ? [] : [
+      compression({
+        algorithm: 'gzip',
+        threshold: 1024,
+      }),
+      compression({
+        algorithm: 'brotliCompress',
+        ext: '.br',
+        threshold: 1024,
+      }),
+    ]),
+    // Bundle analyzer (solo en local)
     ...(process.env.VERCEL ? [] : [
       visualizer({
         filename: './dist/stats.html',
@@ -184,6 +186,8 @@ export default defineConfig({
     minify: 'esbuild',
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     cssCodeSplit: true,
+    reportCompressedSize: !process.env.VERCEL, // Disable in Vercel for faster builds
+    chunkSizeWarningLimit: 600,
     modulePreload: {
       polyfill: true,
       resolveDependencies: (filename, deps) => {
@@ -243,8 +247,6 @@ export default defineConfig({
         annotations: true,
       },
     },
-    chunkSizeWarningLimit: 600, // Reduced from 800KB to encourage better chunking
-    reportCompressedSize: true,
     cssMinify: 'esbuild',
     assetsInlineLimit: 2048, // Reduced from 4096 to minimize base64 inlining
   },

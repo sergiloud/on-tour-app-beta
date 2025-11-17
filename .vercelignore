@@ -1,12 +1,13 @@
 # Tests
-
-**/**tests**
-**/_.test.ts
-\*\*/_.test.tsx
-**/\*.spec.ts
-**/\*.spec.tsx
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
 e2e/
 playwright.config.ts
+playwright-report/
+test-results/
 vitest.config.ts
 vitest.setup.ts
 vitest.shims.d.ts
@@ -14,43 +15,61 @@ vitest.unit.config.ts
 coverage/
 
 # Documentation
-
 docs/
-\*.md
+docs-chat/
+*.md
 !README.md
-BUILD_RESULTS.md
-CHANGELOG.md
-FIREBASE_SETUP.md
-PERFORMANCE_IMPROVEMENTS.md
-SECURITY.md
 
 # Storybook
-
 .storybook/
-**/\*.stories.tsx
-**/\*.stories.ts
+**/*.stories.tsx
+**/*.stories.ts
 
 # Development
-
 .vscode/
 .editorconfig
 .prettierrc
 .eslintrc.json
 .lintstagedrc.json
-backend/src/
-backend/config/
-backend/scripts/
-backend/tests/
-backend/tsconfig.json
-backend/package.json
-backend/README.md
-backend/AUDIT_RESPONSE.md
-backend/FIREBASE_INTEGRATION.md
-backend/SECURITY_IMPROVEMENTS.md
+.git/
+.github/
 
-# Keep WASM engine for client-side use
-!wasm-financial-engine/pkg/
+# Backend (not needed for frontend)
+backend/
 
-# Netlify (no longer used)
+# WASM (skipped in Vercel builds)
+wasm-financial-engine/
 
+# Build artifacts
+dist/
+.cache/
+.turbo/
+.vite/
+stats.html
+framer-motion-report.json
+
+# Scripts (dev only)
+scripts/
+*.test.html
+check-*.mjs
+check-*.html
+migrate-*.mjs
+fix-*.mjs
+compare-*.mjs
+create-test-*.mjs
+find-*.mjs
+quick-test-*.mjs
+debug-*.html
+diagnose.html
+unregister-*.html
+
+# Docker
+docker/
+docker-compose.yml
+Dockerfile
+
+# Security
+firebase-admin-key.json
+
+# Netlify
 netlify.toml

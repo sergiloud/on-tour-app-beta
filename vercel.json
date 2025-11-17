@@ -2,16 +2,22 @@
   "version": 2,
   "name": "on-tour-app-production", 
   "framework": "vite",
-  "buildCommand": "SKIP_WASM=true VITE_SKIP_WASM=true vite build",
+  "buildCommand": "vite build",
   "outputDirectory": "dist",
-  "installCommand": "npm ci",
+  "installCommand": "npm ci --legacy-peer-deps --omit=dev --prefer-offline",
   "env": {
     "NODE_ENV": "production",
     "VITE_APP_VERSION": "2.2.2-production",
     "VITE_BUILD_TIME": "2025-11-16",
     "VITE_ENVIRONMENT": "production",
     "SKIP_WASM": "true",
-    "VITE_SKIP_WASM": "true"
+    "VITE_SKIP_WASM": "true",
+    "VERCEL": "1"
+  },
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--max-old-space-size=4096"
+    }
   },
   "headers": [
     {

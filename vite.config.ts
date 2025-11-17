@@ -32,8 +32,7 @@ export default defineConfig({
   },
   plugins: [
     react({
-      jsxRuntime: 'automatic', // Changed from 'classic' to avoid createElement dependency issues
-      jsxImportSource: 'react'
+      jsxRuntime: 'classic' // Keep classic to ensure React.createElement is available globally
     }),
     // WebAssembly support for high-performance financial calculations (skip in Vercel build)
     ...(process.env.SKIP_WASM !== 'true' && process.env.VERCEL !== '1' ? [
@@ -139,11 +138,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      'react',
-      'react/jsx-runtime', 
-      'react-dom',
+      'react/jsx-runtime',
       'react-router-dom',
-      'react-is',
       '@tanstack/react-query',
       '@tanstack/query-core',
       'lucide-react',
@@ -153,6 +149,11 @@ export default defineConfig({
       'framer-motion',
     ],
     exclude: [
+      // Force React to be in entry bundle, not in optimized deps
+      'react',
+      'react-dom',
+      'react-is',
+      // Heavy libraries
       'exceljs', 
       'xlsx', 
       'maplibre-gl', 
@@ -185,18 +186,9 @@ export default defineConfig({
     cssCodeSplit: true,
     modulePreload: {
       polyfill: true,
-      resolveDependencies: (filename, deps, { hostId, hostType }) => {
-        // Ensure React core is always loaded first
-        const sortedDeps = deps.sort((a, b) => {
-          const aIsReact = a.includes('vendor-react-core');
-          const bIsReact = b.includes('vendor-react-core');
-          if (aIsReact && !bIsReact) return -1;
-          if (!aIsReact && bIsReact) return 1;
-          return 0;
-        });
-        
+      resolveDependencies: (filename, deps) => {
         // Preload critical chunks, exclude heavy ones
-        return sortedDeps.filter(dep => !dep.includes('maplibre') && !dep.includes('excel'));
+        return deps.filter(dep => !dep.includes('maplibre') && !dep.includes('excel'));
       },
     },
     rollupOptions: {

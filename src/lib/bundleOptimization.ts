@@ -13,12 +13,8 @@ import type { ManualChunksOption } from 'rollup';
 // ============================================================================
 
 export const manualChunks: ManualChunksOption = (id: string) => {
-  // React ecosystem - Keep React, React-DOM, and React-IS together to avoid undefined errors
-  if (id.includes('node_modules/react/') || 
-      id.includes('node_modules/react-dom/') ||
-      id.includes('node_modules/react-is/')) {
-    return 'vendor-react-core';
-  }
+  // DO NOT chunk React core - keep it in the main bundle to avoid loading order issues
+  // React, React-DOM, and React-IS must be available before any other code runs
   
   if (id.includes('node_modules/react-router') || id.includes('node_modules/@remix-run')) {
     return 'vendor-react-router';

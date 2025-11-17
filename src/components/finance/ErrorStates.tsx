@@ -11,6 +11,7 @@
 
 import React from 'react';
 import { AlertTriangle, RefreshCw, Database, BarChart3 } from 'lucide-react';
+import { t } from '../../lib/i18n';
 
 interface ErrorStateProps {
   /** Mensaje de error opcional */
@@ -37,16 +38,16 @@ export function WorkerErrorState({ message, onRetry, errorDetails }: ErrorStateP
 
         <div className="flex-1">
           <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
-            Procesamiento en segundo plano interrumpido
+            {t('finance.error.workerInterrupted') || 'Background processing interrupted'}
           </h4>
           <p className="text-xs text-slate-400 dark:text-white/60 mb-3">
-            {message || 'Los cálculos pesados no pudieron completarse. Mostrando datos básicos.'}
+            {message || (t('finance.error.workerMessage') || 'Heavy calculations could not be completed. Showing basic data.')}
           </p>
 
           {import.meta.env.DEV && errorDetails && (
             <details className="mb-3">
               <summary className="text-xs text-amber-400/60 cursor-pointer hover:text-amber-400 transition-colors">
-                Detalles técnicos
+                {t('finance.error.technicalDetails') || 'Technical details'}
               </summary>
               <pre className="mt-2 p-3 bg-black/30 rounded-lg text-xs text-amber-300 overflow-x-auto border border-amber-500/10">
                 {errorDetails}
@@ -60,7 +61,7 @@ export function WorkerErrorState({ message, onRetry, errorDetails }: ErrorStateP
               className="text-xs px-3 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40 text-amber-300 font-medium flex items-center gap-1.5 transition-all"
             >
               <RefreshCw className="w-3 h-3" />
-              Reintentar cálculos
+              {t('finance.error.retryCalculations') || 'Retry calculations'}
             </button>
           )}
         </div>
@@ -82,10 +83,10 @@ export function DataErrorState({ message, onRetry }: ErrorStateProps) {
       </div>
 
       <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2">
-        Error al cargar datos financieros
+        {t('finance.error.loadingData') || 'Error loading financial data'}
       </h4>
       <p className="text-sm text-slate-400 dark:text-white/60 max-w-md mx-auto mb-4">
-        {message || 'No se pudieron obtener los datos. Por favor, verifica tu conexión e inténtalo de nuevo.'}
+        {message || (t('finance.error.dataMessage') || 'Could not retrieve data. Please check your connection and try again.')}
       </p>
 
       {onRetry && (
@@ -94,7 +95,7 @@ export function DataErrorState({ message, onRetry }: ErrorStateProps) {
           className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 hover:border-red-500/50 text-white font-medium inline-flex items-center gap-2 transition-all hover-scale active-scale"
         >
           <RefreshCw className="w-4 h-4" />
-          Reintentar
+          {t('finance.error.retry') || 'Retry'}
         </button>
       )}
     </div>
@@ -115,7 +116,7 @@ export function ChartErrorState({ message }: ErrorStateProps) {
           <BarChart3 className="w-6 h-6 text-slate-200 dark:text-white/30" />
         </div>
         <p className="text-xs text-slate-400 dark:text-white/40 max-w-[200px]">
-          {message || 'Gráfico no disponible'}
+          {message || (t('finance.error.chartUnavailable') || 'Chart unavailable')}
         </p>
       </div>
     </div>
@@ -135,10 +136,10 @@ export function EmptyDataState({ message }: { message?: string }) {
       </div>
 
       <h4 className="text-base font-semibold text-slate-600 dark:text-white/80 mb-2">
-        No hay datos para mostrar
+        {t('finance.noData') || 'No data to display'}
       </h4>
       <p className="text-sm text-slate-300 dark:text-white/50 max-w-md mx-auto">
-        {message || 'Selecciona un período diferente o añade transacciones para ver análisis.'}
+        {message || (t('finance.noDataMessage') || 'Select a different period or add transactions to see analysis.')}
       </p>
     </div>
   );

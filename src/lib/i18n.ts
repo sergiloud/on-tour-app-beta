@@ -1506,6 +1506,14 @@ const en = {
     , 'finance.commissions.distribution': 'Commission Distribution'
     , 'finance.noData': 'No data to display'
     , 'finance.noDataMessage': 'Select a different period or add transactions to see analysis.'
+    , 'finance.error.workerInterrupted': 'Background processing interrupted'
+    , 'finance.error.workerMessage': 'Heavy calculations could not be completed. Showing basic data.'
+    , 'finance.error.technicalDetails': 'Technical details'
+    , 'finance.error.retryCalculations': 'Retry calculations'
+    , 'finance.error.loadingData': 'Error loading financial data'
+    , 'finance.error.dataMessage': 'Could not retrieve data. Please check your connection and try again.'
+    , 'finance.error.retry': 'Retry'
+    , 'finance.error.chartUnavailable': 'Chart unavailable'
     // Dashboard filters & layout additions (en)
     , 'filters.title': 'Filters'
     , 'filters.region': 'Region'
@@ -2948,6 +2956,14 @@ const es = {
     , 'finance.commissions.distribution': 'Distribución de Comisiones'
     , 'finance.noData': 'No hay datos para mostrar'
     , 'finance.noDataMessage': 'Selecciona un período diferente o añade transacciones para ver análisis.'
+    , 'finance.error.workerInterrupted': 'Procesamiento en segundo plano interrumpido'
+    , 'finance.error.workerMessage': 'Los cálculos pesados no pudieron completarse. Mostrando datos básicos.'
+    , 'finance.error.technicalDetails': 'Detalles técnicos'
+    , 'finance.error.retryCalculations': 'Reintentar cálculos'
+    , 'finance.error.loadingData': 'Error al cargar datos financieros'
+    , 'finance.error.dataMessage': 'No se pudieron obtener los datos. Por favor, verifica tu conexión e inténtalo de nuevo.'
+    , 'finance.error.retry': 'Reintentar'
+    , 'finance.error.chartUnavailable': 'Gráfico no disponible'
     ,
     'demo.banner': 'Datos de demo • Sin sincronización en vivo',
     'demo.load': 'Cargar datos de demo',

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, ChevronDown, X, TrendingUp } from 'lucide-react';
 import { useFinancePeriod, ComparisonMode } from '../../context/FinancePeriodContext';
+import { t } from '../../lib/i18n';
 
 export type PeriodPreset =
   | 'last7days'
@@ -26,17 +27,20 @@ interface PeriodFilterProps {
   onChange: (preset: PeriodPreset, range: DateRange) => void;
 }
 
-const PERIOD_LABELS: Record<PeriodPreset, string> = {
-  last7days: 'Últimos 7 días',
-  last30days: 'Últimos 30 días',
-  thisMonth: 'Este mes',
-  lastMonth: 'Mes pasado',
-  thisQuarter: 'Este trimestre',
-  lastQuarter: 'Trimestre pasado',
-  thisYear: 'Este año',
-  yearToDate: 'Año hasta hoy',
-  allTime: 'Todos los periodos',
-  custom: 'Personalizado'
+const getPeriodLabel = (preset: PeriodPreset): string => {
+  const labels: Record<PeriodPreset, string> = {
+    last7days: t('finance.period.last7days') || 'Last 7 days',
+    last30days: t('finance.period.last30days') || 'Last 30 days',
+    thisMonth: t('finance.period.thisMonth') || 'This month',
+    lastMonth: t('finance.period.lastMonth') || 'Last month',
+    thisQuarter: t('finance.period.thisQuarter') || 'This quarter',
+    lastQuarter: t('finance.period.lastQuarter') || 'Last quarter',
+    thisYear: t('finance.period.thisYear') || 'This year',
+    yearToDate: t('finance.period.yearToDate') || 'Year to date',
+    allTime: t('finance.period.allTime') || 'All periods',
+    custom: t('finance.period.custom') || 'Custom'
+  };
+  return labels[preset];
 };
 
 const calculateDateRange = (preset: PeriodPreset): DateRange => {
@@ -172,7 +176,7 @@ const PeriodFilter: React.FC<PeriodFilterProps> = ({ value, dateRange, onChange 
       });
       return `${start} - ${end}`;
     }
-    return PERIOD_LABELS[value];
+    return getPeriodLabel(value);
   };
 
   const formatComparisonRange = () => {
@@ -241,7 +245,7 @@ const PeriodFilter: React.FC<PeriodFilterProps> = ({ value, dateRange, onChange 
               className="absolute top-full left-0 mt-2 z-[9999] glass rounded-xl border border-slate-200 dark:border-white/10 shadow-xl min-w-[240px] overflow-hidden backdrop-blur-md"
             >
               <div className="p-2">
-                {(Object.keys(PERIOD_LABELS) as PeriodPreset[]).map((preset) => (
+                {(['last7days', 'last30days', 'thisMonth', 'lastMonth', 'thisQuarter', 'lastQuarter', 'thisYear', 'yearToDate', 'allTime', 'custom'] as PeriodPreset[]).map((preset) => (
                   <button
                     key={preset}
                     onClick={() => handlePresetSelect(preset)}
@@ -251,7 +255,7 @@ const PeriodFilter: React.FC<PeriodFilterProps> = ({ value, dateRange, onChange 
                         : 'text-slate-500 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-white border border-transparent'
                     }`}
                   >
-                    {PERIOD_LABELS[preset]}
+                    {getPeriodLabel(preset)}
                   </button>
                 ))}
               </div>

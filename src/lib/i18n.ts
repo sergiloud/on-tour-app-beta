@@ -1414,6 +1414,14 @@ const en = {
     , 'finance.chart.distribution.clickToFilter': 'Click to filter'
     , 'finance.chart.distribution.totalCommissionsExpenses': 'Total Commissions + Expenses'
     , 'finance.chart.distribution.noDataCommissionsExpenses': 'No commissions or expenses data in this period'
+    // Modals & actions (en)
+    , 'finance.modal.addIncome': 'Add Income'
+    , 'finance.modal.addExpense': 'Add Expense'
+    , 'finance.modal.newTransaction': 'Record new transaction'
+    , 'finance.modal.saving': 'Saving...'
+    , 'finance.modal.saveTransaction': 'Save Transaction'
+    , 'finance.modal.saveChanges': 'Save Changes'
+    , 'finance.modal.saveBudgets': 'Save Budgets'
     // Dashboard filters & layout additions (en)
     , 'filters.title': 'Filters'
     , 'filters.region': 'Region'
@@ -2764,6 +2772,14 @@ const es = {
     , 'finance.chart.distribution.clickToFilter': 'Click para filtrar'
     , 'finance.chart.distribution.totalCommissionsExpenses': 'Total Comisiones + Gastos'
     , 'finance.chart.distribution.noDataCommissionsExpenses': 'No hay datos de comisiones o gastos en este período'
+    // Modals & actions (es)
+    , 'finance.modal.addIncome': 'Añadir Ingreso'
+    , 'finance.modal.addExpense': 'Añadir Gasto'
+    , 'finance.modal.newTransaction': 'Registra una nueva transacción'
+    , 'finance.modal.saving': 'Guardando...'
+    , 'finance.modal.saveTransaction': 'Guardar Transacción'
+    , 'finance.modal.saveChanges': 'Guardar Cambios'
+    , 'finance.modal.saveBudgets': 'Guardar Presupuestos'
     ,
     'demo.banner': 'Datos de demo • Sin sincronización en vivo',
     'demo.load': 'Cargar datos de demo',

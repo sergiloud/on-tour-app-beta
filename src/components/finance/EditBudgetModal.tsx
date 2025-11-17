@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Target, AlertCircle, CheckCircle2, Euro } from 'lucide-react';
 import type { BudgetCategory } from '../../hooks/useFinanceData';
+import { t } from '../../lib/i18n';
 
 interface EditBudgetModalProps {
   isOpen: boolean;
@@ -234,7 +235,10 @@ export function EditBudgetModal({ isOpen, onClose, budgetCategories, onSave }: E
                     whileTap={{ scale: 0.98 }}
                     className="flex-1 px-4 py-2.5 bg-accent-500 text-white rounded-lg font-medium hover:bg-accent-600 transition-fast disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent-500/30"
                   >
-                    {saving ? 'Guardando...' : 'Guardar Presupuestos'}
+                    {saving 
+                      ? (t('finance.modal.saving') || 'Saving...') 
+                      : (t('finance.modal.saveBudgets') || 'Save Budgets')
+                    }
                   </motion.button>
                 </div>
               </>

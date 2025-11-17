@@ -5,6 +5,7 @@ import { FirestoreFinanceService, type FinanceTransaction } from '../../services
 import { useAuth } from '../../context/AuthContext';
 import { getCurrentOrgId } from '../../lib/tenants';
 import { logger } from '../../lib/logger';
+import { t } from '../../lib/i18n';
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -185,10 +186,13 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                     </div>
                     <div>
                       <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
-                        {formData.type === 'income' ? 'Añadir Ingreso' : 'Añadir Gasto'}
+                        {formData.type === 'income' 
+                          ? (t('finance.modal.addIncome') || 'Add Income')
+                          : (t('finance.modal.addExpense') || 'Add Expense')
+                        }
                       </h2>
                       <p className="text-xs text-slate-300 dark:text-white/50">
-                        Registra una nueva transacción
+                        {t('finance.modal.newTransaction') || 'Record new transaction'}
                       </p>
                     </div>
                   </div>
@@ -442,7 +446,10 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ isOpen, onClo
                           : 'bg-red-500/20 border border-red-500/30 hover:bg-red-500/30'
                       }`}
                     >
-                      {saving ? 'Guardando...' : 'Guardar Transacción'}
+                      {saving 
+                        ? (t('finance.modal.saving') || 'Saving...') 
+                        : (t('finance.modal.saveTransaction') || 'Save Transaction')
+                      }
                     </button>
                   </div>
                 </div>

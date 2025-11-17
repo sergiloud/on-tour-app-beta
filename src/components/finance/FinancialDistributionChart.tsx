@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Sector } from 'recharts';
 import type { ProfitabilityAnalysis } from '../../types/financeV3';
+import { t } from '../../lib/i18n';
 
 interface Props {
   analysis: ProfitabilityAnalysis;
@@ -228,13 +229,13 @@ export const FinancialDistributionChart: React.FC<Props> = ({
     return (
       <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-          Distribución Financiera
+          {t('finance.chart.distribution.title') || 'Financial Distribution'}
         </h3>
         <p className="text-sm text-slate-300 dark:text-white/50 mb-4">
-          Comisiones y gastos desglosados
+          {t('finance.chart.distribution.breakdown') || 'Commissions and expenses breakdown'}
         </p>
         <div className="flex items-center justify-center h-64 text-slate-300 dark:text-white/40">
-          <p>No hay datos de comisiones o gastos en este período</p>
+          <p>{t('finance.chart.distribution.noDataCommissionsExpenses') || 'No commissions or expenses data in this period'}</p>
         </div>
       </div>
     );
@@ -244,16 +245,16 @@ export const FinancialDistributionChart: React.FC<Props> = ({
     <div className="glass rounded-xl border border-slate-200 dark:border-white/10 p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-          Distribución Financiera
+          {t('finance.chart.distribution.title') || 'Financial Distribution'}
         </h3>
         <p className="text-sm text-slate-300 dark:text-white/50">
-          Comisiones y gastos desglosados • Click para filtrar
+          {t('finance.chart.distribution.breakdown') || 'Commissions and expenses breakdown'} • {t('finance.chart.distribution.clickToFilter') || 'Click to filter'}
         </p>
       </div>
 
       {/* Total general */}
       <div className="mb-6 text-center">
-        <p className="text-sm text-slate-300 dark:text-white/50 mb-1">Total Comisiones + Gastos</p>
+        <p className="text-sm text-slate-300 dark:text-white/50 mb-1">{t('finance.chart.distribution.totalCommissionsExpenses') || 'Total Commissions + Expenses'}</p>
         <p className="text-3xl font-bold text-slate-900 dark:text-white">{fmtMoney(totalAmount)}</p>
         <div className="flex items-center justify-center gap-4 mt-2 text-xs">
           <div className="flex items-center gap-1.5">

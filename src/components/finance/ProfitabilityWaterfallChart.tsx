@@ -18,6 +18,7 @@ import {
 } from 'recharts';
 import type { ProfitabilityAnalysis } from '../../types/financeV3';
 import { generateWaterfallData } from '../../lib/profitabilityHelpers';
+import { t } from '../../lib/i18n';
 
 interface Props {
   analysis: ProfitabilityAnalysis;
@@ -97,11 +98,11 @@ export const ProfitabilityWaterfallChart: React.FC<Props> = ({ analysis, fmtMone
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight">
-            Análisis de Rentabilidad
+            {t('finance.chart.profitability.title') || 'Profitability Analysis'}
           </h3>
         </div>
         <p className="text-xs text-slate-400 dark:text-white/40 ml-[52px]">
-          Flujo de dinero desde ingreso bruto hasta beneficio neto
+          {t('finance.chart.profitability.subtitle') || 'Cash flow from gross revenue to net profit'}
         </p>
       </div>
 
@@ -139,33 +140,41 @@ export const ProfitabilityWaterfallChart: React.FC<Props> = ({ analysis, fmtMone
       <div className="mt-4 flex items-center justify-center gap-6 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.positive }}></div>
-          <span className="text-slate-400 dark:text-white/60">Ingresos</span>
+          <span className="text-slate-400 dark:text-white/60">{t('finance.chart.profitability.income') || 'Income'}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.negative }}></div>
-          <span className="text-slate-400 dark:text-white/60">Deducciones</span>
+          <span className="text-slate-400 dark:text-white/60">{t('finance.chart.profitability.deductions') || 'Deductions'}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.total }}></div>
-          <span className="text-slate-400 dark:text-white/60">Totales</span>
+          <span className="text-slate-400 dark:text-white/60">{t('finance.chart.profitability.totals') || 'Totals'}</span>
         </div>
       </div>
 
       {/* Resumen de márgenes - Diseño profesional */}
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div className="glass rounded-xl p-4 border border-theme hover:border-accent-500/30 transition-all">
-          <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 font-medium mb-2">Margen Bruto</p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 font-medium mb-2">
+            {t('finance.chart.profitability.grossMargin') || 'Gross Margin'}
+          </p>
           <p className={`text-2xl font-bold tabular-nums ${analysis.grossMargin >= 0 ? 'text-white' : 'text-red-400'}`}>
             {analysis.grossMargin.toFixed(1)}%
           </p>
-          <p className="text-xs text-slate-300 dark:text-white/30 mt-1">sobre fee bruto</p>
+          <p className="text-xs text-slate-300 dark:text-white/30 mt-1">
+            {t('finance.chart.profitability.onGrossFee') || 'on gross fee'}
+          </p>
         </div>
         <div className="glass rounded-xl p-4 border border-theme hover:border-accent-500/30 transition-all">
-          <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 font-medium mb-2">Margen Neto</p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 font-medium mb-2">
+            {t('finance.chart.profitability.netMargin') || 'Net Margin'}
+          </p>
           <p className={`text-2xl font-bold tabular-nums ${analysis.netMargin >= 0 ? 'text-white' : 'text-red-400'}`}>
             {analysis.netMargin.toFixed(1)}%
           </p>
-          <p className="text-xs text-slate-300 dark:text-white/30 mt-1">sobre ingreso neto</p>
+          <p className="text-xs text-slate-300 dark:text-white/30 mt-1">
+            {t('finance.chart.profitability.onNetRevenue') || 'on net revenue'}
+          </p>
         </div>
       </div>
     </div>

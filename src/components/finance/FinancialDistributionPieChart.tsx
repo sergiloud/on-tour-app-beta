@@ -13,6 +13,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import type { FinancialDistribution } from '../../types/financeV3';
+import { t } from '../../lib/i18n';
 
 interface Props {
   distribution: FinancialDistribution;
@@ -221,15 +222,15 @@ export const FinancialDistributionPieChart: React.FC<Props> = ({
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight">
-              Distribución Financiera
+              {t('finance.chart.distribution.title') || 'Financial Distribution'}
             </h3>
           </div>
           <p className="text-xs text-slate-400 dark:text-white/40 ml-[52px]">
-            ¿Dónde va cada euro del ingreso bruto?
+            {t('finance.chart.distribution.subtitle') || 'Where does each euro from gross revenue go?'}
           </p>
         </div>
         <div className="flex items-center justify-center h-64 text-slate-300 dark:text-white/40">
-          <p>No hay datos en este período</p>
+          <p>{t('finance.chart.distribution.noData') || 'No data in this period'}</p>
         </div>
       </div>
     );
@@ -327,15 +328,15 @@ export const FinancialDistributionPieChart: React.FC<Props> = ({
 
   // Título dinámico según el nivel
   const getTitle = () => {
-    if (drillLevel === 'commissions') return 'Desglose de Comisiones';
-    if (drillLevel === 'expenses') return 'Desglose de Gastos';
-    return 'Distribución Financiera';
+    if (drillLevel === 'commissions') return t('finance.chart.distribution.commissions.title') || 'Commission Breakdown';
+    if (drillLevel === 'expenses') return t('finance.chart.distribution.expenses.title') || 'Expense Breakdown';
+    return t('finance.chart.distribution.title') || 'Financial Distribution';
   };
 
   const getSubtitle = () => {
-    if (drillLevel === 'commissions') return 'Por agencia y comisionista';
-    if (drillLevel === 'expenses') return 'Por categoría de gasto';
-    return '¿Dónde va cada euro del ingreso bruto?';
+    if (drillLevel === 'commissions') return t('finance.chart.distribution.commissions.subtitle') || 'By agency and agent';
+    if (drillLevel === 'expenses') return t('finance.chart.distribution.expenses.subtitle') || 'By expense category';
+    return t('finance.chart.distribution.subtitle') || 'Where does each euro from gross revenue go?';
   };
 
   // Agrupar leyenda por secciones en vista overview

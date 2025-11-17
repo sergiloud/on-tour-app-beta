@@ -112,7 +112,7 @@ const Summary: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded transition-all duration-300 ${
                   selectedPeriod === 'month'
                     ? 'bg-accent-500/20 text-accent-300 border border-accent-400/30'
-                    : 'text-slate-500 dark:text-white/70 hover:text-slate-700 dark:text-white/90'
+                    : 'text-slate-500 dark:text-white/70 hover:text-slate-700 dark:hover:text-white/90'
                 }`}
                 aria-label={t('common.month') || 'Month'}
                 aria-pressed={selectedPeriod === 'month'}
@@ -124,7 +124,7 @@ const Summary: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded transition-all duration-300 ${
                   selectedPeriod === 'year'
                     ? 'bg-accent-500/20 text-accent-300 border border-accent-400/30'
-                    : 'text-slate-500 dark:text-white/70 hover:text-slate-700 dark:text-white/90'
+                    : 'text-slate-500 dark:text-white/70 hover:text-slate-700 dark:hover:text-white/90'
                 }`}
                 aria-label={t('common.year') || 'Year'}
                 aria-pressed={selectedPeriod === 'year'}
@@ -158,14 +158,14 @@ const Summary: React.FC = () => {
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/70">
                 {getTrendIcon(mtdDeltaPct > 0)}
                 <span className={mtdDeltaPct > 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                  {mtdDeltaPct > 0 ? '+' : ''}{mtdDeltaPct}% {t('common.vsLastMonth') || 'vs last month'}
+                  {mtdDeltaPct > 0 ? '+' : ''}{mtdDeltaPct}% {t('finance.summary.vsLastMonth') || t('common.vsLastMonth') || 'vs last month'}
                 </span>
               </div>
             ) : selectedPeriod === 'year' && ytdDeltaPct !== null ? (
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/70">
                 {getTrendIcon(ytdDeltaPct > 0)}
                 <span className={ytdDeltaPct > 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                  {ytdDeltaPct > 0 ? '+' : ''}{ytdDeltaPct}% {t('common.vsLastYear') || 'vs last year'}
+                  {ytdDeltaPct > 0 ? '+' : ''}{ytdDeltaPct}% {t('finance.summary.vsLastYear') || t('common.vsLastYear') || 'vs last year'}
                 </span>
               </div>
             ) : null}

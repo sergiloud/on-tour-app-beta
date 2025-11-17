@@ -200,75 +200,75 @@ const FinanceV5: React.FC = () => {
     const sections = React.useMemo(() => [
         {
             id: 'overview' as Section,
-            label: 'Overview',
+            label: t('finance.section.overview') || 'Overview',
             icon: Activity,
-            description: 'Executive Summary',
+            description: t('finance.section.overview.desc') || 'Executive Summary',
             color: 'from-accent-500/20 to-blue-500/20',
             accentColor: 'accent-500',
-            metric: `${stats.showCount} events`,
+            metric: `${stats.showCount} ${t('finance.section.events') || 'events'}`,
             highlight: fmtCompact(stats.totalRevenue)
         },
         {
             id: 'performance' as Section,
-            label: 'Performance',
+            label: t('finance.section.performance') || 'Performance',
             icon: BarChart3,
-            description: 'Profitability Metrics',
+            description: t('finance.section.performance.desc') || 'Profitability Metrics',
             color: 'from-emerald-500/20 to-green-500/20',
             accentColor: 'emerald-500',
-            metric: `${stats.margin.toFixed(1)}% margin`,
+            metric: `${stats.margin.toFixed(1)}% ${t('finance.section.margin') || 'margin'}`,
             highlight: null
         },
         {
             id: 'pivot' as Section,
-            label: 'Pivot Analysis',
+            label: t('finance.section.pivot') || 'Pivot Analysis',
             icon: PieChart,
-            description: 'Multi-Dimensional View',
+            description: t('finance.section.pivot.desc') || 'Multi-Dimensional View',
             color: 'from-purple-500/20 to-pink-500/20',
             accentColor: 'purple-500',
-            metric: `${stats.byRegion.length} regions`,
+            metric: `${stats.byRegion.length} ${t('finance.section.regions') || 'regions'}`,
             highlight: null
         },
         {
             id: 'ar' as Section,
-            label: 'Receivables',
+            label: t('finance.section.receivables') || 'Receivables',
             icon: Clock,
-            description: 'Collections & Aging',
+            description: t('finance.section.receivables.desc') || 'Collections & Aging',
             color: 'from-orange-500/20 to-amber-500/20',
             accentColor: 'orange-500',
-            metric: `${stats.upcoming} upcoming`,
+            metric: `${stats.upcoming} ${t('finance.section.upcoming') || 'upcoming'}`,
             highlight: null
         },
         {
             id: 'trends' as Section,
-            label: 'Trends',
+            label: t('finance.section.trends') || 'Trends',
             icon: TrendingUp,
-            description: 'Historical Analysis',
+            description: t('finance.section.trends.desc') || 'Historical Analysis',
             color: 'from-cyan-500/20 to-teal-500/20',
             accentColor: 'cyan-500',
-            metric: 'Year-over-Year',
+            metric: t('finance.section.yearOverYear') || 'Year-over-Year',
             highlight: null
         },
         {
             id: 'pl' as Section,
-            label: 'Statement',
+            label: t('finance.section.statement') || 'Statement',
             icon: Table,
-            description: 'Profit & Loss Detail',
+            description: t('finance.section.statement.desc') || 'Profit & Loss Detail',
             color: 'from-blue-500/20 to-indigo-500/20',
             accentColor: 'blue-500',
-            metric: `${stats.showCount} records`,
+            metric: `${stats.showCount} ${t('finance.section.records') || 'records'}`,
             highlight: null
         },
         {
             id: 'expenses' as Section,
-            label: 'Expenses',
+            label: t('finance.section.expenses') || 'Expenses',
             icon: Receipt,
-            description: 'Operating Costs',
+            description: t('finance.section.expenses.desc') || 'Operating Costs',
             color: 'from-red-500/20 to-rose-500/20',
             accentColor: 'red-500',
-            metric: stats.expensesFromManager > 0 ? fmtCompact(stats.expensesFromManager) : 'None',
+            metric: stats.expensesFromManager > 0 ? fmtCompact(stats.expensesFromManager) : (t('finance.section.none') || 'None'),
             highlight: null
         }
-    ], [stats, fmtMoney, fmtCompact]);
+    ], [stats, fmtMoney, fmtCompact, t]);
 
     const handleSectionChange = (section: Section) => {
         setActiveSection(section);
@@ -415,7 +415,7 @@ const FinanceV5: React.FC = () => {
                                                 }`}>
                                                 <span className={`uppercase tracking-wider ${isActive ? 'text-white/50' : 'text-white/30'
                                                     }`}>
-                                                    {section.highlight ? 'Revenue' : 'Metric'}
+                                                    {section.highlight ? (t('finance.section.revenue') || 'Revenue') : (t('finance.section.metric') || 'Metric')}
                                                 </span>
                                                 <span className={`font-bold tabular-nums ${isActive ? 'text-accent-300' : 'text-white/60'
                                                     }`}>
@@ -437,7 +437,7 @@ const FinanceV5: React.FC = () => {
                                     <Zap className="w-3.5 h-3.5 text-accent-400" />
                                 </div>
                                 <div className="text-xs text-slate-300 dark:text-white/50 uppercase tracking-wider font-semibold">
-                                    Export Tools
+                                    {t('finance.export.tools') || 'Export Tools'}
                                 </div>
                             </div>
                         </div>
@@ -452,8 +452,8 @@ const FinanceV5: React.FC = () => {
                                         <Download className="w-3.5 h-3.5 text-emerald-400" />
                                     </div>
                                     <div className="flex-1">
-                                        <div className="text-slate-900 dark:text-white group-hover:text-white transition-colors">Export CSV</div>
-                                        <div className="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-wider">Comma-separated</div>
+                                        <div className="text-slate-900 dark:text-white group-hover:text-white transition-colors">{t('finance.export.csv') || 'Export CSV'}</div>
+                                        <div className="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-wider">{t('finance.export.csv.desc') || 'Comma-separated'}</div>
                                     </div>
                                     <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                                 </div>
@@ -468,8 +468,8 @@ const FinanceV5: React.FC = () => {
                                         <Download className="w-3.5 h-3.5 text-blue-400" />
                                     </div>
                                     <div className="flex-1">
-                                        <div className="text-slate-900 dark:text-white group-hover:text-white transition-colors">Export Excel</div>
-                                        <div className="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-wider">Spreadsheet format</div>
+                                        <div className="text-slate-900 dark:text-white group-hover:text-white transition-colors">{t('finance.export.excel') || 'Export Excel'}</div>
+                                        <div className="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-wider">{t('finance.export.excel.desc') || 'Spreadsheet format'}</div>
                                     </div>
                                     <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                                 </div>
@@ -487,7 +487,7 @@ const FinanceV5: React.FC = () => {
                                     </svg>
                                 </div>
                                 <div className="text-xs text-slate-300 dark:text-white/50 uppercase tracking-wider font-semibold">
-                                    Reporting Period
+                                    {t('finance.period.title') || 'Reporting Period'}
                                 </div>
                             </div>
                         </div>

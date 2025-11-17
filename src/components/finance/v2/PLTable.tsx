@@ -386,7 +386,7 @@ const PLTable: React.FC<{ filter?: Filter; onClearFilter?: () => void }> = React
               </div>
               <div className="text-right p-2" aria-sort={sort.key === 'cost' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'} role="columnheader">
                 <button className="hover:underline flex items-center gap-1 float-right" onClick={() => handleSort('cost')}>
-                  Cost{sort.key === 'cost' ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ''}
+                  {t('finance.pl.cost') || 'Cost'}{sort.key === 'cost' ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ''}
                 </button>
               </div>
               <div className="text-right p-2" aria-sort={sort.key === 'net' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'} role="columnheader">

@@ -21,6 +21,7 @@ import { useTransactionFilters } from '../../hooks/useTransactionFilters';
 import { useSavedFilters } from '../../hooks/useSavedFilters';
 import { usePerfMonitor } from '../../lib/perfMonitor';
 import { EditTransactionModal } from './EditTransactionModal';
+import { t } from '../../lib/i18n';
 
 const EXPENSE_CATEGORIES = [
   'Alojamiento',
@@ -155,7 +156,9 @@ export function TransactionsTab({
         <div className="flex items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-blue-400" />
-            <span className="text-xs uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">Vistas Guardadas</span>
+            <span className="text-xs uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
+              {t('finance.transactions.savedViews') || 'Saved Views'}
+            </span>
           </div>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -164,7 +167,7 @@ export function TransactionsTab({
             className="px-3 py-1.5 bg-blue-500/20 border border-blue-500/30 rounded-lg text-xs text-blue-400 hover:bg-blue-500/30 transition-fast font-medium flex items-center gap-1.5"
           >
             <Save className="w-3.5 h-3.5" />
-            Guardar Vista Actual
+            {t('finance.transactions.saveCurrentView') || 'Save Current View'}
           </motion.button>
         </div>
 
@@ -196,7 +199,7 @@ export function TransactionsTab({
                     <button
                       onClick={() => handleRenameView(view.id)}
                       className="p-1 rounded hover:bg-interactive-hover text-green-400"
-                      title="Guardar"
+                      title={t('finance.transactions.save') || 'Save'}
                     >
                       <Check className="w-3 h-3" />
                     </button>
@@ -206,7 +209,7 @@ export function TransactionsTab({
                         setEditingViewName('');
                       }}
                       className="p-1 rounded hover:bg-interactive-hover text-red-400"
-                      title="Cancelar"
+                      title={t('finance.transactions.cancel') || 'Cancel'}
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -234,18 +237,18 @@ export function TransactionsTab({
                             setEditingViewName(view.name);
                           }}
                           className="p-1 rounded hover:bg-interactive-hover text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
-                          title="Renombrar"
+                          title={t('finance.transactions.rename') || 'Rename'}
                         >
                           <Edit2 className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm(`¿Eliminar la vista "${view.name}"?`)) {
+                            if (confirm(`${t('finance.transactions.deleteConfirm') || 'Delete the view'} "${view.name}"?`)) {
                               deleteView(view.id);
                             }
                           }}
                           className="p-1 rounded hover:bg-interactive-hover text-slate-500 dark:text-white/50 hover:text-red-400 transition-colors"
-                          title="Eliminar"
+                          title={t('finance.transactions.delete') || 'Delete'}
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -262,7 +265,10 @@ export function TransactionsTab({
         {userViews.length > 0 && (
           <div className="mt-3 pt-3 border-t border-theme">
             <p className="text-xs text-slate-300 dark:text-white/40">
-              {userViews.length} vista{userViews.length !== 1 ? 's' : ''} personalizada{userViews.length !== 1 ? 's' : ''}
+              {userViews.length} {userViews.length !== 1 
+                ? (t('finance.transactions.customViews') || 'custom views')
+                : (t('finance.transactions.customView') || 'custom view')
+              }
             </p>
           </div>
         )}
@@ -278,12 +284,14 @@ export function TransactionsTab({
             className="glass rounded-xl border border-slate-200 dark:border-white/10 p-6 max-w-md w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Guardar Vista de Filtros</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+              {t('finance.transactions.saveFilterView') || 'Save Filter View'}
+            </h3>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm text-slate-500 dark:text-white/70 mb-2">
-                  Nombre de la vista
+                  {t('finance.transactions.viewName') || 'View name'}
                 </label>
                 <input
                   type="text"
@@ -293,7 +301,7 @@ export function TransactionsTab({
                     if (e.key === 'Enter') handleSaveView();
                     if (e.key === 'Escape') setShowSaveModal(false);
                   }}
-                  placeholder="Ej: Gastos de Alojamiento Pendientes"
+                  placeholder={t('finance.transactions.filterPlaceholder') || 'Ex: Pending Accommodation Expenses'}
                   className="w-full px-4 py-2.5 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-300 dark:text-white/30 focus:outline-none focus:border-blue-500/50"
                   autoFocus
                 />
@@ -301,12 +309,30 @@ export function TransactionsTab({
 
               {/* Preview de filtros actuales */}
               <div className="bg-interactive rounded-lg p-3 border border-theme">
-                <p className="text-xs text-slate-300 dark:text-white/50 mb-2">Filtros a guardar:</p>
+                <p className="text-xs text-slate-300 dark:text-white/50 mb-2">
+                  {t('finance.transactions.filtersToSave') || 'Filters to save:'}
+                </p>
                 <div className="space-y-1 text-xs text-slate-500 dark:text-white/70">
-                  <div><strong>Tipo:</strong> {filterType === 'all' ? 'Todos' : filterType === 'income' ? 'Ingresos' : 'Gastos'}</div>
-                  <div><strong>Categoría:</strong> {filterCategory === 'all' ? 'Todas' : filterCategory}</div>
-                  <div><strong>Estado:</strong> {filterStatus === 'all' ? 'Todos' : filterStatus === 'paid' ? 'Pagado' : 'Pendiente'}</div>
-                  {searchQuery && <div><strong>Búsqueda:</strong> "{searchQuery}"</div>}
+                  <div><strong>{t('finance.transactions.type') || 'Type'}:</strong> {
+                    filterType === 'all' 
+                      ? (t('finance.transactions.all') || 'All')
+                      : filterType === 'income' 
+                        ? (t('finance.transactions.income') || 'Income')
+                        : (t('finance.transactions.expense') || 'Expenses')
+                  }</div>
+                  <div><strong>{t('finance.transactions.category') || 'Category'}:</strong> {
+                    filterCategory === 'all' 
+                      ? (t('finance.transactions.allCategories') || 'All categories')
+                      : filterCategory
+                  }</div>
+                  <div><strong>{t('finance.transactions.status') || 'Status'}:</strong> {
+                    filterStatus === 'all' 
+                      ? (t('finance.transactions.all') || 'All')
+                      : filterStatus === 'paid' 
+                        ? (t('finance.transactions.paid') || 'Paid')
+                        : (t('finance.transactions.pending') || 'Pending')
+                  }</div>
+                  {searchQuery && <div><strong>{t('finance.transactions.search') || 'Search'}:</strong> "{searchQuery}"</div>}
                 </div>
               </div>
 
@@ -319,7 +345,7 @@ export function TransactionsTab({
                   disabled={!newViewName.trim()}
                   className="flex-1 px-4 py-2.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-fast disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Guardar Vista
+                  {t('finance.transactions.saveView') || 'Save View'}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -330,7 +356,7 @@ export function TransactionsTab({
                   }}
                   className="px-4 py-2.5 bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-white rounded-lg text-sm font-medium hover:bg-white/20 transition-fast"
                 >
-                  Cancelar
+                  {t('finance.transactions.cancel') || 'Cancel'}
                 </motion.button>
               </div>
             </div>
@@ -348,14 +374,14 @@ export function TransactionsTab({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar transacciones por descripción, categoría o show..."
+              placeholder={t('finance.transactions.searchPlaceholder') || 'Search transactions by description, category or show...'}
               className="w-full pl-11 pr-4 py-3 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-slate-400 dark:focus:border-white/30 hover:border-slate-300 dark:hover:border-white/20 transition-fast"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-interactive-hover transition-colors"
-                aria-label="Limpiar búsqueda"
+                aria-label={t('finance.transactions.clearSearch') || 'Clear search'}
               >
                 <svg className="w-4 h-4 text-slate-300 dark:text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -368,7 +394,9 @@ export function TransactionsTab({
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-accent-400" />
-              <span className="text-xs uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">Filtros:</span>
+              <span className="text-xs uppercase tracking-wide text-slate-300 dark:text-white/50 font-semibold">
+                {t('filters.title') || 'Filters'}:
+              </span>
             </div>
 
             <select
@@ -376,9 +404,9 @@ export function TransactionsTab({
               onChange={(e) => setFilterType(e.target.value as any)}
               className="px-3 py-2 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500/50 hover:border-slate-300 dark:hover:border-white/20 transition-fast cursor-pointer"
             >
-              <option value="all">Todos los tipos</option>
-              <option value="income">Ingresos</option>
-              <option value="expense">Gastos</option>
+              <option value="all">{t('finance.transactions.allTypes') || 'All types'}</option>
+              <option value="income">{t('finance.transactions.income') || 'Income'}</option>
+              <option value="expense">{t('finance.transactions.expense') || 'Expenses'}</option>
             </select>
 
             <select
@@ -386,8 +414,8 @@ export function TransactionsTab({
               onChange={(e) => setFilterCategory(e.target.value)}
               className="px-3 py-2 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500/50 hover:border-slate-300 dark:hover:border-white/20 transition-fast cursor-pointer"
             >
-              <option value="all">Todas las categorías</option>
-              <option value="Ingresos por Shows">Ingresos por Shows</option>
+              <option value="all">{t('finance.transactions.allCategories') || 'All categories'}</option>
+              <option value="Ingresos por Shows">{t('finance.category.showIncome') || 'Show Income'}</option>
               {EXPENSE_CATEGORIES.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
@@ -398,9 +426,9 @@ export function TransactionsTab({
               onChange={(e) => setFilterStatus(e.target.value as any)}
               className="px-3 py-2 bg-interactive border border-slate-200 dark:border-white/10 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:border-accent-500/50 hover:border-slate-300 dark:hover:border-white/20 transition-fast cursor-pointer"
             >
-              <option value="all">Todos los estados</option>
-              <option value="paid">Pagado</option>
-              <option value="pending">Pendiente</option>
+              <option value="all">{t('finance.transactions.allStatuses') || 'All statuses'}</option>
+              <option value="paid">{t('finance.transactions.paid') || 'Paid'}</option>
+              <option value="pending">{t('finance.transactions.pending') || 'Pending'}</option>
             </select>
 
             <motion.button
@@ -412,7 +440,7 @@ export function TransactionsTab({
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              Limpiar filtros
+              {t('finance.transactions.clearFilters') || 'Clear filters'}
             </motion.button>
 
             {onExportCSV && (
@@ -423,14 +451,14 @@ export function TransactionsTab({
                 className="px-4 py-2 bg-accent-500/20 border border-accent-500/30 rounded-lg text-xs text-accent-400 hover:bg-accent-500/30 transition-fast font-medium flex items-center gap-1.5"
               >
                 <Download className="w-3.5 h-3.5" />
-                Exportar CSV
+                {t('finance.transactions.exportCSV') || 'Export CSV'}
               </motion.button>
             )}
           </div>
 
           {/* Contador de resultados */}
           <div className="text-xs text-slate-300 dark:text-white/40">
-            Mostrando <span className="text-accent-400 font-semibold">{filteredCount}</span> de <span className="text-slate-400 dark:text-white/60 font-semibold">{totalCount}</span> transacciones
+            {t('finance.transactions.showing') || 'Showing'} <span className="text-accent-400 font-semibold">{filteredCount}</span> {t('finance.transactions.of') || 'of'} <span className="text-slate-400 dark:text-white/60 font-semibold">{totalCount}</span> {t('finance.transactions.count') || 'transactions'}
           </div>
         </div>
       </div>
@@ -445,12 +473,24 @@ export function TransactionsTab({
           <table className="w-full">
             <thead className="sticky top-0 z-10 bg-[#0b0f14]/95 backdrop-blur-sm">
               <tr className="border-b border-slate-200 dark:border-white/10 bg-interactive">
-                <th className="px-4 py-3.5 text-left text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">Fecha</th>
-                <th className="px-4 py-3.5 text-left text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">Descripción</th>
-                <th className="px-4 py-3.5 text-left text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">Categoría</th>
-                <th className="px-4 py-3.5 text-left text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">Tipo</th>
-                <th className="px-4 py-3.5 text-right text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">Importe</th>
-                <th className="px-4 py-3.5 text-center text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">Estado</th>
+                <th className="px-4 py-3.5 text-left text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">
+                  {t('finance.transactions.date') || 'Date'}
+                </th>
+                <th className="px-4 py-3.5 text-left text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">
+                  {t('finance.transactions.description') || 'Description'}
+                </th>
+                <th className="px-4 py-3.5 text-left text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">
+                  {t('finance.transactions.category') || 'Category'}
+                </th>
+                <th className="px-4 py-3.5 text-left text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">
+                  {t('finance.transactions.type') || 'Type'}
+                </th>
+                <th className="px-4 py-3.5 text-right text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">
+                  {t('finance.transactions.amount') || 'Amount'}
+                </th>
+                <th className="px-4 py-3.5 text-center text-[10px] uppercase tracking-wider text-slate-300 dark:text-white/50 font-semibold">
+                  {t('finance.transactions.status') || 'Status'}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -462,8 +502,12 @@ export function TransactionsTab({
                         <AlertCircle className="w-6 h-6 text-slate-200 dark:text-white/30" />
                       </div>
                       <div>
-                        <p className="text-sm text-slate-400 dark:text-white/60 font-medium">No se encontraron transacciones</p>
-                        <p className="text-xs text-slate-400 dark:text-white/40 mt-1">Prueba ajustando los filtros</p>
+                        <p className="text-sm text-slate-400 dark:text-white/60 font-medium">
+                          {t('finance.transactions.noResults') || 'No transactions found'}
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-white/40 mt-1">
+                          {t('finance.transactions.tryDifferentFilters') || 'Try different filters or search terms'}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -517,7 +561,12 @@ export function TransactionsTab({
                             ) : (
                               <TrendingDown className="w-4 h-4 text-amber-400" />
                             )}
-                            <span className="text-xs text-slate-400 dark:text-white/60 capitalize">{transaction.type === 'income' ? 'Ingreso' : 'Gasto'}</span>
+                            <span className="text-xs text-slate-400 dark:text-white/60 capitalize">
+                              {transaction.type === 'income' 
+                                ? (t('finance.transactions.income') || 'Income')
+                                : (t('finance.transactions.expense') || 'Expense')
+                              }
+                            </span>
                           </div>
                         </td>
                         <td className="px-4 py-3.5 text-right">
@@ -552,7 +601,10 @@ export function TransactionsTab({
                               ? 'bg-accent-500/10 text-accent-400 border-accent-500/20'
                               : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                           }`}>
-                            {transaction.status === 'paid' ? 'Pagado' : 'Pendiente'}
+                            {transaction.status === 'paid' 
+                              ? (t('finance.transactions.paid') || 'Paid')
+                              : (t('finance.transactions.pending') || 'Pending')
+                            }
                           </span>
                         </td>
                       </tr>

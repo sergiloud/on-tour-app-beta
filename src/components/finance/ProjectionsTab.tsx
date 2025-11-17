@@ -101,12 +101,10 @@ export function ProjectionsTab({ transactions, fmtMoney }: ProjectionsTabProps) 
             <AlertCircle className="w-8 h-8 text-amber-400" />
           </div>
           <h3 className="text-xl font-semibold text-theme-primary">
-            Datos Insuficientes
+            {t('finance.projections.insufficientData') || 'Insufficient Data'}
           </h3>
           <p className="text-slate-400 dark:text-white/60 max-w-md">
-            Se necesitan al menos 2 meses de datos históricos para generar
-            proyecciones financieras. Añade más transacciones para ver el
-            análisis predictivo.
+            {t('finance.projections.addMoreTransactions') || 'At least 2 months of historical data are needed to generate financial projections. Add more transactions to see predictive analysis.'}
           </p>
         </div>
       </motion.div>
@@ -130,10 +128,10 @@ export function ProjectionsTab({ transactions, fmtMoney }: ProjectionsTabProps) 
             <div className="flex items-start justify-between gap-4 mb-2">
               <div>
                 <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">
-                  Proyecciones Financieras
+                  {t('finance.projections.title') || 'Financial Projections'}
                 </h3>
                 <p className="text-xs text-slate-400 dark:text-white/60">
-                  Basado en {historical.length} meses de datos históricos. Proyección de 6 meses usando regresión lineal y promedios móviles.
+                  {(t('finance.projections.basedOn') || 'Based on {count} months of historical data. 6-month projection using linear regression and moving averages.').replace('{count}', historical.length.toString())}
                 </p>
               </div>
               <motion.button
@@ -143,7 +141,7 @@ export function ProjectionsTab({ transactions, fmtMoney }: ProjectionsTabProps) 
                 className="px-3 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-xs text-blue-400 hover:bg-blue-500/30 transition-all font-medium flex items-center gap-2"
               >
                 <Download className="w-3.5 h-3.5" />
-                Exportar CSV
+                {t('finance.transactions.exportCSV') || 'Export CSV'}
               </motion.button>
             </div>
           </div>
@@ -167,22 +165,28 @@ export function ProjectionsTab({ transactions, fmtMoney }: ProjectionsTabProps) 
           </div>
           <div className="space-y-1 mb-4">
             <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 font-medium">
-              Balance Proyectado
+              {t('finance.projections.projectedBalance') || 'Projected Balance'}
             </div>
             <div className="text-3xl font-bold text-slate-900 dark:text-white tabular-nums">
               {fmtMoney(forecast.reduce((sum, f) => sum + f.projectedBalance, 0))}
             </div>
-            <div className="text-xs text-slate-200 dark:text-white/30">Próximos 6 meses</div>
+            <div className="text-xs text-slate-200 dark:text-white/30">
+              {t('finance.projections.next6Months') || 'Next 6 months'}
+            </div>
           </div>
           <div className="pt-3 border-t border-slate-200 dark:border-white/10 grid grid-cols-2 gap-3 text-xs">
             <div>
-              <p className="text-slate-400 dark:text-white/40 mb-1">Ingresos</p>
+              <p className="text-slate-400 dark:text-white/40 mb-1">
+                {t('finance.projections.income') || 'Income'}
+              </p>
               <p className="text-accent-400 font-semibold">
                 {fmtMoney(forecast.reduce((sum, f) => sum + f.projectedIncome, 0))}
               </p>
             </div>
             <div>
-              <p className="text-slate-400 dark:text-white/40 mb-1">Gastos</p>
+              <p className="text-slate-400 dark:text-white/40 mb-1">
+                {t('finance.projections.expenses') || 'Expenses'}
+              </p>
               <p className="text-amber-400 font-semibold">
                 {fmtMoney(forecast.reduce((sum, f) => sum + f.projectedExpenses, 0))}
               </p>
@@ -202,22 +206,28 @@ export function ProjectionsTab({ transactions, fmtMoney }: ProjectionsTabProps) 
           </div>
           <div className="space-y-1 mb-4">
             <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/40 font-medium">
-              Tendencias Detectadas
+              {t('finance.projections.detectedTrends') || 'Detected Trends'}
             </div>
             <div className="text-3xl font-bold text-slate-900 dark:text-white tabular-nums">
               {incomeTrend >= 0 ? '+' : ''}{fmtMoney(incomeTrend)}
             </div>
-            <div className="text-xs text-slate-200 dark:text-white/30">Ingresos/mes</div>
+            <div className="text-xs text-slate-200 dark:text-white/30">
+              {t('finance.projections.incomePerMonth') || 'Income/month'}
+            </div>
           </div>
           <div className="pt-3 border-t border-slate-200 dark:border-white/10 grid grid-cols-2 gap-3 text-xs">
             <div>
-              <p className="text-slate-400 dark:text-white/40 mb-1">Gastos/mes</p>
+              <p className="text-slate-400 dark:text-white/40 mb-1">
+                {t('finance.projections.expensesPerMonth') || 'Expenses/month'}
+              </p>
               <p className="text-amber-400 font-semibold">
                 {expensesTrend >= 0 ? '+' : ''}{fmtMoney(expensesTrend)}
               </p>
             </div>
             <div>
-              <p className="text-slate-400 dark:text-white/40 mb-1">Balance promedio</p>
+              <p className="text-slate-400 dark:text-white/40 mb-1">
+                {t('finance.projections.averageBalance') || 'Average balance'}
+              </p>
               <p className="text-blue-400 font-semibold">
                 {fmtMoney(forecast.reduce((sum, f) => sum + f.projectedBalance, 0) / forecast.length)}
               </p>
@@ -233,10 +243,10 @@ export function ProjectionsTab({ transactions, fmtMoney }: ProjectionsTabProps) 
       >
         <div className="mb-5">
           <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">
-            Evolución Financiera
+            {t('finance.projections.financialEvolution') || 'Financial Evolution'}
           </h3>
           <p className="text-xs text-slate-300 dark:text-white/50">
-            Líneas sólidas: datos reales • Líneas punteadas: proyección
+            {t('finance.projections.chartLegend') || 'Solid lines: actual data • Dashed lines: projection'}
           </p>
         </div>
 

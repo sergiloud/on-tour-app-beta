@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { logger } from "../../lib/logger";
+import { t } from '../../lib/i18n';
 /**
  * Finance V2 - Módulo de Finanzas Refactorizado
  *
@@ -175,8 +176,8 @@ const FinanceV2Inner: React.FC = () => {
                 <DollarSign className="w-5 h-5 text-accent-500" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-theme-primary">Finanzas</h1>
-                <p className="text-sm text-slate-300 dark:text-white/50">Centro de control financiero</p>
+                <h1 className="text-2xl font-bold text-theme-primary">{t('nav.finance')}</h1>
+                <p className="text-sm text-slate-300 dark:text-white/50">{t('finance.overview')}</p>
               </div>
             </div>
 
@@ -193,7 +194,7 @@ const FinanceV2Inner: React.FC = () => {
                 className="px-4 py-2.5 rounded-lg glass border border-slate-200 dark:border-white/10 hover:border-accent-500/30 text-sm flex items-center gap-2 transition-all"
               >
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Añadir Transacción</span>
+                <span className="hidden sm:inline">{t('common.add')}</span>
               </motion.button>
             </div>
           </motion.div>
@@ -208,10 +209,10 @@ const FinanceV2Inner: React.FC = () => {
                 projections: TrendingUp,
               };
               const labels = {
-                dashboard: 'Dashboard',
-                transactions: 'Transacciones',
-                budgets: 'Presupuestos',
-                projections: 'Proyecciones',
+                dashboard: t('nav.dashboard') || 'Dashboard',
+                transactions: t('finance.transactions') || 'Transactions',
+                budgets: t('finance.budget') || 'Budgets',
+                projections: t('finance.forecast') || 'Forecast',
               };
               const Icon = icons[tab];
 

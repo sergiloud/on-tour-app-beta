@@ -122,8 +122,13 @@ export const formatNumber = (
   }
 };
 
-const DICT: Record<Lang, Record<string, string>> = {
-  en: {
+// Lazy-load DICT to avoid circular dependency issues in production builds
+const getDICT = (() => {
+  let _DICT: Record<Lang, Record<string, string>> | null = null;
+  return (): Record<Lang, Record<string, string>> => {
+    if (_DICT) return _DICT;
+    _DICT = {
+      en: {
     'welcome.upcoming.14d': 'Upcoming 14 days'
     , 'empty.noUpcoming': 'No upcoming events'
     , 'empty.noUpcoming.hint': 'Review your calendar or add shows'
@@ -5862,6 +5867,12 @@ const DICT: Record<Lang, Record<string, string>> = {
     , 'common.saving': 'Salvando...'
   }
 };
+    return _DICT;
+  };
+})();
+
+// Direct access to DICT
+const DICT = getDICT();
 
 const listeners = new Set<(lang: Lang) => void>();
 

@@ -16,6 +16,7 @@ import { useContractsQuery, useCreateContractMutation, useDeleteContractMutation
 import { useShows } from '../../hooks/useShows';
 import { useToast } from '../../context/ToastContext';
 import { Contract, ContractStatus } from '../../types/contract';
+import { t } from '../../lib/i18n';
 
 type StatusFilter = 'all' | ContractStatus;
 
@@ -28,11 +29,11 @@ const STATUS_COLORS: Record<ContractStatus, { bg: string; text: string; border: 
 };
 
 const STATUS_LABELS: Record<ContractStatus, string> = {
-  draft: 'Borrador',
-  pending: 'Pendiente de Firma',
-  signed: 'Firmado',
-  expired: 'Expirado',
-  cancelled: 'Cancelado',
+  draft: t('shows.status.draft') || 'Draft',
+  pending: t('shows.status.pending') || 'Pending',
+  signed: t('shows.status.confirmed') || 'Signed',
+  expired: t('shows.status.expired') || 'Expired',
+  cancelled: t('shows.status.canceled') || 'Cancelled',
 };
 
 // Helper para formatear fechas

@@ -9,6 +9,7 @@ import { AddFlightModal } from '../../components/travel/AddFlightModal';
 import { FlightSearchModal } from '../../components/travel/FlightSearchModal';
 import { useDebounce } from '../../lib/performance';
 import { slideUp, fadeIn, staggerFast } from '../../lib/animations';
+import { t } from '../../lib/i18n';
 
 interface Flight {
   id: string;
@@ -93,10 +94,10 @@ const getStatusBadge = (status: Flight['status']) => {
     cancelled: 'px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20',
   };
   const labels = {
-    upcoming: 'Próximo',
-    departed: 'En Vuelo',
-    landed: 'Aterrizado',
-    cancelled: 'Cancelado',
+    upcoming: t('travel.flight_card.upcoming') || 'Upcoming',
+    departed: t('travel.flight_card.departed') || 'In Flight',
+    landed: t('travel.flight_card.landed') || 'Landed',
+    cancelled: t('travel.flight_card.cancelled') || 'Cancelled',
   };
   return <span className={badges[status]}>{labels[status]}</span>;
 };
@@ -452,8 +453,8 @@ const TravelV2: React.FC = () => {
         <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-slate-700/30 to-slate-800/30 flex items-center justify-center mx-auto mb-4 border border-white/5">
           <Calendar className="w-7 h-7 text-slate-300 dark:text-white/40" />
         </div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 tracking-tight">Timeline de Viajes</h3>
-        <p className="text-slate-400 dark:text-white/40 text-sm">Vista cronológica de tus vuelos próximos</p>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 tracking-tight">{t('travel.timeline') || 'Travel Timeline'}</h3>
+        <p className="text-slate-400 dark:text-white/40 text-sm">{t('travel.timeline.subtitle') || 'Chronological view of your upcoming flights'}</p>
       </motion.div>
 
       <div className="space-y-3">
@@ -513,8 +514,8 @@ const TravelV2: React.FC = () => {
                 <Plane className="w-5 h-5 text-slate-500 dark:text-white/70" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-1 tracking-tight">Travel</h1>
-                <p className="text-slate-400 dark:text-white/40 text-xs tracking-wide">Gestiona tus vuelos y viajes</p>
+                <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-1 tracking-tight">{t('nav.travel')}</h1>
+                <p className="text-slate-400 dark:text-white/40 text-xs tracking-wide">{t('travel.subtitle') || 'Manage your flights and trips'}</p>
               </div>
             </div>
 
@@ -525,7 +526,7 @@ const TravelV2: React.FC = () => {
               className="px-4 py-2.5 rounded-lg bg-slate-200 dark:bg-slate-200 dark:bg-white/10 text-white font-medium hover:bg-slate-300 dark:bg-white/15 transition-all flex items-center gap-2 border border-theme text-sm"
             >
               <Plus className="w-3.5 h-3.5" />
-              Agregar Vuelo
+              {t('travel.addFlight') || 'Add Flight'}
             </motion.button>
           </motion.div>
 

@@ -30,6 +30,7 @@ import { CONTACT_TYPE_LABELS } from '../../types/crm';
 import { contactStore } from '../../shared/contactStore';
 import { useToast } from '../../context/ToastContext';
 import { logger } from '../../lib/logger';
+import { t } from '../../lib/i18n';
 
 // Lazy load modal pesado - solo cuando el usuario lo abre
 const ContactEditorModal = lazy(() => 
@@ -39,15 +40,15 @@ const ContactEditorModal = lazy(() =>
 type CategoryTab = 'all' | 'label_rep' | 'promoter' | 'booking_agent' | 'press_agent' | 'venue_manager' | 'media' | 'festival_org' | 'tech' | 'other';
 
 const CATEGORY_TABS: { id: CategoryTab; label: string; icon: React.ReactNode }[] = [
-  { id: 'all', label: 'Todos', icon: <Users className="w-4 h-4" /> },
+  { id: 'all', label: t('common.all') || 'All', icon: <Users className="w-4 h-4" /> },
   { id: 'label_rep', label: 'Labels & A&R', icon: <Music className="w-4 h-4" /> },
   { id: 'promoter', label: 'Promoters', icon: <Calendar className="w-4 h-4" /> },
   { id: 'booking_agent', label: 'Booking Agents', icon: <TrendingUp className="w-4 h-4" /> },
   { id: 'press_agent', label: 'Press & Media', icon: <MessageSquare className="w-4 h-4" /> },
   { id: 'venue_manager', label: 'Venues', icon: <Building2 className="w-4 h-4" /> },
-  { id: 'festival_org', label: 'Festivales', icon: <Star className="w-4 h-4" /> },
-  { id: 'tech', label: 'Técnicos', icon: <Globe className="w-4 h-4" /> },
-  { id: 'other', label: 'Otros', icon: <TagIcon className="w-4 h-4" /> },
+  { id: 'festival_org', label: t('common.festivals') || 'Festivals', icon: <Star className="w-4 h-4" /> },
+  { id: 'tech', label: t('common.technical') || 'Technical', icon: <Globe className="w-4 h-4" /> },
+  { id: 'other', label: t('common.other') || 'Other', icon: <TagIcon className="w-4 h-4" /> },
 ];
 
 // Helper para obtener icono y color según tipo de contacto

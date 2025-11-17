@@ -13,8 +13,10 @@ import type { ManualChunksOption } from 'rollup';
 // ============================================================================
 
 export const manualChunks: ManualChunksOption = (id: string) => {
-  // React ecosystem - separate core from React itself
-  if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+  // React ecosystem - Keep React, React-DOM, and React-IS together to avoid undefined errors
+  if (id.includes('node_modules/react/') || 
+      id.includes('node_modules/react-dom/') ||
+      id.includes('node_modules/react-is/')) {
     return 'vendor-react-core';
   }
   

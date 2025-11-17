@@ -32,7 +32,8 @@ export default defineConfig({
   },
   plugins: [
     react({
-      jsxRuntime: 'classic'
+      jsxRuntime: 'automatic', // Changed from 'classic' to avoid createElement dependency issues
+      jsxImportSource: 'react'
     }),
     // WebAssembly support for high-performance financial calculations (skip in Vercel build)
     ...(process.env.SKIP_WASM !== 'true' && process.env.VERCEL !== '1' ? [
@@ -184,9 +185,18 @@ export default defineConfig({
     cssCodeSplit: true,
     modulePreload: {
       polyfill: true,
-      resolveDependencies: (filename, deps) => {
+      resolveDependencies: (filename, deps, { hostId, hostType }) => {
+        // Ensure React core is always loaded first
+        const sortedDeps = deps.sort((a, b) => {
+          const aIsReact = a.includes('vendor-react-core');
+          const bIsReact = b.includes('vendor-react-core');
+          if (aIsReact && !bIsReact) return -1;
+          if (!aIsReact && bIsReact) return 1;
+          return 0;
+        });
+        
         // Preload critical chunks, exclude heavy ones
-        return deps.filter(dep => !dep.includes('maplibre') && !dep.includes('excel'));
+        return sortedDeps.filter(dep => !dep.includes('maplibre') && !dep.includes('excel'));
       },
     },
     rollupOptions: {

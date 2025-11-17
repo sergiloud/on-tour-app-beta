@@ -122,13 +122,8 @@ export const formatNumber = (
   }
 };
 
-// Lazy-load DICT to avoid circular dependency issues in production builds
-const getDICT = (() => {
-  let _DICT: Record<Lang, Record<string, string>> | null = null;
-  return (): Record<Lang, Record<string, string>> => {
-    if (_DICT) return _DICT;
-    _DICT = {
-      en: {
+// Separate language objects to avoid initialization order issues
+const en = {
     'welcome.upcoming.14d': 'Upcoming 14 days'
     , 'empty.noUpcoming': 'No upcoming events'
     , 'empty.noUpcoming.hint': 'Review your calendar or add shows'
@@ -2279,8 +2274,9 @@ const getDICT = (() => {
     , 'timelineMaestro.simulation.riskLevel.medium': 'Medium'
     , 'timelineMaestro.simulation.riskLevel.high': 'High'
     , 'timelineMaestro.simulation.riskLevel.critical': 'Critical'
-  },
-  es: {
+};
+
+const es = {
     // Landing / Home
     'hero.title': 'De caos a control. De datos a decisiones.'
     , 'hero.subtitle': 'La plataforma que convierte el caos de gestionar giras en decisiones inteligentes. IA proactiva + UX premium + gestión completa offline-first. Todo en una app.'
@@ -4561,11 +4557,9 @@ const getDICT = (() => {
     , 'timelineMaestro.simulation.riskLevel.medium': 'Medio'
     , 'timelineMaestro.simulation.riskLevel.high': 'Alto'
     , 'timelineMaestro.simulation.riskLevel.critical': 'Crítico'
-  },
-  // ============================================
-  // FRENCH (FR)
-  // ============================================
-  fr: {
+};
+
+const fr = {
     // Landing / Home
     'hero.title': 'Du chaos au contrôle. Des données aux décisions.'
     , 'hero.subtitle': 'La plateforme qui transforme le chaos de la gestion de tournée en décisions intelligentes. IA proactive + UX premium + gestion complète hors ligne. Tout en une app.'
@@ -4887,11 +4881,9 @@ const getDICT = (() => {
     , 'common.processing': 'Traitement...'
     , 'common.reject': 'Rejeter'
     , 'common.saving': 'Enregistrement...'
-  },
-  // ============================================
-  // GERMAN (DE)
-  // ============================================
-  de: {
+};
+
+const de = {
     // Landing / Home
     'hero.title': 'Vom Chaos zur Kontrolle. Von Daten zu Entscheidungen.'
     , 'hero.subtitle': 'Die Plattform, die das Chaos des Tour-Managements in intelligente Entscheidungen verwandelt. Proaktive KI + Premium UX + vollständiges Offline-First-Management. Alles in einer App.'
@@ -5213,11 +5205,9 @@ const getDICT = (() => {
     , 'common.processing': 'Wird verarbeitet...'
     , 'common.reject': 'Ablehnen'
     , 'common.saving': 'Wird gespeichert...'
-  },
-  // ============================================
-  // ITALIAN (IT)
-  // ============================================
-  it: {
+};
+
+const it = {
     // Landing / Home
     'hero.title': 'Dal caos al controllo. Dai dati alle decisioni.'
     , 'hero.subtitle': 'La piattaforma che trasforma il caos della gestione tour in decisioni intelligenti. IA proattiva + UX premium + gestione completa offline-first. Tutto in un\'app.'
@@ -5539,11 +5529,9 @@ const getDICT = (() => {
     , 'common.processing': 'Elaborazione...'
     , 'common.reject': 'Rifiuta'
     , 'common.saving': 'Salvataggio...'
-  },
-  // ============================================
-  // PORTUGUESE (PT)
-  // ============================================
-  pt: {
+};
+
+const pt = {
     // Landing / Home
     'hero.title': 'Do caos ao controle. De dados a decisões.'
     , 'hero.subtitle': 'A plataforma que transforma o caos da gestão de turnês em decisões inteligentes. IA proativa + UX premium + gestão completa offline-first. Tudo em um app.'
@@ -5865,14 +5853,10 @@ const getDICT = (() => {
     , 'common.processing': 'Processando...'
     , 'common.reject': 'Rejeitar'
     , 'common.saving': 'Salvando...'
-  }
 };
-    return _DICT;
-  };
-})();
 
-// Direct access to DICT
-const DICT = getDICT();
+// Construct DICT from language objects
+const DICT: Record<Lang, Record<string, string>> = { en, es, fr, de, it, pt };
 
 const listeners = new Set<(lang: Lang) => void>();
 

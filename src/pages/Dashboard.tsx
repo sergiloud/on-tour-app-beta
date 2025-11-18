@@ -133,6 +133,7 @@ const MissionControlDashboard: React.FC = () => {
   const [mapKey, setMapKey] = React.useState(0);
   const [showLegend, setShowLegend] = React.useState(true);
   const { org } = useOrg();
+  const { profile } = useAuth();
 
   // Progressive loading state - render all components immediately
   const [showMap, setShowMap] = useState(true);
@@ -174,9 +175,9 @@ const MissionControlDashboard: React.FC = () => {
                     </h1>
                     <div className="flex items-center gap-2 mt-1 text-xs text-theme-secondary">
                       <Building2 className="w-3.5 h-3.5" />
-                      <span className="font-medium">{org.name}</span>
+                      <span className="font-medium">{profile?.name || org.name}</span>
                       <span className="text-theme-muted">•</span>
-                      <span className="capitalize">{org.type}</span>
+                      <span className="capitalize">{org.type === 'artist' ? t('common.artist') || 'Artist' : org.type === 'agency' ? t('common.agency') || 'Agency' : org.type === 'venue' ? t('common.venue') || 'Venue' : org.type}</span>
                     </div>
                   </div>
                 </div>

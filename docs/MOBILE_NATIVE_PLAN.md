@@ -109,11 +109,12 @@ Convertir On Tour App en una solución mobile-first para artistas, tour managers
 - React Navigation 6.x (navegación nativa)
 - React Query (sync con backend, compartido con web)
 - Zustand/Context API (state, compartido con web)
-- WatermelonDB (SQLite offline database)
+- Expo SQLite + @opengineering/op-sqlite (offline-first simple)
+- Firestore Replicator (sync incremental DIY)
 - MapLibre GL Native (mapas offline)
 - Notifee (push notifications local + remote)
 - Expo SecureStore (biometrics + encrypted storage)
-- react-native-quick-sqlite (WASM bridge para simulador)
+- Simulador financiero JS (fallback default) + WASM opcional en devices potentes
 ```
 
 ### Opción B: Flutter (ALTERNATIVA)
@@ -137,23 +138,49 @@ Convertir On Tour App en una solución mobile-first para artistas, tour managers
 4. **Quick actions:** Widgets iOS/Android para acceso directo
 5. **Minimal data usage:** Sync inteligente (solo deltas, compresión)
 
+### MVP Scope Ajustado (feedback Nov 2025):
+- ✅ **SQLite simple vs WatermelonDB:** Expo SQLite + op-sqlite + replicator Firestore DIY (sin migrations locas)
+- ✅ **Timeline v1 vertical:** Lista bonita con filtros fecha/mes. Timeline horizontal + pinch → **v2 post-launch**
+- ✅ **Expenses sin OCR:** Foto + input manual. OCR/Gemini Nano cuando el mercado lo pida
+- ✅ **Sin widgets/Live Activities** en v1: priorizar core offline + push + dashboard
+- ✅ **Simulador JS fallback:** JS puro por defecto, WASM solo si el device es potente (feature flag v1.5)
+
+#### MVP v1.0 (lo único que entra antes de junio 2026)
+
+| Feature                  | Incluido v1? | Versión futura |
+|--------------------------|--------------|----------------|
+| Login + Biometrics       | ✅           | -              |
+| Dashboard + Next Show    | ✅           | -              |
+| Agenda (mes/semana/día)  | ✅           | -              |
+| Show Detail + Mapa       | ✅           | -              |
+| Expenses + foto          | ✅           | -              |
+| Timeline vertical simple | ✅           | -              |
+| Finanzas básicas P&L     | ✅           | -              |
+| Offline + sync           | ✅           | -              |
+| Push notifications       | ✅           | -              |
+| Timeline horizontal pinch| ❌           | v2             |
+| Simulador WASM           | ❌ (solo JS) | v1.5           |
+| OCR receipts             | ❌           | v2             |
+| Widgets / Live Activities| ❌          | v2+            |
+| Multi-org RBAC           | ❌           | v2             |
+
 ### Estructura de datos local:
 
 ```typescript
-// WatermelonDB schema
-- users (profile, prefs) → sync con Firestore
-- organizations (orgs, members) → sync con Firestore
-- shows (events, venues, contacts) → sync con Firestore
-- expenses (transactions, receipts) → sync con Firestore
-- timeline (events, tasks) → sync con Firestore
-- offline_queue (pending changes) → sync cuando hay conexión
+// Expo SQLite + op-sqlite schema (simple)
+- users (profile, prefs)
+- organizations (orgs, members)
+- shows (events, venues, contacts)
+- expenses (transactions, receipts)
+- timeline_entries (events, tasks)
+- sync_queue (pending operations)
 ```
 
 ### Sync strategy:
 ```typescript
 // 1. Optimistic updates (UI actualiza inmediatamente)
 addExpense(expense) → 
-  - Guarda en WatermelonDB local
+  - Guarda en SQLite local
   - Actualiza UI
   - Encola sync con backend
   - Sync en background cuando hay conexión
@@ -201,7 +228,7 @@ if (localTimestamp > remoteTimestamp) {
 │ [Quick Actions]         │
 │ 💸 Add Expense          │
 │ 📝 Add Show             │
-│ 🧾 Scan Receipt         │
+│ 📎 Attach Receipt Photo │
 └─────────────────────────┘
 ```
 
@@ -274,26 +301,24 @@ if (localTimestamp > remoteTimestamp) {
 └─────────────────────────┘
 ```
 
-#### 5. **Timeline Maestro Mobile** (Horizontal scroll)
+#### 5. **Timeline Maestro Mobile** (Lista vertical)
 ```
 ┌─────────────────────────┐
 │ 📅 Timeline             │
-│ [This Tour ▼]           │
+│ [All shows ▼] [Filters] │
 ├─────────────────────────┤
-│ ◄──────────────────────►│
-│ Nov  │ Dec  │ Jan  │ Feb│
-│ ─────┼──────┼──────┼────│
-│  🎵  │  ✈️  │  🎵  │ 🎵 │
-│  🏨  │  🏨  │  💰  │ ✈️ │
-│  💸  │  🎵  │  🎵  │ 🎵 │
-│      │  🏨  │      │    │
-│                         │
-│ Zoom: [- Fit +]         │
-│                         │
-│ ▼ Today: Nov 18         │
-│ • Travel to Madrid      │
-│ • Soundcheck 18:00      │
-│ • Show 21:00            │
+│ Nov 18 • Madrid         │
+│ • 08:00 Travel to MAD   │
+│ • 18:00 Soundcheck      │
+│ • 21:00 Show            │
+├─────────────────────────┤
+│ Nov 19 • Valencia       │
+│ • 09:00 Travel          │
+│ • 12:00 Meet promoter   │
+│ • 19:30 Doors open      │
+├─────────────────────────┤
+│ Nov 20 • Day Off        │
+│ • Rest + review finances│
 └─────────────────────────┘
 ```
 
@@ -307,9 +332,9 @@ if (localTimestamp > remoteTimestamp) {
 │ Date: [Today]           │
 │ Note: [Optional...]     │
 │                         │
-│ 📸 [Scan Receipt]       │
+│ 📸 [Take Photo]         │
 │ OR                      │
-│ 📎 [Attach Photo]       │
+│ 📎 [Attach from Library]│
 │                         │
 │ [Cancel]  [Save]        │
 └─────────────────────────┘
@@ -323,299 +348,61 @@ if (localTimestamp > remoteTimestamp) {
 | **Swipe izquierda** | Eliminar/Archivar | Show, Expense |
 | **Long-press** | Quick edit | Show, Expense |
 | **Pull-to-refresh** | Sync ahora | Cualquier lista |
-| **Pinch** | Zoom timeline | Timeline view |
 | **Double-tap** | Ver detalles | Show card |
 | **3D Touch** | Quick actions | App icon (iOS) |
 
 ---
 
-## 🚀 Roadmap de Desarrollo AI-Assisted (3-6 meses)
+## 🚀 Roadmap de Desarrollo AI-Assisted (12 semanas)
 
-### **Fase 1: Setup & Monorepo** (Semana 1-2)
-**Duración:** 10-15 horas de trabajo  
-**Con quién:** Tú + Claude (setup infraestructura)
+| Semana | Objetivo | Resultado |
+|--------|-----------|-----------|
+| 1 | Setup Expo + monorepo + shared code + login + dashboard vacío | App corriendo en iPhone real |
+| 2-3 | Agenda + shows list/detail + Quick Add Show (NLP) | Core touring funciona |
+| 4-5 | Expenses + SQLite offline + sync simple con Firestore | Offline-first real |
+| 6-7 | Timeline simple (lista vertical) + Finanzas básicas | Valor percibido brutal |
+| 8 | Push notifications + biometrics + bottom navigation | Experiencia nativa |
+| 9-10 | Polish UI (haptics, animations, dark mode) + i18n ES/EN | Lista para beta |
+| 11-12 | Beta interna (10-20 testers) + bugfixing | TestFlight beta |
 
-#### Tareas:
-- [ ] **Init Expo 50+ con TypeScript**
-  ```bash
-  npx create-expo-app@latest on-tour-mobile --template tabs
-  cd on-tour-mobile
-  npm install typescript @types/react @types/react-native
-  ```
+### Semana 1 — Setup & Monorepo
+- Expo SDK 50 + TypeScript + React Navigation
+- Carpeta `shared/` para lib/context/api/types
+- Login + dashboard vacío (textos reales vía i18n)
+- Primer build en iPhone real via `eas build --profile development`
 
-- [ ] **Setup monorepo** (compartir código con web)
-  ```
-  /Users/sergirecio/Documents/On Tour App 2.0/
-  ├── on-tour-app/          # Web actual
-  ├── on-tour-mobile/       # Nueva app React Native
-  └── shared/               # Código compartido
-      ├── lib/              # i18n, utils, finance
-      ├── contexts/         # Auth, Org, Settings
-      ├── types/            # TypeScript types
-      └── api/              # Firebase calls
-  ```
+### Semanas 2-3 — Agenda & Shows
+- Lista vertical (FlatList) + detalle show reutilizando hooks web
+- Quick Add Show con NLP (igual que web)
+- Calendar mini (react-native-calendars)
+- Todo online-first, sin offline aún
 
-- [ ] **Configurar React Navigation**
-  ```bash
-  npx expo install @react-navigation/native @react-navigation/bottom-tabs
-  ```
+### Semanas 4-5 — Offline SQLite + Sync simple
+- Expo SQLite + `@opengineering/op-sqlite`
+- Tabla shows/expenses/timeline_entries
+- Sync incremental Firestore ↔ SQLite (last-write-wins)
+- Modo offline indicator + pull-to-refresh
 
-- [ ] **Setup EAS Build** (builds nativas iOS/Android)
-  ```bash
-  npm install -g eas-cli
-  eas login
-  eas build:configure
-  ```
+### Semanas 6-7 — Timeline simple + Finanzas
+- Timeline vertical (sección por día/semana) con filtros
+- Finanzas básicas: Quick Look, lista de expenses, P&L mensual
+- Simulador what-if en **JS puro** (WASM opcional v1.5)
 
-- [ ] **Primer build de prueba**
-  ```bash
-  eas build --platform ios --profile development
-  eas build --platform android --profile development
-  ```
+### Semana 8 — Nativo de verdad
+- Push notifications (expo-notifications + FCM)
+- Biometrics (Expo Local Authentication)
+- Bottom navigation + floating quick actions
 
-**Entregable:**
-- ✅ App vacía corriendo en iPhone Simulator
-- ✅ App vacía corriendo en Android Emulator
-- ✅ Monorepo funcionando (código compartido web ↔ mobile)
+### Semanas 9-10 — Polish + i18n
+- Haptics, animations, dark mode, skeletons
+- i18n ES/EN completo (reutilizar `shared/lib/i18n`)
+- QA manual + checklist accesibilidad
 
-**GitHub Copilot ayuda con:**
-- Setup de tsconfig.json
-- Configuración de navigation
-- Boilerplate de screens
-
----
-
-### **Fase 2: Shared Code Migration** (Semana 3-4)
-**Duración:** 20-25 horas  
-**Con quién:** Tú + Copilot (migración de código)
-
-#### Tareas:
-- [ ] **Mover código compartido a `/shared`**
-  - `src/lib/i18n.ts` → `shared/lib/i18n.ts`
-  - `src/context/AuthContext.tsx` → `shared/contexts/AuthContext.tsx`
-  - `src/context/OrgContext.tsx` → `shared/contexts/OrgContext.tsx`
-  - `src/shared/showStore.ts` → `shared/stores/showStore.ts`
-  - `src/lib/finance/` → `shared/lib/finance/`
-
-- [ ] **Adaptar componentes para React Native**
-  - Replace `div` → `View`
-  - Replace `span` → `Text`
-  - Replace `button` → `Pressable` o `TouchableOpacity`
-  - Replace Tailwind → StyleSheet.create()
-
-- [ ] **Setup de theme compartido**
-  ```typescript
-  // shared/theme/tokens.ts
-  export const colors = {
-    primary: '#3b82f6',
-    background: '#ffffff',
-    text: '#1f2937',
-    // ... (reutilizar de styles/tokens.css)
-  }
-  ```
-
-- [ ] **Firebase config compartido**
-  ```typescript
-  // shared/config/firebase.ts (mismo que web)
-  import { initializeApp } from 'firebase/app'
-  import { getFirestore } from 'firebase/firestore'
-  ```
-
-**Entregable:**
-- ✅ 70% del código web reutilizable en mobile
-- ✅ i18n funcionando en mobile
-- ✅ AuthContext + OrgContext funcionando en mobile
-
-**GitHub Copilot ayuda con:**
-- Conversión automática HTML → React Native
-- Sugerencias de StyleSheet basadas en Tailwind classes
-- Type inference automático
-
----
-
-### **Fase 3: Core Screens Offline-First** (Mes 2)
-**Duración:** 40-50 horas  
-**Con quién:** Tú + Copilot (componentes) + Claude (arquitectura offline)
-
-#### Tareas:
-- [ ] **Setup WatermelonDB** (SQLite offline)
-  ```bash
-  npx expo install @nozbe/watermelondb @nozbe/sqlite
-  ```
-
-- [ ] **Definir schema**
-  ```typescript
-  // shared/database/schema.ts
-  export const schema = {
-    shows: {
-      name: 'shows',
-      columns: [
-        { name: 'title', type: 'string' },
-        { name: 'venue', type: 'string' },
-        { name: 'date', type: 'number' },
-        { name: 'synced', type: 'boolean' }
-      ]
-    }
-  }
-  ```
-
-- [ ] **Dashboard/Home screen**
-  ```typescript
-  // on-tour-mobile/src/screens/Dashboard.tsx
-  import { useAuth } from '@shared/contexts/AuthContext'
-  import { useShows } from '@shared/hooks/useShows'
-  
-  export default function Dashboard() {
-    const { profile } = useAuth()
-    const { nextShow } = useShows()
-    
-    return (
-      <View>
-        <Text>Hola {profile?.name}</Text>
-        <NextShowCard show={nextShow} />
-      </View>
-    )
-  }
-  ```
-
-- [ ] **Agenda screen** (CalendarList)
-  ```bash
-  npx expo install react-native-calendars
-  ```
-
-- [ ] **Show detail screen**
-  - Map preview (MapLibre GL)
-  - Deal info
-  - Contacts
-  - Documents
-
-- [ ] **Offline sync engine**
-  ```typescript
-  // shared/services/sync.ts
-  export class SyncEngine {
-    async syncShows() {
-      const localShows = await db.shows.query().fetch()
-      const remoteShows = await firestore.collection('shows').get()
-      
-      // Merge strategy: last-write-wins
-      // ...
-    }
-  }
-  ```
-
-**Entregable:**
-- ✅ Dashboard funcional con next show
-- ✅ Agenda (mes/semana/día)
-- ✅ Show detail completo
-- ✅ Todo funciona offline (SQLite local)
-- ✅ Sync bidireccional con Firestore
-
-**GitHub Copilot ayuda con:**
-- Generar screens completas basándose en web version
-- Autocompletar queries WatermelonDB
-- Sugerir sync logic patterns
-
----
-
-### **Fase 4: Finanzas Mobile** (Mes 3)
-**Duración:** 30-40 horas  
-**Con quién:** Tú + Copilot (UI) + Claude (finance engine optimization)
-
-#### Tareas:
-- [ ] **Finance dashboard mobile**
-  - Quick Look cards (swipeable)
-  - P&L básico
-  - Recent expenses
-
-- [ ] **Add expense screen** (Bottom Sheet)
-  ```bash
-  npx expo install @gorhom/bottom-sheet
-  ```
-
-- [ ] **Receipt scan** (ML Kit OCR)
-  ```bash
-  npx expo install expo-camera expo-image-picker
-  npm install tesseract.js  # OCR on-device
-  ```
-
-- [ ] **Expense list** (swipe to delete)
-  ```bash
-  npx expo install react-native-gesture-handler
-  ```
-
-- [ ] **Reutilizar finance engine WASM**
-  ```typescript
-  // Ya tienes wasm-financial-engine/
-  // Solo adaptar para mobile:
-  import { calculateWhatIf } from '@shared/lib/finance/wasm'
-  ```
-
-**Entregable:**
-- ✅ Add expense en <10 segundos
-- ✅ Receipt OCR (80%+ accuracy)
-- ✅ Finance dashboard completo
-- ✅ Simulador what-if mobile (WASM)
-
-**GitHub Copilot ayuda con:**
-- Bottom sheet components
-- Camera + OCR integration
-- Gesture handlers
-
----
-
-### **Fase 5: Maps & Timeline** (Mes 4)
-**Duración:** 25-35 horas  
-**Con quién:** Tú + Copilot (maps) + Claude (timeline optimization)
-
-#### Tareas:
-- [ ] **MapLibre GL Native**
-  ```bash
-  npx expo install @maplibre/maplibre-react-native
-  ```
-
-- [ ] **Show markers en mapa**
-  ```typescript
-  <MapView>
-    {shows.map(show => (
-      <Marker
-        key={show.id}
-        coordinate={show.coordinates}
-        title={show.title}
-      />
-    ))}
-  </MapView>
-  ```
-
-- [ ] **Timeline horizontal scroll**
-  ```bash
-  npx expo install react-native-reanimated
-  ```
-
-- [ ] **Timeline con gestures** (pinch to zoom)
-  ```typescript
-  import { GestureDetector, Gesture } from 'react-native-gesture-handler'
-  
-  const pinch = Gesture.Pinch()
-    .onUpdate((e) => {
-      scale.value = e.scale
-    })
-  ```
-
-**Entregable:**
-- ✅ Mapa funcional offline
-- ✅ Timeline Maestro mobile (horizontal scroll + zoom)
-- ✅ Performance 60fps con 500+ eventos
-
-**GitHub Copilot ayuda con:**
-- MapLibre configuration
-- Gesture handlers
-- Reanimated animations
-
----
-
-### **Fase 6: Push Notifications & Polish** (Mes 5)
-**Duración:** 20-30 horas  
-**Con quién:** Tú + Copilot (notifications) + Claude (debugging)
+### Semanas 11-12 — Beta TestFlight/Play Beta
+- Maestro/Detox smoke tests
+- Beta interna 10-20 testers (managers reales)
+- Feedback loops diarios + bugfixes
+- Submit TestFlight + Play Beta
 
 #### Tareas:
 - [ ] **Firebase Cloud Messaging**
@@ -717,32 +504,44 @@ if (localTimestamp > remoteTimestamp) {
 ### Sesión típica de desarrollo (2-4 horas):
 
 1. **Planning con Claude** (15 min)
-   ```
-   Tú: "Hoy quiero implementar el receipt scanner con OCR"
-   Claude: "Ok, te recomiendo usar expo-camera + tesseract.js.
-            Primero setup permissions, luego camera UI, luego OCR..."
-   ```
+  ```
+  Tú: "Hoy quiero implementar add expense con foto + input manual"
+  Claude: "Perfecto, usa expo-camera para capturar la foto,
+        guarda en SQLite y deja el OCR para v1.5"
+  ```
 
 2. **Coding con GitHub Copilot** (2-3 horas)
    ```typescript
    // Tú escribes:
-   // function to scan receipt and extract amount
+   // function to capture a receipt photo and link it to the expense record
    
    // Copilot sugiere:
-   async function scanReceipt(imageUri: string) {
-     const { data: { text } } = await Tesseract.recognize(imageUri)
-     const amount = extractAmount(text)
-     const category = inferCategory(text)
-     return { amount, category }
+   async function captureReceiptPhoto() {
+     const { status } = await ImagePicker.requestCameraPermissionsAsync()
+     if (status !== 'granted') {
+       throw new Error('camera permission denied')
+     }
+
+     const result = await ImagePicker.launchCameraAsync({
+       quality: 0.7,
+       allowsEditing: true,
+       mediaTypes: ImagePicker.MediaTypeOptions.Images
+     })
+
+     if (result.canceled) {
+       return null
+     }
+
+     return result.assets[0].uri
    }
    ```
 
 3. **Review con Claude** (15-30 min)
-   ```
-   Tú: "Implementé el scanner, revisa el código"
-   Claude: "Bien! Pero añade error handling y loading state.
-            También comprime la imagen antes del OCR (performance)"
-   ```
+  ```
+  Tú: "Implementé add expense con foto, revisa el código"
+  Claude: "Bien! Añade estados de loading y sincronización.
+        Y marca el registro como pending sync hasta que suba a Firestore"
+  ```
 
 4. **Testing** (30 min)
    ```bash
@@ -787,205 +586,42 @@ if (localTimestamp > remoteTimestamp) {
 
 ---
 
-## 🚀 Roadmap de Desarrollo (6-9 meses)
+##  Backlog Post-MVP (Q3/Q4 2026)
 
-### **Fase 1: Setup & Infraestructura** (Mes 1)
-**Objetivo:** Proyecto Expo + arquitectura base + CI/CD
+| Feature | Cuándo | Notas |
+|---------|--------|-------|
+| Timeline horizontal + pinch-zoom | v2 (post-revenue) | Cuando haya tiempo para Reanimated gestures |
+| Receipt OCR / AI Categorization | v2 | Integrar Gemini Nano / Apple Intelligence |
+| Widgets, Live Activities, Dynamic Island | v1.5-v2 | Solo tras consolidar core | 
+| WASM financial engine | v1.5 | Habilitar en devices potentes vía feature flag |
+| Route optimizer + ETA avanzado | v2 | Necesita más datos + server support |
 
-- [ ] Init Expo 50+ project con TypeScript
-- [ ] Setup monorepo (compartir código con web via workspace)
-- [ ] Configurar React Navigation 6.x
-- [ ] Setup WatermelonDB + schemas
-- [ ] Configurar Expo SecureStore (biometrics)
-- [ ] Setup EAS Build (iOS + Android)
-- [ ] CI/CD con GitHub Actions
-- [ ] Setup Fastlane (deploy automático)
-
-**Entregables:**
-- App vacía que corre en iOS Simulator + Android Emulator
-- Authentication flow (login/register con Firebase)
-- Biometric login funcional
+Estas iniciativas se quedan fuera del MVP pero ya están documentadas para ejecutarlas una vez la app esté en producción y generando MRR.
 
 ---
 
-### **Fase 2: Core Features Offline-First** (Mes 2-3)
-**Objetivo:** Dashboard + Agenda + Shows funcionando offline
+## 💰 Costos Estimados (AI-Powered)
 
-#### Mes 2:
-- [ ] Dashboard/Home con next show + quick stats
-- [ ] Agenda (month/week/day views)
-- [ ] Show detail screen
-- [ ] WatermelonDB sync con Firestore (read-only)
-- [ ] Offline mode indicator
-- [ ] Pull-to-refresh en todas las listas
+### Costos reales 2025 (solo tú + AI):
 
-#### Mes 3:
-- [ ] Add/Edit/Delete shows (offline-first)
-- [ ] Conflict resolution (sync bidireccional)
-- [ ] Background sync (iOS/Android tasks)
-- [ ] Quick actions (3D Touch iOS, widgets Android)
-- [ ] Share show via WhatsApp/Email
+| Concepto | Costo | Notas |
+|----------|-------|-------|
+| Apple Developer Program | 99 €/año | Necesario para App Store |
+| Google Play Console | 25 € one-time | Pago único |
+| Expo EAS Build | 0-99 €/mes | Free tier suficiente hasta tener builds diarios |
+| Firebase Blaze | 0-30 €/mes | Depende de uso (pay as you go) |
+| Sentry / LogRocket | 0-20 €/mes | Opcional |
+| Cafés/energía | 50 €/mes | 😊 |
 
-**Entregables:**
-- App funcional offline con agenda completa
-- Sync bidireccional con backend
-- 500 shows de demo + test con 10 usuarios
+**Total anual estimado:** **500-1.000 €**
 
----
+### Tiempo (tu inversión):
+- 12 semanas (20-30 h/semana) → 240-360 horas
+- ROI: App valor mercado 60-100K € + nuevo canal de revenue
 
-### **Fase 3: Finanzas Mobile** (Mes 4)
-**Objetivo:** Expenses + P&L + Settlements mobile
-
-- [ ] Finance dashboard (quick look cards)
-- [ ] Add expense (quick form + receipt scan)
-- [ ] Expense list (swipe to delete)
-- [ ] Categories + filters
-- [ ] P&L básico (revenue/expenses/profit)
-- [ ] Settlement flow (mark as paid)
-- [ ] OCR receipt scanning (ML Kit o Tesseract)
-- [ ] Currency formatting (compartido con web)
-
-**Entregables:**
-- Add expense en <10 segundos
-- Receipt scan con OCR 80%+ accuracy
-- P&L en tiempo real offline
-
----
-
-### **Fase 4: Maps & Navigation** (Mes 5)
-**Objetivo:** Mapas offline + navegación entre venues
-
-- [ ] MapLibre GL Native integration
-- [ ] Offline map tiles (OpenStreetMap)
-- [ ] Show markers en mapa
-- [ ] Cluster markers (muchos shows cercanos)
-- [ ] Route planning (next 7 días)
-- [ ] Integración con Google Maps/Apple Maps (directions)
-- [ ] Distance calculator (km entre shows)
-- [ ] ETA estimates (tiempo viaje)
-
-**Entregables:**
-- Mapa funcional offline con todos los shows
-- "Get Directions" abre Maps nativa
-- Route optimizer (siguiente show más cercano)
-
----
-
-### **Fase 5: Timeline Maestro Mobile** (Mes 6)
-**Objetivo:** Timeline horizontal scroll + zoom
-
-- [ ] Timeline horizontal (día/semana/mes)
-- [ ] Zoom gestures (pinch)
-- [ ] Event types (shows, travel, hotels, expenses)
-- [ ] Drag & drop events (reordenar)
-- [ ] Timeline filters (solo shows, solo travel, etc.)
-- [ ] Share timeline as image
-- [ ] Print timeline (PDF export)
-
-**Entregables:**
-- Timeline Maestro mobile funcional
-- Performance 60fps con 500+ eventos
-- Export timeline como PDF
-
----
-
-### **Fase 6: Push Notifications & Real-time** (Mes 7)
-**Objetivo:** Notificaciones críticas + sync real-time
-
-- [ ] Setup Firebase Cloud Messaging (FCM)
-- [ ] Notifee integration (local + remote)
-- [ ] Notification types:
-  - 🎵 Show reminder (24h antes, 2h antes)
-  - 💰 Payment received/pending
-  - ✈️ Flight/travel reminder
-  - 📝 Task/checklist reminder
-  - 🔔 Team updates (show cambió, canceló)
-- [ ] Notification settings (enable/disable por tipo)
-- [ ] Badge count (pending actions)
-- [ ] Deep links (tap notification → show detail)
-
-**Entregables:**
-- Push notifications funcionales iOS + Android
-- Reminder system automático
-- Deep linking completo
-
----
-
-### **Fase 7: Polish & Performance** (Mes 8)
-**Objetivo:** UX premium + optimizaciones + testing
-
-- [ ] Haptics en todas las interacciones críticas
-- [ ] Loading states elegantes (skeletons)
-- [ ] Error handling + retry logic
-- [ ] Animations (spring, fade, slide)
-- [ ] Dark mode support
-- [ ] Accessibility (VoiceOver, TalkBack)
-- [ ] Performance profiling (Hermes optimizer)
-- [ ] Bundle size optimization (<15 MB)
-- [ ] E2E testing (Detox o Maestro)
-- [ ] Beta testing (TestFlight + Google Play Beta)
-
-**Entregables:**
-- App con UX premium (60fps garantizado)
-- Dark mode completo
-- 50+ beta testers con feedback
-
----
-
-### **Fase 8: App Store Launch** (Mes 9)
-**Objetivo:** Submit a App Store + Play Store
-
-- [ ] App Store assets (screenshots, videos, description)
-- [ ] Play Store assets (feature graphic, promo video)
-- [ ] Privacy policy mobile-specific
-- [ ] Terms of service mobile
-- [ ] App Review preparación (demo account)
-- [ ] ASO (App Store Optimization):
-  - Keywords: tour manager, gira, conciertos, finanzas
-  - Localización: ES/EN/FR/DE/IT/PT
-- [ ] Submit iOS (App Store Connect)
-- [ ] Submit Android (Google Play Console)
-- [ ] Press kit + announcement
-
-**Entregables:**
-- ✅ App live en App Store
-- ✅ App live en Google Play Store
-- 📣 Launch announcement (social media, email)
-
----
-
-## 💰 Costos Estimados
-
-### Desarrollo (6-9 meses):
-
-| Concepto | Costo mensual | Total 9 meses |
-|----------|--------------|---------------|
-| **Developer iOS/Android** (1 FTE) | 4.000-6.000 € | 36.000-54.000 € |
-| **Designer mobile** (0.5 FTE) | 2.000-3.000 € | 18.000-27.000 € |
-| **QA/Testing** (0.25 FTE) | 1.000-1.500 € | 9.000-13.500 € |
-| **Total equipo** | **7.000-10.500 €** | **63.000-94.500 €** |
-
-### Infraestructura y servicios:
-
-| Servicio | Costo mensual | Costo anual |
-|----------|--------------|-------------|
-| **Apple Developer Program** | — | 99 USD/año |
-| **Google Play Console** | — | 25 USD (one-time) |
-| **Expo EAS Build** (Pro plan) | 99 USD/mes | 1.188 USD/año |
-| **Firebase (Blaze plan)** | 50-200 USD/mes | 600-2.400 USD/año |
-| **MapLibre tiles hosting** | 20-50 USD/mes | 240-600 USD/año |
-| **Sentry (error tracking)** | 26 USD/mes | 312 USD/año |
-| **TestFlight + Play Beta** | Gratis | 0 € |
-| **Total infraestructura** | **200-400 USD/mes** | **2.400-4.800 USD/año** |
-
-### Total inversión inicial:
-- **Desarrollo 9 meses:** 63.000-95.000 €
-- **Infraestructura año 1:** 2.500-5.000 €
-- **TOTAL:** **65.000-100.000 €**
-
-### Alternativa low-cost (1 developer part-time):
-- **Developer 50% FTE:** 2.000-3.000 €/mes × 12 meses = 24.000-36.000 €
-- **Timeline:** 12-15 meses (más largo pero viable)
+### Comparativa:
+- **Plan viejo:** 65-100K € + 9 meses + 3 personas
+- **Plan AI:** 500 € + 3 meses + tú solo
 
 ---
 
@@ -1026,37 +662,32 @@ if (localTimestamp > remoteTimestamp) {
 
 ## 🔥 Features Killer que nos Diferencian
 
-### 1. **Timeline Maestro Mobile** (único en el mercado)
-- Ninguna app de touring tiene timeline horizontal con zoom
-- Gesture-based (pinch, swipe)
-- Offline-first completo
+### MVP (v1.0 Jun 2026)
+1. **Timeline Maestro Mobile (lista vertical)**
+  - Agrupa por día/semana, filtros por status
+  - Scroll infinito + sticky headers
+  - Preparado para upgrade horizontal en v2
 
-### 2. **Simulador What-If Mobile** (WASM en mobile)
-- Primer simulador financiero mobile en tiempo real
-- "¿Y si negocio 80% door en vez de 70%?"
-- Cálculo instantáneo offline
+2. **Simulador What-If Mobile (JS fallback)**
+  - Usa el motor JS que ya existe en web
+  - Corre offline sin WASM (más compatible)
+  - Flag para activar WASM en iPad Pro / Pixel Fold
 
-### 3. **Receipt OCR + Auto-categorization**
-- Escanea ticket → extrae monto + categoría automáticamente
-- ML on-device (no envía data a servidor)
-- Add expense en <5 segundos
+3. **Offline-first real con SQLite**
+  - Expo SQLite + op-sqlite + sync incremental
+  - Todo funciona sin conexión (shows, expenses, timeline)
+  - Sync visual (estado por registro) para confianza
 
-### 4. **Offline-first real** (no fake offline)
-- WatermelonDB + background sync
-- Todo funciona sin internet (shows, expenses, timeline)
-- Master Tour mobile requiere conexión para features clave
+4. **Push + biometrics + quick actions**
+  - Push reminders (shows, settlements, tasks)
+  - FaceID/TouchID para abrir app en 1s
+  - Floating quick action: Add Expense / Add Show
 
-### 5. **Widgets iOS/Android**
-- Widget "Next Show" en home screen
-- Widget "Today's Tasks"
-- Widget "This Week Revenue"
-- Nadie más tiene widgets en este nicho
-
-### 6. **Quick Actions & Shortcuts**
-- iOS: 3D Touch → Add Expense, Add Show, View Today
-- Android: Long-press icon → Quick actions
-- Siri Shortcuts (iOS): "Hey Siri, add expense 25€ food"
-- Google Assistant (Android): "OK Google, next show"
+### Post-MVP (v1.5+)
+5. **Timeline horizontal con pinch/zoom** (Reanimated v3)
+6. **Receipt OCR + AI categorization** (Gemini Nano / Apple Intelligence)
+7. **Widgets / Live Activities / Dynamic Island**
+8. **Simulador WASM + GPU** para managers enterprise
 
 ---
 
@@ -1090,6 +721,8 @@ describe('ShowCard', () => {
 1. **Unit tests:** Copilot genera basándose en componente
 2. **E2E tests:** Maestro CLI (visual testing)
 3. **Beta testing:** TestFlight + Play Beta (50 usuarios)
+
+> **Micro-ajuste clave:** reutiliza el setup de Vitest que ya tienes en web (87 % coverage) dentro del monorepo. Configura `pnpm` workspaces (o Turbo/Nx) para que `packages/shared` exporte hooks/contexts y un único `vitest.config.shared.ts`. Luego referencia ese config desde `apps/web` y `apps/mobile` para ejecutar la misma batería de tests en ambos targets (`pnpm test --filter shared`, `pnpm test --filter mobile`). Así evitas duplicar specs y garantizas que cualquier fix en lógica compartida se valida automáticamente en los dos entornos.
 
 ---
 
@@ -1188,12 +821,10 @@ describe('ShowCard', () => {
 - user_logged_in (method: email|biometric)
 - onboarding_completed
 
-// Core features
 - show_created (method: manual|import)
 - show_viewed
-- expense_added (method: manual|scan)
-- expense_scanned (ocr_accuracy: number)
-- timeline_viewed (zoom_level: day|week|month)
+- expense_added (method: manual|photo)
+- timeline_viewed (view: vertical)
 - map_opened
 - settlement_marked_paid
 
@@ -1344,9 +975,10 @@ npx expo install react-native-calendars
 # Solo adapta de <div> a <View>
 ```
 
-#### Semana 3: WatermelonDB + Offline
+#### Semana 3: SQLite + Offline
 ```bash
-npx expo install @nozbe/watermelondb @nozbe/sqlite
+npx expo install expo-sqlite
+npm install @opengineering/op-sqlite
 ```
 
 **Claude te ayuda con:**
@@ -1362,33 +994,40 @@ Con GitHub Copilot escribes código **5-10x más rápido**:
 
 ```typescript
 // Tú escribes comentario:
-// function to add expense with receipt scan
+// function to add expense with photo + manual fields
 
 // Copilot autocompleta:
-async function addExpenseWithScan() {
+async function addExpense() {
   const { status } = await Camera.requestCameraPermissionsAsync()
   if (status !== 'granted') return
-  
-  const result = await ImagePicker.launchCameraAsync({
+
+  const photo = await ImagePicker.launchCameraAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    quality: 0.8
+    quality: 0.7,
+    allowsEditing: true
   })
-  
-  if (!result.canceled) {
-    const text = await scanReceipt(result.assets[0].uri)
-    const expense = parseExpense(text)
-    await saveExpense(expense)
-  }
-}
 
-// ↑ Todo generado por Copilot en segundos
-```
+  if (photo.canceled) return
 
----
-
-## 📱 Primer Build (Semana 1)
-
-### iOS Simulator:
+  await saveExpenseToSQLite({
+    amount,
+    category,
+    ```
+    ┌─────────────────────────┐
+    │ 💸 Add Expense          │
+    ├─────────────────────────┤
+    │ Amount: [     ] €       │
+    │ Category: [Meals ▼]     │
+    │ Date: [Today]           │
+    │ Note: [Optional...]     │
+    │                         │
+    │ 📸 [Take Photo]         │
+    │ OR                      │
+    │ � [Attach from Library]│
+    │                         │
+    │ [Cancel]  [Save]        │
+    └─────────────────────────┘
+    ```
 ```bash
 # Inicia Xcode Simulator
 open -a Simulator

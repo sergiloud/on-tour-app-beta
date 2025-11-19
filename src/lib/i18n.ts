@@ -149,6 +149,7 @@ const en = {
     , 'nav.finance': 'Finance'
     , 'nav.activity': 'Activity'
     , 'nav.timeline': 'Timeline'
+    , 'nav.missionControl': 'Mission Control'
     , 'nav.roadmap': 'Roadmap'
     , 'roadmap.emptyState.title': 'No roadmap items found'
     , 'roadmap.emptyState.noItems': 'Create your first show or milestone to get started with your roadmap.'
@@ -2080,6 +2081,23 @@ const en = {
     , 'timeline.filters.last30Days': 'Last 30 days'
     , 'timeline.filters.last90Days': 'Last 90 days'
     , 'timeline.filters.allTime': 'All time'
+    // Mission Control
+    , 'missionControl.title': 'Timeline Mission Control'
+    , 'missionControl.description': 'The ultimate operational brain for your tours - visualize, simulate, and optimize your entire operation'
+    , 'missionControl.simulation.active': 'Simulation Mode Active'
+    , 'missionControl.simulation.notice': "Changes won't affect live data"
+    , 'missionControl.simulation.save': 'Save as Version'
+    , 'missionControl.simulation.apply': 'Apply Changes'
+    , 'missionControl.simulation.start': 'Start Simulation'
+    , 'missionControl.simulation.exit': 'Exit Simulation'
+    , 'missionControl.conflicts.title': 'Conflict Radar'
+    , 'missionControl.conflicts.none': 'No conflicts detected'
+    , 'missionControl.versions.title': 'Timeline Versions'
+    , 'missionControl.views.horizontal': 'Horizontal'
+    , 'missionControl.views.vertical': 'Vertical'
+    , 'missionControl.projection.revenue': 'Projected Revenue'
+    , 'missionControl.projection.expenses': 'Projected Expenses'
+    , 'missionControl.projection.margin': 'Net Margin'
     , 'analytics.revenueTrends': 'Revenue trends'
     , 'calendar.announce.eventCreated': 'Event created'
     , 'calendar.bulkActions.copy': 'Copy selection'
@@ -3325,6 +3343,7 @@ const es = {
     'nav.finance': 'Finanzas',
     'nav.activity': 'Actividad',
     'nav.timeline': 'Línea de Tiempo',
+    'nav.missionControl': 'Control de Misión',
     'nav.roadmap': 'Hoja de Ruta',
     'roadmap.emptyState.title': 'No se encontraron elementos del roadmap',
     'roadmap.emptyState.noItems': 'Crea tu primer show o hito para comenzar con tu hoja de ruta.',
@@ -4711,6 +4730,23 @@ const es = {
     , 'timeline.filters.last30Days': 'Últimos 30 días'
     , 'timeline.filters.last90Days': 'Últimos 90 días'
     , 'timeline.filters.allTime': 'Todo el tiempo'
+    // Mission Control
+    , 'missionControl.title': 'Timeline Mission Control'
+    , 'missionControl.description': 'El cerebro operativo definitivo para tus giras - visualiza, simula y optimiza toda tu operación'
+    , 'missionControl.simulation.active': 'Modo Simulación Activo'
+    , 'missionControl.simulation.notice': 'Los cambios no afectarán los datos reales'
+    , 'missionControl.simulation.save': 'Guardar como Versión'
+    , 'missionControl.simulation.apply': 'Aplicar Cambios'
+    , 'missionControl.simulation.start': 'Iniciar Simulación'
+    , 'missionControl.simulation.exit': 'Salir de Simulación'
+    , 'missionControl.conflicts.title': 'Radar de Conflictos'
+    , 'missionControl.conflicts.none': 'No se detectaron conflictos'
+    , 'missionControl.versions.title': 'Versiones del Timeline'
+    , 'missionControl.views.horizontal': 'Horizontal'
+    , 'missionControl.views.vertical': 'Vertical'
+    , 'missionControl.projection.revenue': 'Ingresos Proyectados'
+    , 'missionControl.projection.expenses': 'Gastos Proyectados'
+    , 'missionControl.projection.margin': 'Margen Neto'
     , 'profile.name': 'Nombre'
     , 'profile.role': 'Rol'
     , 'settings.connections': 'Conexiones'

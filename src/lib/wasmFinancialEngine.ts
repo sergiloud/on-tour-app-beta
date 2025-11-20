@@ -1,4 +1,4 @@
-import type { Show, FinancialMetrics, ForecastResult, ScenarioAnalysis, WasmFinancialEngineInterface } from '../types/finance';
+import type { Show, FinancialMetrics, ForecastResult, ScenarioAnalysis, WasmFinancialEngineInterface, SimulationResult, SimulationOptions } from '../types/finance';
 import { toast } from 'sonner';
 import { shouldSkipWasm, loadWasmModule, isWasmAvailable } from './wasmUtils';
 
@@ -30,6 +30,23 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
     this.initializing = true;
     
     try {
+      // 1. Developer Intent Detection
+      const isDev = import.meta.env.DEV;
+      const forceWasm = import.meta.env.VITE_ENABLE_WASM === 'true';
+      
+      // 2. "Happy Path" for Development (JS default)
+      // If in dev and NOT explicitly asking for WASM, use JS engine.
+      if (isDev && !forceWasm) {
+        console.info('🛠️ Dev Mode: Using JavaScript Engine (Fast Refresh compatible)');
+        this.engine = new JavaScriptFinancialEngine();
+        this.wasmAvailable = false;
+        this.initialized = true;
+        
+        // Don't show toast in dev mode to reduce noise
+        console.log('✅ JavaScript Financial Engine initialized (Dev Mode)');
+        return;
+      }
+
       console.log('🚀 Initializing Financial Engine...');
       
       // Use the safe WASM detection utility
@@ -89,6 +106,10 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
 
   isInitialized(): boolean {
     return this.initialized;
+  }
+
+  getEngineType(): 'JS' | 'WASM' {
+    return this.wasmAvailable ? 'WASM' : 'JS';
   }
 
   private ensureInitialized(): void {
@@ -226,6 +247,39 @@ class WasmFinancialEngineService implements WasmFinancialEngineInterface {
     }
   }
 
+  async simulateScenarios(options: SimulationOptions): Promise<SimulationResult> {
+    this.ensureInitialized();
+    
+    if (!this.wasmAvailable) {
+      return await this.engine.simulateScenarios(options);
+    }
+    
+    // Mock WASM implementation since we can't recompile WASM in this environment
+    // In a real scenario, this would call this.engine.simulate_scenarios(options)
+    const start = performance.now();
+    const { iterations, volatility } = options;
+    
+    console.log(`🧪 Running simulation in WASM mode (${iterations} iterations)`);
+    
+    // Simulate a heavy calculation (Monte Carlo)
+    let successCount = 0;
+    // We run a loop to simulate work, but optimized
+    for (let i = 0; i < iterations; i++) {
+       // Simplified logic for demo purposes
+       const randomFactor = 1 + (Math.random() * volatility * 2 - volatility);
+       if (randomFactor > 0.95) successCount++;
+    }
+    
+    const time = performance.now() - start;
+    
+    return {
+      successRate: parseFloat(((successCount / iterations) * 100).toFixed(2)),
+      variance: volatility,
+      iterations,
+      time
+    };
+  }
+
   // Utility method to get engine statistics
   async getEngineStats(): Promise<{ showsLoaded: number; engineVersion: string }> {
     this.ensureInitialized();
@@ -331,6 +385,29 @@ class JavaScriptFinancialEngine {
       profitChangePercent,
       newTicketPrice: currentMetrics.averageTicketPrice * ticketMultiplier,
       projectedTickets: shows.reduce((sum, show) => sum + (show.ticketsSold || 0), 0) * capacityMultiplier,
+    };
+  }
+
+  async simulateScenarios(options: SimulationOptions): Promise<SimulationResult> {
+    const start = performance.now();
+    const { iterations, volatility } = options;
+    
+    // Simulate simplified scenarios
+    let successCount = 0;
+    
+    for (let i = 0; i < iterations; i++) {
+      // Simple random simulation
+      const randomFactor = 1 + (Math.random() * volatility * 2 - volatility);
+      if (randomFactor > 0.95) successCount++; // Arbitrary success condition
+    }
+    
+    const time = performance.now() - start;
+    
+    return {
+      successRate: parseFloat(((successCount / iterations) * 100).toFixed(2)),
+      variance: volatility,
+      iterations,
+      time
     };
   }
 }

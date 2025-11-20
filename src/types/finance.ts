@@ -44,6 +44,18 @@ export interface ScenarioAnalysis {
   projectedTickets: number;
 }
 
+export interface SimulationResult {
+  successRate: number;
+  variance: number;
+  iterations: number;
+  time: number;
+}
+
+export interface SimulationOptions {
+  iterations: number;
+  volatility: number;
+}
+
 export interface WasmFinancialEngineInterface {
   calculateMetrics(shows: Show[]): Promise<FinancialMetrics>;
   forecastRevenue(shows: Show[], monthsAhead: number): Promise<ForecastResult>;
@@ -53,5 +65,6 @@ export interface WasmFinancialEngineInterface {
     capacityChange: number, 
     expenseChange: number
   ): Promise<ScenarioAnalysis>;
+  simulateScenarios(options: SimulationOptions): Promise<SimulationResult>;
   isInitialized(): boolean;
 }

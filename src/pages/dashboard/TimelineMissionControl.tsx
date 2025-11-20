@@ -25,6 +25,7 @@ import EventDetailModal from '../../components/timeline/EventDetailModal';
 import QuickActionsPopover from '../../components/timeline/QuickActionsPopover';
 import KeyboardShortcutsHelp from '../../components/timeline/KeyboardShortcutsHelp';
 import TimelineInstructions from '../../components/timeline/TimelineInstructions';
+import { StressTestWidget } from '../../components/mission/StressTestWidget';
 import TimelineMissionControlService from '../../services/timelineMissionControlService';
 import type { 
   TimelineEvent, 
@@ -1181,6 +1182,11 @@ export default function TimelineMissionControl() {
                       </motion.div>
                     ))
                   )}
+                </div>
+
+                {/* Simulation Widget */}
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <StressTestWidget />
                 </div>
               </div>
             </motion.div>

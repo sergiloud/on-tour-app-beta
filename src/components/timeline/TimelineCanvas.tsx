@@ -11,7 +11,6 @@ import { MapPin, Plane, DollarSign, CheckSquare, FileText, Clock, TrendingUp, Al
 import type { TimelineEvent, TimelineDependency } from '../../services/timelineMissionControlService';
 import DependencyLines from './DependencyLines';
 import TourRouteLines from './TourRouteLines';
-import QuickActionsPopover from './QuickActionsPopover';
 
 // Native drag state type
 interface DragState {
@@ -34,6 +33,7 @@ interface TimelineCanvasProps {
   criticalPathIds?: Set<string>;
   onEventClick?: (event: TimelineEvent) => void;
   onEventDrag?: (eventId: string, newStartTime: Date) => void;
+  onContextMenu?: (event: TimelineEvent, x: number, y: number) => void;
 }
 
 /**
@@ -113,7 +113,7 @@ function getEventColors(type: TimelineEvent['type'], importance: TimelineEvent['
 }
 
 /**
- * Draggable Event Component
+ * Draggable Event Component - MEMOIZED for performance
  */
 interface DraggableEventProps {
   event: TimelineEvent;
@@ -131,7 +131,7 @@ interface DraggableEventProps {
   onMouseDown?: (clientX: number, clientY: number) => void;
 }
 
-function DraggableEvent({ 
+const DraggableEvent = React.memo(function DraggableEvent({ 
   event, 
   x, 
   y,
@@ -379,7 +379,18 @@ function DraggableEvent({
       </AnimatePresence>
     </motion.div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison for performance - only re-render if these props changed
+  return (
+    prevProps.event.id === nextProps.event.id &&
+    prevProps.x === nextProps.x &&
+    prevProps.y === nextProps.y &&
+    prevProps.width === nextProps.width &&
+    prevProps.isHovered === nextProps.isHovered &&
+    prevProps.isDragging === nextProps.isDragging &&
+    prevProps.zoomLevel === nextProps.zoomLevel
+  );
+});
 
 /**
  * Timeline Canvas Component
@@ -394,10 +405,10 @@ export default function TimelineCanvas({
   criticalPathIds = new Set(),
   onEventClick,
   onEventDrag,
+  onContextMenu,
 }: TimelineCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ event: TimelineEvent; x: number; y: number } | null>(null);
   
   // Store custom drag positions (user-modified positions) - BOTH X and Y now
   const [customPositions, setCustomPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
@@ -671,7 +682,7 @@ export default function TimelineCanvas({
     });
     
     return positions;
-  }, [dateToX, getEventWidth, zoomLevel, startDate, endDate]); // NO 'events' here!
+  }, [autoLayoutEventIdsRef.current.length]); // PERFORMANCE: Only recalc when number of events changes
   
   // Merge auto-layout with custom positions
   const eventPositions = useMemo(() => {
@@ -692,7 +703,7 @@ export default function TimelineCanvas({
     });
     
     return positions;
-  }, [autoLayoutPositions, customPositions, events, getEventWidth]);
+  }, [autoLayoutPositions, customPositions, events.length, zoomLevel]);
   
   // Real-time positions during drag (for dependency lines)
   const liveEventPositions = useMemo(() => {
@@ -897,8 +908,8 @@ export default function TimelineCanvas({
             
             {/* Events with drag & drop */}
             <div className="relative space-y-2 pb-8">
-              {/* Tour route lines - behind everything */}
-              {showTourRoutes && (
+              {/* Tour route lines - behind everything - PERFORMANCE: only render if enabled */}
+              {showTourRoutes && events.length > 1 && events.length < 100 && (
                 <TourRouteLines
                   events={events}
                   eventPositions={eventPositions}
@@ -906,8 +917,8 @@ export default function TimelineCanvas({
                 />
               )}
               
-              {/* Dependency lines */}
-              {dependencies.length > 0 && (
+              {/* Dependency lines - PERFORMANCE: only render if there are dependencies */}
+              {dependencies.length > 0 && dependencies.length < 50 && (
                 <DependencyLines
                   dependencies={dependencies}
                   eventPositions={liveEventPositions}
@@ -944,7 +955,7 @@ export default function TimelineCanvas({
                     zoomLevel={zoomLevel}
                     onHover={setHoveredEvent}
                     onClick={(e) => { if (!justDraggedRef.current) onEventClick?.(e); }}
-                    onContextMenu={(e, x, y) => setContextMenu({ event: e, x, y })}
+                    onContextMenu={(e, x, y) => onContextMenu?.(e, x, y)}
                     onMouseDown={(clientX, clientY) => handleMouseDown(event, clientX, clientY, x, y)}
                   />
                 );
@@ -970,26 +981,6 @@ export default function TimelineCanvas({
               </motion.div>
             )}
           </div>
-          
-          {/* Quick Actions Popover */}
-          <QuickActionsPopover
-            event={contextMenu?.event || null}
-            position={contextMenu ? { x: contextMenu.x, y: contextMenu.y } : null}
-            isOpen={!!contextMenu}
-            onClose={() => setContextMenu(null)}
-            onEdit={(e) => {
-              onEventClick?.(e);
-              setContextMenu(null);
-            }}
-            onDelete={(id) => {
-              console.log('Delete:', id);
-              setContextMenu(null);
-            }}
-            onDuplicate={(e) => {
-              console.log('Duplicate:', e);
-              setContextMenu(null);
-            }}
-          />
         </motion.div>
     );
   }

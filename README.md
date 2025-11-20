@@ -5,7 +5,7 @@
 El copiloto inteligente para tus giras musicales. Gestiona shows, finanzas, contratos y logística en una sola plataforma profesional con IA proactiva.
 
 [![Version](https://img.shields.io/badge/version-2.2.2--production-success.svg)](https://github.com/sergiloud/on-tour-app-beta)
-[![Status](https://img.shields.io/badge/status-Production%20Ready-brightgreen.svg)](https://ontourapp.com)
+[![Status](https://img.shields.io/badge/status-Production%20Ready-brightgreen.svg)](https://github.com/sergiloud/on-tour-app-beta)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-22.x-green.svg)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)](https://www.typescriptlang.org/)
@@ -17,14 +17,28 @@ El copiloto inteligente para tus giras musicales. Gestiona shows, finanzas, cont
 
 ---
 
-## 📍 Current Status: V2.2.2 PRODUCTION READY
+## � Table of Contents
+
+- [Current Status](#-current-status-v222-production-ready)
+- [Production Metrics](#-production-metrics-v222---november-2025)
+- [Key Features](#-key-features-production-ready)
+- [Tech Stack](#-tech-stack-production)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [Documentation](#-documentation)
+- [Roadmap](#-roadmap)
+- [Feedback](#-feedback--bug-reports)
+
+---
+
+## �📍 Current Status: V2.2.2 PRODUCTION READY
 
 **Deployment**: Production (https://github.com/sergiloud/on-tour-app-beta)  
 **Access**: Production-ready with enterprise features  
 **Data**: Production Firestore with comprehensive audit logging  
 **Version**: 2.2.2-production  
-**Last Updated**: November 18, 2025  
-**Major Release**: V2.2.2 Complete Internationalization + Timeline Maestro V3 + Roadmap System
+**Last Updated**: May 23, 2025  
+**Major Release**: V2.2.2 Complete Internationalization + Timeline Mission Control V3 + Roadmap System
 
 ---
 
@@ -42,6 +56,19 @@ El copiloto inteligente para tus giras musicales. Gestiona shows, finanzas, cont
 | **Multi-Tenancy** | 100% | **100%** | ✅ **Production proven** |
 | **MFA Coverage** | Basic SMS | **WebAuthn + Biometrics** | ✅ **Enterprise grade** |
 | **i18n Coverage** | EN only | **EN/ES 100%, +4 langs 85%+** | ✅ **6 languages supported** |
+
+### 📸 Visual Tour
+
+> *Note: Visuals are placeholders. Please replace with actual GIFs/Screenshots.*
+
+**Timeline Mission Control (V3)** - Unified Gantt view with drag & drop and simulation.
+<!-- ![Timeline Mission Control Demo](assets/timeline-demo.gif) -->
+
+**Financial Intelligence** - Real-time P&L and revenue heatmaps.
+<!-- ![Financial Dashboard Demo](assets/finance-demo.gif) -->
+
+**Roadmap System** - Interactive planning with dependencies.
+<!-- ![Roadmap System Demo](assets/roadmap-demo.gif) -->
 
 ### 🎯 Production Readiness Checklist
 - ✅ **Performance:** <650KB bundle, >90 Lighthouse score, <1.5s load time
@@ -164,6 +191,19 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 - **Cross-Tab Sync**: BroadcastChannel para sincronización entre pestañas
 - **Tour Agenda Widget**: Dashboard view with next 30 days, revenue projections
 - **Bilingual Support**: Full EN/ES translation across all tour management UI
+
+### 🎛️ Timeline Mission Control (V3)
+
+- **Unified Gantt View**: Visualiza shows, viajes y logística en una línea temporal horizontal
+- **Real-Time Data**: Conexión directa con Firestore/ShowStore (sin datos demo)
+- **Year Filtering**: Navegación fluida por años con contadores de eventos pasados/futuros
+- **Performance Optimized**: Virtualización y memoización para renderizado instantáneo
+- **Drag & Drop**: Reprogramación intuitiva de eventos con validación de conflictos
+- **Context Menu**: Acciones rápidas (editar, borrar, ver detalles) con click derecho
+- **Smart Filtering**: Filtra por estado, artista o tipo de evento
+- **Conflict Detection**: Alertas visuales para solapamientos de agenda
+- **Simulation Mode**: "What-if" scenarios para planificación sin riesgos (Beta)
+- **Responsive Design**: Adaptado para pantallas grandes y tablets
 
 ### 💰 Financial Intelligence
 
@@ -295,6 +335,11 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 
 ### Backend Architecture
 
+**Hybrid Architecture Strategy**:
+- **Serverless (`api/`)**: Vercel Functions for lightweight, frontend-facing logic (Calendar Sync, Timeline Aggregation).
+- **Standalone Service (`backend/`)**: Node.js/Express service for heavy background processing and cron jobs.
+- **Data Strategy**: **Firestore** is the primary **Single Source of Truth** for all real-time user and organization data. **PostgreSQL** is integrated as a secondary **Analytics & Reporting Layer** for complex aggregations (Roadmap/Timeline), populated via asynchronous events to ensure eventual consistency without blocking operational flows.
+
 | Layer | Technology | Version | Purpose |
 |-------|-----------|---------|---------|
 | **Runtime** | Node.js | 20 LTS | JavaScript server runtime |
@@ -342,6 +387,9 @@ On Tour App transforma la gestión de tours musicales de Excel caótico a una ex
 
 ## 📁 Project Structure
 
+<details>
+<summary>Click to expand file tree</summary>
+
 ```
 on-tour-app/
 ├── src/
@@ -360,7 +408,7 @@ on-tour-app/
 │   │   └── MissionControlContext.tsx
 │   ├── features/            # Feature-based modules
 │   │   ├── roadmap/         # Roadmap system (Gantt, filters, store)
-│   │   └── timeline/        # Timeline Maestro V3 (unified view, simulation)
+│   │   └── timeline/        # Timeline Mission Control V3 (unified view, simulation)
 │   ├── hooks/               # Custom React hooks
 │   │   ├── useShows.ts
 │   │   ├── useCalendarData.ts
@@ -383,11 +431,11 @@ on-tour-app/
 │   │   ├── showStore.ts     # Show state (subscribe pattern)
 │   │   └── timelineStore.ts # Timeline state (Zustand)
 │   └── ui/                  # UI primitives (Card, Button, etc.)
-├── api/                     # Serverless API endpoints
+├── api/                     # Serverless API endpoints (Vercel Functions)
 │   ├── calendar-sync.ts     # CalDAV sync endpoint
 │   ├── timeline.ts          # Timeline aggregator
 │   └── utils.ts             # Shared API utilities
-├── backend/                 # Node.js backend
+├── backend/                 # Node.js backend (Standalone Service)
 │   ├── src/
 │   │   ├── routes/          # Express routes
 │   │   ├── services/        # Business logic
@@ -398,7 +446,7 @@ on-tour-app/
 ├── docs/                    # Documentation
 │   ├── ARCHITECTURE.md
 │   ├── I18N_AUDIT_REPORT.md
-│   ├── TIMELINE_MAESTRO_V3_PLAN.md
+│   ├── TIMELINE_MISSION_CONTROL_README.md
 │   ├── ROADMAP_SYSTEM.md
 │   └── V2.2_ROADMAP.md
 ├── e2e/                     # Playwright E2E tests
@@ -407,6 +455,7 @@ on-tour-app/
 ├── tailwind.config.js       # Tailwind CSS configuration
 └── package.json             # Dependencies and scripts
 ```
+</details>
 
 ---
 
@@ -416,8 +465,8 @@ on-tour-app/
 
 - **Node.js**: 22.x or higher
 - **npm**: 10.x or higher
-- **Rust**: 1.70+ (for WASM compilation)
-- **wasm-pack**: Latest (install with `cargo install wasm-pack`)
+- **Rust** (Optional): Only required for compiling WASM from source.
+- **Docker** (Optional): Recommended for full backend development.
 
 ### Installation
 
@@ -429,12 +478,14 @@ cd on-tour-app-beta
 # Install dependencies
 npm install
 
-# Compile WebAssembly engine (optional, fallback to JS if not available)
-npm run build:wasm
+# Configure environment variables
+cp .env.example .env.local
 
-# Start development server
+# Start development server (JS-only fallback enabled automatically)
 npm run dev
 ```
+
+> **Note**: If Rust is not installed, the application will automatically fallback to the JavaScript financial engine. You will see a console warning, but all features will work correctly (albeit slower).
 
 ### Development Scripts
 
@@ -474,7 +525,7 @@ VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 
 ### V2.2.2 Features
 - **[Internationalization Report](docs/I18N_AUDIT_REPORT.md)** - Translation coverage and strategy
-- **[Timeline Maestro V3](docs/TIMELINE_MAESTRO_V3_PLAN.md)** - Universal timeline and simulation
+- **[Timeline Mission Control](docs/TIMELINE_MISSION_CONTROL_README.md)** - Universal timeline and simulation
 - **[Roadmap System](docs/ROADMAP_SYSTEM.md)** - Product planning and Gantt charts
 
 ### Infrastructure
@@ -519,9 +570,11 @@ VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 
 ---
 
-## 🤝 Contributing
+## 🐛 Feedback & Bug Reports
 
-This is a proprietary project. Contact the owner for contribution guidelines.
+Found a bug or have a feature request? Please open an issue on our [GitHub Issues](https://github.com/sergiloud/on-tour-app-beta/issues) page.
+
+Even though the source code is proprietary, we value community feedback to improve the platform.
 
 ---
 

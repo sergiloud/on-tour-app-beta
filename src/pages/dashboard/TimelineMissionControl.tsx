@@ -22,6 +22,7 @@ import TimelineCanvas from '../../components/timeline/TimelineCanvas';
 import TimelineStats from '../../components/timeline/TimelineStats';
 import TimelineMinimap from '../../components/timeline/TimelineMinimap';
 import EventDetailModal from '../../components/timeline/EventDetailModal';
+import QuickActionsPopover from '../../components/timeline/QuickActionsPopover';
 import KeyboardShortcutsHelp from '../../components/timeline/KeyboardShortcutsHelp';
 import TimelineInstructions from '../../components/timeline/TimelineInstructions';
 import TimelineMissionControlService from '../../services/timelineMissionControlService';
@@ -47,14 +48,18 @@ export default function TimelineMissionControl() {
   const [viewMode, setViewMode] = useState<ViewMode>('horizontal');
   const [mode, setMode] = useState<TimelineMode>('live');
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null); // null = all years
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [showConflicts, setShowConflicts] = useState(true);
-  const [showCriticalPath, setShowCriticalPath] = useState(false); // Disabled
-  const [showTourRoutes, setShowTourRoutes] = useState(true); // Show tour connection lines
+  const [showCriticalPath, setShowCriticalPath] = useState(false); // Disabled by default (performance)
+  const [showTourRoutes, setShowTourRoutes] = useState(false); // Disabled by default (performance)
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true); // Show on first load
+  const [showConflictRadar, setShowConflictRadar] = useState(true); // Right sidebar
+  const [showVersions, setShowVersions] = useState(false); // Left sidebar (collapsed by default)
+  const [contextMenu, setContextMenu] = useState<{ event: TimelineEvent; x: number; y: number } | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<EventType>>(
     new Set<EventType>(['show', 'travel', 'finance', 'task', 'contract'])
   );
@@ -70,24 +75,45 @@ export default function TimelineMissionControl() {
   const panStartScrollLeft = useRef<number>(0);
   const panStartScrollTop = useRef<number>(0);
   
-  // Load real data from service
+  // Get available years for filtering
+  const availableYears = useMemo(() => {
+    if (!orgId || !profile?.id) return [];
+    return TimelineMissionControlService.getAvailableYears(orgId, profile.id);
+  }, [orgId, profile?.id]);
+  
+  // Count events per year (for dropdown display)
+  const eventCountByYear = useMemo(() => {
+    const allEvents = TimelineMissionControlService.getEvents(orgId, profile?.id || '', null);
+    const counts = new Map<number, number>();
+    allEvents.forEach(event => {
+      const year = new Date(event.startTime).getFullYear();
+      counts.set(year, (counts.get(year) || 0) + 1);
+    });
+    return counts;
+  }, [orgId, profile?.id]);
+  
+  // Load real data from service - memoize with stable dependencies + year filter
   const events: TimelineEvent[] = useMemo(() => {
     if (!orgId || !profile?.id) return [];
-    return TimelineMissionControlService.getEvents(orgId, profile.id);
-  }, [orgId, profile]);
+    return TimelineMissionControlService.getEvents(orgId, profile.id, selectedYear);
+  }, [orgId, profile?.id, selectedYear]);
   
   const dependencies = useMemo(() => {
     if (!orgId) return [];
     return TimelineMissionControlService.getDependencies(orgId);
   }, [orgId]);
   
+  // PERFORMANCE: Only recalculate conflicts when events array changes (not on every render)
   const conflicts: TimelineConflict[] = useMemo(() => {
+    if (events.length === 0) return [];
     return TimelineMissionControlService.detectConflicts(events, dependencies);
-  }, [events, dependencies]);
+  }, [events.length, dependencies.length]);
   
+  // PERFORMANCE: Critical path is expensive - only calculate when needed
   const criticalPath = useMemo(() => {
+    if (!showCriticalPath || events.length === 0) return [];
     return TimelineMissionControlService.computeCriticalPath(events, dependencies);
-  }, [events, dependencies]);
+  }, [events.length, dependencies.length, showCriticalPath]);
   
   const versions: TimelineScenario[] = useMemo(() => {
     if (!orgId || !profile?.id) return [];
@@ -178,10 +204,46 @@ export default function TimelineMissionControl() {
     setIsModalOpen(true);
   };
   
+  const handleContextMenu = (event: TimelineEvent, x: number, y: number) => {
+    setContextMenu({ event, x, y });
+  };
+  
+  const handleConflictClick = (conflict: TimelineConflict) => {
+    // Get the first event involved in the conflict
+    const firstEventId = conflict.eventIds[0];
+    if (!firstEventId) return;
+    
+    const targetEvent = events.find(e => e.id === firstEventId);
+    if (!targetEvent || !scrollContainerRef.current) return;
+    
+    // Calculate position of the event in the timeline
+    const timeRange = events.reduce((range, event) => {
+      const start = event.startTime.getTime();
+      const end = event.endTime?.getTime() || start;
+      return {
+        min: Math.min(range.min, start),
+        max: Math.max(range.max, end)
+      };
+    }, { min: Infinity, max: -Infinity });
+    
+    const eventPercent = ((targetEvent.startTime.getTime() - timeRange.min) / (timeRange.max - timeRange.min)) * 100;
+    const scrollTarget = (eventPercent / 100) * scrollContainerRef.current.scrollWidth;
+    
+    // Smooth scroll to the event
+    scrollContainerRef.current.scrollTo({
+      left: scrollTarget - scrollContainerRef.current.clientWidth / 2,
+      behavior: 'smooth'
+    });
+    
+    // Optional: Highlight the event temporarily
+    // TODO: Add visual highlight effect
+  };
+  
   const handleEventDelete = (eventId: string) => {
     console.log('Delete event:', eventId);
     // TODO: Implement delete logic
     setIsModalOpen(false);
+    setContextMenu(null);
   };
   
   const handleEventDuplicate = (event: TimelineEvent) => {
@@ -407,6 +469,20 @@ export default function TimelineMissionControl() {
     return () => container.removeEventListener('wheel', handleWheel);
   }, [zoomLevel]);
   
+  // Close context menu on scroll
+  // Close context menu on scroll (PERFORMANCE: close immediately, no debounce needed)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || !contextMenu) return;
+    
+    const handleScroll = () => {
+      setContextMenu(null);
+    };
+    
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [contextMenu]);
+  
   // Track mouse position for zoom centering
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -518,6 +594,10 @@ export default function TimelineMissionControl() {
   
   // Calculate stats
   const stats = useMemo(() => {
+    const now = new Date();
+    const pastEvents = events.filter(e => e.startTime < now);
+    const futureEvents = events.filter(e => e.startTime >= now);
+    
     const totalRevenue = events
       .filter(e => e.type === 'show' && e.metadata?.fee)
       .reduce((sum, e) => sum + (e.metadata?.fee || 0), 0);
@@ -528,6 +608,8 @@ export default function TimelineMissionControl() {
     
     return {
       totalEvents: events.length,
+      pastEvents: pastEvents.length,
+      futureEvents: futureEvents.length,
       confirmedEvents: events.filter(e => e.status === 'confirmed').length,
       tentativeEvents: events.filter(e => e.status === 'tentative' || e.status === 'offer').length,
       conflicts: conflicts.length,
@@ -590,6 +672,43 @@ export default function TimelineMissionControl() {
               </div>
             </div>
           </div>
+          
+          {/* Year Filter Selector */}
+          <div className="relative group">
+            <select
+              value={selectedYear || 'all'}
+              onChange={(e) => setSelectedYear(e.target.value === 'all' ? null : parseInt(e.target.value))}
+              className="glass border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 bg-transparent cursor-pointer hover:border-accent-500/30 transition-all appearance-none pr-8"
+              title="Filter by year"
+            >
+              <option value="all" className="bg-slate-800 text-white">
+                All Years ({events.length} events)
+              </option>
+              {availableYears.map(year => (
+                <option key={year} value={year} className="bg-slate-800 text-white">
+                  {year} ({eventCountByYear.get(year) || 0} events)
+                </option>
+              ))}
+            </select>
+            <Calendar className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+          </div>
+          
+          {/* Event Stats Indicator */}
+          {events.length > 0 && (
+            <div className="glass rounded-lg border border-white/10 px-3 py-2 flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-blue-400" />
+                <span className="text-white/60">Past:</span>
+                <span className="text-white font-medium">{stats.pastEvents}</span>
+              </div>
+              <div className="w-px h-4 bg-white/10" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-green-400" />
+                <span className="text-white/60">Future:</span>
+                <span className="text-white font-medium">{stats.futureEvents}</span>
+              </div>
+            </div>
+          )}
           
           {/* Undo/Redo */}
           <div className="flex items-center gap-1">
@@ -730,106 +849,83 @@ export default function TimelineMissionControl() {
         projectedExpenses={stats.projectedExpenses}
       />
       
-      {/* Main Layout: Conflict Radar + Timeline */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* Conflict Radar Sidebar */}
-        <AnimatePresence mode="wait">
-          {showConflicts && (
+      {/* Main Layout: Integrated Sidebars + Timeline Canvas */}
+      <div className="relative flex gap-4">
+        {/* Left Sidebar - Timeline Versions (collapsible) */}
+        <AnimatePresence>
+          {showVersions && (
             <motion.div
-              initial={{ opacity: 0, x: -20, width: 0 }}
-              animate={{ opacity: 1, x: 0, width: 'auto' }}
-              exit={{ opacity: 0, x: -20, width: 0 }}
-              transition={{ duration: 0.3 }}
-              className="col-span-12 lg:col-span-3 space-y-4"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 280, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="flex-shrink-0 overflow-hidden"
             >
-            <div className="glass rounded-xl border border-white/10 p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-400" />
-                  Conflict Radar
-                </h3>
-                <span className="text-xs text-white/40">{conflicts.length}</span>
-              </div>
-              
-              <div className="space-y-2">
-                {conflicts.map((conflict) => (
-                  <motion.div
-                    key={conflict.id}
-                    whileHover={{ scale: 1.01 }}
-                    className={`
-                      p-3 rounded-lg border cursor-pointer transition-all
-                      ${conflict.level === 'CRITICAL' ? 'bg-red-500/10 border-red-500/30' :
-                        conflict.level === 'HIGH' ? 'bg-amber-500/10 border-amber-500/30' :
-                        conflict.level === 'MEDIUM' ? 'bg-yellow-500/10 border-yellow-500/30' :
-                        'bg-blue-500/10 border-blue-500/30'}
-                    `}
-                  >
-                    <div className={`
-                      text-[10px] uppercase tracking-wider font-medium mb-1
-                      ${conflict.level === 'CRITICAL' ? 'text-red-400' :
-                        conflict.level === 'HIGH' ? 'text-amber-400' :
-                        conflict.level === 'MEDIUM' ? 'text-yellow-400' :
-                        'text-blue-400'}
-                    `}>
-                      {conflict.level}
-                    </div>
-                    <div className="text-sm text-white font-medium mb-1">
-                      {conflict.message}
-                    </div>
-                    <div className="text-xs text-white/60">
-                      {conflict.detail}
-                    </div>
-                  </motion.div>
-                ))}
-                
-                {conflicts.length === 0 && (
-                  <div className="text-center py-8 text-white/40 text-sm">
-                    No conflicts detected
+              <div className="glass rounded-xl border border-white/10 p-4 h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <History className="w-4 h-4 text-purple-400" />
+                    <h3 className="text-sm font-semibold text-white">
+                      Timeline Versions
+                    </h3>
                   </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Version Selector */}
-            <div className="glass rounded-xl border border-white/10 p-4">
-              <h3 className="font-semibold text-white flex items-center gap-2 mb-4">
-                <History className="w-4 h-4 text-purple-400" />
-                Timeline Versions
-              </h3>
-              
-              <div className="space-y-2">
-                {versions.map((version) => (
-                  <motion.button
-                    key={version.id}
-                    whileHover={{ scale: 1.01 }}
-                    onClick={() => setSelectedVersion(version.id)}
-                    className={`
-                      w-full text-left p-3 rounded-lg border transition-all
-                      ${selectedVersion === version.id 
-                        ? 'bg-accent-500/20 border-accent-500/30' 
-                        : 'glass border-white/10 hover:border-accent-500/20'}
-                    `}
+                  <button
+                    onClick={() => setShowVersions(false)}
+                    className="p-1 hover:bg-white/5 rounded transition-colors"
                   >
-                    <div className="font-medium text-white text-sm mb-1">
-                      {version.name}
-                    </div>
-                    <div className="text-xs text-white/40">
-                      {version.createdAt.toLocaleDateString()}
-                    </div>
-                  </motion.button>
-                ))}
+                    <span className="text-white/40 text-xs">✕</span>
+                  </button>
+                </div>
+                
+                <div className="space-y-2">
+                  {versions.map((version) => (
+                    <motion.button
+                      key={version.id}
+                      whileHover={{ scale: 1.01 }}
+                      onClick={() => setSelectedVersion(version.id)}
+                      className={`
+                        w-full text-left p-3 rounded-lg border transition-all
+                        ${selectedVersion === version.id 
+                          ? 'bg-accent-500/20 border-accent-500/30' 
+                          : 'glass border-white/10 hover:border-accent-500/20'}
+                      `}
+                    >
+                      <div className="font-medium text-white text-sm mb-1">
+                        {version.name}
+                      </div>
+                      <div className="text-xs text-white/40">
+                        {version.createdAt.toLocaleDateString()}
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
-        {/* Timeline Canvas */}
-        <div className={showConflicts ? 'col-span-12 lg:col-span-9' : 'col-span-12'}>
-          <div className="glass rounded-xl border border-white/10 p-6">
+        {/* Center - Timeline Canvas */}
+        <div className="flex-1 min-w-0">
+          <div className="glass rounded-xl border border-white/10 p-6 h-full">
             {/* Timeline Controls */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
+                {/* Version toggle button */}
+                <button
+                  onClick={() => setShowVersions(!showVersions)}
+                  className={`
+                    p-2 rounded-lg transition-all text-sm flex items-center gap-1.5
+                    ${showVersions
+                      ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
+                      : 'glass border border-white/10 text-white/60 hover:text-white'}
+                  `}
+                  title="Toggle Versions (V)"
+                >
+                  <History className="w-4 h-4" />
+                </button>
+                
+                <div className="w-px h-6 bg-white/10" />
+                
                 <button
                   onClick={() => setViewMode('horizontal')}
                   className={`
@@ -914,6 +1010,25 @@ export default function TimelineMissionControl() {
                 >
                   <ZoomIn className="w-4 h-4" />
                 </button>
+                
+                <div className="w-px h-6 bg-white/10" />
+                
+                {/* Conflict Radar toggle */}
+                <button
+                  onClick={() => setShowConflictRadar(!showConflictRadar)}
+                  className={`
+                    p-2 rounded-lg transition-all flex items-center gap-1.5
+                    ${showConflictRadar
+                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                      : 'glass border border-white/10 text-white/60 hover:text-white'}
+                  `}
+                  title="Toggle Conflict Radar (C)"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  {conflicts.length > 0 && (
+                    <span className="text-xs font-semibold">{conflicts.length}</span>
+                  )}
+                </button>
               </div>
             </div>
             
@@ -927,12 +1042,12 @@ export default function TimelineMissionControl() {
               </div>
             )}
             
-            {/* Timeline Placeholder - will be replaced with actual canvas */}
+            {/* Timeline Canvas */}
             <div 
               ref={scrollContainerRef} 
               className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-400px)] relative"
               style={{
-                scrollBehavior: 'auto', // Smooth for programmatic, instant for manual
+                scrollBehavior: 'auto',
                 WebkitOverflowScrolling: 'touch'
               }}
             >
@@ -946,6 +1061,7 @@ export default function TimelineMissionControl() {
                 criticalPathIds={new Set(criticalPath.filter(n => n.isOnCriticalPath).map(n => n.event.id))}
                 onEventClick={handleEventClick}
                 onEventDrag={handleEventDrag}
+                onContextMenu={handleContextMenu}
               />
             </div>
           </div>
@@ -986,6 +1102,90 @@ export default function TimelineMissionControl() {
             </motion.div>
           )}
         </div>
+        
+        {/* Right Sidebar - Conflict Radar (collapsible) */}
+        <AnimatePresence>
+          {showConflictRadar && (
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 320, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="flex-shrink-0 overflow-hidden"
+            >
+              <div className="glass rounded-xl border border-white/10 p-4 h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                    <h3 className="text-sm font-semibold text-white">
+                      Conflict Radar
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-semibold">
+                      {conflicts.length}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setShowConflictRadar(false)}
+                    className="p-1 hover:bg-white/5 rounded transition-colors"
+                  >
+                    <span className="text-white/40 text-xs">✕</span>
+                  </button>
+                </div>
+                
+                <div className="space-y-3 max-h-[calc(100vh-450px)] overflow-y-auto pr-2">
+                  {conflicts.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-3">
+                        <span className="text-2xl">✓</span>
+                      </div>
+                      <div className="text-sm text-white/60">
+                        No conflicts detected
+                      </div>
+                    </div>
+                  ) : (
+                    conflicts.map((conflict) => (
+                      <motion.div
+                        key={conflict.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleConflictClick(conflict)}
+                        className={`
+                          p-3 rounded-lg border cursor-pointer transition-all
+                          ${conflict.level === 'CRITICAL' 
+                            ? 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20' 
+                            : conflict.level === 'HIGH'
+                            ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20'
+                            : conflict.level === 'MEDIUM'
+                            ? 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20'
+                            : 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20'}
+                        `}
+                      >
+                        <div className={`
+                          text-[10px] uppercase tracking-wider mb-1 font-semibold
+                          ${conflict.level === 'CRITICAL' 
+                            ? 'text-red-400' 
+                            : conflict.level === 'HIGH'
+                            ? 'text-amber-400'
+                            : conflict.level === 'MEDIUM'
+                            ? 'text-yellow-400'
+                            : 'text-blue-400'}
+                        `}>
+                          {conflict.level}
+                        </div>
+                        <div className="font-medium text-white text-sm mb-1">
+                          {conflict.message}
+                        </div>
+                        <div className="text-xs text-white/60">
+                          {conflict.detail}
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       
       {/* AI Copilot Button (Floating) */}
@@ -996,6 +1196,21 @@ export default function TimelineMissionControl() {
       >
         <Sparkles className="w-6 h-6 text-white group-hover:rotate-12 transition-transform" />
       </motion.button>
+      
+      {/* Quick Actions Popover */}
+      <QuickActionsPopover
+        event={contextMenu?.event ?? null}
+        position={contextMenu ? { x: contextMenu.x, y: contextMenu.y } : null}
+        isOpen={contextMenu !== null}
+        onClose={() => setContextMenu(null)}
+        onDelete={handleEventDelete}
+        onDuplicate={handleEventDuplicate}
+        onEdit={(event: TimelineEvent) => {
+          setSelectedEvent(event);
+          setIsModalOpen(true);
+          setContextMenu(null);
+        }}
+      />
       
       {/* Event Detail Modal */}
       <EventDetailModal

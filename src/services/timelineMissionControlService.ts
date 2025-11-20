@@ -2,8 +2,11 @@
  * Timeline Mission Control - Data Services
  * 
  * Handles timeline events, dependencies, scenarios, and conflict detection.
- * Currently uses demo data - Firestore integration planned for v2.1
+ * Fetches real data from Firestore/localStorage via hybrid services.
  */
+
+import { showStore } from '../shared/showStore';
+import type { Show } from '../lib/shows';
 
 // ============================================================================
 // TYPES
@@ -87,17 +90,140 @@ export interface CriticalPathNode {
 export class TimelineMissionControlService {
   
   /**
-   * Get timeline events (demo data for MVP)
+   * Get timeline events from real user data (shows, contracts, activities, etc.)
+   * @param orgId Organization ID to filter by
+   * @param userId User ID to filter by
+   * @param year Optional year to filter (null = all years)
    */
-  static getEvents(orgId: string, userId: string): TimelineEvent[] {
-    return this.generateDemoEvents(orgId, userId);
+  static getEvents(orgId: string, userId: string, year?: number | null): TimelineEvent[] {
+    const events: TimelineEvent[] = [];
+    
+    // Get shows from showStore (already synced from Firebase)
+    const shows = showStore.getAll();
+    
+    console.log(`[Timeline] Loading events for org: ${orgId}, user: ${userId}, year: ${year || 'all'}`);
+    console.log(`[Timeline] Total shows in store: ${shows.length}`);
+    
+    for (const show of shows) {
+      // Filter by orgId (tenantId) - CRITICAL for multi-tenant
+      if (show.tenantId !== orgId) continue;
+      
+      // Optionally filter by userId (for personal timelines)
+      // Note: Some shows might not have userId, so we allow those through
+      if (userId && show.userId && show.userId !== userId) continue;
+      
+      const startDate = new Date(show.date);
+      
+      // Filter by year if specified
+      if (year !== null && year !== undefined) {
+        const showYear = startDate.getFullYear();
+        if (showYear !== year) continue;
+      }
+      
+      // Skip invalid dates
+      if (isNaN(startDate.getTime())) {
+        console.warn(`[Timeline] Invalid date for show ${show.id}: ${show.date}`);
+        continue;
+      }
+      
+      const endDate = show.endDate ? new Date(show.endDate) : new Date(startDate.getTime() + 4 * 60 * 60 * 1000); // Default 4h duration
+      
+      events.push({
+        id: `show-${show.id}`,
+        orgId,
+        type: 'show',
+        title: show.name || `${show.city}, ${show.country}`,
+        startTime: startDate,
+        endTime: endDate,
+        location: `${show.city}, ${show.country}`,
+        status: this.mapShowStatus(show.status),
+        module: 'shows',
+        importance: this.calculateShowImportance(show),
+        metadata: {
+          venue: show.venue,
+          fee: show.fee,
+          currency: show.feeCurrency || 'EUR',
+          paid: show.paid,
+          promoter: show.promoter,
+          originalShowId: show.id,
+          showStatus: show.status,
+        },
+        createdAt: new Date(show.__modifiedAt || Date.now()),
+        updatedAt: new Date(show.__modifiedAt || Date.now()),
+        createdBy: show.userId || userId,
+      });
+    }
+    
+    console.log(`[Timeline] Loaded ${events.length} events after filtering`);
+    
+    // TODO: Add contracts, activities, travel when available
+    // For now, just return shows
+    
+    // Sort by date (earliest first) - includes PAST and FUTURE events
+    return events.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
   }
   
   /**
-   * Get timeline dependencies (demo data for MVP)
+   * Get available years from all events (for year filter)
+   */
+  static getAvailableYears(orgId: string, userId: string): number[] {
+    const shows = showStore.getAll();
+    const years = new Set<number>();
+    
+    for (const show of shows) {
+      if (show.tenantId !== orgId) continue;
+      if (userId && show.userId && show.userId !== userId) continue;
+      
+      const date = new Date(show.date);
+      if (!isNaN(date.getTime())) {
+        years.add(date.getFullYear());
+      }
+    }
+    
+    return Array.from(years).sort((a, b) => b - a); // Newest first
+  }
+  
+  /**
+   * Map show status to timeline event status
+   */
+  private static mapShowStatus(status: Show['status']): EventStatus {
+    switch (status) {
+      case 'confirmed':
+        return 'confirmed';
+      case 'offer':
+        return 'offer';
+      case 'pending':
+        return 'tentative';
+      case 'canceled':
+      case 'archived':
+      case 'postponed':
+        return 'canceled';
+      default:
+        return 'tentative';
+    }
+  }
+  
+  /**
+   * Calculate show importance based on fee, status, etc.
+   */
+  private static calculateShowImportance(show: Show): EventImportance {
+    if (show.fee > 10000) return 'critical';
+    if (show.fee > 5000) return 'high';
+    if (show.fee > 2000) return 'medium';
+    return 'low';
+  }
+  
+  /**
+   * Get timeline dependencies (auto-generated from event sequences)
+   * TODO: Implement dependency detection logic based on event proximity and logic
    */
   static getDependencies(orgId: string): TimelineDependency[] {
-    return this.generateDemoDependencies(orgId);
+    // For now, return empty array
+    // In future: auto-detect dependencies like:
+    // - Shows on same tour → sequence dependencies
+    // - Travel before/after shows → timing dependencies
+    // - Contracts blocking shows → enabledBy dependencies
+    return [];
   }
   
   /**
@@ -335,504 +461,7 @@ export class TimelineMissionControlService {
     
     return nodes.sort((a, b) => a.event.startTime.getTime() - b.event.startTime.getTime());
   }
-  
-  /**
-   * Generate demo timeline events for testing (includes historical events)
-   */
-  static generateDemoEvents(orgId: string, userId: string): TimelineEvent[] {
-    const now = new Date();
-    const addDays = (days: number) => new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-    const addHours = (date: Date, hours: number) => new Date(date.getTime() + hours * 60 * 60 * 1000);
-    
-    return [
-      // HISTORICAL EVENTS (past 30 days)
-      {
-        id: 'event-hist-1',
-        orgId,
-        type: 'show',
-        title: 'Sevilla - Teatro Central',
-        startTime: addDays(-25),
-        endTime: addHours(addDays(-25), 3),
-        location: 'Sevilla',
-        status: 'done',
-        module: 'shows',
-        importance: 'high',
-        metadata: { fee: 1800, attendance: 450 },
-        createdAt: addDays(-30),
-        updatedAt: addDays(-25),
-        createdBy: userId,
-      },
-      {
-        id: 'event-hist-2',
-        orgId,
-        type: 'travel',
-        title: 'Drive Sevilla → Granada',
-        startTime: addDays(-24),
-        endTime: addHours(addDays(-24), 3),
-        location: 'A-92',
-        status: 'done',
-        module: 'travel',
-        importance: 'medium',
-        metadata: { distance: 250, mode: 'van' },
-        createdAt: addDays(-30),
-        updatedAt: addDays(-24),
-        createdBy: userId,
-      },
-      {
-        id: 'event-hist-3',
-        orgId,
-        type: 'show',
-        title: 'Granada - Sala Planta Baja',
-        startTime: addDays(-23),
-        endTime: addHours(addDays(-23), 2.5),
-        location: 'Granada',
-        status: 'done',
-        module: 'shows',
-        importance: 'medium',
-        metadata: { fee: 1500, attendance: 320 },
-        createdAt: addDays(-30),
-        updatedAt: addDays(-23),
-        createdBy: userId,
-      },
-      {
-        id: 'event-hist-4',
-        orgId,
-        type: 'finance',
-        title: 'Settlement - Tour Week 1',
-        startTime: addDays(-20),
-        endTime: addHours(addDays(-20), 1),
-        status: 'done',
-        module: 'finance',
-        importance: 'high',
-        metadata: { amount: 3300, type: 'revenue' },
-        createdAt: addDays(-21),
-        updatedAt: addDays(-20),
-        createdBy: userId,
-      },
-      {
-        id: 'event-hist-5',
-        orgId,
-        type: 'show',
-        title: 'Málaga - Sala Trinchera',
-        startTime: addDays(-18),
-        endTime: addHours(addDays(-18), 3),
-        location: 'Málaga',
-        status: 'done',
-        module: 'shows',
-        importance: 'high',
-        metadata: { fee: 2200, attendance: 550 },
-        createdAt: addDays(-25),
-        updatedAt: addDays(-18),
-        createdBy: userId,
-      },
-      {
-        id: 'event-hist-6',
-        orgId,
-        type: 'task',
-        title: 'Gear Maintenance',
-        startTime: addDays(-10),
-        endTime: addHours(addDays(-10), 4),
-        status: 'done',
-        module: 'collaboration',
-        importance: 'medium',
-        metadata: { cost: 350 },
-        createdAt: addDays(-15),
-        updatedAt: addDays(-10),
-        createdBy: userId,
-      },
-      
-      // UPCOMING EVENTS (future)
-      // Day 1: Madrid
-      {
-        id: 'event-1',
-        orgId,
-        type: 'travel',
-        title: 'Flight BCN → MAD',
-        startTime: addHours(addDays(1), 17),
-        endTime: addHours(addDays(1), 18.67), // 18:40
-        status: 'confirmed',
-        module: 'travel',
-        importance: 'critical',
-        location: 'Madrid, ES',
-        metadata: { cost: 120, carrier: 'Vueling' },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-2',
-        orgId,
-        type: 'task',
-        title: 'Load-in & Soundcheck',
-        startTime: addHours(addDays(1), 19),
-        endTime: addHours(addDays(1), 20),
-        status: 'confirmed',
-        module: 'shows',
-        importance: 'high',
-        location: 'Sala Caracol, Madrid',
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-3',
-        orgId,
-        type: 'show',
-        title: 'Madrid - Sala Caracol',
-        startTime: addHours(addDays(1), 21),
-        endTime: addHours(addDays(1), 23),
-        status: 'confirmed',
-        module: 'shows',
-        importance: 'critical',
-        location: 'Madrid, ES',
-        metadata: { fee: 2500, door: 70, capacity: 400 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-4',
-        orgId,
-        type: 'finance',
-        title: 'Settlement - Madrid',
-        startTime: addHours(addDays(1), 23.5),
-        status: 'tentative',
-        module: 'finance',
-        importance: 'medium',
-        metadata: { amount: 2500, settled: false },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      
-      // Day 2: Travel to Valencia
-      {
-        id: 'event-5',
-        orgId,
-        type: 'travel',
-        title: 'Drive MAD → VLC',
-        startTime: addHours(addDays(2), 10),
-        endTime: addHours(addDays(2), 14),
-        status: 'confirmed',
-        module: 'travel',
-        importance: 'medium',
-        location: 'Valencia, ES',
-        metadata: { cost: 80, type: 'van', distance: 360 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-6',
-        orgId,
-        type: 'task',
-        title: 'Soundcheck - Black Note',
-        startTime: addHours(addDays(2), 19.5),
-        endTime: addHours(addDays(2), 20.5),
-        status: 'confirmed',
-        module: 'shows',
-        importance: 'high',
-        location: 'Black Note Club, Valencia',
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-7',
-        orgId,
-        type: 'show',
-        title: 'Valencia - Black Note Club',
-        startTime: addHours(addDays(2), 21),
-        endTime: addHours(addDays(2), 23),
-        status: 'confirmed',
-        module: 'shows',
-        importance: 'high',
-        location: 'Valencia, ES',
-        metadata: { fee: 1800, door: 60, capacity: 300 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      
-      // Day 4: Barcelona
-      {
-        id: 'event-8',
-        orgId,
-        type: 'travel',
-        title: 'Drive VLC → BCN',
-        startTime: addHours(addDays(4), 11),
-        endTime: addHours(addDays(4), 14.5),
-        status: 'confirmed',
-        module: 'travel',
-        importance: 'medium',
-        location: 'Barcelona, ES',
-        metadata: { cost: 90, type: 'van', distance: 350 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-9',
-        orgId,
-        type: 'contract',
-        title: 'Contract Review - Razzmatazz',
-        startTime: addHours(addDays(4), 16),
-        endTime: addHours(addDays(4), 17),
-        status: 'tentative',
-        module: 'contracts',
-        importance: 'high',
-        metadata: { venue: 'Razzmatazz', fee: 4500 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-10',
-        orgId,
-        type: 'show',
-        title: 'Barcelona - Razzmatazz',
-        startTime: addHours(addDays(4), 22),
-        endTime: addHours(addDays(5), 0.5), // Next day 00:30
-        status: 'confirmed',
-        module: 'shows',
-        importance: 'critical',
-        location: 'Barcelona, ES',
-        metadata: { fee: 4500, door: 80, capacity: 800 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      
-      // Day 6: Bilbao
-      {
-        id: 'event-11',
-        orgId,
-        type: 'travel',
-        title: 'Flight BCN → BIO',
-        startTime: addHours(addDays(6), 9),
-        endTime: addHours(addDays(6), 10.25),
-        status: 'confirmed',
-        module: 'travel',
-        importance: 'medium',
-        location: 'Bilbao, ES',
-        metadata: { cost: 150, carrier: 'Iberia' },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-12',
-        orgId,
-        type: 'show',
-        title: 'Bilbao - Kafe Antzokia',
-        startTime: addHours(addDays(6), 21.5),
-        endTime: addHours(addDays(6), 23.5),
-        status: 'offer',
-        module: 'shows',
-        importance: 'medium',
-        location: 'Bilbao, ES',
-        metadata: { fee: 2200, door: 65, capacity: 500 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      
-      // Day 8: Paris
-      {
-        id: 'event-13',
-        orgId,
-        type: 'travel',
-        title: 'Flight BIO → CDG',
-        startTime: addHours(addDays(8), 14),
-        endTime: addHours(addDays(8), 15.75),
-        status: 'tentative',
-        module: 'travel',
-        importance: 'high',
-        location: 'Paris, FR',
-        metadata: { cost: 180, carrier: 'Air France' },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      {
-        id: 'event-14',
-        orgId,
-        type: 'show',
-        title: 'Paris - La Maroquinerie',
-        startTime: addHours(addDays(8), 20.5),
-        endTime: addHours(addDays(8), 22.5),
-        status: 'tentative',
-        module: 'shows',
-        importance: 'high',
-        location: 'Paris, FR',
-        metadata: { fee: 3200, door: 70, capacity: 600 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-      
-      // Financial milestone
-      {
-        id: 'event-15',
-        orgId,
-        type: 'finance',
-        title: 'Tour Settlement Review',
-        startTime: addHours(addDays(10), 10),
-        status: 'tentative',
-        module: 'finance',
-        importance: 'medium',
-        metadata: { totalExpected: 14200, totalReceived: 8500 },
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId,
-      },
-    ];
-  }
-  
-  /**
-   * Generate demo dependencies
-   */
-  static generateDemoDependencies(orgId: string): TimelineDependency[] {
-    return [
-      // Madrid show dependencies
-      {
-        id: 'dep-1',
-        orgId,
-        fromEventId: 'event-1', // Flight BCN → MAD
-        toEventId: 'event-2',    // Load-in & Soundcheck
-        type: 'before',
-        minGapMinutes: 20,
-        createdAt: new Date(),
-      },
-      {
-        id: 'dep-2',
-        orgId,
-        fromEventId: 'event-2', // Load-in & Soundcheck
-        toEventId: 'event-3',    // Show Madrid
-        type: 'before',
-        minGapMinutes: 60,
-        createdAt: new Date(),
-      },
-      {
-        id: 'dep-3',
-        orgId,
-        fromEventId: 'event-3', // Show Madrid
-        toEventId: 'event-4',    // Settlement
-        type: 'enabledBy',
-        minGapMinutes: 0,
-        createdAt: new Date(),
-      },
-      
-      // Valencia show dependencies
-      {
-        id: 'dep-4',
-        orgId,
-        fromEventId: 'event-3', // Show Madrid (previous day)
-        toEventId: 'event-5',    // Drive to Valencia
-        type: 'before',
-        minGapMinutes: 600, // 10 hours rest
-        createdAt: new Date(),
-      },
-      {
-        id: 'dep-5',
-        orgId,
-        fromEventId: 'event-5', // Drive to Valencia
-        toEventId: 'event-6',    // Soundcheck Valencia
-        type: 'before',
-        minGapMinutes: 300, // 5 hours to rest/settle
-        createdAt: new Date(),
-      },
-      {
-        id: 'dep-6',
-        orgId,
-        fromEventId: 'event-6', // Soundcheck Valencia
-        toEventId: 'event-7',    // Show Valencia
-        type: 'before',
-        minGapMinutes: 30,
-        createdAt: new Date(),
-      },
-      
-      // Barcelona show dependencies
-      {
-        id: 'dep-7',
-        orgId,
-        fromEventId: 'event-7', // Show Valencia
-        toEventId: 'event-8',    // Drive to Barcelona
-        type: 'before',
-        minGapMinutes: 600, // 10 hours rest
-        createdAt: new Date(),
-      },
-      {
-        id: 'dep-8',
-        orgId,
-        fromEventId: 'event-8', // Drive to Barcelona
-        toEventId: 'event-9',    // Contract Review
-        type: 'before',
-        minGapMinutes: 90,
-        createdAt: new Date(),
-      },
-      {
-        id: 'dep-9',
-        orgId,
-        fromEventId: 'event-9', // Contract Review
-        toEventId: 'event-10',   // Show Barcelona
-        type: 'before',
-        minGapMinutes: 300,
-        createdAt: new Date(),
-      },
-      
-      // Bilbao dependencies
-      {
-        id: 'dep-10',
-        orgId,
-        fromEventId: 'event-10', // Show Barcelona
-        toEventId: 'event-11',    // Flight to Bilbao
-        type: 'before',
-        minGapMinutes: 480, // 8 hours rest
-        createdAt: new Date(),
-      },
-      {
-        id: 'dep-11',
-        orgId,
-        fromEventId: 'event-11', // Flight to Bilbao
-        toEventId: 'event-12',    // Show Bilbao
-        type: 'before',
-        minGapMinutes: 600, // 10 hours
-        createdAt: new Date(),
-      },
-      
-      // Paris dependencies
-      {
-        id: 'dep-12',
-        orgId,
-        fromEventId: 'event-12', // Show Bilbao
-        toEventId: 'event-13',    // Flight to Paris
-        type: 'before',
-        minGapMinutes: 720, // 12 hours rest
-        createdAt: new Date(),
-      },
-      {
-        id: 'dep-13',
-        orgId,
-        fromEventId: 'event-13', // Flight to Paris
-        toEventId: 'event-14',    // Show Paris
-        type: 'before',
-        minGapMinutes: 240, // 4 hours
-        createdAt: new Date(),
-      },
-      
-      // Financial milestone
-      {
-        id: 'dep-14',
-        orgId,
-        fromEventId: 'event-14', // Show Paris (last show)
-        toEventId: 'event-15',    // Tour Settlement Review
-        type: 'enabledBy',
-        minGapMinutes: 0,
-        createdAt: new Date(),
-      },
-    ];
-  }
 }
 
 export default TimelineMissionControlService;
+

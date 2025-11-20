@@ -44,7 +44,10 @@ function useNavItems(collapsed: boolean) {
   };
   
   // Always show basic navigation items, even without org
-  const commonStart: NavItem[] = [{ to: '/dashboard', labelKey: 'nav.dashboard', end: true }];
+  const commonStart: NavItem[] = [
+    { to: '/dashboard', labelKey: 'nav.dashboard', end: true },
+    { to: '/dashboard/timeline/mission-control', labelKey: 'nav.missionControl' }
+  ];
   
   // If no org, show minimal navigation (user can still access dashboard/onboarding)
   if (!org) {
@@ -54,7 +57,6 @@ function useNavItems(collapsed: boolean) {
       { to: '/dashboard/travel', labelKey: 'nav.travel' },
       { to: '/dashboard/calendar', labelKey: 'nav.calendar' },
       { to: '/dashboard/timeline', labelKey: 'nav.timeline' },
-      { to: '/dashboard/timeline/mission-control', labelKey: 'nav.missionControl' },
       { to: '/dashboard/roadmap', labelKey: 'nav.roadmap' },
       { to: '/dashboard/finance', labelKey: 'nav.finance' },
       { to: '/dashboard/contacts', labelKey: 'nav.contacts' },
@@ -86,7 +88,6 @@ function useNavItems(collapsed: boolean) {
     { to: '', labelKey: '', separator: true, separatorLabel: collapsed ? '' : 'En desarrollo' },
     { to: '/dashboard/org', labelKey: 'nav.overview', section: 'org' },
     { to: '/dashboard/timeline', labelKey: 'nav.timeline' },
-    { to: '/dashboard/timeline/mission-control', labelKey: 'nav.missionControl' },
     { to: '/dashboard/roadmap', labelKey: 'nav.roadmap' },
     { to: '/dashboard/org/activity', labelKey: 'nav.activity', section: 'org' },
     { to: '/dashboard/org/teams', labelKey: 'nav.teams', section: 'org' },
